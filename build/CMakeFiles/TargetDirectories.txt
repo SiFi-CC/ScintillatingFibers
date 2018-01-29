@@ -1,0 +1,5 @@
+/home/kasia/ScintillatingFibers/build/CMakeFiles/edit_cache.dir
+/home/kasia/ScintillatingFibers/build/CMakeFiles/rebuild_cache.dir
+/home/kasia/ScintillatingFibers/build/CMakeFiles/scifi.dir
+/home/kasia/ScintillatingFibers/build/CMakeFiles/ScintillatingFibers.dir
+/home/kasia/ScintillatingFibers/build/CMakeFiles/G__ScintillatingFibers.dir
