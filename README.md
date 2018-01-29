@@ -3,7 +3,9 @@
 ---------------------------------------
 Run cmake and make from build directory
 ---------------------------------------
-cd build
-cmake ../sources
-make
 
+    cd build
+    
+    cmake ../sources
+    
+    make
