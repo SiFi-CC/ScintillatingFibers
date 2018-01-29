@@ -1,4 +1,0 @@
-[ libScintillatingFibers.so ]
-# List of selected classes
-class SFData
-header SFData.hh
