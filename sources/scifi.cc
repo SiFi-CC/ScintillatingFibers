@@ -6,7 +6,7 @@
 // * katarzyna.rusiecka@doctoral.uj.edu.pl *
 // *          Created in 2018              *
 // *                                       *
-// ***************************************** 
+// *****************************************
 
 #include "SFData.hh"
 using namespace std;
