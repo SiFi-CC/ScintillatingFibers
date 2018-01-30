@@ -19,12 +19,13 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories($ENV{DD6PATH}sources/include)
 ROOT_GENERATE_DICTIONARY(G__ScintillatingFibers ${headers} LINKDEF LinkDef.h)
 
 
 #---Create a shared library with generated dictionary
 add_library(ScintillatingFibers SHARED scifi.cc ${sources} G__ScintillatingFibers.cxx)
-target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES})
+target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES} $ENV{DD6PATH}build/libDesktopDigitizer6.so)
 
 
 #---Create  a main program using the library
