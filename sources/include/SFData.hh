@@ -16,7 +16,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TROOT.h"
-#include "DDSignal.hh"
+#include "TRandom.h"
 #include <iostream>
 #include <stdlib.h>
 
@@ -30,8 +30,7 @@ private:
   TString  *fNames;
   double   *fPositions;
   TH1D     *fSpectra[9];
-  DDSignal *fCh0;
-  DDSignal *fCh1;
+  TH1D     *fSpectrum;
   
   static TString fNames_1[9];
   static TString fNames_2[9];
@@ -41,6 +40,7 @@ private:
   static TString fNames_6[5];
   static TString fNames_7[1];
   static TString fNames_8[1];
+  static TString fNames_9[2];
   
   static double fPositions_1[9];
   static double fPositions_2[9];
@@ -49,15 +49,16 @@ private:
   static double fPositions_5[9];
   static double fPositions_6[5];
   
+  TString GetSelection(int ch, TString type);
+  
 public:
   SFData();
   SFData(int seriesNo);
   ~SFData();
   
   bool     SetDetails(int seriesNo);
-  //bool     LoopOverTree();
-  //TH1D*    GetSpectrumRaw(int ch, TString type, double position);
-  //TH1D*    GetSpectraRaw(int ch, TString type);
+  TH1D*    GetSpectrum(int ch, TString type, TString cut, double position);
+  TH1D**   GetSpectra(int ch, TString type, TString cut);
   void     Reset(void);
   void     Print(void);
   

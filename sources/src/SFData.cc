@@ -14,6 +14,9 @@ using namespace std;
 ClassImp(SFData);
 
 //------------------------------------------------------------------
+double gUnique = 0.;
+char * gPath = getenv("SFDATA");
+//------------------------------------------------------------------
 TString SFData::fNames_1[9] = {"2018_01_20_13_56","2018_01_20_14_43","2018_01_20_15_30",
 			       "2018_01_22_9_29","2018_01_20_13_07","2018_01_22_10_16",
 			       "2018_01_22_11_02","2018_01_22_11_51","2018_01_22_12_40"};
@@ -33,6 +36,7 @@ TString SFData::fNames_6[5] = {"2018_01_20_13_07","2018_01_24_16_27","2018_01_24
 			       "2018_01_24_18_27","2018_01_25_8_47"};
 TString SFData::fNames_7[1] = {"2018_01_22_15_13"};
 TString SFData::fNames_8[1] = {"2018_01_23_14_07"};
+TString SFData::fNames_9[2] = {"2018_01_19_17_17","2018_01_22_15_37"};
 //------------------------------------------------------------------
 double SFData::fPositions_1[9] = {10.3,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 double SFData::fPositions_2[9] = {10.2,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
@@ -44,7 +48,7 @@ double SFData::fPositions_6[5] = {50.0,50.0,50.0,50.0,50.0};
 SFData::SFData(){
  Reset();
  cout << "##### Warning in SFData constructor!" << endl;
- cout << "You are using default constructor. Set the series number." <<endl;
+ cout << "You are using the default constructor. Set the series number." <<endl;
 }
 //------------------------------------------------------------------
 SFData::SFData(int seriesNo){
@@ -56,7 +60,7 @@ SFData::~SFData(){
 //------------------------------------------------------------------
 bool SFData::SetDetails(int seriesNo){
  
-  if(seriesNo>8 || seriesNo<1){
+  if(seriesNo>9 || seriesNo<1){
     cout << "##### Error in SFData::SetDetails()!" << endl;
     cout << "There is no " << seriesNo << " series in the database!" << endl;
     return false;
@@ -69,9 +73,11 @@ bool SFData::SetDetails(int seriesNo){
   if(fSeriesNo<6) fNpoints = 9;
   else if(fSeriesNo==6) fNpoints = 5;
   else if(fSeriesNo==7 || fSeriesNo==8) fNpoints = 1;
+  else if(fSeriesNo==9) fNpoints = 2;
   
   //fiber type
   if(fSeriesNo==2 || fSeriesNo==4 || fSeriesNo==8) fFiber = "LuAG:Ce (2)";
+  else if(fSeriesNo==9) fFiber = "none";
   else fFiber = "LuAG:Ce (1)";
   
   //measurement description
@@ -84,6 +90,7 @@ bool SFData::SetDetails(int seriesNo){
     case 6: fDesc = "Different couplings"; break;
     case 7: fDesc = "Internal activity";   break;
     case 8: fDesc = "Internal activity";   break;
+    case 9: fDesc = "PE callibration";	   break;
   }
   
   //positions for all measurements
@@ -106,25 +113,87 @@ bool SFData::SetDetails(int seriesNo){
     case 6: fNames = fNames_6; break;
     case 7: fNames = fNames_7; break;
     case 8: fNames = fNames_8; break;
-  }
-  
-  fCh0 = new DDSignal();
-  fCh1 = new DDSignal();
-  
-  for(int i=0; i<fNpoints; i++){
-    fSpectra[i] = new TH1D(Form("h%i",i),Form("h%i",i),1000,0,100); 
+    case 9: fNames = fNames_9; break;
   }
    
   return true;
 }
 //------------------------------------------------------------------
-//TH1D* SFData::GetSpectrumRaw(int ch, TString type, double position){
-
-//}
-//------------------------------------------------------------------
-//TH1D* SFData::GetSpectraRaw(int ch, TString type){
+TString SFData::GetSelection(int ch, TString type){
  
-//}
+  TString selection;
+  gUnique = gRandom->Uniform(0,1);
+  
+  if(type=="fAmp")
+    selection = Form("ch_%i.fAmp>>htemp%.7f(1000,0,700)",ch,gUnique);
+  else if(type=="fCharge")
+    selection = Form("ch_%i.fCharge>>htemp%.7f(1000,-1E4,2E5)",ch,gUnique);
+  else if(type=="fPE")
+    selection = Form("ch_%i.fPE>>htemp%.7f(1000,-25,1000)",ch,gUnique);
+  else if(type=="fT0")
+    selection = Form("ch_%i.fT0>>htemp%.7f(1000,-110,500)",ch,gUnique);
+  else if(type=="fTOT")
+    selection = Form("ch_%i.fTOT>>htemp%.7f(1000,-110,1100)",ch,gUnique);
+  else{
+    cout << "##### Error in SFData::GetSelection()! Incorrect type!" << endl;
+    cout << "Possible options are: fAmp, fCharge, fPE, fT0, fTOT" << endl;
+    return "";
+  }
+    
+  return selection;
+}
+//------------------------------------------------------------------
+TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
+
+  int index = -1;
+  for(int i=0; i<fNpoints; i++){
+    if(fabs(fPositions[i]-position)<1E-8){
+      index = i;
+      break;
+    }
+  }
+
+  if(index==-1){
+   cout << "##### Error in SFData::GetSpectrumRaw()! Incorrect position!" << endl;
+   return NULL; 
+  }
+  
+  TString fname = gPath+fNames[index]+"/results.root";
+  TFile *file = new TFile(fname,"READ");
+  TTree *tree = (TTree*)file->Get("tree_ft");
+  
+  TString selection = GetSelection(ch,type);
+  tree->Draw(selection,cut);
+  fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+  TString hname = type+Form("_ch%i_pos%.1f",ch,position);
+  fSpectrum->SetName(hname);
+  fSpectrum->SetTitle(hname);
+  
+  return fSpectrum; 
+}
+//------------------------------------------------------------------
+TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
+ 
+  TString fname;
+  TFile *file;
+  TTree *tree;
+  TString selection;
+  TString hname;
+  
+  for(int i=0; i<fNpoints; i++){
+   fname = gPath+fNames[i]+"/results.root";
+   file = new TFile(fname,"READ");
+   TTree *tree = (TTree*)file->Get("tree_ft");
+   selection = GetSelection(ch,type);
+   tree->Draw(selection,cut);
+   fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+   hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
+   fSpectra[i]->SetName(hname);
+   fSpectra[i]->SetTitle(hname);
+  }
+  
+  return fSpectra;
+}
 //------------------------------------------------------------------
 void SFData::Reset(void){
  fSeriesNo  = 0;
@@ -133,11 +202,10 @@ void SFData::Reset(void){
  fDesc      = "dummy"; 
  fNames     = NULL;
  fPositions = NULL;
- fCh0       = NULL;
- fCh1       = NULL;
  for(int i=0; i<9; i++){
    fSpectra[i] = NULL;
  }
+ fSpectrum = NULL;
 }
 //------------------------------------------------------------------
 void SFData::Print(void){
