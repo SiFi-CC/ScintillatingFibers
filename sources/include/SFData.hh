@@ -17,7 +17,10 @@
 #include "TH1D.h"
 #include "TROOT.h"
 #include "TRandom.h"
+#include "TProfile.h"
+#include "DDSignal.hh"
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 
 class SFData : public TObject{
@@ -31,6 +34,8 @@ private:
   double   *fPositions;
   TH1D     *fSpectra[9];
   TH1D     *fSpectrum;
+  TProfile *fSignalProfile;
+  TH1D     *fSignal;
   
   static TString fNames_1[9];
   static TString fNames_2[9];
@@ -50,17 +55,20 @@ private:
   static double fPositions_6[5];
   
   TString GetSelection(int ch, TString type);
+  int GetIndex(double position);
   
 public:
   SFData();
   SFData(int seriesNo);
   ~SFData();
   
-  bool     SetDetails(int seriesNo);
-  TH1D*    GetSpectrum(int ch, TString type, TString cut, double position);
-  TH1D**   GetSpectra(int ch, TString type, TString cut);
-  void     Reset(void);
-  void     Print(void);
+  bool      SetDetails(int seriesNo);
+  TH1D*     GetSpectrum(int ch, TString type, TString cut, double position);
+  TH1D**    GetSpectra(int ch, TString type, TString cut);
+  TProfile* GetSignalAverage(int ch, double position, int number, bool bl);
+  TH1D*     GetSignal(int ch, double position, int number, bool bl);  
+  void      Reset(void);
+  void      Print(void);
   
   int      GetNpoints(void){ return fNpoints; };
   TString  GetFiber(void){ return fFiber; };

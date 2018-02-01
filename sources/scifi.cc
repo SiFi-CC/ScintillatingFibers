@@ -22,12 +22,22 @@ int main(){
   int n = data->GetNpoints();
   TH1D **spectra = data->GetSpectra(0,"fAmp","");
   
+  TProfile *prof = data->GetSignalAverage(0,50.0,20,true);
+  TProfile *prof2 = data->GetSignalAverage(0,50.0,20,false);
+  
+  TH1D *sig = data->GetSignal(0,50.0,10,true);
+  TH1D *sig2 = data->GetSignal(0,50.0,14,false);
+  
   TFile *f = new TFile("test.root","RECREATE");
   
   for(int i=0; i<n; i++){
     spectra[i]->Write();
   }
   
+  prof->Write();
+  prof2->Write();
+  sig->Write();
+  sig2->Write();
   h1->Write();
   h2->Write();
   f->Close();

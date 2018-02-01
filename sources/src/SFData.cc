@@ -15,7 +15,9 @@ ClassImp(SFData);
 
 //------------------------------------------------------------------
 double gUnique = 0.;
-char * gPath = getenv("SFDATA");
+char   *gPath = getenv("SFDATA");
+int    gBaselineMax = 50;
+double gmV = 4.096;
 //------------------------------------------------------------------
 TString SFData::fNames_1[9] = {"2018_01_20_13_56","2018_01_20_14_43","2018_01_20_15_30",
 			       "2018_01_22_9_29","2018_01_20_13_07","2018_01_22_10_16",
@@ -143,22 +145,29 @@ TString SFData::GetSelection(int ch, TString type){
   return selection;
 }
 //------------------------------------------------------------------
-TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
-
+int SFData::GetIndex(double position){
+ 
   int index = -1;
   for(int i=0; i<fNpoints; i++){
-    if(fabs(fPositions[i]-position)<1E-8){
+    if(fabs(fPositions[i]-position)<1){
       index = i;
       break;
     }
   }
 
   if(index==-1){
-   cout << "##### Error in SFData::GetSpectrumRaw()! Incorrect position!" << endl;
-   return NULL; 
+   cout << "##### Error in SFData::GetIndex()! Incorrect position!" << endl;
+   return index; 
   }
   
-  TString fname = gPath+fNames[index]+"/results.root";
+  return index;
+}
+//------------------------------------------------------------------
+TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
+
+  int index = GetIndex(position);
+  
+  TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   
@@ -181,7 +190,7 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
   TString hname;
   
   for(int i=0; i<fNpoints; i++){
-   fname = gPath+fNames[i]+"/results.root";
+   fname = string(gPath)+fNames[i]+"/results.root";
    file = new TFile(fname,"READ");
    TTree *tree = (TTree*)file->Get("tree_ft");
    selection = GetSelection(ch,type);
@@ -195,6 +204,113 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
   return fSpectra;
 }
 //------------------------------------------------------------------
+TProfile* SFData::GetSignalAverage(int ch, double position, int number, bool bl){
+  
+  int index = GetIndex(position);
+  const int ipoints = 1024;
+  float x;
+  
+  TString fname = string(gPath)+fNames[index]+"/results.root";
+  TFile *file = new TFile(fname,"READ");
+  TTree *tree = (TTree*)file->Get("tree_ft");
+  DDSignal *sig = new DDSignal();
+  tree->SetBranchAddress(Form("ch_%i",ch),&sig);
+  
+  TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
+  ifstream input(iname,ios::binary);
+ 
+  TString hname = Form("sigav_ch%i_pos_%.1f",ch,position);
+  fSignalProfile = new TProfile(hname,hname,number*ipoints,0,ipoints,"");
+    
+  int nentries = tree->GetEntries();
+  double baseline = 0.;
+  int counter = 0;
+  int infile = 0;
+  bool condition = true;
+  
+  for(int i=0; i<nentries; i++){
+   tree->GetEntry(i);
+   if(condition){
+     infile = sizeof(x)*ipoints*i;
+     if(bl){
+       input.seekg(infile);
+       baseline = 0.;
+       for(int ii=0; ii<gBaselineMax; ii++){
+         input.read((char*)&x,sizeof(x));
+         baseline += x/gmV;
+       }
+       baseline = baseline/gBaselineMax;
+     }
+     input.seekg(infile);
+     for(int ii=0; ii<ipoints; ii++){
+       input.read((char*)&x,sizeof(x));
+       if(bl) fSignalProfile->Fill(ii,(x/gmV)-baseline);
+       else   fSignalProfile->Fill(ii,(x/gmV));
+     }
+     if(counter<number-1) counter++;
+     else break;
+    }
+  }
+  
+  input.close();
+  
+  return fSignalProfile;
+}
+//------------------------------------------------------------------
+TH1D* SFData::GetSignal(int ch, double position, int number, bool bl){
+ 
+  int index = GetIndex(position);
+  const int ipoints = 1024;
+  float x;
+  
+  TString fname = string(gPath)+fNames[index]+"/results.root";
+  TFile *file = new TFile(fname,"READ");
+  TTree *tree = (TTree*)file->Get("tree_ft");
+  DDSignal *sig = new DDSignal();
+  tree->SetBranchAddress(Form("ch_%i",ch),&sig);
+  
+  TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
+  ifstream input(iname,ios::binary);
+  
+  TString hname = Form("sig_ch%i_pos_%.1f_no%i",ch,position,number);
+  
+  fSignal = new TH1D(hname,hname,ipoints,0,ipoints);
+  
+  int nentries = tree->GetEntries();
+  double baseline = 0.;
+  int infile = 0;
+  int counter = 0;
+  bool condition = true;
+  
+  for(int i=0; i<nentries; i++){
+    tree->GetEntry(i);
+    if(condition){
+      counter++;
+      if(counter!=number) continue;
+      infile = sizeof(x)*ipoints*i;
+      if(bl){
+        input.seekg(infile);
+        baseline = 0;
+        for(int ii=0; ii<gBaselineMax; ii++){
+          input.read((char*)&x,sizeof(x));
+          baseline += x/gmV;
+        }
+        baseline = baseline/gBaselineMax;
+      }
+      input.seekg(infile);
+      for(int ii=1; ii<ipoints+1; ii++){
+        input.read((char*)&x,sizeof(x));
+        if(bl) fSignal->SetBinContent(ii,(x/gmV)-baseline);
+        else   fSignal->SetBinContent(ii,(x/gmV));
+      }
+    }
+  }
+  
+  input.close();
+  
+  return fSignal;
+}
+//------------------------------------------------------------------
 void SFData::Reset(void){
  fSeriesNo  = 0;
  fNpoints   = 0;
@@ -206,6 +322,8 @@ void SFData::Reset(void){
    fSpectra[i] = NULL;
  }
  fSpectrum = NULL;
+ fSignalProfile = NULL;
+ fSignal = NULL;
 }
 //------------------------------------------------------------------
 void SFData::Print(void){
