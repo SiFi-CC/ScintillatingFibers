@@ -331,7 +331,7 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
    fSpectra[i]->SetTitle(htitle);
   }
   
-  return this->fSpectra;
+  return fSpectra;
 }
 //------------------------------------------------------------------
 TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int number, bool bl){

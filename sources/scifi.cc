@@ -25,9 +25,8 @@ int main(){
   
   TFile *f = new TFile("test.root","RECREATE");
   
-  TH1D **hh1 = data->GetSpectra(0,"fAmp","");
-  TH1D **hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
-  
+  TH1D** hh1 = data->GetSpectra(0,"fAmp","");
+  TH1D** hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
   
   f->cd();
   for(int i=0; i<n; i++){
@@ -46,7 +45,6 @@ int main(){
   TH1D *s2 = data->GetSignal(0,70,"",14,false);
   TH1D *s3 = data->GetSignal(0,80,"fAmp>100 && fAmp<200",1,true);
   
- 
   f->cd();
   h1->Write();
   h2->Write();
