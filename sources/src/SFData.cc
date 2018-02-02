@@ -296,13 +296,15 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
   TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
+  fSpectrum = new TH1D();
   
   TString selection = GetSelection(ch,type);
   tree->Draw(selection,cut);
   fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
   TString hname = type+Form("_ch%i_pos%.1f",ch,position);
+  TString htitle = hname+" "+cut;
   fSpectrum->SetName(hname);
-  fSpectrum->SetTitle(hname);
+  fSpectrum->SetTitle(htitle);
   
   return fSpectrum; 
 }
@@ -313,24 +315,23 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
   TFile *file;
   TTree *tree;
   TString selection;
-  TString hname;
+  TString hname, htitle;
   
   for(int i=0; i<fNpoints; i++){
    fname = string(gPath)+fNames[i]+"/results.root";
-   cout << fname << endl;
    file = new TFile(fname,"READ");
    TTree *tree = (TTree*)file->Get("tree_ft");
    selection = GetSelection(ch,type);
    tree->Draw(selection,cut);
-   cout << "here" << endl;
+   fSpectra[i] = new TH1D();
    fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
    hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
-   cout << hname << endl;
+   htitle = hname+" "+cut;
    fSpectra[i]->SetName(hname);
-   fSpectra[i]->SetTitle(hname);
+   fSpectra[i]->SetTitle(htitle);
   }
   
-  return fSpectra;
+  return this->fSpectra;
 }
 //------------------------------------------------------------------
 TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int number, bool bl){
@@ -349,7 +350,8 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   ifstream input(iname,ios::binary);
  
   TString hname = Form("sig_ch%i_pos_%.1f",ch,position);
-  fSignalProfile = new TProfile(hname,hname,number*ipoints,0,ipoints,"");
+  TString htitle = hname +" "+cut;
+  fSignalProfile = new TProfile(hname,htitle,number*ipoints,0,ipoints,"");
     
   int nentries = tree->GetEntries();
   double baseline = 0.;
@@ -409,8 +411,9 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   ifstream input(iname,ios::binary);
   
   TString hname = Form("sig_ch%i_pos_%.1f_no%i",ch,position,number);
+  TString htitle = hname+" "+cut;
   
-  fSignal = new TH1D(hname,hname,ipoints,0,ipoints);
+  fSignal = new TH1D(hname,htitle,ipoints,0,ipoints);
   
   int nentries = tree->GetEntries();
   double baseline = 0.;

@@ -9,66 +9,58 @@
 // *****************************************
 
 #include "SFData.hh"
-#include "TTimeStamp.h"
-#include "TSystem.h"
 using namespace std;
 
 int main(){
  
-  TTimeStamp starttime;
-  gSystem->Exec("date");
+  int n =0;
   
   SFData *data = new SFData(1);
   data->Print();
   
-  TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fPE>5",30.0);
-  TH1D *h2 = data->GetSpectrum(0,"fCharge","",30.0);
+  n = data->GetNpoints();
   
-  int n = data->GetNpoints();
-  TH1D **spectra = data->GetSpectra(0,"fAmp","");
-  
-  TProfile *prof = data->GetSignalAverage(0,50.0,"",20,true);
-  TProfile *prof2 = data->GetSignalAverage(0,50.0,"",20,false);
-  TProfile *prof3 = data->GetSignalAverage(0,50.0,"ch_0.fPE>99.99 && ch_0.fPE100.01",50,true);
-  
-  TH1D *sig = data->GetSignal(0,50.0,"",10,true);
-  TH1D *sig2 = data->GetSignal(0,50.0,"",14,false);
-  TH1D *sig3 = data->GetSignal(0,50,"fAmp>100 && fAmp<200",1,true);
-  
-  
+  TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
+  TH1D *h2 = data->GetSpectrum(0,"fCharge","",20);
   
   TFile *f = new TFile("test.root","RECREATE");
   
+  TH1D **hh1 = data->GetSpectra(0,"fAmp","");
+  TH1D **hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
+  
+  
+  f->cd();
   for(int i=0; i<n; i++){
-    spectra[i]->Write();
+    hh1[i]->Write();
   }
   
-  prof->Write();
-  prof2->Write();
-  prof3->Write();
-  sig->Write();
-  sig2->Write();
-  sig3->Write();
+  for(int i=0; i<n; i++){
+    hh2[i]->Write();
+  }
+  
+  TProfile *p1 = data->GetSignalAverage(1,30,"",20,true);
+  TProfile *p2 = data->GetSignalAverage(1,40,"",20,false);
+  TProfile *p3 = data->GetSignalAverage(1,50,"ch_0.fPE>59.99 && ch_0.fPE60.01",50,true);
+  
+  TH1D *s1 = data->GetSignal(0,60,"",10,true);
+  TH1D *s2 = data->GetSignal(0,70,"",14,false);
+  TH1D *s3 = data->GetSignal(0,80,"fAmp>100 && fAmp<200",1,true);
+  
+ 
+  f->cd();
   h1->Write();
   h2->Write();
- 
-  
-  TTimeStamp stoptime;
-  
-  cout << "this took " << stoptime.GetSec()-starttime.GetSec() << " s" << endl;
-  
-  SFData *dd = new SFData(9);
-  
-  TH1D **darkc = dd->GetSpectra(0,"fCharge","");
-  
-  for(int i=0; i<n; i++){
-    darkc[i]->Write(); 
-  }
+  p1->Write();
+  p2->Write();
+  p3->Write();
+  s1->Write();
+  s2->Write();
+  s3->Write();
   
   f->Close();
- 
+
   delete data;
-  delete dd;
+
   
   return 1;
 }
