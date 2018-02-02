@@ -46,6 +46,10 @@ double SFData::fPositions_3[9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 double SFData::fPositions_4[9] = {10.5,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 double SFData::fPositions_5[9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 double SFData::fPositions_6[5] = {50.0,50.0,50.0,50.0,50.0};
+double SFData::fPositions_7[1] = {0.00};
+double SFData::fPositions_8[1] = {0.00};
+double SFData::fPositions_9[2] = {0.00,0.00};
+
 //------------------------------------------------------------------
 SFData::SFData(){
  Reset();
@@ -103,6 +107,9 @@ bool SFData::SetDetails(int seriesNo){
     case 4: fPositions = fPositions_4; break;
     case 5: fPositions = fPositions_5; break;
     case 6: fPositions = fPositions_6; break;
+    case 7: fPositions = fPositions_7; break;
+    case 8: fPositions = fPositions_8; break;
+    case 9: fPositions = fPositions_9; break;
   }
   
   //names of measurements in this series 
@@ -129,11 +136,11 @@ TString SFData::GetSelection(int ch, TString type){
   if(type=="fAmp")
     selection = Form("ch_%i.fAmp>>htemp%.7f(1000,0,700)",ch,gUnique);
   else if(type=="fCharge")
-    selection = Form("ch_%i.fCharge>>htemp%.7f(1000,-1E4,2E5)",ch,gUnique);
+    selection = Form("ch_%i.fCharge>>htemp%.7f(1000,-1E4,2.5E5)",ch,gUnique);
   else if(type=="fPE")
-    selection = Form("ch_%i.fPE>>htemp%.7f(1000,-25,1000)",ch,gUnique);
+    selection = Form("ch_%i.fPE>>htemp%.7f(1000,-150,1200)",ch,gUnique);
   else if(type=="fT0")
-    selection = Form("ch_%i.fT0>>htemp%.7f(1000,-110,500)",ch,gUnique);
+    selection = Form("ch_%i.fT0>>htemp%.7f(1000,-110,1100)",ch,gUnique);
   else if(type=="fTOT")
     selection = Form("ch_%i.fTOT>>htemp%.7f(1000,-110,1100)",ch,gUnique);
   else{
@@ -146,8 +153,14 @@ TString SFData::GetSelection(int ch, TString type){
 }
 //------------------------------------------------------------------
 int SFData::GetIndex(double position){
- 
+   
   int index = -1;
+  
+  if(fSeriesNo>5){
+    index = position-1;
+    return index;
+  }
+
   for(int i=0; i<fNpoints; i++){
     if(fabs(fPositions[i]-position)<1){
       index = i;
@@ -161,6 +174,119 @@ int SFData::GetIndex(double position){
   }
   
   return index;
+}
+//------------------------------------------------------------------
+bool SFData::InterpretCut(DDSignal *sig, TString cut){
+ 
+  bool result = true;
+  if(cut=="" || cut==" ") return result;
+  
+  double amp = sig->GetAmplitude();
+  double charge = sig->GetCharge();
+  double pe = sig->GetPE();
+  double t0 = sig->GetT0();
+  double tot = sig->GetTOT();
+  
+  //convert TString into string and char[]
+  string cut_str = string(cut);
+  int nletters = cut_str.length();
+  char letters[nletters];
+  strcpy(letters,cut_str.c_str());
+  
+  //splitting cut into expressions
+  int iposition = 0;
+  string expression[2];
+  
+  for(int i=0; i<nletters; i++){
+   if(letters[i]=='&' && letters[i+1]=='&'){
+     iposition = i;
+     break;
+    }
+  }
+  
+  expression[0] = string(&letters[0], &letters[iposition]);
+  expression[1] = string(&letters[iposition+2], &letters[nletters]);
+  
+  //extracting doubles 
+  int nletters_expr = 0;
+  int istop = 0;
+  char letters_expr[100];
+  string number_str[2];
+  double number[2];
+  
+  for(int i=0; i<2; i++){
+   istop = 0;
+   nletters_expr = expression[i].length();
+   strcpy(letters_expr,expression[i].c_str());
+   for(int ii=nletters_expr; ii>0; ii--){
+    if(letters_expr[ii]=='<' || letters_expr[ii]=='>'){
+      istop = ii+1;
+      break;
+    }
+   }
+   number_str[i] = string(&letters_expr[istop], &letters_expr[nletters_expr]);
+   number[i] = atof(number_str[i].c_str());
+  }
+
+  //checking logic
+  bool logic[2];
+  
+  for(int i=0; i<2; i++){
+    
+   if(expression[i].find("fAmp")!=string::npos){		//cut on fAmp
+     if(expression[i].find("<")!=string::npos){
+       logic[i] = amp<number[i];
+     }
+     else if(expression[i].find(">")!=string::npos){
+      logic[i] = amp>number[i]; 
+     }
+   }
+   
+   else if(expression[i].find("fPE")!=string::npos){		//cut on fPE
+     if(expression[i].find("<")!=string::npos){
+       logic[i] = pe<number[i];
+     }
+     else if(expression[i].find(">")!=string::npos){
+       logic[i] = pe>number[i]; 
+     }
+   }
+   
+   else if(expression[i].find("fCharge")!=string::npos){	//cut on fCharge
+     if(expression[i].find("<")!=string::npos){
+       logic[i] = charge<number[i];
+     }
+     else if(expression[i].find(">")!=string::npos){
+       logic[i] = charge>number[i]; 
+     }
+   }
+   
+   else if(expression[i].find("fT0")!=string::npos){		//cut on fT0
+     if(expression[i].find("<")!=string::npos){
+       logic[i] = t0<number[i];
+     }
+     else if(expression[i].find(">")!=string::npos){
+       logic[i] = t0>number[i]; 
+     }
+   } 
+   
+   else if(expression[i].find("fTOT")!=string::npos){		//cut on fTOT
+     if(expression[i].find("<")!=string::npos){
+       logic[i] = tot<number[i];
+     }
+     else if(expression[i].find(">")!=string::npos){
+       logic[i] = tot>number[i]; 
+     }
+   } 
+   
+   else{
+    cout << "#### Error in SFData::InterpretCut! Incorrect cut syntax!" << endl;
+    return false;
+   }
+  }
+  
+  result = logic[0] && logic[1];
+  
+  return result;
 }
 //------------------------------------------------------------------
 TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
@@ -191,12 +317,15 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
   
   for(int i=0; i<fNpoints; i++){
    fname = string(gPath)+fNames[i]+"/results.root";
+   cout << fname << endl;
    file = new TFile(fname,"READ");
    TTree *tree = (TTree*)file->Get("tree_ft");
    selection = GetSelection(ch,type);
    tree->Draw(selection,cut);
+   cout << "here" << endl;
    fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
    hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
+   cout << hname << endl;
    fSpectra[i]->SetName(hname);
    fSpectra[i]->SetTitle(hname);
   }
@@ -204,7 +333,7 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
   return fSpectra;
 }
 //------------------------------------------------------------------
-TProfile* SFData::GetSignalAverage(int ch, double position, int number, bool bl){
+TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int number, bool bl){
   
   int index = GetIndex(position);
   const int ipoints = 1024;
@@ -219,7 +348,7 @@ TProfile* SFData::GetSignalAverage(int ch, double position, int number, bool bl)
   TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
   ifstream input(iname,ios::binary);
  
-  TString hname = Form("sigav_ch%i_pos_%.1f",ch,position);
+  TString hname = Form("sig_ch%i_pos_%.1f",ch,position);
   fSignalProfile = new TProfile(hname,hname,number*ipoints,0,ipoints,"");
     
   int nentries = tree->GetEntries();
@@ -227,10 +356,13 @@ TProfile* SFData::GetSignalAverage(int ch, double position, int number, bool bl)
   int counter = 0;
   int infile = 0;
   bool condition = true;
+  double firstT0 = 0.;
   
   for(int i=0; i<nentries; i++){
    tree->GetEntry(i);
-   if(condition){
+   if(fabs(firstT0)<1E-10) firstT0 = sig->GetT0();
+   condition = InterpretCut(sig,cut);
+   if(condition && fabs(sig->GetT0()-firstT0)<1){
      infile = sizeof(x)*ipoints*i;
      if(bl){
        input.seekg(infile);
@@ -247,17 +379,21 @@ TProfile* SFData::GetSignalAverage(int ch, double position, int number, bool bl)
        if(bl) fSignalProfile->Fill(ii,(x/gmV)-baseline);
        else   fSignalProfile->Fill(ii,(x/gmV));
      }
-     if(counter<number-1) counter++;
+     if(counter<number) counter++;
      else break;
     }
   }
+  
+  if(counter<number) 
+    cout << "##### Warning in SFData::GetSignalAverage()! " << counter 
+         << " out of " << number << " plotted." << endl;
   
   input.close();
   
   return fSignalProfile;
 }
 //------------------------------------------------------------------
-TH1D* SFData::GetSignal(int ch, double position, int number, bool bl){
+TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool bl){
  
   int index = GetIndex(position);
   const int ipoints = 1024;
@@ -284,6 +420,7 @@ TH1D* SFData::GetSignal(int ch, double position, int number, bool bl){
   
   for(int i=0; i<nentries; i++){
     tree->GetEntry(i);
+    condition = InterpretCut(sig,cut);
     if(condition){
       counter++;
       if(counter!=number) continue;

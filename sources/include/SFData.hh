@@ -21,6 +21,7 @@
 #include "DDSignal.hh"
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <stdlib.h>
 
 class SFData : public TObject{
@@ -53,9 +54,13 @@ private:
   static double fPositions_4[9];
   static double fPositions_5[9];
   static double fPositions_6[5];
+  static double fPositions_7[1];
+  static double fPositions_8[1];
+  static double fPositions_9[2];
   
   TString GetSelection(int ch, TString type);
   int GetIndex(double position);
+  bool InterpretCut(DDSignal *sig, TString cut);
   
 public:
   SFData();
@@ -65,8 +70,8 @@ public:
   bool      SetDetails(int seriesNo);
   TH1D*     GetSpectrum(int ch, TString type, TString cut, double position);
   TH1D**    GetSpectra(int ch, TString type, TString cut);
-  TProfile* GetSignalAverage(int ch, double position, int number, bool bl);
-  TH1D*     GetSignal(int ch, double position, int number, bool bl);  
+  TProfile* GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
+  TH1D*     GetSignal(int ch, double position, TString cut, int number, bool bl);  
   void      Reset(void);
   void      Print(void);
   
