@@ -9,6 +9,7 @@
 // *****************************************
 
 #include "SFData.hh"
+#include "TCanvas.h"
 using namespace std;
 
 int main(){
@@ -39,11 +40,25 @@ int main(){
   
   TProfile *p1 = data->GetSignalAverage(1,30,"",20,true);
   TProfile *p2 = data->GetSignalAverage(1,40,"",20,false);
-  TProfile *p3 = data->GetSignalAverage(1,50,"ch_0.fPE>59.99 && ch_0.fPE60.01",50,true);
+  TProfile *p3 = data->GetSignalAverage(1,50,"ch_0.fPE>59.99 && ch_0.fPE<60.01",50,true);
   
   TH1D *s1 = data->GetSignal(0,60,"",10,true);
   TH1D *s2 = data->GetSignal(0,70,"",14,false);
-  TH1D *s3 = data->GetSignal(0,80,"fAmp>100 && fAmp<200",1,true);
+  TH1D *s3 = data->GetSignal(0,80,"fAmp<100",1,true);
+  
+  
+  TCanvas *can = new TCanvas("can","can",1000,1000);
+  can->Divide(3,3);
+  //-----
+  TH1D *sig[9];
+  for(int i=0; i<9; i++){
+    sig[i] = data->GetSignal(0,50,"ch_0.fPE>19.99 && ch_0.fPE<20.01",i+1,true);
+    can->cd(i+1);
+    sig[i]->Draw();
+  }
+  f->cd();
+  can->Write();
+  //-----
   
   f->cd();
   h1->Write();

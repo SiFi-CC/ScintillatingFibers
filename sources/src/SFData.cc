@@ -194,7 +194,8 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
   strcpy(letters,cut_str.c_str());
   
   //splitting cut into expressions
-  int iposition = 0;
+  int iposition = -1;
+  int nexpressions = 0;
   string expression[2];
   
   for(int i=0; i<nletters; i++){
@@ -204,18 +205,25 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
     }
   }
   
-  expression[0] = string(&letters[0], &letters[iposition]);
-  expression[1] = string(&letters[iposition+2], &letters[nletters]);
-  
+  if(iposition==-1){
+    nexpressions = 1;
+    expression[0] = cut_str;
+  }
+  else{
+    nexpressions = 2;
+    expression[0] = string(&letters[0], &letters[iposition]);
+    expression[1] = string(&letters[iposition+2], &letters[nletters]);
+  }
+    
   //extracting doubles 
   int nletters_expr = 0;
-  int istop = 0;
+  int istop = -1;
   char letters_expr[100];
   string number_str[2];
   double number[2];
   
-  for(int i=0; i<2; i++){
-   istop = 0;
+  for(int i=0; i<nexpressions; i++){
+   istop = -1;
    nletters_expr = expression[i].length();
    strcpy(letters_expr,expression[i].c_str());
    for(int ii=nletters_expr; ii>0; ii--){
@@ -224,14 +232,19 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
       break;
     }
    }
+   if(istop==-1){
+     cout << "#### Error in SFData::InterpretCut! Incorrect cut syntax!" << endl;
+     cout << "Missing '<' or '>'." << endl;
+     return false;
+   }
    number_str[i] = string(&letters_expr[istop], &letters_expr[nletters_expr]);
    number[i] = atof(number_str[i].c_str());
   }
 
   //checking logic
-  bool logic[2];
+  bool logic[2] = {true,true};
   
-  for(int i=0; i<2; i++){
+  for(int i=0; i<nexpressions; i++){
     
    if(expression[i].find("fAmp")!=string::npos){		//cut on fAmp
      if(expression[i].find("<")!=string::npos){
@@ -280,6 +293,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
    
    else{
     cout << "#### Error in SFData::InterpretCut! Incorrect cut syntax!" << endl;
+    cout << "Incorrect type. Available types are: fAMp, fCharge, fPE, fT0 and fTOT." << endl;
     return false;
    }
   }
