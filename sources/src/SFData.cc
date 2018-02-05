@@ -9,7 +9,6 @@
 // *****************************************
 
 #include "SFData.hh"
-using namespace std;
 
 ClassImp(SFData);
 
@@ -323,7 +322,7 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
   return fSpectrum; 
 }
 //------------------------------------------------------------------
-TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
+vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
  
   TString fname;
   TFile *file;
@@ -337,7 +336,7 @@ TH1D** SFData::GetSpectra(int ch, TString type, TString cut){
    TTree *tree = (TTree*)file->Get("tree_ft");
    selection = GetSelection(ch,type);
    tree->Draw(selection,cut);
-   fSpectra[i] = new TH1D();
+   fSpectra.push_back(new TH1D());
    fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
    hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
    htitle = hname+" "+cut;
@@ -466,18 +465,15 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
 }
 //------------------------------------------------------------------
 void SFData::Reset(void){
- fSeriesNo  = 0;
- fNpoints   = 0;
- fFiber     = "dummy";
- fDesc      = "dummy"; 
- fNames     = NULL;
- fPositions = NULL;
- for(int i=0; i<9; i++){
-   fSpectra[i] = NULL;
- }
- fSpectrum = NULL;
+ fSeriesNo      = 0;
+ fNpoints       = 0;
+ fFiber         = "dummy";
+ fDesc          = "dummy"; 
+ fNames         = NULL;
+ fPositions     = NULL;
+ fSpectrum      = NULL;
  fSignalProfile = NULL;
- fSignal = NULL;
+ fSignal        = NULL;
 }
 //------------------------------------------------------------------
 void SFData::Print(void){

@@ -10,31 +10,25 @@
 
 #include "SFData.hh"
 #include "TCanvas.h"
-using namespace std;
 
 int main(){
- 
-  int n =0;
+  
+  TFile *f = new TFile("test.root","RECREATE");
   
   SFData *data = new SFData(1);
   data->Print();
   
-  n = data->GetNpoints();
+  int n = data->GetNpoints();
   
   TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   TH1D *h2 = data->GetSpectrum(0,"fCharge","",20);
   
-  TFile *f = new TFile("test.root","RECREATE");
-  
-  TH1D** hh1 = data->GetSpectra(0,"fAmp","");
-  TH1D** hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
+  vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
+  vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
   
   f->cd();
   for(int i=0; i<n; i++){
     hh1[i]->Write();
-  }
-  
-  for(int i=0; i<n; i++){
     hh2[i]->Write();
   }
   
@@ -46,16 +40,18 @@ int main(){
   TH1D *s2 = data->GetSignal(0,70,"",14,false);
   TH1D *s3 = data->GetSignal(0,80,"fAmp<100",1,true);
   
-  
+  //----- this part is to see if signals with low 
+  //----- cut on PE are negative after bl subtraction
   TCanvas *can = new TCanvas("can","can",1000,1000);
   can->Divide(3,3);
-  //-----
   TH1D *sig[9];
+  
   for(int i=0; i<9; i++){
     sig[i] = data->GetSignal(0,50,"ch_0.fPE>19.99 && ch_0.fPE<20.01",i+1,true);
     can->cd(i+1);
     sig[i]->Draw();
   }
+  
   f->cd();
   can->Write();
   //-----
@@ -73,7 +69,6 @@ int main(){
   f->Close();
 
   delete data;
-
   
   return 1;
 }

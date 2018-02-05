@@ -23,20 +23,24 @@
 #include <fstream>
 #include <string>
 #include <stdlib.h>
+#include <vector>
+
+using namespace std;
 
 class SFData : public TObject{
   
 private:
-  int      fSeriesNo;
-  int      fNpoints;
-  TString  fFiber;
-  TString  fDesc;
-  TString  *fNames;
-  double   *fPositions;
-  TH1D     *fSpectra[9];
-  TH1D     *fSpectrum;
-  TProfile *fSignalProfile;
-  TH1D     *fSignal;
+  int            fSeriesNo;		//series number
+  int            fNpoints;		//number of measurements in the series
+  TString        fFiber;		//scintillating fiber type
+  TString        fDesc;			//description of the measurement series
+  TString        *fNames;		//array with names of measurements
+  double         *fPositions;		//array with source positions in mm
+  TH1D           *fSpectrum;		//single requested spectrum
+  TProfile       *fSignalProfile;	//average of n requested signals
+  TH1D           *fSignal;		//histogram of single chosen signal
+  vector <TH1D*> fSpectra;		//vector with all spectra from this series 
+					//(requested type e.g. fPE)
   
   static TString fNames_1[9];
   static TString fNames_2[9];
@@ -67,13 +71,13 @@ public:
   SFData(int seriesNo);
   ~SFData();
   
-  bool      SetDetails(int seriesNo);
-  TH1D*     GetSpectrum(int ch, TString type, TString cut, double position);
-  TH1D**    GetSpectra(int ch, TString type, TString cut);
-  TProfile* GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
-  TH1D*     GetSignal(int ch, double position, TString cut, int number, bool bl);  
-  void      Reset(void);
-  void      Print(void);
+  bool           SetDetails(int seriesNo);
+  TH1D*          GetSpectrum(int ch, TString type, TString cut, double position);
+  vector <TH1D*> GetSpectra(int ch, TString type, TString cut);
+  TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
+  TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  
+  void           Reset(void);
+  void           Print(void);
   
   int      GetNpoints(void){ return fNpoints; };
   TString  GetFiber(void){ return fFiber; };
