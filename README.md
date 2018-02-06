@@ -4,6 +4,7 @@ Prerequisites
 ------------------------------------------------
 * Required ROOT version: 6.13/01
 * libDesktopDigitizer6.so 
+* Doxygen version 1.8.15
 
 Environmental settings
 ------------------------------------------------

@@ -30,17 +30,16 @@ using namespace std;
 class SFData : public TObject{
   
 private:
-  int            fSeriesNo;		//series number
-  int            fNpoints;		//number of measurements in the series
-  TString        fFiber;		//scintillating fiber type
-  TString        fDesc;			//description of the measurement series
-  TString        *fNames;		//array with names of measurements
-  double         *fPositions;		//array with source positions in mm
-  TH1D           *fSpectrum;		//single requested spectrum
-  TProfile       *fSignalProfile;	//average of n requested signals
-  TH1D           *fSignal;		//histogram of single chosen signal
-  vector <TH1D*> fSpectra;		//vector with all spectra from this series 
-					//(requested type e.g. fPE)
+  int            fSeriesNo;		///series number
+  int            fNpoints;		///number of measurements in the series
+  TString        fFiber;		///scintillating fiber type
+  TString        fDesc;			///description of the measurement series
+  TString        *fNames;		///array with names of measurements
+  double         *fPositions;		///array with source positions in mm
+  TH1D           *fSpectrum;		///single requested spectrum
+  TProfile       *fSignalProfile;	///average of n requested signals
+  TH1D           *fSignal;		///histogram of single chosen signal
+  vector <TH1D*> fSpectra;		///vector with all spectra from this series (requested type e.g. fPE)
   
   static TString fNames_1[9];
   static TString fNames_2[9];
@@ -63,8 +62,8 @@ private:
   static double fPositions_9[2];
   
   TString GetSelection(int ch, TString type);
-  int GetIndex(double position);
-  bool InterpretCut(DDSignal *sig, TString cut);
+  int     GetIndex(double position);
+  bool    InterpretCut(DDSignal *sig, TString cut);
   
 public:
   SFData();
