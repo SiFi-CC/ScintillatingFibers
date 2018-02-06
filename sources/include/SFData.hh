@@ -30,16 +30,16 @@ using namespace std;
 class SFData : public TObject{
   
 private:
-  int            fSeriesNo;		///series number
-  int            fNpoints;		///number of measurements in the series
-  TString        fFiber;		///scintillating fiber type
-  TString        fDesc;			///description of the measurement series
-  TString        *fNames;		///array with names of measurements
-  double         *fPositions;		///array with source positions in mm
-  TH1D           *fSpectrum;		///single requested spectrum
-  TProfile       *fSignalProfile;	///average of n requested signals
-  TH1D           *fSignal;		///histogram of single chosen signal
-  vector <TH1D*> fSpectra;		///vector with all spectra from this series (requested type e.g. fPE)
+  int            fSeriesNo;		///< Series number
+  int            fNpoints;		///< Number of measurements in the series
+  TString        fFiber;		///< Scintillating fiber type e.g. LuAG (1)
+  TString        fDesc;			///< Description of the measurement series
+  TString        *fNames;		///< Array with names of measurements
+  double         *fPositions;		///< Array with positions of radioactive source in mm
+  TH1D           *fSpectrum;		///< Single requested spectrum
+  TProfile       *fSignalProfile;	///< Average of n requested signals
+  TH1D           *fSignal;		///< Histogram of single chosen signal
+  vector <TH1D*> fSpectra;		///< Vector with all spectra from this series (requested type e.g. fPE)
   
   static TString fNames_1[9];
   static TString fNames_2[9];

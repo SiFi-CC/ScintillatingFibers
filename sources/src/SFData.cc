@@ -50,19 +50,28 @@ double SFData::fPositions_8[1] = {0.00};
 double SFData::fPositions_9[2] = {0.00,0.00};
 
 //------------------------------------------------------------------
+///Default constructor. If this constructor is used the series 
+///number should be set via SetDetails(int seriesNo) function.
 SFData::SFData(){
  Reset();
  cout << "##### Warning in SFData constructor!" << endl;
  cout << "You are using the default constructor. Set the series number." <<endl;
 }
 //------------------------------------------------------------------
+///Standard constructor (recommended). seriesNo is number of 
+///experimental series to analyze.
 SFData::SFData(int seriesNo){
   SetDetails(seriesNo);
 }
 //------------------------------------------------------------------
+///Default destructor.
 SFData::~SFData(){
 }
 //------------------------------------------------------------------
+///Sets all details of selected experimental series. If default constructor
+///was used, this function needs to be called explicitly with the number of 
+///of requested series as an argument. The following attributes are set 
+///within this function:
 bool SFData::SetDetails(int seriesNo){
  
   if(seriesNo>9 || seriesNo<1){
@@ -74,18 +83,18 @@ bool SFData::SetDetails(int seriesNo){
   Reset();
   fSeriesNo = seriesNo;
   
-  //number of measurements in the series
+  ///- number of measurements in the series
   if(fSeriesNo<6) fNpoints = 9;
   else if(fSeriesNo==6) fNpoints = 5;
   else if(fSeriesNo==7 || fSeriesNo==8) fNpoints = 1;
   else if(fSeriesNo==9) fNpoints = 2;
   
-  //fiber type
+  ///- fiber type
   if(fSeriesNo==2 || fSeriesNo==4 || fSeriesNo==8) fFiber = "LuAG:Ce (2)";
   else if(fSeriesNo==9) fFiber = "none";
   else fFiber = "LuAG:Ce (1)";
   
-  //measurement description
+  ///- measurement description
   switch(fSeriesNo){
     case 1: fDesc = "First measurement";   break;
     case 2: fDesc = "First measurement";   break;
@@ -98,7 +107,7 @@ bool SFData::SetDetails(int seriesNo){
     case 9: fDesc = "PE callibration";	   break;
   }
   
-  //positions for all measurements
+  ///- positions of radioactive source for all measurements
   switch(fSeriesNo){
     case 1: fPositions = fPositions_1; break;
     case 2: fPositions = fPositions_2; break;
@@ -111,7 +120,7 @@ bool SFData::SetDetails(int seriesNo){
     case 9: fPositions = fPositions_9; break;
   }
   
-  //names of measurements in this series 
+  ///- names of measurements in this series 
   switch(fSeriesNo){
     case 1: fNames = fNames_1; break;
     case 2: fNames = fNames_2; break;
