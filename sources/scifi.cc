@@ -9,6 +9,7 @@
 // *****************************************
 
 #include "SFData.hh"
+#include "TimeConst.hh"
 #include "TCanvas.h"
 
 int main(){
@@ -34,11 +35,19 @@ int main(){
   
   TProfile *p1 = data->GetSignalAverage(1,30,"",20,true);
   TProfile *p2 = data->GetSignalAverage(1,40,"",20,false);
-  TProfile *p3 = data->GetSignalAverage(1,50,"ch_0.fPE>59.99 && ch_0.fPE<60.01",50,true);
-  
+  TProfile *p3 = data->GetSignalAverage(1,50,"ch_0.fPE>59.9 && ch_0.fPE<60.1",50,true);
+
   TH1D *s1 = data->GetSignal(0,60,"",10,true);
   TH1D *s2 = data->GetSignal(0,70,"",14,false);
   TH1D *s3 = data->GetSignal(0,80,"fAmp<100",1,true);
+  
+    
+  TimeConst* decay_p3_s = new TimeConst(p3,"single");
+  decay_p3_s->Print();
+  
+  TimeConst* decay_p3_d = new TimeConst(p3,"double");
+  decay_p3_d->Print();
+  
   
   //----- this part is to see if signals with low 
   //----- cut on PE are negative after bl subtraction

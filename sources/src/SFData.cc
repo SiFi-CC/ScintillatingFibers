@@ -373,7 +373,7 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
  
   TString hname = Form("sig_ch%i_pos_%.1f",ch,position);
   TString htitle = hname +" "+cut;
-  fSignalProfile = new TProfile(hname,htitle,number*ipoints,0,ipoints,"");
+  fSignalProfile = new TProfile(hname,htitle,ipoints,0,ipoints,"");
     
   int nentries = tree->GetEntries();
   double baseline = 0.;
