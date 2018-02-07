@@ -1,9 +1,9 @@
 var indexSectionsWithContent =
 {
-  0: "fs~",
-  1: "s",
-  2: "s~",
-  3: "f"
+  0: "dfgopst~",
+  1: "st",
+  2: "dgpst~",
+  3: "dfost"
 };
 
 var indexSectionNames =

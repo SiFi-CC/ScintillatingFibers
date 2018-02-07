@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7esfdata',['~SFData',['../classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b',1,'SFData']]]
+  ['getfitdata',['GetFitData',['../classTimeConst.html#a88835527e40e1158b3ff5804e3b532a8',1,'TimeConst']]]
 ];
