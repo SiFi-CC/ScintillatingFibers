@@ -27,6 +27,11 @@
 
 using namespace std;
 
+/// Class to access experiemntal data. It is possible to get single
+/// histograms and vectors of histograms of requested type. Single
+/// signals and averaged signals are also possible to access. Cutting
+/// functionality for all has been implemented.
+
 class SFData : public TObject{
   
 private:
@@ -60,7 +65,7 @@ private:
   static double fPositions_7[1];
   static double fPositions_8[1];
   static double fPositions_9[2];
-  
+    
   TString GetSelection(int ch, TString type);
   int     GetIndex(double position);
   bool    InterpretCut(DDSignal *sig, TString cut);
@@ -78,10 +83,15 @@ public:
   void           Reset(void);
   void           Print(void);
   
+  /// Returns number of measurements in the series
   int      GetNpoints(void){ return fNpoints; };
+  ///Returns fiber type
   TString  GetFiber(void){ return fFiber; };
+  ///Returns description of the series
   TString  GetDescription(void){ return fDesc; };
+  ///Returns an array containing names of all measurements in this series
   TString* GetNames(void) { return fNames; };
+  ///Returns an array containing source positions for all measurements in this series
   double*  GetPositions(void) { return fPositions; };
   
   ClassDef(SFData,1)
