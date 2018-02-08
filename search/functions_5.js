@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['_7esfdata',['~SFData',['../classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b',1,'SFData']]],
-  ['_7etimeconst',['~TimeConst',['../classTimeConst.html#ad5b9c7df62a443f3481a94a9a3a64481',1,'TimeConst']]]
+  ['setdetails',['SetDetails',['../classSFData.html#a5a0391f6c96e47526434525127e66a86',1,'SFData::SetDetails()'],['../classTimeConst.html#a3696df2f8ea22d251fd39ae9be87a502',1,'TimeConst::SetDetails()']]],
+  ['sfdata',['SFData',['../classSFData.html#a3041bb4688a8ce3a72f86bdcc7fbab53',1,'SFData::SFData()'],['../classSFData.html#a3cd1ee43593533cb8ec86909842b1007',1,'SFData::SFData(int seriesNo)']]]
 ];
