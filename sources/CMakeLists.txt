@@ -6,7 +6,6 @@ project(ScintillatingFibers)
 #--- Finding ROOT installation
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
-
 #---Locating the ROOT package and defining a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS RIO)
 
@@ -38,7 +37,7 @@ find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/../sources/Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/../build/Doxyfile)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
     message("Doxygen build started")

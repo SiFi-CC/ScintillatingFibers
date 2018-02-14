@@ -58,8 +58,8 @@ SFData::SFData(){
  cout << "You are using the default constructor. Set the series number." <<endl;
 }
 //------------------------------------------------------------------
-///Standard constructor (recommended). seriesNo is number of 
-///experimental series to analyze.
+///Standard constructor (recommended).
+///\param seriesNo is number of experimental series to analyze.
 SFData::SFData(int seriesNo){
   SetDetails(seriesNo);
 }
@@ -136,6 +136,11 @@ bool SFData::SetDetails(int seriesNo){
   return true;
 }
 //------------------------------------------------------------------
+/// Returns proper selection for Draw() method of TTree. It sets binning, 
+/// ranges and unique names for created histograms.
+/// \param ch - channel number
+/// \param type - type of spectrum to be drawn. Possible options are:
+/// fAmp, fCharge, fPE, fT0 and fTOT
 TString SFData::GetSelection(int ch, TString type){
  
   TString selection;
@@ -160,6 +165,11 @@ TString SFData::GetSelection(int ch, TString type){
   return selection;
 }
 //------------------------------------------------------------------
+/// Returns index in the fNames and fPositions arrays for the 
+/// measurement of requested source position in mm. 
+/// If measurements in analyzed series don't have unique positions 
+/// a number of measurement should be passed. Measurements counting 
+/// starts at 1.
 int SFData::GetIndex(double position){
    
   int index = -1;
@@ -184,6 +194,15 @@ int SFData::GetIndex(double position){
   return index;
 }
 //------------------------------------------------------------------
+/// Parses given cut and checks if signal fulfills conditions specified by it. 
+/// \param sig - currently analyzed signal, as read from the tree
+/// \param cut - a logic cut to select specific signals.
+/// The following syntax of the cut is acceptable: 
+/// - inequality signs: '<' and '>'
+/// - single expressions, e.g. "fAmp>50", "ch_0.fPE>10", "fT0<100"
+/// - double expressions with &&, e.g. "fPE>10 && fPE<100", "ch_0.fT0>0 && ch_0.fT0<500" 
+///
+/// If empty cut is passed returns true.
 bool SFData::InterpretCut(DDSignal *sig, TString cut){
  
   bool result = true;
@@ -311,6 +330,15 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
   return result;
 }
 //------------------------------------------------------------------
+/// Returns single spectrum of requested type.
+/// \param ch - chennel number
+/// \param type - type of the spectrum. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT
+/// \param cut - logic cut for drawn events (syntax like for Draw() method of TTree)
+/// \param position - position of the source in mm. If analyzed series doesn't have
+/// unique positions a number of measurement should be passed here. Numbering starts at 1. 
+///
+/// It is possible to have spectrum with cut or raw spectrum as recorded. In the latter case pass
+/// empty string as cut.
 TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
 
   int index = GetIndex(position);
@@ -331,6 +359,12 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
   return fSpectrum; 
 }
 //------------------------------------------------------------------
+/// Returns a vector with all spectra of requested type.
+/// \param ch - channel number
+/// \param type - type of spectra (fAmp, fCharge, fPE, fT0, fTOT)
+/// \param cut - logic cut for drawn events (syntax like for Draw() method of TTree)
+///
+/// Like with sigle spectrum, it is possible to have cut and raw spectra.
 vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
  
   TString fname;
@@ -356,6 +390,15 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
   return fSpectra;
 }
 //------------------------------------------------------------------
+/// Returns averaged signal.
+/// \param ch - channel number 
+/// \param position - position of the source in mm. If position is not unique pass measurement number here.
+/// Measurement numbering starts at 1.
+/// \param cut - logic cut to choose signals. Syntax of this cut is explained in InterpretCut() function
+/// \param number - number of signals to be averaged
+/// \param bl - flag for base line subtraction. If true - base line will be subtracted, if false - it won't
+///
+/// If no cut is required pass an empty string.
 TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int number, bool bl){
   
   int index = GetIndex(position);
@@ -417,6 +460,14 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   return fSignalProfile;
 }
 //------------------------------------------------------------------
+/// Returns single signal.
+/// \param ch - channel number
+/// \param position - source position in mm. If there's no unique position pass a number of measurement here.
+/// \param cut - logic cut to choose signals. Syntax of this cut is explained in InterpretCut() function
+/// \param number - requested number of the signal to be drawn
+/// \param bl - flag for base line subtraction. See GetSignalAverage()
+///
+/// If no cut is needed an empty string should be passed.
 TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool bl){
  
   int index = GetIndex(position);
@@ -473,6 +524,7 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   return fSignal;
 }
 //------------------------------------------------------------------
+///Resets all members of the class to their default values
 void SFData::Reset(void){
  fSeriesNo      = 0;
  fNpoints       = 0;
@@ -485,6 +537,7 @@ void SFData::Reset(void){
  fSignal        = NULL;
 }
 //------------------------------------------------------------------
+///Prints details of currently analyzed experimental series
 void SFData::Print(void){
  cout << "\n\n------------------------------------------------" << endl;
  cout << "This is Print() for SFData class object" << endl;
