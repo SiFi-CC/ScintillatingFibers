@@ -27,7 +27,8 @@ private:
 
   Int_t tmax; ///< Time of maximal signal amplitude
   Int_t tsplit; ///< Time, where the slow decay process becomes dominant
-  Double_t* fitresults; ///< Array containing the determined signal 
+  Double_t* fitresults; ///< Array containing the determined fit data
+  Double_t* fitresultserror; ///< Array containing the determined fit data uncertainties 
   
   
 
@@ -44,12 +45,13 @@ private:
   
 public:
   TimeConst();
-  TimeConst(TProfile* Signal, std::string Option);
+  TimeConst(TProfile* Signal, std::string Option, int start, double fraction);
   ~TimeConst();
   
-  void SetDetails(TProfile* Signal,std::string Option);
+  void SetDetails(TProfile* Signal,std::string Option, int start, double fraction);
   TCanvas* DrawFittedSignal(std::string name);
   Double_t* GetFitData();
+  Double_t* GetFitDataError();
   void Print(); 
     
   ClassDef(TimeConst,1)
