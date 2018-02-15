@@ -8,4 +8,5 @@
 #pragma link C++ class BGFit+;
 #pragma link C++ class TFit+;
 #pragma link C++ class TimeConst+;
+#pragma link C++ class SFAttenuation+;
 #endif
