@@ -372,14 +372,15 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
   TTree *tree;
   TString selection;
   TString hname, htitle;
+  bool empty = fSpectra.empty();
   
   for(int i=0; i<fNpoints; i++){
    fname = string(gPath)+fNames[i]+"/results.root";
    file = new TFile(fname,"READ");
-   TTree *tree = (TTree*)file->Get("tree_ft");
+   tree = (TTree*)file->Get("tree_ft");
    selection = GetSelection(ch,type);
    tree->Draw(selection,cut);
-   fSpectra.push_back(new TH1D());
+   if(empty) fSpectra.push_back(new TH1D());
    fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
    hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
    htitle = hname+" "+cut;
@@ -388,6 +389,38 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
   }
   
   return fSpectra;
+}
+//------------------------------------------------------------------
+///Returns a vector of requested ratio histograms for all measurements in this series.
+///\param selection - selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". 
+///Redirection to specific histogram should not be entered here, it is done inside the function.
+///\param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
+///all events will be drawn.
+vector <TH1D*> SFData::GetRatios(TString selection, TString cut){
+  
+  TString fname;
+  TFile *file;
+  TTree *tree;
+  TString selectAndDraw;
+  TString hname, htitle;
+  bool empty = fRatios.empty();
+  
+  for(int i=0; i<fNpoints; i++){
+   fname = string(gPath)+fNames[i]+"/results.root";
+   file = new TFile(fname,"READ");
+   tree = (TTree*)file->Get("tree_ft");
+   gUnique = gRandom->Uniform(0,1);
+   selectAndDraw = selection+Form(">>htemp%.7f(500,-5,5)",gUnique);
+   tree->Draw(selectAndDraw,cut);
+   if(empty) fRatios.push_back(new TH1D());
+   fRatios[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+   hname = Form("ratio_pos%.1f",fPositions[i]);
+   htitle = selection+" "+cut;
+   fRatios[i]->SetName(hname);
+   fRatios[i]->SetTitle(htitle);
+  }
+  
+  return fRatios;
 }
 //------------------------------------------------------------------
 /// Returns averaged signal.

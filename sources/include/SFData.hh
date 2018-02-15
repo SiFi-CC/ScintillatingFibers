@@ -45,6 +45,7 @@ private:
   TProfile       *fSignalProfile;	///< Average of n requested signals
   TH1D           *fSignal;		///< Histogram of single chosen signal
   vector <TH1D*> fSpectra;		///< Vector with all spectra from this series (requested type e.g. fPE)
+  vector <TH1D*> fRatios;		///< Vector of ratio histograms for all measurements (requested type)
   
   static TString fNames_1[9];
   static TString fNames_2[9];
@@ -78,6 +79,7 @@ public:
   bool           SetDetails(int seriesNo);
   TH1D*          GetSpectrum(int ch, TString type, TString cut, double position);
   vector <TH1D*> GetSpectra(int ch, TString type, TString cut);
+  vector <TH1D*> GetRatios(TString selection, TString cut);
   TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
   TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  
   void           Reset(void);
