@@ -1,7 +1,7 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *              SFData.cc                *
+// *           SFAttenuation.cc            *
 // *          Katarzyna Rusiecka           *
 // * katarzyna.rusiecka@doctoral.uj.edu.pl *
 // *          Created in 2018              *
@@ -15,7 +15,7 @@ ClassImp(SFAttenuation);
 //------------------------------------------------------------------
 ///Default constructor.
 SFAttenuation::SFAttenuation(){
-  cout << "#### Warning in Attenuation constructor!" << endl;
+  cout << "#### Warning in SFAttenuation constructor!" << endl;
   cout << "You are using default constructor!" << endl;
   fSeriesNo = -1;
   fData = NULL;

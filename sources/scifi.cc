@@ -11,6 +11,7 @@
 #include "SFData.hh"
 #include "TimeConst.hh"
 #include "TFit.hh"
+#include "SFPeakFinder.hh"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 
@@ -23,20 +24,27 @@ int main(){
   
   int n = data->GetNpoints();
   
-  //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
+  TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
 
-  vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
-  vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
-  vector <TH1D*> rr1 = data->GetRatios("log(ch_0.fPE/ch_1.fPE)","ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0<590 && ch_1.fPE>0");
-  
+  SFPeakFinder *peakfin = new SFPeakFinder(h1,"511");
+  peakfin->Print();
+  TH1D *peak = peakfin->GetPeak();
   f->cd();
+  h1->Write();
+  peak->Write();
   
-  for(int i=0; i<n; i++){
+  //vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
+  //vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
+  //vector <TH1D*> rr1 = data->GetRatios("log(ch_0.fPE/ch_1.fPE)","ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0<590 && ch_1.fPE>0");
+  
+  //f->cd();
+  
+  /*for(int i=0; i<n; i++){
    hh1[i]->Write();
    hh2[i]->Write();
    rr1[i]->Write();
-  }
+  }*/
   
   //~ TFit* firstfit = new TFit(h1,h2);
   //~ 
