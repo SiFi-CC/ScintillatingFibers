@@ -50,6 +50,7 @@ bool SFPeakFinder::SetSpectrum(TH1D *spectrum, TString peakID){
   return true;
 }
 //------------------------------------------------------------------
+///Finds ranges of the analyzed peak. Ranges are returned by reference.
 bool SFPeakFinder::FindPeakRange(double &min, double &max){
  
   min = -1;
@@ -57,21 +58,35 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   double search_min,search_max;
   
   if(fPeakID=="511"){
-    search_min = 220;
-    search_max = 400;
+    search_min = 120;
+    search_max = 320;
   }
   else if(fPeakID=="1270"){
-    min = -1;
-    max = -1;
+    search_min = 400;
+    search_max = 1000;
   }
   
   int bin_min = fSpectrum->FindBin(search_min);
   int bin_max = fSpectrum->FindBin(search_max);
-  fSpectrum->GetXaxis()->SetRange(bin_min,bin_max);
-  double peak = fSpectrum->GetBinCenter(fSpectrum->GetMaximumBin());
+  int bin_delta = 0;
+  int bin_peak = 0;
+  int step = 10;
   
-  min = peak-50;
-  max = peak+50;
+  while(bin_delta<step){
+   fSpectrum->GetXaxis()->SetRange(bin_min,bin_max);
+   bin_peak = fSpectrum->GetMaximumBin();
+   bin_delta = fabs(bin_peak-bin_min);
+   cout << "bin_min = " << bin_min << "\t bin_delta = " << bin_delta <<endl;
+   bin_min+=step;
+  }
+  
+  double peak = fSpectrum->GetBinCenter(bin_peak);
+  
+  TF1 *fun = new TF1("fun","gaus",peak-30,peak+30);
+  fSpectrum->Fit(fun,"R");
+  
+  min = peak-fun->GetParameter(2);
+  max = peak+fun->GetParameter(2);
   cout << "max peak: " << peak << endl;
   
   if(max<min || fabs(min+1)<1E-8 || fabs(max+1)<1E-8){
@@ -80,10 +95,12 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
    return false;
   }
   
-  
   return true;
 }
 //------------------------------------------------------------------
+///Fits background to the analyzed spectrum and performs background subtraction. 
+///Inside this function peak position and sigma along with their errors are found. 
+///Additionally histogram fPeak is created and filled.
 bool SFPeakFinder::Fit(void){
   
   //setting background-subtracted histogram
@@ -95,10 +112,11 @@ bool SFPeakFinder::Fit(void){
   //fitting background function
   double peak_min, peak_max;
   FindPeakRange(peak_min,peak_max);
-  double fit_min = peak_min-20;
-  double fit_max = peak_max+50;
+  cout << "peak min = " << peak_min << "\t peak max = " << peak_max << endl;
+  double fit_min = peak_min-10;
+  double fit_max = peak_max+70;
   BGFit *bg = new BGFit(peak_min,peak_max);
-  TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::Evaluate,fit_min,fit_max,4,"BGFit","Evaluate");
+  TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::EvaluateExpo,fit_min,fit_max,2,"BGFit","Evaluate");
   fSpectrum->Fit("bg_fun","R");
   
   //background subtraction

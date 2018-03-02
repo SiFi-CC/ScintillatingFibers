@@ -21,7 +21,9 @@ class BGFit {
  public:
 	BGFit();
 	BGFit(double low_b, double up_b);
-	double Evaluate(double *x, double *par);
+	double EvaluatePol3(double *x, double *par);
+	double EvaluatePol2(double *x, double *par);
+	double EvaluateExpo(double *x, double *par);
   
 };
 

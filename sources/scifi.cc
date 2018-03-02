@@ -19,12 +19,12 @@ int main(){
   
   TFile *f = new TFile("test.root","RECREATE");
   
-  SFData *data = new SFData(1);
+  SFData *data = new SFData(2);
   data->Print();
   
   int n = data->GetNpoints();
   
-  TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
+  TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
 
   SFPeakFinder *peakfin = new SFPeakFinder(h1,"511");
