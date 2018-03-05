@@ -17,7 +17,7 @@ ClassImp(TimeConst);
 //------------------------------------------------------------------
 ///Default constructor. If this constructor is used the signal and the fitting option needs to be set in set details 
 ///and the fitting option needs to be set in SetDetails(TProfile signal*, string Option) 
-TimeConst::TimeConst():tmax(0),tsplit(0),signal(NULL),option(0)
+TimeConst::TimeConst():tmax(0),tsplit(0),option(0)
 {
 	cout << "##### Warning in TimeConst constructor!" << endl;
 	cout << "You are using the default constructor. Determination of the timeconstants not possible without the respective spectra." <<endl;
@@ -25,130 +25,131 @@ TimeConst::TimeConst():tmax(0),tsplit(0),signal(NULL),option(0)
 
 //------------------------------------------------------------------
 ///Standard constructor (recommended). 
-///\param Signal (TProfile*) is the average signal that shall be analyzed 
+///\param series_No Series number of the measurement series that is analyzed. For the numbering see SFData. 
 ///\param Option (string) defines mode of analysis ( single or one assumes single decay mode, double or two assumes two decay modes
-TimeConst::TimeConst(TProfile* Signal, std::string Option, int start, double fraction):tmax(0),tsplit(0)
+
+TimeConst::TimeConst(int series_No, string Option):tmax(0),tsplit(0)
 {
-	SetDetails(Signal,Option,start,fraction);
+	SetDetails(series_No,Option);
 }
 
 //------------------------------------------------------------------
 ///Default deconstructor. 
 TimeConst::~TimeConst(){
-	if(fitresults!=NULL) delete fitresults;
-	if(signal!= NULL) delete signal;
 }
 
 //------------------------------------------------------------------
 ///Sets all details of the signal that is analyzed, all parameters are set and the signal is fitted.
 /// The following attributes are st within this function 
-///\param Signal (TProfile*) is the average signal that shall be analyzed 
-///\param Option (string) defines mode of analysis ( single or one assumes single decay mode, double or two assumes two decay modes)
+///\param series_No Series number of the measurement series that is analyzed. For the numbering see SFData. 
+///\param Option (string) defines mode of analysis ( single or one assumes single decay mode, double or two assumes two decay modes
 
 
-void TimeConst::SetDetails(TProfile* Signal, string Option, int start, double fraction){
-	///- the signal
-	signal=Signal;
+bool TimeConst::SetDetails(int series_No, string Option){
+	tmax=0;
+	tsplit=0;
+	NperPoint=3;
 	
 	///- fitting option
 	if(Option.find("one")!=string::npos || Option.find("single")!=string::npos) option=1;
 	if(Option.find("two")!=string::npos || Option.find("double")!=string::npos) option=2;
 	
-	///- tmax	
-	tmax = signal->GetMaximumBin();
 	
-	///- tsplit
-	if(option==2){
-		for( int i = tmax; i<signal->GetNbinsX(); i++){
-			if (signal->GetBinContent(i) < (signal->GetMaximum()/fraction)) {
-				tsplit = i;
-				break;
+	///- the signal
+	seriesNo=series_No;
+	if (seriesNo>0 && seriesNo<10) data = new SFData(seriesNo);
+	else return false;
+	
+	Npoints=data->GetNpoints();
+	signals.reserve(Npoints*NperPoint);
+	
+	for(int i=0;i<Npoints*NperPoint;i++){
+		signals[i]=data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>59.5 && ch_0.fPE<60.5",100,true);
+		signals[Npoints+i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>119.5 && ch_0.fPE<120.5",100,true);
+		signals[Npoints*2+i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>199.5 && ch_0.fPE<200.5",100,true);
+	}
+	
+
+	
+}
+
+Double_t* TimeConst::FitSingleSignal(TProfile* Signal){
+	Double_t* fitresults;
+	double lastchi=0;
+	///- tmax	
+	tmax = Signal->GetMaximumBin();
+	
+	if(option==1){
+		for(int i=0;i<5;i++){
+			singleexp= new TF1("singleexp","expo",tmax+(i+1)*10,1024);
+			Signal->Fit("singleexp","R");
+			if(lastchi==0 || fabs(1-lastchi)> fabs(1-(singleexp->GetChisquare()/singleexp->GetNDF()))){ 
+				lastchi=singleexp->GetChisquare()/singleexp->GetNDF();
+				fitresults = new Double_t[4];
+				fitresults[0]= singleexp->Eval(tmax);
+				fitresults[2]= 1/singleexp->GetParameter(1);
+				fitresults[3]= singleexp->Eval(tmax);
+				fitresults[4]= singleexp->GetParameter(1)/singleexp->GetParError(1)/singleexp->GetParError(1);
 			}
 		}
 	}
 	
-	cout << "The Maximum of the signal is placed at " << tmax << "ns." << endl;
-	if(option==2)cout << "The signal is split at the position " << tsplit << "ns." << endl;
-	///-  The fit functions
-	if(option==1)singleexp= new TF1("singleexp","expo",tmax+start,1024);
 	else if(option==2){
-		doubleexp= new TF1("doubleexp","expo(0)+expo(2)",tmax+start,1024);
-		fastexp= new TF1("fastexp","expo",tmax+start,tsplit);
-		slowexp= new TF1("slowexp","expo",tsplit,1024);
+		for(int i=0;i<5;i++){
+			for(int j=0;j<5;j++){
+				for( int k = tmax; k<Signal->GetNbinsX(); k++){
+					if (Signal->GetBinContent(k) < (Signal->GetMaximum()/(j+2))) {
+						tsplit = k;
+						break;
+					}
+				}
+				doubleexp= new TF1("doubleexp","expo(0)+expo(2)",tmax+(i+1)*10,1024);
+				fastexp= new TF1("fastexp","expo",tmax+(i+1)*10,tsplit);
+				slowexp= new TF1("slowexp","expo",tsplit,1024);
+				Signal->Fit("fastexp","R");
+				Signal->Fit("slowexp","R");
+				doubleexp->SetParameters(fastexp->GetParameter(0),fastexp->GetParameter(1),slowexp->GetParameter(0),slowexp->GetParameter(1));
+				Signal->Fit("doubleexp","R");
+				if(lastchi==0 || fabs(1-lastchi)> fabs(1-(doubleexp->GetChisquare()/doubleexp->GetNDF()))){
+					fastexp->SetParameters(doubleexp->GetParameter(0),doubleexp->GetParameter(1));
+					slowexp->SetParameters(doubleexp->GetParameter(2),doubleexp->GetParameter(3));
+					fitresults = new Double_t[8];
+					fitresults[0]= fastexp->Eval(tmax);
+					fitresults[2]= 1/doubleexp->GetParameter(1);
+					fitresults[4]= slowexp->Eval(tmax);
+					fitresults[6]= 1/doubleexp->GetParameter(3);
+					fitresults[1]= fastexp->Eval(tmax);
+					fitresults[3]= TMath::Abs(doubleexp->GetParError(1)/doubleexp->GetParameter(1)/doubleexp->GetParameter(1));
+					fitresults[5]= slowexp->Eval(tmax);
+					fitresults[7]= TMath::Abs(doubleexp->GetParError(3)/doubleexp->GetParameter(3)/doubleexp->GetParameter(3));
+				}
+			}
+		}
 	}
-	Fitting();
+	return fitresults;
 }
-
-void TimeConst::Fitting(){
-	if(option==1){
-		signal->Fit("singleexp","R");
-		fitresults = new Double_t[2];
-		fitresultserror = new Double_t[2];
-		fitresults[0]= singleexp->Eval(tmax);
-		fitresults[1]= 1/singleexp->GetParameter(1);
-		fitresultserror[0]= singleexp->Eval(tmax);
-		fitresultserror[1]= singleexp->GetParameter(1)/singleexp->GetParError(1);
+void TimeConst::FitSignals(){
+	for(int i=0;i<signals.size();i++){
+		
 	}
-	else if(option==2){
-		signal->Fit("fastexp","R");
-		signal->Fit("slowexp","R");
-		doubleexp->SetParameters(fastexp->GetParameter(0),fastexp->GetParameter(1),slowexp->GetParameter(0),slowexp->GetParameter(1));
-		signal->Fit("doubleexp","R");
-		fastexp->SetParameters(doubleexp->GetParameter(0),doubleexp->GetParameter(1));
-		slowexp->SetParameters(doubleexp->GetParameter(2),doubleexp->GetParameter(3));
-		fitresults = new Double_t[4];
-		fitresultserror = new Double_t[4];
-		fitresults[0]= fastexp->Eval(tmax);
-		fitresults[1]= 1/doubleexp->GetParameter(1);
-		fitresults[2]= slowexp->Eval(tmax);
-		fitresults[3]= 1/doubleexp->GetParameter(3);
-		fitresultserror[0]= fastexp->Eval(tmax);
-		fitresultserror[1]= doubleexp->GetParameter(1)/doubleexp->GetParError(1);
-		fitresultserror[2]= slowexp->Eval(tmax);
-		fitresultserror[3]= doubleexp->GetParameter(3)/doubleexp->GetParError(3);
-	}  
+	
 }
 ///Print method. 
 ///Prints the result of the fitting process according to the used methode 
 
-void TimeConst::Print(){
-	if(option==1){
-		cout << "Assuming a single decay constant it is determined to " << fitresults[1] << "ns." << endl;
-		cout << "The amplitude is determined to " << fitresults[0] << "mV." << endl; 
-	}
-	else if (option==2){
-		cout << "Assuming a decay  build by two decay constants" << endl; 
-		cout << "The first one is determined to " << fitresults[1] << "ns." << endl;
-		cout << "The  corresponding amplitude is determined to " << fitresults[0] << "mV." << endl; 
-		cout << "The second one is determined to " << fitresults[3] << "ns." << endl;
-		cout << "The  corresponding amplitude is determined to " << fitresults[2] << "mV." << endl; 
-	}
-	else {
-		cout << "The option was not right defined so no constants are determined." << endl; 	
-	}
-}
-///Methode that returns the results of the parameters 
-///\return Double_t*[2] or Double_t*[4] 
-
-Double_t* TimeConst::GetFitData(){
-	return fitresults;	
-}
-
-///Methode that returns the uncertainties on the results of the parameters 
-///\return Double_t*[2] or Double_t*[4] 
-
-Double_t* TimeConst::GetFitDataError(){
-	return fitresultserror;	
-}
-///Methode that draws the fitted signal including the fits 
-///\param name (string) of the canvas
-///\return TCanvas* 
-
-TCanvas* TimeConst::DrawFittedSignal(string name){
-	TCanvas* can = new TCanvas(name.c_str(),name.c_str(),1000,800);
-	signal->Draw("");
-	if (option==1) singleexp->Draw("same");	
-	else if (option==2)  doubleexp->Draw("same");
-	
-	return can;	
-}
+//~ void TimeConst::Print(){
+	//~ if(option==1){
+		//~ cout << "Assuming a single decay constant it is determined to " << fitresults[1] << "ns." << endl;
+		//~ cout << "The amplitude is determined to " << fitresults[0] << "mV." << endl; 
+	//~ }
+	//~ else if (option==2){
+		//~ cout << "Assuming a decay  build by two decay constants" << endl; 
+		//~ cout << "The first one is determined to " << fitresults[1] << "ns." << endl;
+		//~ cout << "The  corresponding amplitude is determined to " << fitresults[0] << "mV." << endl; 
+		//~ cout << "The second one is determined to " << fitresults[3] << "ns." << endl;
+		//~ cout << "The  corresponding amplitude is determined to " << fitresults[2] << "mV." << endl; 
+	//~ }
+	//~ else {
+		//~ cout << "The option was not right defined so no constants are determined." << endl; 	
+	//~ }
+//~ }

@@ -11,8 +11,7 @@
 #include "TFit.hh"
 #include "BGFit.hh"
 #include "TObjArray.h"
-#include "TFractionFitter.h"
-#include "TVirtualFitter.h"
+#include "TMinuit.h"
 using namespace std;
 
 ClassImp(TFit);
@@ -20,33 +19,20 @@ ClassImp(TFit);
 //------------------------------------------------------------------
 ///Default constructor.
 ///If this constructer is used the details need to be called with SetDetails().
-TFit::TFit():name(""),position(0),spectrum(NULL),background(NULL)
+TFit::TFit():seriesNo(0)
 {
  cout << "##### Warning in TFit constructor!" << endl;
- cout << "You are using the default constructor. No Fit possible without the respective spectra." <<endl;
+ cout << "You are using the default constructor. No Fit possible without defining the measurement spectra." <<endl;
 }
 
 //------------------------------------------------------------------
-TFit::TFit(TH1D* Spectrum, TH1D* Background)
-{
-	SetDetails(Spectrum,Background,"DefaultName",0);
+///Constructor that takes the series number of the measurement series that is analysed.
+///\param series_No Series number of the measurement series that is analysed. For numbering se SFData class.
 
-	pp511= PhotoPeak(Calipar[0],Calipar[1]);
-	pp1275= PhotoPeak(Calipar[0]/511*1275,Calipar[1]);
-	compton511 = Compton(Calipar[0],Calipar[1]);
-	compton1275= Compton(Calipar[0]/511*1275,Calipar[1]);
-	Fitresult= Fitting();
-}
-
-//------------------------------------------------------------------
-TFit::TFit(TH1D* Spectrum, TH1D* Background,TString Name,Double_t Position)
+TFit::TFit(int series_No, int fitpoints)
 {
- SetDetails(Spectrum,Background,Name,Position);
- 
- pp511 = PhotoPeak(511,50);
- pp1275= PhotoPeak(1275,50);
- compton511 = Compton(511,50);
- compton1275= Compton(1275,50);
+	SetDetails(series_No,fitpoints);
+	FitSpectra();
 }
 
 //------------------------------------------------------------------
@@ -55,18 +41,61 @@ TFit::~TFit(){
 }
 
 //------------------------------------------------------------------
-void TFit::SetDetails(TH1D* Spectrum, TH1D* Background,TString Name,Double_t Position){
+void TFit::Reset(){
+	if(seriesNo>0 && seriesNo<5){
+		seriesNo=0;
+		Nspectra=0;
+		spectra.clear();
+		pp511.clear();
+		pp1275.clear();
+		compton511.clear();
+		compton1275.clear();
+		fittedtemplates.clear();
+		templateweights.clear();
+		if(background!=NULL) delete background;
+		if(data!=NULL) delete data;
+		if(bgdata!=NULL) delete bgdata;
+	}
+}
+
+//-----------------------------------------------------------------
+///Function that is called by the Constructors or by the user after the default constructor. Sets all needed parameters.
+///\param series_No Series number of the measurement series that is analysed. For numbering se SFData class.
+
+bool TFit::SetDetails(int series_No, int fitpoints){
+	Reset();
+	seriesNo= series_No;
+	fpt= fitpoints;
+	if(seriesNo<1 || seriesNo >4){
+		cout << "this Measurement series are not suited to be analyse with the Template fit" << endl;
+		return false;
+	}
+	data = new SFData(seriesNo);
+	Nspectra=data->GetNpoints();
+	spectra=data->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0< 590");
 	
-	spectrum = Spectrum;
-	background= Background;
-	name = Name;
-	position = Position;
+	Nbins= spectra[0]->GetNbinsX();
+	
+	if(seriesNo == 1 || seriesNo==3) bgdata= new SFData(7);
+	else if(seriesNo == 2 || seriesNo==4) bgdata= new SFData(8);
+	background = bgdata->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
+	
+	pp511.reserve(Nspectra);
+	pp1275.reserve(Nspectra);
+	compton511.reserve(Nspectra);
+	compton1275.reserve(Nspectra);
+	
+	fittedtemplates.reserve(Nspectra);
+	templateweights.reserve(Nspectra);
+	
+	Chi2Map.reserve(Nspectra);
 	
 	anglegenerator = new TRandom3();
-	Nbins= spectrum->GetNbinsX();
 	resolutiongenerator = new TRandom3();
 	comptongenerator =  new TRandom3();
-	Calipar= Calibration();
+	cbggenerator =  new TRandom3();
+	
+	return true;
 	
 }
 //------------------------------------------------------------------
@@ -84,21 +113,29 @@ Double_t TFit::KNFormular(Double_t PhotoPeakEnergy, Double_t Angle){
 }
 //------------------------------------------------------------------
 
-TH1D* TFit::Compton(Double_t PhotoPeakEnergy, Double_t Resolution){
-	cout << "Creating the compton spectrum histogram according to an energy of " << PhotoPeakEnergy << " and a resolution of " << Resolution << endl;
-	TString histname= Form("cs_%f_%f",PhotoPeakEnergy,Resolution);
-	TH1D* cs = new TH1D(histname,histname,Nbins,start,end);
+TH1D* TFit::Compton(TH1D* spec,Double_t PhotoPeakEnergy, Double_t califac, Double_t Resolution){
+	//~ cout << "Creating the compton spectrum histogram according to an energy of " << PhotoPeakEnergy << " and a resolution of " << Resolution << endl;
+	TString histname= Form("cs_%f_%f",PhotoPeakEnergy/511*califac,Resolution);
+	TH1D* cs = new TH1D(histname,histname,Nbins,spec->GetBinCenter(1)-spec->GetBinWidth(1)/2,spec->GetBinCenter(spec->GetNbinsX())+spec->GetBinWidth(spec->GetNbinsX())/2);
 	
 
 	double angle;
 	double prob;
 	double energy_e;
-	for( int i=0; i<50000;i++){
+	double energy_g;
+	for( int i=0; i<spec->GetEntries();i++){
 		angle= anglegenerator->Uniform(0,180);
 		prob = KNFormular(PhotoPeakEnergy,angle);
 		if(comptongenerator->Uniform(0,1)<prob){
 			energy_e= PhotoPeakEnergy*(1-1/(1+((PhotoPeakEnergy/511)*(1-TMath::Cos(angle*TMath::DegToRad())))));
-			cs->Fill(resolutiongenerator->Gaus(energy_e, Resolution));
+			energy_g= PhotoPeakEnergy-energy_e;
+			angle= anglegenerator->Uniform(0,180);
+			prob = KNFormular(energy_g,angle);
+			if(comptongenerator->Uniform(0,1)<prob) energy_e+= energy_g*(1-1/(1+((energy_g/511)*(1-TMath::Cos(angle*TMath::DegToRad())))));
+			if(energy_e > 25){
+				energy_e=resolutiongenerator->Gaus(energy_e, Resolution)/511*califac;
+				cs->Fill(energy_e);
+			}
 		}
 	}
 	
@@ -106,22 +143,37 @@ TH1D* TFit::Compton(Double_t PhotoPeakEnergy, Double_t Resolution){
 }
 //------------------------------------------------------------------
 
-TH1D* TFit::PhotoPeak(Double_t PhotoPeakEnergy, Double_t Resolution){
-	cout << "Creating the photopeak histogram with an energy of " << PhotoPeakEnergy << " and a resolution of " << Resolution << endl;
+TH1D* TFit::PhotoPeak(TH1D* spec, Double_t PhotoPeakEnergy, Double_t Resolution){
+	//~ cout << "Creating the photopeak histogram with an energy of " << PhotoPeakEnergy << " and a resolution of " << Resolution << endl;
 	TString histname= Form("%f_%f",PhotoPeakEnergy,Resolution);
-	TH1D* pp = new TH1D(histname,histname,Nbins,start,end);
+	TH1D* pp = new TH1D(histname,histname,Nbins,spec->GetBinCenter(1)-spec->GetBinWidth(1)/2,spec->GetBinCenter(spec->GetNbinsX())+spec->GetBinWidth(spec->GetNbinsX())/2);
 	
-	for( int i=0; i<50000;i++){
+	for( int i=0; i<spec->GetEntries();i++){
 		double temp = resolutiongenerator->Gaus(PhotoPeakEnergy,Resolution);
 		pp->Fill(temp);
 	}
 	
 	return pp;
 }
+//------------------------------------------------------------------
+
+TH1D* TFit::ColiBg(TH1D* spec, Double_t Resolution){
+	//~ cout << "Creating the photopeak histogram with an energy of " << PhotoPeakEnergy << " and a resolution of " << Resolution << endl;
+	TString histname= Form("ColiBg_%f",Resolution);
+	TH1D* cbg = new TH1D(histname,histname,Nbins,spec->GetBinCenter(1)-spec->GetBinWidth(1)/2,spec->GetBinCenter(spec->GetNbinsX())+spec->GetBinWidth(spec->GetNbinsX())/2);
+	
+	for( int i=0; i<spec->GetEntries();i++){
+		double temp= spec->GetMaximum() * cbggenerator->Exp(100);
+		temp = resolutiongenerator->Gaus(temp,Resolution);
+		if (temp > 10) cbg->Fill(temp);
+	}
+	
+	return cbg;
+}
 
 //------------------------------------------------------------------
 
-vector <Double_t> TFit::Calibration(){
+vector <Double_t> TFit::Calibration(TH1D* spectrum){
 	TH1D* spec = (TH1D*)spectrum->Clone("Calspec");
 	TH1D* bgs= new TH1D("bgs","bgs",spec->GetNbinsX(),spec->GetBinCenter(1),spec->GetBinCenter(spectrum->GetNbinsX()));
   
@@ -161,133 +213,161 @@ vector <Double_t> TFit::Calibration(){
 }
 
 //------------------------------------------------------------------
-vector<Double_t> TFit::Fitting(){
+THStack* TFit::FitSingleSpectrum(int position, double* &weights){
+	THStack* thisstack=new THStack(Form("%s_stack",spectra[position]->GetName()),"");
 	
-	TObjArray *mc = new TObjArray(5);        // MC histograms are put in this array
-	mc->Add(background);
-	mc->Add(pp511);
-	mc->Add(compton511);
-	mc->Add(pp1275);
-	mc->Add(compton1275);
-	TFractionFitter* finalfit = new TFractionFitter(spectrum, mc); // initialise
-	finalfit->Constrain(0,0.1,5.0);               // constrain fraction 1 to be between 0 and 1
-	finalfit->Constrain(1,0.1,5.0);               // constrain fraction 1 to be between 0 and 1
-	finalfit->Constrain(2,0.1,10.0);               // constrain fraction 1 to be between 0 and 1
-	finalfit->Constrain(3,0.01,10.0);               // constrain fraction 1 to be between 0 and 1
-	finalfit->Constrain(4,0.01,10.0);               // constrain fraction 1 to be between 0 and 1
-	finalfit->SetRangeX(250,800);  
 	
-	Int_t status = finalfit->Fit();               // perform the fit
-	std::cout << "fit status: " << status << std::endl;	
-	vector <Double_t> temp(5);
-	vector <Double_t> temperr(5);
-	if(status==0){
-		for(int i=0;i<5;i++){
-			finalfit->GetResult(i,temp[i],temperr[i]);
-		}
-	}
-	else{
-		for(int i=0;i<5;i++){
-			temp[i]=1;
-		}
-	}
-	return temp;
-}
+	vector<Double_t> cali = Calibration(spectra[position]);
+	cur_spec = (TH1D*)spectra[position]->Clone();
 
-//------------------------------------------------------------------
-
-TH1D* TFit::GetSpectrum(){
-	if(spectrum!=NULL) return spectrum;
-	else{
-		cout << "The spectrum is not properly defined" << endl;
-		return NULL;
-	}
-}
-
-//------------------------------------------------------------------
-
-TH1D* TFit::GetFittedBackground(){
-	if(background!=NULL){
-		background->Scale(Fitresult[0]);
-		return background;
-	}
-	else{
-		cout << "The background is not properly defined" << endl;
-		return NULL;
-	}
-}
-
-//------------------------------------------------------------------
-
-TH1D* TFit::GetFittedPhotoPeak(Double_t PhotoPeakEnergy){
-	if(PhotoPeakEnergy == 511.){
-		if(pp511!=NULL){
-			pp511->Scale(Fitresult[1]);
-			return pp511;
-		}
-		else{
-			cout << "The photopeak at 511 keV is not properly defined" << endl;
-			return NULL;
-		}
-	}
-	if(PhotoPeakEnergy == 1275.){
-		if(pp1275!=NULL){
-			pp1275->Scale(Fitresult[3]);
-			return pp1275;
-		}
-		else{
-			cout << "The photopeak at 1275 keV is not properly defined" << endl;
-			return NULL;
-		}
-	}
-}
-
-//------------------------------------------------------------------
-
-TH1D* TFit::GetFittedCompton(Double_t PhotoPeakEnergy){
-	if(PhotoPeakEnergy == 511.){
-		if(compton511!=NULL){
-			compton511->Scale(Fitresult[2]);
-			return compton511;
-		}
-		else{
-			cout << "The compton spectrum originating from 511 keV is not properly defined" << endl;
-			return NULL;
-		}
-	}
-	if(PhotoPeakEnergy == 1275.){
-		if(compton1275!=NULL){
-			compton1275->Scale(Fitresult[4]);
-			return compton1275;
-		}
-		else{
-			cout << "The compton spectrum originating from 1275 keV is not properly defined" << endl;
-			return NULL;
-		}
-	}
-}
-
-
-//------------------------------------------------------------------
-
-vector <TH1D*> TFit::GetFittedSpectra(){
-	bool error = false;
-	vector <TH1D*> temp(6);
-	temp[0]=GetSpectrum();
-	temp[1]=GetFittedBackground();
-	temp[2]=GetFittedPhotoPeak(511);
-	temp[3]=GetFittedCompton(511);
-	temp[4]=GetFittedPhotoPeak(1275);
-	temp[5]=GetFittedCompton(1275);
+	TH2D* cur_Chi2Map = new TH2D(Form("%s_Chi2Map",spectra[position]->GetName()),"Chi2Map;Position;Resolution",fpt,cali[0]-fpt,cali[0]+fpt,fpt,cali[1]-(fpt/2*0.5),cali[1]+(fpt/2*0.5));
 	
-	for(int i=0; i< temp.size();i++){
-		if (temp[i]==NULL) error=true;
-	}
 	
-	if(!error) 	return temp;
-	else{
-		cout << "ATTENTION FROM THE FIT" << endl;
-		return temp;
-	} 
+	TMinuit *ptMinuit = new TMinuit(5);  //initialize TMinuit with a maximum of 5 params
+	ptMinuit->SetPrintLevel();
+	// set the user function that calculates chi_square (the value to minimize)
+	ptMinuit->SetFCN(calc_chi_square);
+
+	Double_t arglist[10];
+	Int_t ierflg = 0;
+
+	arglist[0] = 1;
+	ptMinuit->mnexcm("SET ERR", arglist ,1,ierflg);
+
+	// Set starting values and step sizes for parameters
+	static Double_t vstart[5] = {0.4, 0.1 , 0.01 , 1, 3};
+	static Double_t step[5] = {0.001 , 0.001 , 0.001 , 0.001, 0.001};
+	ptMinuit->mnparm(0, "w_bg", vstart[0], step[0], 0,10,ierflg);
+	ptMinuit->mnparm(1, "w_p511", vstart[1], step[1], 0,10,ierflg);
+	ptMinuit->mnparm(2, "w_p1275", vstart[2], step[2], 0,10,ierflg);
+	ptMinuit->mnparm(3, "w_c511", vstart[3], step[3], 0,10,ierflg);
+	ptMinuit->mnparm(4, "w_c1275", vstart[4], step[4], 0,10,ierflg);
+	//~ ptMinuit->mnparm(5, "w_cbg", vstart[5], step[5], 0,10,ierflg);
+
+	// Now ready for minimization step
+	arglist[0] = 1000;
+	arglist[1] = 1.;
+	Double_t min_chi= 1e9;
+	Double_t amin,edm,errdef;
+	Int_t nvpar,nparx,icstat;
+		
+	double fParamVal[5];
+	double fParamErr[5];
+	
+	for(int i=0;i<fpt;i++){
+		for(int j=0;j<fpt;j++){
+			cur_bg= (TH1D*)background->Clone();
+			//~ cur_cbg= ColiBg(spectra[position],cali[1]+(-fpt/2+j)*0.5);
+			cur_pp511= PhotoPeak(spectra[position],cali[0]+(-fpt/2+i)*2,cali[1]+(-fpt/2+j)*0.5);
+			cur_pp1275= PhotoPeak(spectra[position],(cali[0]+(-fpt/2+i)*2)/511*1275,cali[1]+(-fpt/2+j)*0.5);
+			cur_c511= Compton(spectra[position],511,cali[0]+(-fpt/2+i)*2,cali[1]+(-fpt/2+j)*0.5);
+			cur_c1275= Compton(spectra[position],1275,(cali[0]+(-fpt/2+i)*2),cali[1]+(-fpt/2+j)*0.5);
+			ptMinuit->mnexcm("MIGRAD", arglist ,2,ierflg);
+			ptMinuit->mnstat(amin,edm,errdef,nvpar,nparx,icstat);
+			cout << "The Chi2 for " << cali[0]+(-fpt/2+i)*2 << " , " << cali[1]+(-fpt/2+j)*0.5<< " is " << amin << endl;
+			cur_Chi2Map->Fill(cali[0]+(-fpt/2+i)*2,cali[1]+(-fpt/2+j)*0.5,amin);
+			if(amin<min_chi && ierflg==0){
+					
+				pp511[position]= (TH1D*)cur_pp511->Clone();
+				pp1275[position]= (TH1D*)cur_pp1275->Clone();
+				compton511[position]= (TH1D*)cur_c511->Clone();
+				compton1275[position]= (TH1D*)cur_c1275->Clone();
+				
+				ptMinuit->GetParameter(0,fParamVal[0],fParamErr[0]);
+				ptMinuit->GetParameter(1,fParamVal[1],fParamErr[1]);
+				ptMinuit->GetParameter(2,fParamVal[2],fParamErr[2]);
+				ptMinuit->GetParameter(3,fParamVal[3],fParamErr[3]);
+				ptMinuit->GetParameter(4,fParamVal[4],fParamErr[4]);
+				//~ ptMinuit->GetParameter(5,fParamVal[5],fParamErr[5]);
+				
+			}
+		}
+	}
+	Chi2Map.push_back(cur_Chi2Map);
+
+	
+	cur_bg->Scale(fParamVal[0]);
+	cur_bg->SetLineColor(1);
+	cur_bg->SetMarkerColor(1);
+	//~ cur_cbg->Scale(fParamVal[5]);
+	//~ cur_cbg->SetLineColor(6);
+	//~ cur_cbg->SetMarkerColor(6);
+	pp511[position]->Scale(fParamVal[1]);
+	pp511[position]->SetLineColor(2);
+	pp511[position]->SetMarkerColor(2);
+	pp1275[position]->Scale(fParamVal[2]);
+	pp1275[position]->SetLineColor(3);
+	pp1275[position]->SetMarkerColor(3);
+	compton511[position]->Scale(fParamVal[3]);
+	compton511[position]->SetLineColor(4);
+	compton511[position]->SetMarkerColor(4);
+	compton1275[position]->Scale(fParamVal[4]);
+	compton1275[position]->SetLineColor(5);
+	compton1275[position]->SetMarkerColor(5);
+		
+
+	thisstack->Add(cur_bg);
+	thisstack->Add(cur_cbg);
+	thisstack->Add(pp511[position]);
+	thisstack->Add(pp1275[position]);
+	thisstack->Add(compton511[position]);
+	thisstack->Add(compton1275[position]);
+	weights=fParamVal;
+	return thisstack;
 }
- 
+
+//------------------------------------------------------------------
+void TFit::FitSpectra(){
+	
+	THStack* test =FitSingleSpectrum(0,templateweights[0]);
+	test->Print();
+	fittedtemplates.push_back(test);
+	
+}
+
+//------------------------------------------------------------------
+
+vector<TH1D*> TFit::GetSpectra(){
+	if(seriesNo<1 && seriesNo>5) cout << "The spectrum is not properly defined" << endl;
+	return spectra;
+}
+
+//------------------------------------------------------------------
+
+vector<THStack*> TFit::GetFittedTemplates(){
+	return fittedtemplates;
+}
+//------------------------------------------------------------------
+
+vector<TH2D*> TFit::GetChi2Map(){
+	return Chi2Map;
+}
+
+//------------------------------------------------------------------
+
+TH1D* TFit::GetBackground(){
+	if(seriesNo<1 && seriesNo>5) cout << "The background is not properly defined" << endl;
+	return background;
+}
+
+//------------------------------------------------------------------
+
+Double_t Templatefit_function(int bin,Double_t *par)
+{
+ double value= par[0]*cur_bg->GetBinContent(bin)+par[1]*cur_pp511->GetBinContent(bin)+par[2]*cur_pp1275->GetBinContent(bin)+par[3]*cur_c511->GetBinContent(bin)+par[4]*cur_c1275->GetBinContent(bin);//+par[5]*cur_cbg->GetBinContent(bin);
+ return value;
+}
+
+void calc_chi_square(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+{
+  //calculate chisquare
+  double chisq = 0;
+  for (int i=0;i<Nbins; i++) {
+    // chi square is the quadratic sum of the distance from the point to the function weighted by its error
+    double delta  = 0;
+    if(cur_spec->GetBinContent(i)>0) delta= (cur_spec->GetBinContent(i)-Templatefit_function(i,par))/cur_spec->GetBinError(i);
+    chisq += delta*delta;
+  }
+  f = chisq;
+  return;
+}

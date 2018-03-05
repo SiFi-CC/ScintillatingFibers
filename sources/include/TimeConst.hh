@@ -11,6 +11,7 @@
 
 #ifndef __TimeConst_H_
 #define __TimeConst_H_ 1
+#include "SFData.hh"
 #include "TObject.h"
 #include "TProfile.h"
 #include "TF1.h"
@@ -25,14 +26,16 @@ class TimeConst : public TObject{
   
 private:
 
+  Int_t seriesNo; ///< Series number of the measearument series that is analysed 
+  SFData* data; ///< Data of the measurement series 
+  Int_t Npoints; ///< Number of Points in measurement series
+  Int_t NperPoint; ///< Number of Tprofils that are analysed per Point in the measurement series
+
   Int_t tmax; ///< Time of maximal signal amplitude
   Int_t tsplit; ///< Time, where the slow decay process becomes dominant
-  Double_t* fitresults; ///< Array containing the determined fit data
-  Double_t* fitresultserror; ///< Array containing the determined fit data uncertainties 
-  
-  
+  std::vector<Double_t*> fitresults; ///< Array containing the determined fit data
 
-  TProfile* signal; ///< Averraged signal that is analysed
+  std::vector<TProfile*> signals; ///< Averraged signals that are analysed
   
   int option; ///< option of different fitting modes
   
@@ -41,17 +44,21 @@ private:
   TF1* fastexp;///< function for the assumption of a double decay mode
   TF1* slowexp;///< function for the assumption of a double decay mode
   
-  void Fitting();
+  Double_t* FitSingleSignal(TProfile* Signal);
+  void FitSignals();
+  
+  void Reset();
   
 public:
   TimeConst();
-  TimeConst(TProfile* Signal, std::string Option, int start, double fraction);
+  //~ TimeConst(TProfile* Signal, std::string Option, int start, double fraction);
+  TimeConst(int series_No, std::string Option);
   ~TimeConst();
   
-  void SetDetails(TProfile* Signal,std::string Option, int start, double fraction);
-  TCanvas* DrawFittedSignal(std::string name);
-  Double_t* GetFitData();
-  Double_t* GetFitDataError();
+  bool SetDetails(int series_No, std::string Option );
+  std::vector <TProfile*> GetSignals();
+  std::vector <Double_t*> GetFitResults();
+  std::vector <Double_t*> GetAveragedSignals();
   void Print(); 
     
   ClassDef(TimeConst,1)

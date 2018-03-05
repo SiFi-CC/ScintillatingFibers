@@ -11,10 +11,13 @@
 
 #ifndef __TFit_H_
 #define __TFit_H_ 1
+#include "SFData.hh"
 #include "TObject.h"
 #include "TCanvas.h"
 #include "TString.h"
 #include "TH1D.h"
+#include "TH2D.h"
+#include "THStack.h"
 #include "TF1.h"
 #include "TROOT.h"
 #include "TRandom3.h"
@@ -23,54 +26,80 @@
 #include <stdlib.h>
 #include <vector>
 
+
+static TH1D* cur_spec;
+
+static TH1D* cur_bg;
+static TH1D* cur_cbg;
+static TH1D* cur_pp511;
+static TH1D* cur_pp1275;
+static TH1D* cur_c511;
+static TH1D* cur_c1275;
+static int Nbins;
+
+static void calc_chi_square(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+static Double_t Templatefit_function(int bin,Double_t* par);
+
 class TFit : public TObject{
   
 private:
   
-	TString name; ///< Name for the fit, for identification purpose
-	Double_t position; ///< position of the spectrum, for identification purpose
+	Int_t seriesNo; ///< Series number that is analysed by the Fit
 	
-	Int_t Nbins; ///< Number of bins of the spectra
-	Double_t start; ///< Position of the first bin of the spectra
-	Double_t end; ///< Position of the last bin of the spectra
-	std::vector<Double_t> Calipar;
-	std::vector<Double_t> Fitresult;
+	SFData* data; ///< Data of the measurement series
+	int Nspectra; ///< NUmber of spectra in the measurement series
+	int fpt; ///< NUmber of variasions that are fitted (for resolution and position each)
 	
-	TRandom3* resolutiongenerator;
+	SFData* bgdata; ///< Data of the measurement series
+	
+	
+	
+	TRandom3* resolutiongenerator; 
 	TRandom3* anglegenerator;
 	TRandom3* comptongenerator;
+	TRandom3* cbggenerator;
 	
 	// Spectrum that is analysed
-	TH1D* spectrum; ///< Spectrum that will be analysed 
+	std::vector<TH1D*> spectra; ///< Spectra that will be analysed 
 	
 	// Needed Templates
 	TH1D* background; ///< Internal activity background template
-	TH1D* pp511; ///< Photopeak of 511 keV template
-	TH1D* compton511; ///< Compton spectrum of 511 keV template
-	TH1D* pp1275; ///< Photopeak of 1275 keV template
-	TH1D* compton1275; ///< Compton spectrom of 1275 keV template
+	
+	std::vector<TH1D*> pp511; ///< Photopeaks of 511 keV template
+	std::vector<TH1D*> compton511; ///< Compton spectra of 511 keV template
+	std::vector<TH1D*> pp1275; ///< Photopeaks of 1275 keV template
+	std::vector<TH1D*> compton1275; ///< Compton spectra of 1275 keV template
+	
+	std::vector<THStack*> fittedtemplates; ///<THStacks that contain the fitted templates 
+	std::vector<double*> templateweights;
 	
 	// Fitting function called in Constructer
-	std::vector<Double_t> Fitting();
-	TH1D* Compton(Double_t PhotoPeakEnergy, Double_t Resolution);
-	TH1D* PhotoPeak(Double_t PhotoPeakEnergy, Double_t Resolution);
+	THStack* FitSingleSpectrum(int position, double *&weights);
+	void FitSpectra();
+	
+	void Reset();
+
+	
+	TH1D* Compton(TH1D* spec,Double_t PhotoPeakEnergy,Double_t califac, Double_t Resolution);
+	TH1D* PhotoPeak(TH1D* spec,Double_t PhotoPeakEnergy, Double_t Resolution);
+	TH1D* ColiBg(TH1D* spec,Double_t Resolution);
 	Double_t KNFormular(Double_t PhotoPeakEnergy, Double_t Angle);
-	std::vector<Double_t> Calibration();
+	std::vector<Double_t> Calibration(TH1D* spectrum);
+
+	std::vector<TH2D*> Chi2Map;
 	
 public:
 	TFit();
-	TFit(TH1D* Spectrum,TH1D* Background);
-	TFit(TH1D* Spectrum,TH1D* Background, TString Name, Double_t position);
+	TFit(int series_No, int fitpoints);
 	~TFit();
 
-	void SetDetails(TH1D* SPectrum, TH1D* Background, TString Name, Double_t Position);
-	
-	TH1D* GetFittedPhotoPeak(Double_t PhotoPeakEnergy);
-	TH1D* GetFittedCompton(Double_t PhotoPeakEnergy);
-	TH1D* GetSpectrum();
-	TH1D* GetFittedBackground();
-	std::vector <TH1D*> GetFittedSpectra();
-	Double_t* GetFitData();
+	bool SetDetails(int serie_No, int fitpoints);
+
+	std::vector<TH1D*> GetSpectra();
+	TH1D* GetBackground();
+	std::vector <THStack*> GetFittedTemplates();
+	std::vector <TH2D*> GetChi2Map();
+
   
 	ClassDef(TFit,1)
   

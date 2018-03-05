@@ -23,13 +23,26 @@ int main(){
   
   int n = data->GetNpoints();
   
+  TFit* test = new TFit(1,20);
+    
+  f->cd();
+  test->GetSpectra()[0]->Write();
+  test->GetChi2Map()[0]->Write();
+  test->GetFittedTemplates()[0]->Write();
+  TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
+  test->GetSpectra()[0]->Draw("");
+  test->GetFittedTemplates()[0]->Draw("Same");
+  mal->SaveAs("Fit.png");
+  TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
+  test->GetChi2Map()[0]->Draw("COLZ");
+  mal1->SaveAs("Chi2.png");
+  
   //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
   //~ 
   //~ vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
   //~ vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
-  
-  f->cd();
+
   //~ for(int i=0; i<n; i++){
     //~ hh1[i]->Write();
     //~ hh2[i]->Write();
@@ -56,59 +69,7 @@ int main(){
   
   //~ TProfile *p1 = data->GetSignalAverage(1,30,"",20,true);
   //~ TProfile *p2 = data->GetSignalAverage(1,40,"",20,false);
-  //~ vector <TProfile*> AverSig_60(9);
-  //~ vector <TProfile*> AverSig_120(9);
-  //~ vector <TProfile*> AverSig_200(9);
-  //~ 
-  //~ vector <TimeConst*> TC_60(9);
-  //~ vector <TimeConst*> TC_120(9);
-  //~ vector <TimeConst*> TC_200(9);
-  //~ 
-  //~ for(int i=0; i<9; i++){
-	//~ AverSig_60[i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>59.5 && ch_0.fPE<60.5",100,true);
-	//~ AverSig_120[i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>119.5 && ch_0.fPE<120.5",100,true);
-	//~ AverSig_200[i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>199.5 && ch_0.fPE<200.5",100,true);
-	//~ }
-  //~ 
-  //~ vector<TGraphErrors*> FirstDecay(5);
-  //~ vector<TGraphErrors*> SecondDecay(5); 
-  //~ 
-  //~ for(int j=0;j<5;j++){
-	//~ FirstDecay[j] = new TGraphErrors(27);
-	//~ FirstDecay[j]->SetTitle(";point;Decay Constatn in ns");
-	//~ FirstDecay[j]->SetName(Form("FirstDecay_%i_%.1f",(j+1)*10,10.));
-	//~ 
-	//~ SecondDecay[j] = new TGraphErrors(27);
-	//~ SecondDecay[j]->SetTitle(";point;Decay Constatn in ns");
-	//~ SecondDecay[j]->SetName(Form("SecondDecay_%i_%.1f",(j+1)*10,10.));
-	//~ 
-	//~ for(int i=0; i<9; i++){
-		//~ TC_60[i]= new TimeConst(AverSig_60[i],"double",(j+1)*10,10);
-		//~ TC_120[i]= new TimeConst(AverSig_120[i],"double",(j+1)*10,10);
-		//~ TC_200[i]= new TimeConst(AverSig_200[i],"double",(j+1)*10,10);
-		//~ FirstDecay[j]->SetPoint(i,i,TC_60[i]->GetFitData()[1]);
-		//~ FirstDecay[j]->SetPointError(i,0,TC_60[i]->GetFitDataError()[1]);
-		//~ FirstDecay[j]->SetPoint(i+9,i+9,TC_120[i]->GetFitData()[1]);
-		//~ FirstDecay[j]->SetPointError(i+9,0,TC_120[i]->GetFitDataError()[1]);
-		//~ FirstDecay[j]->SetPoint(i+18,i+18,TC_200[i]->GetFitData()[1]);
-		//~ FirstDecay[j]->SetPointError(i+18,0,TC_200[i]->GetFitDataError()[1]);
-		//~ SecondDecay[j]->SetPoint(i,i,TC_60[i]->GetFitData()[3]);
-		//~ SecondDecay[j]->SetPointError(i,0,TC_60[i]->GetFitDataError()[3]);
-		//~ SecondDecay[j]->SetPoint(i+9,i+9,TC_120[i]->GetFitData()[3]);
-		//~ SecondDecay[j]->SetPointError(i+9,0,TC_120[i]->GetFitDataError()[3]);
-		//~ SecondDecay[j]->SetPoint(i+18,i+18,TC_200[i]->GetFitData()[3]);
-		//~ SecondDecay[j]->SetPointError(i+18,0,TC_200[i]->GetFitDataError()[3]);
-	//~ }
-  //~ }
-  //~ 
-  //~ 
-  //~ f->cd();
-//~ 
-  //~ for(int j=0; j<5; j++){
-	//~ FirstDecay[j]->Write();
-	//~ SecondDecay[j]->Write();
-//~ }
-//~ 
+
   //~ TH1D *s1 = data->GetSignal(0,60,"",10,true);
   //~ TH1D *s2 = data->GetSignal(0,70,"",14,false);
   //~ TH1D *s3 = data->GetSignal(0,80,"fAmp<100",1,true);
