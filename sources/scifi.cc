@@ -24,7 +24,6 @@ int main(){
   
   int n = data->GetNpoints();
   
-<<<<<<< HEAD
   TFit* test = new TFit(1,20);
     
   f->cd();
@@ -49,7 +48,7 @@ int main(){
     //~ hh1[i]->Write();
     //~ hh2[i]->Write();
   //~ }
-=======
+
   TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
 
@@ -71,7 +70,6 @@ int main(){
    hh2[i]->Write();
    rr1[i]->Write();
   }*/
->>>>>>> 4997ae72f738505656183732cbb6e7ff652ab4e5
   
   //~ TFit* firstfit = new TFit(h1,h2);
   //~ 
