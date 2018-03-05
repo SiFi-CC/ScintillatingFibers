@@ -9,4 +9,7 @@
 #pragma link C++ class TFit+;
 
 #pragma link C++ class TimeConst+;
+#pragma link C++ class SFAttenuation+;
+#pragma link C++ class SFPeakFinder+;
+
 #endif

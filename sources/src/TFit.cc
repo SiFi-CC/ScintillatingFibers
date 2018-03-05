@@ -178,7 +178,7 @@ vector <Double_t> TFit::Calibration(TH1D* spectrum){
 	TH1D* bgs= new TH1D("bgs","bgs",spec->GetNbinsX(),spec->GetBinCenter(1),spec->GetBinCenter(spectrum->GetNbinsX()));
   
 	BGFit * mybgfit = new BGFit(215,325);
-	TF1 *bgfun = new TF1("bgfun",mybgfit,&BGFit::Evaluate,175,450,4,"BGFit","Evaluate");
+	TF1 *bgfun = new TF1("bgfun",mybgfit,&BGFit::EvaluatePol3,175,450,4,"BGFit","Evaluate");
 	
 	spec->Fit("bgfun","R");
 
