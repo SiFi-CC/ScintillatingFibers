@@ -14,10 +14,11 @@
 #include "SFPeakFinder.hh"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
+#include "TPad.h"
 
 int main(){
   
-  TFile *f = new TFile("test.root","RECREATE");
+  //~ TFile *f = new TFile("test.root","RECREATE");
   
   SFData *data = new SFData(2);
   data->Print();
@@ -26,7 +27,7 @@ int main(){
   
   //~ TFit* test = new TFit(1,20);
     
-  f->cd();
+  //~ f->cd();
   //~ test->GetSpectra()[0]->Write();
   //~ test->GetChi2Map()[0]->Write();
   //~ test->GetFittedTemplates()[0]->Write();
@@ -49,21 +50,24 @@ int main(){
     //~ hh2[i]->Write();
   //~ }
   std::vector <TH1D*> h1;
+  std::vector <TH1D*> h2;
   std::vector <SFPeakFinder*> peakfin;
-  TCanvas* mal = new TCanvas("test","test",1000,1000);
-  mal->Divide(4,3);
-  mal->cd(1);
-  for(int i=1;i<10;i++){
-	h1.push_back(data->GetSpectrum(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590",i*10));
-  //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
-
-	peakfin.push_back(new SFPeakFinder(h1[i-1],"511"));
-	peakfin[i-1]->Print();
-	mal->cd(i);
-	h1[i-1]->Draw("");
-	peakfin[i-1]->GetPeak()->Draw("same");
+  
+  TCanvas *can = new TCanvas("can","can",1200,1000);
+  can->Divide(4,3);
+  
+  for(int i=0; i<n; i++){
+        can->cd(i+1);
+	h1.push_back(data->GetSpectrum(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590",(i+1)*10));
+	h1[i]->Draw();
+	peakfin.push_back(new SFPeakFinder(h1[i],"511"));
+	peakfin[i]->Print();
+	h2.push_back(peakfin[i]->GetPeak());
+	h2[i]->Draw("same");
   }
-  mal->SaveAs("Test.pdf");
+  
+  can->SaveAs("canv.root");
+  
   //vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
   //vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
   //vector <TH1D*> rr1 = data->GetRatios("log(ch_0.fPE/ch_1.fPE)","ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0<590 && ch_1.fPE>0");
@@ -136,7 +140,7 @@ int main(){
   //~ s2->Write();
   //~ s3->Write();
   
-  f->Close();
+  //~ f->Close();
 
   delete data;
   

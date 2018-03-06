@@ -46,6 +46,7 @@ bool SFPeakFinder::SetSpectrum(TH1D *spectrum, TString peakID){
   }
   
   Fit();
+  fSpectrum->GetXaxis()->UnZoom();
   
   return true;
 }
@@ -83,7 +84,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   double peak = fSpectrum->GetBinCenter(bin_peak);
   
   TF1 *fun = new TF1("fun","gaus",peak-30,peak+30);
-  fSpectrum->Fit(fun,"R");
+  fSpectrum->Fit(fun,"0R");
   
   min = peak-fun->GetParameter(2);
   max = peak+fun->GetParameter(2);
@@ -117,7 +118,7 @@ bool SFPeakFinder::Fit(void){
   double fit_max = peak_max+70;
   BGFit *bg = new BGFit(peak_min,peak_max);
   TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::EvaluateExpo,fit_min,fit_max,2,"BGFit","Evaluate");
-  fSpectrum->Fit("bg_fun","R");
+  fSpectrum->Fit("bg_fun","0R");
   
   //background subtraction
   int nbins = fSpectrum->GetXaxis()->GetNbins();
@@ -136,7 +137,7 @@ bool SFPeakFinder::Fit(void){
   
   //fitting Gauss to the peak
   TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min,peak_max);
-  fPeak->Fit(gaus_fun,"R");
+  fPeak->Fit(gaus_fun,"0R");
   
   fPosition = gaus_fun->GetParameter(1);
   fPosErr = gaus_fun->GetParError(1);
