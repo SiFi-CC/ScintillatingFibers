@@ -14,6 +14,7 @@
 #include "TH1D.h"
 #include "TF1.h"
 #include "BGFit.hh"
+#include <vector>
 #include <iostream>
 
 using namespace std;
@@ -45,6 +46,7 @@ public:
   double GetPeakPosError(void) { return fPosErr; };
   double GetPeakSigma(void)    { return fSigma; };
   double GetPeakSigError(void) { return fSigErr; };
+  std::vector <double> GetParameter(void);
   TH1D*  GetPeak(void)         { return fPeak; };
   
   ClassDef(SFPeakFinder,1);

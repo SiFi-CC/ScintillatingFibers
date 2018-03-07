@@ -153,6 +153,16 @@ bool SFPeakFinder::Fit(void){
   return true;
 }
 //------------------------------------------------------------------
+vector<double> SFPeakFinder::GetParameter(){
+	vector<double> temp;
+	temp.push_back(fPosition);
+	temp.push_back(fSigma);
+	temp.push_back(fPosErr);
+	temp.push_back(fSigErr);
+	
+	return temp;
+}
+//------------------------------------------------------------------
 ///Sets members of the class to their default values.
 void SFPeakFinder::Clear(void){
  fSpectrum = NULL;

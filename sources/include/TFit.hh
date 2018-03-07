@@ -12,6 +12,8 @@
 #ifndef __TFit_H_
 #define __TFit_H_ 1
 #include "SFData.hh"
+#include "SFMC.hh"
+#include "SFPeakFinder.hh"
 #include "TObject.h"
 #include "TCanvas.h"
 #include "TString.h"
@@ -30,7 +32,7 @@
 static TH1D* cur_spec;
 
 static TH1D* cur_bg;
-static TH1D* cur_cbg;
+static TH1D* cur_ebg;
 static TH1D* cur_pp511;
 static TH1D* cur_pp1275;
 static TH1D* cur_c511;
@@ -52,26 +54,35 @@ private:
 	
 	SFData* bgdata; ///< Data of the measurement series
 	
-	
+	SFMC* template_data; ///< Data of the simulated templates
 	
 	TRandom3* resolutiongenerator; 
 	TRandom3* anglegenerator;
 	TRandom3* comptongenerator;
 	TRandom3* cbggenerator;
 	
-	// Spectrum that is analysed
+	// Spectra that will analysed
 	std::vector<TH1D*> spectra; ///< Spectra that will be analysed 
 	
 	// Needed Templates
 	TH1D* background; ///< Internal activity background template
 	
+	std::vector<TH1D*> templates_else;
+	std::vector<TH1D*> templates_c511;
+	std::vector<TH1D*> templates_c1275;
+	
 	std::vector<TH1D*> pp511; ///< Photopeaks of 511 keV template
 	std::vector<TH1D*> compton511; ///< Compton spectra of 511 keV template
 	std::vector<TH1D*> pp1275; ///< Photopeaks of 1275 keV template
 	std::vector<TH1D*> compton1275; ///< Compton spectra of 1275 keV template
+	std::vector<TH1D*> ebg; ///< background of other depositions
 	
 	std::vector<THStack*> fittedtemplates; ///<THStacks that contain the fitted templates 
 	std::vector<double*> templateweights;
+	
+	std::vector<SFPeakFinder*> Peaks; ///< Peaks of the 511 keV Peak 
+	
+	
 	
 	// Fitting function called in Constructer
 	THStack* FitSingleSpectrum(int position, double *&weights);
@@ -82,7 +93,7 @@ private:
 	
 	TH1D* Compton(TH1D* spec,Double_t PhotoPeakEnergy,Double_t califac, Double_t Resolution);
 	TH1D* PhotoPeak(TH1D* spec,Double_t PhotoPeakEnergy, Double_t Resolution);
-	TH1D* ColiBg(TH1D* spec,Double_t Resolution);
+	TH1D* CaliandRes(TH1D* spec, TH1D* templ,Double_t calcfac, Double_t Resolution);
 	Double_t KNFormular(Double_t PhotoPeakEnergy, Double_t Angle);
 	std::vector<Double_t> Calibration(TH1D* spectrum);
 
