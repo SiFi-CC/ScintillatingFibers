@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['tmax',['tmax',['../classTimeConst.html#a69e754a96a0bb9e03b2270c65d6e3ccf',1,'TimeConst']]],
-  ['tsplit',['tsplit',['../classTimeConst.html#a9ecff76a3c4588017e5992e40d56641c',1,'TimeConst']]]
+  ['nperpoint',['NperPoint',['../classTimeConst.html#aa8d60e64c2bc578f683673abbe5b90b2',1,'TimeConst']]],
+  ['npoints',['Npoints',['../classTimeConst.html#abc95f9ff2204c318d63ac518d4d1b9e9',1,'TimeConst']]],
+  ['nspectra',['Nspectra',['../classTFit.html#aac8f521e4a86803200763b1380d676b1',1,'TFit']]]
 ];

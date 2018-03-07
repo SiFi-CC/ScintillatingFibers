@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['doubleexp',['doubleexp',['../classTimeConst.html#ab18d8686c7bdf86b8508823fffcb053b',1,'TimeConst']]],
-  ['drawfittedsignal',['DrawFittedSignal',['../classTimeConst.html#ab6ecc3cb0042cbff8110c1db093d7f83',1,'TimeConst']]]
+  ['background',['background',['../classTFit.html#a351443a3278df72bc21d415aeb727401',1,'TFit']]],
+  ['bgdata',['bgdata',['../classTFit.html#a89bb52f3fe0a6ba715920a967a69bc16',1,'TFit']]],
+  ['bgfit',['BGFit',['../classBGFit.html',1,'']]]
 ];

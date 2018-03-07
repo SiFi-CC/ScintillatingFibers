@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['_7esfdata',['~SFData',['../classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b',1,'SFData']]],
-  ['_7etimeconst',['~TimeConst',['../classTimeConst.html#ad5b9c7df62a443f3481a94a9a3a64481',1,'TimeConst']]]
+  ['tfit',['TFit',['../classTFit.html#a73628a0ab1109e49223970bbee654ed8',1,'TFit::TFit()'],['../classTFit.html#aed80bb39ab9006ee8705759fd413ad8b',1,'TFit::TFit(int series_No, int fitpoints)']]],
+  ['timeconst',['TimeConst',['../classTimeConst.html#a9cac8f9eec575dc6c532ee54d11ab54f',1,'TimeConst']]]
 ];

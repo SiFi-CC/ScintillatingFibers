@@ -112,6 +112,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a2bfc96b7adca2a6c0074d20ddf0ee3fa">GetPositions</a> (void)</td></tr>
 <tr class="memdesc:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an array containing source positions for all measurements in this series. <br /></td></tr>
 <tr class="separator:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73429fae117279fe74f2611a4402f32c"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a73429fae117279fe74f2611a4402f32c">GetRatios</a> (TString selection, TString cut)</td></tr>
+<tr class="separator:a73429fae117279fe74f2611a4402f32c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9fce8eb845b663085bf4861196983b9"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae9fce8eb845b663085bf4861196983b9">GetSignal</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
 <tr class="separator:ae9fce8eb845b663085bf4861196983b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0446ba8102cd62eb8236fd3b79bdc6ac"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0446ba8102cd62eb8236fd3b79bdc6ac">GetSignalAverage</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
@@ -162,6 +164,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad09de4ed6508fb4f3d0430ec773b5803">fPositions</a></td></tr>
 <tr class="memdesc:ad09de4ed6508fb4f3d0430ec773b5803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array with positions of radioactive source in mm. <br /></td></tr>
 <tr class="separator:ad09de4ed6508fb4f3d0430ec773b5803"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a927ccc9a2888e9dbb827486d695e5892"><td class="memItemLeft" align="right" valign="top"><a id="a927ccc9a2888e9dbb827486d695e5892"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a927ccc9a2888e9dbb827486d695e5892">fRatios</a></td></tr>
+<tr class="memdesc:a927ccc9a2888e9dbb827486d695e5892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of ratio histograms for all measurements (requested type) <br /></td></tr>
+<tr class="separator:a927ccc9a2888e9dbb827486d695e5892"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="memItemLeft" align="right" valign="top"><a id="ad0d9ef8c1d067566e01f3cb91e087d89"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad0d9ef8c1d067566e01f3cb91e087d89">fSeriesNo</a></td></tr>
 <tr class="memdesc:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Series number. <br /></td></tr>
@@ -304,6 +310,41 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <p class="">Returns index in the fNames and fPositions arrays for the measurement of requested source position in mm. If measurements in analyzed series don't have unique positions a number of measurement should be passed. Measurements counting starts at 1. </p>
+
+</div>
+</div>
+<a id="a73429fae117279fe74f2611a4402f32c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73429fae117279fe74f2611a4402f32c">&#9670;&nbsp;</a></span>GetRatios()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt; TH1D * &gt; SFData::GetRatios </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns a vector of requested ratio histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
