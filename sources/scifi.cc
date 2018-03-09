@@ -12,32 +12,38 @@
 #include "TimeConst.hh"
 #include "TFit.hh"
 #include "SFPeakFinder.hh"
+#include "SFAttenuation.hh"
 #include "TGraphErrors.h"
 #include "TCanvas.h"
 #include "TPad.h"
 
 int main(){
   
-  //~ TFile *f = new TFile("test.root","RECREATE");
+  TFile *f = new TFile("test.root","RECREATE");
   
   SFData *data = new SFData(2);
   data->Print();
   
   int n = data->GetNpoints();
   
-  //~ TFit* test = new TFit(1,20);
+  //SFAttenuation *att = new SFAttenuation(1);
+  //att->AttSeparateCh(0);
+  //att->AttSeparateCh(1);
+  //att->AttAveragedCh();
+  
+   TFit* test = new TFit(1,20);
     
-  //~ f->cd();
-  //~ test->GetSpectra()[0]->Write();
-  //~ test->GetChi2Map()[0]->Write();
-  //~ test->GetFittedTemplates()[0]->Write();
-  //~ TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
-  //~ test->GetSpectra()[0]->Draw("");
-  //~ test->GetFittedTemplates()[0]->Draw("Same");
-  //~ mal->SaveAs("Fit.png");
-  //~ TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
-  //~ test->GetChi2Map()[0]->Draw("COLZ");
-  //~ mal1->SaveAs("Chi2.png");
+   f->cd();
+   test->GetSpectra()[0]->Write();
+   test->GetChi2Map()[0]->Write();
+   test->GetFittedTemplates()[0]->Write();
+   TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
+   test->GetSpectra()[0]->Draw("");
+   test->GetFittedTemplates()[0]->Draw("Same");
+   mal->SaveAs("Fit.png");
+   TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
+   test->GetChi2Map()[0]->Draw("COLZ");
+   mal1->SaveAs("Chi2.png");
   
   //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
@@ -49,7 +55,7 @@ int main(){
     //~ hh1[i]->Write();
     //~ hh2[i]->Write();
   //~ }
-  std::vector <TH1D*> h1;
+  /*std::vector <TH1D*> h1;
   std::vector <TH1D*> h2;
   std::vector <SFPeakFinder*> peakfin;
   
@@ -67,7 +73,7 @@ int main(){
   }
   
   can->SaveAs("canv.root");
-  
+  */
   //vector <TH1D*> hh1 = data->GetSpectra(0,"fAmp","");
   //vector <TH1D*> hh2 = data->GetSpectra(1,"fT0","ch_1.fT0!=-100");
   //vector <TH1D*> rr1 = data->GetRatios("log(ch_0.fPE/ch_1.fPE)","ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0<590 && ch_1.fPE>0");
@@ -140,7 +146,7 @@ int main(){
   //~ s2->Write();
   //~ s3->Write();
   
-  //~ f->Close();
+  f->Close();
 
   delete data;
   

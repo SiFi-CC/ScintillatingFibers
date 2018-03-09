@@ -11,7 +11,10 @@
 #ifndef __SFAttenuation_H_
 #define __SFAttenuation_H_ 1
 #include "TObject.h"
+#include "TF1.h"
+#include "TGraphErrors.h"
 #include "SFData.hh"
+#include "SFPeakFinder.hh"
 #include <iostream>
 
 using namespace std;
@@ -27,6 +30,8 @@ public:
   SFAttenuation(int seriesNo);
   ~SFAttenuation();
   
+  bool AttAveragedCh(void);
+  bool AttSeparateCh(int ch);
   void Print(void);
   
   ClassDef(SFAttenuation,1)
