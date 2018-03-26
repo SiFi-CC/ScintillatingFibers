@@ -21,60 +21,33 @@ int main(){
   
   TFile *f = new TFile("test.root","RECREATE");
   
-  SFData *data = new SFData(6); //different couplings
+  SFData *data = new SFData(2);
   data->Print();
   
   int n = data->GetNpoints();
   
-  TCanvas *can = new TCanvas("can","can",800,500);
-  vector <TH1D*> spec0 = data->GetSpectra(0,"fPE","ch_0.fT0!=-100");
-  int colors[4] = {2,4,8,1};
+  //~ SFAttenuation *att = new SFAttenuation(1);
+  //~ att->AttSeparateCh(0);
+  //~ att->AttSeparateCh(1);
+  //~ att->AttAveragedCh();
   
-  for(int i=0; i<n; i++){
-    spec0[i]->SetLineColor(colors[i]);
-    spec0[i]->SetName(Form("%i",i));
-    spec0[i]->Scale(1./spec0[i]->Integral());
-    if(i==0){
-      spec0[i]->Draw();
-      spec0[i]->GetXaxis()->SetRangeUser(0,650);
-      spec0[i]->GetXaxis()->SetTitle("P.E.");
-      spec0[i]->GetYaxis()->SetTitle("number of events (normalized)");
-      spec0[i]->SetTitle("");
-    }
-    else spec0[i]->Draw("same");
-  }
-  
-  //TProfile *sig = data->GetSignalAverage(0,1,"fPE>49.9 && fPE<50.01",30,1);
-  
-  //SFData *data3 = new SFData(3);
-  //TH1D *spectrum = data3->GetSpectrum(0,"fPE","ch_0.fT0!=-100",10);
-  
-  f->cd();
-  can->Write();
-  //sig->Write();
-  //spectrum->Write();
-  f->Close();
-  
-  //SFAttenuation *att = new SFAttenuation(3); // no coating
-  //att->AttSeparateCh(0);
-  //att->AttSeparateCh(1);
-  //att->AttAveragedCh();
-  //SFAttenuation *att5 = new SFAttenuation(4); //coating // diff fiber
-  //att5->AttAveragedCh();
-  
-  //TFit* test = new TFit(1,20);
+   TFit* test = new TFit(1);
     
-   //f->cd();
-   //test->GetSpectra()[0]->Write();
-   //test->GetChi2Map()[0]->Write();
-   //test->GetFittedTemplates()[0]->Write();
-   //TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
-   //test->GetSpectra()[0]->Draw("");
-   //test->GetFittedTemplates()[0]->Draw("Same");
-   //mal->SaveAs("Fit.png");
-   //TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
-   //test->GetChi2Map()[0]->Draw("COLZ");
-   //mal1->SaveAs("Chi2.png");
+   f->cd();
+   test->GetSpectra()[0]->Write();
+   //~ test->GetChi2Map()[0]->Write();
+   test->GetFittedTemplates()[0]->Write();
+   test->GetResiduals()[0]->Write();
+   TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
+   TH1D* spec = test->GetSpectra()[0];
+   spec->SetLineColor(2);
+   spec->Draw("");
+   test->GetFittedTemplates()[0]->Draw("Same HIST");
+   mal->BuildLegend();
+   mal->SaveAs("Fit.png");
+   //~ TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
+   //~ test->GetChi2Map()[0]->Draw("COLZ");
+   //~ mal1->SaveAs("Chi2.png");
   
   //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
@@ -177,7 +150,7 @@ int main(){
   //~ s2->Write();
   //~ s3->Write();
   
-  //f->Close();
+  f->Close();
 
   delete data;
   

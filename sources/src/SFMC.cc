@@ -90,12 +90,14 @@ TString SFMC::GetSelection(TString type,TString cut){
   if(type=="Compton"){
 	if(cut =="511") selection = "C511";
 	else if (cut=="1275") selection = "C1275";
+	else if (cut=="All") selection ="CG";
 	else cout << "The cut on the Compton spectrum is not properly defined.Please set meaningful cut." << endl;
   }
   else if(type=="Else") selection = "Else";
   else if(type=="Photon"){
-    if(cut =="511") selection = "P511";
-	else if (cut=="1275") selection = "P1275";
+    if(cut =="511") selection = "PP511";
+	else if (cut=="1275") selection = "PP1275";
+	else if (cut=="All") selection = "PG";
 	else cout << "The cut on the Compton spectrum is not properly defined.Please set meaningful cut." << endl;
   }
   else{
