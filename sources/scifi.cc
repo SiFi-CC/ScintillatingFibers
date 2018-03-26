@@ -26,24 +26,28 @@ int main(){
   
   int n = data->GetNpoints();
   
-  //SFAttenuation *att = new SFAttenuation(1);
-  //att->AttSeparateCh(0);
-  //att->AttSeparateCh(1);
-  //att->AttAveragedCh();
+  //~ SFAttenuation *att = new SFAttenuation(1);
+  //~ att->AttSeparateCh(0);
+  //~ att->AttSeparateCh(1);
+  //~ att->AttAveragedCh();
   
-   TFit* test = new TFit(1,20);
+   TFit* test = new TFit(1);
     
    f->cd();
    test->GetSpectra()[0]->Write();
-   test->GetChi2Map()[0]->Write();
+   //~ test->GetChi2Map()[0]->Write();
    test->GetFittedTemplates()[0]->Write();
+   test->GetResiduals()[0]->Write();
    TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
-   test->GetSpectra()[0]->Draw("");
-   test->GetFittedTemplates()[0]->Draw("Same");
+   TH1D* spec = test->GetSpectra()[0];
+   spec->SetLineColor(2);
+   spec->Draw("");
+   test->GetFittedTemplates()[0]->Draw("Same HIST");
+   mal->BuildLegend();
    mal->SaveAs("Fit.png");
-   TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
-   test->GetChi2Map()[0]->Draw("COLZ");
-   mal1->SaveAs("Chi2.png");
+   //~ TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
+   //~ test->GetChi2Map()[0]->Draw("COLZ");
+   //~ mal1->SaveAs("Chi2.png");
   
   //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
