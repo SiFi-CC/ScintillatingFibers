@@ -153,6 +153,8 @@ bool SFPeakFinder::Fit(void){
   return true;
 }
 //------------------------------------------------------------------
+///Returns vector containing peak position and sigma along with their errors. 
+///Order in the vector: position, sigma, position error, sigma error.
 vector<double> SFPeakFinder::GetParameter(){
 	vector<double> temp;
 	temp.push_back(fPosition);

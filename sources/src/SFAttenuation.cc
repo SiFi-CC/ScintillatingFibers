@@ -9,6 +9,7 @@
 // ***************************************** 
 
 #include "SFAttenuation.hh"
+#include "TFile.h"
 
 ClassImp(SFAttenuation);
 
@@ -33,6 +34,9 @@ SFAttenuation::~SFAttenuation(){
   if(fData!=NULL) delete fData;
 }
 //------------------------------------------------------------------
+///Method to determine attenuation length used in Pauwels et al., JINST 8 (2013) P09019.
+///For both ends of the fiber one value is calculated, since averaged signal from both channels
+///is taken into account.
 bool SFAttenuation::AttAveragedCh(void){
  
   int npoints = fData->GetNpoints();
@@ -64,9 +68,18 @@ bool SFAttenuation::AttAveragedCh(void){
   
   cout << "Attenuation lenght is: " << attenuation << " +/- " << att_error << " mm" << endl;
 
+  TFile *file = new TFile("attenuation_no_coating_fib2.root","UPDATE");
+  graph->Write();
+  for(int ii=0; ii<npoints; ii++){
+   ratio[ii]->Write(); 
+  }
+  file->Close();
+  
   return true;
 }
 //------------------------------------------------------------------
+///Method to determine attenuation length for both channels independently. 
+///\param ch - channel number
 bool SFAttenuation::AttSeparateCh(int ch){
  
   int npoints = fData->GetNpoints();
@@ -90,7 +103,7 @@ bool SFAttenuation::AttSeparateCh(int ch){
     mean = peaks[i]->GetMean();
     sigma = peaks[i]->GetRMS();
     fun.push_back(new TF1("fun","gaus",mean-3*sigma,mean+3*sigma));
-    peaks[i]->Fit(fun[i],"R");
+    peaks[i]->Fit(fun[i],"QR");
     graph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
     graph->SetPointError(i,0,fun[i]->GetParError(1));
   }
