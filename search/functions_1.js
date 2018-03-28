@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['findpeakrange',['FindPeakRange',['../classSFPeakFinder.html#a2134bbf124e4903c01d2753a6bd2be87',1,'SFPeakFinder']]],
-  ['fit',['Fit',['../classSFPeakFinder.html#adc42a0852af5dd52f667c189b83fbbef',1,'SFPeakFinder']]],
-  ['fitsinglesignal',['FitSingleSignal',['../classTimeConst.html#ac69e22c73a79f400b18d166a2ff19020',1,'TimeConst']]]
+  ['clear',['Clear',['../classSFAttenuation.html#a3e9b610aa349b373b0c22729e24cd245',1,'SFAttenuation::Clear()'],['../classSFPeakFinder.html#a20e89c0231337647d4e196a217ef349c',1,'SFPeakFinder::Clear()']]]
 ];

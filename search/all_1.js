@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['clear',['Clear',['../classSFPeakFinder.html#a20e89c0231337647d4e196a217ef349c',1,'SFPeakFinder']]],
-  ['compton1275',['compton1275',['../classTFit.html#a10167d142e94129d0894fd2d89347a3f',1,'TFit']]],
-  ['compton511',['compton511',['../classTFit.html#a636e55747cdd2dd33761d0a6d42841cb',1,'TFit']]]
+  ['background',['background',['../classTFit.html#a351443a3278df72bc21d415aeb727401',1,'TFit']]],
+  ['bgdata',['bgdata',['../classTFit.html#a89bb52f3fe0a6ba715920a967a69bc16',1,'TFit']]],
+  ['bgfit',['BGFit',['../classBGFit.html',1,'']]]
 ];

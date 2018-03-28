@@ -10,8 +10,6 @@ var searchData=
   ['templates_5fpall',['templates_pall',['../classTFit.html#a31169c0b2ef94c69a9e4f8e33af176e3',1,'TFit']]],
   ['templates_5fsum',['templates_sum',['../classTFit.html#ab19412b02d63081c3e388279edc90c65',1,'TFit']]],
   ['templateweights',['templateweights',['../classTFit.html#a2b0255b25ed5d1049dc422f34b1807be',1,'TFit']]],
-  ['tfit',['TFit',['../classTFit.html',1,'TFit'],['../classTFit.html#a73628a0ab1109e49223970bbee654ed8',1,'TFit::TFit()'],['../classTFit.html#a0249874ac49510fbff78f11079b2b318',1,'TFit::TFit(int series_No)']]],
-  ['timeconst',['TimeConst',['../classTimeConst.html',1,'TimeConst'],['../classTimeConst.html#a9cac8f9eec575dc6c532ee54d11ab54f',1,'TimeConst::TimeConst()']]],
   ['tmax',['tmax',['../classTimeConst.html#a69e754a96a0bb9e03b2270c65d6e3ccf',1,'TimeConst']]],
   ['tsplit',['tsplit',['../classTimeConst.html#a9ecff76a3c4588017e5992e40d56641c',1,'TimeConst']]]
 ];
