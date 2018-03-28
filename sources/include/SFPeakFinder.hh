@@ -29,16 +29,19 @@ private:
   double  fPosErr;	///< Error of the peak position
   double  fSigma;	///< Energy resolution, determined as sigma of the Gaussian fit
   double  fSigErr;	///< Error of the peak sigma
+  bool    fVerbose;	///< Print-outs level
   
   bool Fit(void);
   bool FindPeakRange(double &min, double &max);
   
 public:
   SFPeakFinder();
+  SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose);
   SFPeakFinder(TH1D *spectrum, TString peakID);
   ~SFPeakFinder();
   
   bool SetSpectrum(TH1D *spectrum, TString peakID);
+  void SetVerbLevel(bool verbose) { fVerbose=verbose; };
   void Print(void);
   void Clear(void);
   
@@ -46,7 +49,7 @@ public:
   double GetPeakPosError(void) { return fPosErr; };
   double GetPeakSigma(void)    { return fSigma; };
   double GetPeakSigError(void) { return fSigErr; };
-  std::vector <double> GetParameter(void);
+  vector <double> GetParameter(void);
   TH1D*  GetPeak(void)         { return fPeak; };
   
   ClassDef(SFPeakFinder,1);

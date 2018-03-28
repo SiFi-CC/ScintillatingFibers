@@ -31,6 +31,8 @@ target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES} $ENV{DD6PATH}build/l
 add_executable(scifi scifi.cc)
 target_link_libraries(scifi ScintillatingFibers)
 
+add_executable(tests tests.cc)
+target_link_libraries(tests ScintillatingFibers)
 
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)
