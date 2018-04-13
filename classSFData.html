@@ -88,6 +88,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3041bb4688a8ce3a72f86bdcc7fbab53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cd1ee43593533cb8ec86909842b1007"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a3cd1ee43593533cb8ec86909842b1007">SFData</a> (int seriesNo)</td></tr>
 <tr class="separator:a3cd1ee43593533cb8ec86909842b1007"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff33d2a9966641ad89c6dac4be0b597a"><td class="memItemLeft" align="right" valign="top"><a id="aff33d2a9966641ad89c6dac4be0b597a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SFData</b> (int seriesNo, TString threshold)</td></tr>
+<tr class="separator:aff33d2a9966641ad89c6dac4be0b597a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2ccfbc2c1474764c7d57a83efca720b"><td class="memItemLeft" align="right" valign="top"><a id="ae2ccfbc2c1474764c7d57a83efca720b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b">~SFData</a> ()</td></tr>
 <tr class="memdesc:ae2ccfbc2c1474764c7d57a83efca720b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
@@ -112,6 +115,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a2bfc96b7adca2a6c0074d20ddf0ee3fa">GetPositions</a> (void)</td></tr>
 <tr class="memdesc:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an array containing source positions for all measurements in this series. <br /></td></tr>
 <tr class="separator:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a668bc9085d4eca31f41d5bed89782c6d"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a668bc9085d4eca31f41d5bed89782c6d">GetRatio</a> (TString selection, TString cut, double position)</td></tr>
+<tr class="separator:a668bc9085d4eca31f41d5bed89782c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73429fae117279fe74f2611a4402f32c"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a73429fae117279fe74f2611a4402f32c">GetRatios</a> (TString selection, TString cut)</td></tr>
 <tr class="separator:a73429fae117279fe74f2611a4402f32c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9fce8eb845b663085bf4861196983b9"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae9fce8eb845b663085bf4861196983b9">GetSignal</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
@@ -132,6 +137,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:a8aac9ef9696a6bcc2ebedd27bc176054"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a0391f6c96e47526434525127e66a86"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5a0391f6c96e47526434525127e66a86">SetDetails</a> (int seriesNo)</td></tr>
 <tr class="separator:a5a0391f6c96e47526434525127e66a86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7404fc59cbb071fc05352c6326c6b34"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad7404fc59cbb071fc05352c6326c6b34">SetThreshold</a> (TString threshold)</td></tr>
+<tr class="separator:ad7404fc59cbb071fc05352c6326c6b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -164,6 +171,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad09de4ed6508fb4f3d0430ec773b5803">fPositions</a></td></tr>
 <tr class="memdesc:ad09de4ed6508fb4f3d0430ec773b5803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array with positions of radioactive source in mm. <br /></td></tr>
 <tr class="separator:ad09de4ed6508fb4f3d0430ec773b5803"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2daf3e982d5246fb442a9b6df102d15"><td class="memItemLeft" align="right" valign="top"><a id="ac2daf3e982d5246fb442a9b6df102d15"></a>
+TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ac2daf3e982d5246fb442a9b6df102d15">fRatio</a></td></tr>
+<tr class="memdesc:ac2daf3e982d5246fb442a9b6df102d15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ratio histogram of requested type. <br /></td></tr>
+<tr class="separator:ac2daf3e982d5246fb442a9b6df102d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a927ccc9a2888e9dbb827486d695e5892"><td class="memItemLeft" align="right" valign="top"><a id="a927ccc9a2888e9dbb827486d695e5892"></a>
 vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a927ccc9a2888e9dbb827486d695e5892">fRatios</a></td></tr>
 <tr class="memdesc:a927ccc9a2888e9dbb827486d695e5892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of ratio histograms for all measurements (requested type) <br /></td></tr>
@@ -188,6 +199,9 @@ vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a cla
 TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a24a728164962fdfd3d8a0b5bed362a90">fSpectrum</a></td></tr>
 <tr class="memdesc:a24a728164962fdfd3d8a0b5bed362a90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Single requested spectrum. <br /></td></tr>
 <tr class="separator:a24a728164962fdfd3d8a0b5bed362a90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e7675868c0032c57906025671555a95"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8e7675868c0032c57906025671555a95">fThreshold</a></td></tr>
+<tr class="memdesc:a8e7675868c0032c57906025671555a95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default value - "ft".  <a href="#a8e7675868c0032c57906025671555a95">More...</a><br /></td></tr>
+<tr class="separator:a8e7675868c0032c57906025671555a95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
@@ -310,6 +324,48 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <p class="">Returns index in the fNames and fPositions arrays for the measurement of requested source position in mm. If measurements in analyzed series don't have unique positions a number of measurement should be passed. Measurements counting starts at 1. </p>
+
+</div>
+</div>
+<a id="a668bc9085d4eca31f41d5bed89782c6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a668bc9085d4eca31f41d5bed89782c6d">&#9670;&nbsp;</a></span>GetRatio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TH1D * SFData::GetRatio </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>position</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns single requested ratio histogram. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
+    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -673,6 +729,30 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 
 </div>
 </div>
+<a id="ad7404fc59cbb071fc05352c6326c6b34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7404fc59cbb071fc05352c6326c6b34">&#9670;&nbsp;</a></span>SetThreshold()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SFData::SetThreshold </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>threshold</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Sets the flag to identify the tree with data which should be accessed. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">threshold</td><td>- type of threshold used during data analysis in DD6. Possible options are: ft - fixed threshold (default) and cf - constant fraction. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a195b8ef80d1b2f306ee407b5bde11ef2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a195b8ef80d1b2f306ee407b5bde11ef2">&#9670;&nbsp;</a></span>fNames_1</h2>
@@ -804,6 +884,31 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_20_13_07&quot;</span>,<span class="stringliteral">&quot;2018_01_24_16_27&quot;</span>,<span class="stringliteral">&quot;2018_01_24_17_25&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_24_18_27&quot;</span>,<span class="stringliteral">&quot;2018_01_25_8_47&quot;</span>}</div></div><!-- fragment -->
+</div>
+</div>
+<a id="a8e7675868c0032c57906025671555a95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e7675868c0032c57906025671555a95">&#9670;&nbsp;</a></span>fThreshold</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TString SFData::fThreshold</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Default value - "ft". </p>
+<p class="">Flag to identify which tree should be opened. </p>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
