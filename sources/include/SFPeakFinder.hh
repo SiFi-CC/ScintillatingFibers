@@ -19,10 +19,16 @@
 
 using namespace std;
 
+/// Class to perform background subtraction from charge spectra.
+/// It is possible to subtract background from 511 keV ans 1270 keV peak,
+/// depending on peak ID given in the constructor. Backround is described 
+/// as exponential function. Class finds peak position and sigma along with 
+/// their errors and creates histogram with background-subtracted peak.
+
 class SFPeakFinder : public TObject{
  
 private:
-  TH1D    *fSpectrum;	///< Analuzed experimental spectrum
+  TH1D    *fSpectrum;	///< Analyzed experimental spectrum
   TH1D    *fPeak;	///< Histogram with the chosen peak after background subtraction
   TString fPeakID;	///< Flag to identify which peak should be analyzed
   double  fPosition;	///< Position of the peak, determined as mean of Gaussian fit
@@ -32,7 +38,6 @@ private:
   bool    fVerbose;	///< Print-outs level
   
   bool Fit(void);
-  bool FindPeakRange(double &min, double &max);
   
 public:
   SFPeakFinder();
@@ -41,18 +46,25 @@ public:
   ~SFPeakFinder();
   
   bool SetSpectrum(TH1D *spectrum, TString peakID);
-  void SetVerbLevel(bool verbose) { fVerbose=verbose; };
+  bool FindPeakRange(double &min, double &max);
+  vector <double> GetParameter(void);
   void Print(void);
   void Clear(void);
   
+  /// Sets level of print-outs: false - quiet, true - verbose.
+  void SetVerbLevel(bool verbose) { fVerbose=verbose; };
+  /// Returns position of the peak.
   double GetPeakPosition(void) { return fPosition; };
+  /// Returns error on peak position.
   double GetPeakPosError(void) { return fPosErr; };
+  /// Returns sigma of the peak.
   double GetPeakSigma(void)    { return fSigma; };
+  /// Returns error on peak's sigma
   double GetPeakSigError(void) { return fSigErr; };
-  vector <double> GetParameter(void);
+  /// Returns background-subtracted histogram. 
   TH1D*  GetPeak(void)         { return fPeak; };
   
-  ClassDef(SFPeakFinder,1);
+  ClassDef(SFPeakFinder,1)
 };
 
 #endif

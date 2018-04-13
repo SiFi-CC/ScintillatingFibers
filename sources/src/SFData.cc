@@ -64,6 +64,14 @@ SFData::SFData(int seriesNo){
   SetDetails(seriesNo);
 }
 //------------------------------------------------------------------
+SFData::SFData(int seriesNo, TString threshold){
+ SetDetails(seriesNo);
+ if(!(threshold=="ft" || threshold=="cf")){
+  throw "##### Error in SFData constructor! Incorrect threshold type!"; 
+ }
+ fThreshold = threshold; 
+}
+//------------------------------------------------------------------
 ///Default destructor.
 SFData::~SFData(){
 }
@@ -82,6 +90,7 @@ bool SFData::SetDetails(int seriesNo){
   
   Reset();
   fSeriesNo = seriesNo;
+  fThreshold = "ft";	//default - fixed threshold
   
   ///- number of measurements in the series
   if(fSeriesNo<6) fNpoints = 9;
@@ -133,6 +142,20 @@ bool SFData::SetDetails(int seriesNo){
     case 9: fNames = fNames_9; break;
   }
    
+  return true;
+}
+//------------------------------------------------------------------
+/// Sets the flag to identify the tree with data which should be accessed.
+/// \param threshold - type of threshold used during data analysis in DD6.
+/// Possible options are: ft - fixed threshold (default) and cf - constant
+/// fraction. 
+bool SFData::SetThreshold(TString threshold){
+  if(!(threshold=="ft" || threshold=="cf")){
+    cout << "##### Error in SFData::SetThreshold()! Incorrect threshold type!" << endl;
+    cout << "Possible options are: ft for fixed threshold and cf for constant fraction" << endl;
+    return false;
+  }
+  fThreshold = threshold;
   return true;
 }
 //------------------------------------------------------------------
@@ -320,7 +343,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
    
    else{
     cout << "#### Error in SFData::InterpretCut! Incorrect cut syntax!" << endl;
-    cout << "Incorrect type. Available types are: fAMp, fCharge, fPE, fT0 and fTOT." << endl;
+    cout << "Incorrect type. Available types are: fAmp, fCharge, fPE, fT0 and fTOT." << endl;
     return false;
    }
   }
@@ -345,13 +368,14 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
   
   TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
-  TTree *tree = (TTree*)file->Get("tree_ft");
+  TString tname = string("tree_")+fThreshold;
+  TTree *tree = (TTree*)file->Get(tname);
   fSpectrum = new TH1D();
   
   TString selection = GetSelection(ch,type);
   tree->Draw(selection,cut);
   fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-  TString hname = type+Form("_ch%i_pos%.1f",ch,position);
+  TString hname = type+Form("_ch%i_pos%.1f_",ch,position)+fThreshold;
   TString htitle = hname+" "+cut;
   fSpectrum->SetName(hname);
   fSpectrum->SetTitle(htitle);
@@ -368,6 +392,7 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
 vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
  
   TString fname;
+  TString tname = string("tree_")+fThreshold;
   TFile *file;
   TTree *tree;
   TString selection;
@@ -377,12 +402,12 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
   for(int i=0; i<fNpoints; i++){
    fname = string(gPath)+fNames[i]+"/results.root";
    file = new TFile(fname,"READ");
-   tree = (TTree*)file->Get("tree_ft");
+   tree = (TTree*)file->Get(tname);
    selection = GetSelection(ch,type);
    tree->Draw(selection,cut);
    if(empty) fSpectra.push_back(new TH1D());
    fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-   hname = type+Form("_ch%i_pos%.1f",ch,fPositions[i]);
+   hname = type+Form("_ch%i_pos%.1f_",ch,fPositions[i])+fThreshold;
    htitle = hname+" "+cut;
    fSpectra[i]->SetName(hname);
    fSpectra[i]->SetTitle(htitle);
@@ -399,6 +424,7 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
 vector <TH1D*> SFData::GetRatios(TString selection, TString cut){
   
   TString fname;
+  TString tname = string("tree_")+fThreshold;
   TFile *file;
   TTree *tree;
   TString selectAndDraw;
@@ -408,19 +434,43 @@ vector <TH1D*> SFData::GetRatios(TString selection, TString cut){
   for(int i=0; i<fNpoints; i++){
    fname = string(gPath)+fNames[i]+"/results.root";
    file = new TFile(fname,"READ");
-   tree = (TTree*)file->Get("tree_ft");
+   tree = (TTree*)file->Get(tname);
    gUnique = gRandom->Uniform(0,1);
    selectAndDraw = selection+Form(">>htemp%.7f(500,-5,5)",gUnique);
    tree->Draw(selectAndDraw,cut);
    if(empty) fRatios.push_back(new TH1D());
    fRatios[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-   hname = Form("ratio_pos%.1f",fPositions[i]);
+   hname = Form("ratio_pos%.1f_",fPositions[i])+fThreshold;
    htitle = selection+" "+cut;
    fRatios[i]->SetName(hname);
    fRatios[i]->SetTitle(htitle);
   }
   
   return fRatios;
+}
+//------------------------------------------------------------------
+///Returns single requested ratio histogram.
+///\param selection - selection like for Draw() method of TTree.
+///\param cut - cut for drawn events. Also TTree-style syntax.
+///\param position - position of source in mm. If position is not unique a 
+///number of measurement should be entered.
+TH1D* SFData::GetRatio(TString selection, TString cut, double position){
+  
+  int index = GetIndex(position);
+  TString fname = string(gPath)+fNames[index]+"/results.root";
+  TFile *file = new TFile(fname,"READ");
+  TString tname = string("tree_")+fThreshold;
+  TTree *tree = (TTree*)file->Get(tname);
+  gUnique = gRandom->Uniform(0,1);
+  TString selectAndDraw = selection+Form(">>htemp%.7f",gUnique);
+  tree->Draw(selectAndDraw,cut);
+  fRatio = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+  TString hname = Form("ratio_pos%.1f_",position)+fThreshold;
+  TString htitle = selection+" "+cut;
+  fRatio->SetName(hname);
+  fRatio->SetTitle(htitle);
+  
+  return fRatio;
 }
 //------------------------------------------------------------------
 /// Returns averaged signal.
@@ -440,14 +490,15 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   
   TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
-  TTree *tree = (TTree*)file->Get("tree_ft");
+  TString tname = string("tree_")+fThreshold;
+  TTree *tree = (TTree*)file->Get(tname);
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i",ch),&sig);
   
   TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
   ifstream input(iname,ios::binary);
  
-  TString hname = Form("sig_ch%i_pos_%.1f_num_%i",ch,position,number);
+  TString hname = Form("sig_ch%i_pos_%.1f_num_%i_",ch,position,number)+fThreshold;
   TString htitle = hname +" "+cut;
   fSignalProfile = new TProfile(hname,htitle,ipoints,0,ipoints,"");
     
@@ -509,14 +560,15 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   
   TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
-  TTree *tree = (TTree*)file->Get("tree_ft");
+  TString tname = string("tree_")+fThreshold;
+  TTree *tree = (TTree*)file->Get(tname);
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i",ch),&sig);
   
   TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
   ifstream input(iname,ios::binary);
   
-  TString hname = Form("sig_ch%i_pos_%.1f_no%i",ch,position,number);
+  TString hname = Form("sig_ch%i_pos_%.1f_no%i_",ch,position,number)+fThreshold;
   TString htitle = hname+" "+cut;
   
   fSignal = new TH1D(hname,htitle,ipoints,0,ipoints);
@@ -563,6 +615,7 @@ void SFData::Reset(void){
  fNpoints       = 0;
  fFiber         = "dummy";
  fDesc          = "dummy"; 
+ fThreshold     = "dummy"; 
  fNames         = NULL;
  fPositions     = NULL;
  fSpectrum      = NULL;
@@ -576,6 +629,7 @@ void SFData::Print(void){
  cout << "This is Print() for SFData class object" << endl;
  cout << "Number of the experimental series: " << fSeriesNo << endl;
  cout << fDesc << endl;
+ cout << "Type of threshold used in DD6 data analysis: " << fThreshold << endl;
  cout << "Number of measurements in this series: " << fNpoints << endl;
  cout << "Fiber: " << fFiber << endl;
  cout << "List of measurements in this series:" << endl;

@@ -19,6 +19,12 @@
 
 using namespace std;
 
+/// Class to determine attenuation length. This class is suitable only for experimental 
+/// series with different positions of source, i.e. 1, 2, 3, 4 and 5. Two methods of 
+/// attenuation length determination are available: AttAveragedCh() - based on Pauwels 
+/// et al., JINST 8 (2013) P09019, where averaged signal from both channels is analyzed, 
+/// and AttSeparateCh() - where attenuation length is calulated for each channel separately.
+
 class SFAttenuation : public TObject{
  
 private:
@@ -30,16 +36,16 @@ private:
   vector <TH1D*> fRatios;	///< Vector containing histograms of signal ratios from both channels, for whole series 
   TGraphErrors *fAttnGraph;	///< Attenuation graph i.e. ln(M_{FB}) vs. source position
   
-  double fAttnLenCh0;
-  double fAttnLenCh1;
-  double fAttnErrCh0;
-  double fAttnErrCh1;
-  TGraphErrors *fAttnGraphCh0;
-  TGraphErrors *fAttnGraphCh1;
-  vector <TH1D*> fSpectraCh0;
-  vector <TH1D*> fSpectraCh1;
-  vector <TH1D*> fPeaksCh0;
-  vector <TH1D*> fPeaksCh1;
+  double fAttnLenCh0;		///< Attenuation length for channel 0
+  double fAttnLenCh1;		///< Attenuation length for channel 1
+  double fAttnErrCh0;		///< Error on attenuation length for channel 0
+  double fAttnErrCh1;		///< Error on attenuation length for channel 1
+  TGraphErrors *fAttnGraphCh0;	///< Attenuation graph for channel 0
+  TGraphErrors *fAttnGraphCh1;	///< Attenuation graph for channel 1
+  vector <TH1D*> fSpectraCh0;	///< Vector containing charge spectra from channel 0
+  vector <TH1D*> fSpectraCh1;	///< Vector containing charche spectra from channel 1
+  vector <TH1D*> fPeaksCh0;	///< Vector containing 511 keV peaks, channel 0
+  vector <TH1D*> fPeaksCh1;	///< Vector containing 511 keV peaks, channel 1
   
 public:
   SFAttenuation();

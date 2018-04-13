@@ -9,7 +9,6 @@
 // ***************************************** 
 
 #include "SFAttenuation.hh"
-#include "TFile.h"
 
 ClassImp(SFAttenuation);
 
@@ -23,10 +22,13 @@ SFAttenuation::SFAttenuation(){
   Clear();
 }
 //------------------------------------------------------------------
-///Standard constructor (reccommended)
+///Standard constructor (recommended)
 ///\param seriesNo is number of experimental series to be analyzed. 
 SFAttenuation::SFAttenuation(int seriesNo){
   fSeriesNo = seriesNo;
+  if(seriesNo>5){
+    throw "##### Error in SFAttenuation constructor! Incorrect series number!"; 
+  }
   fData = new SFData(fSeriesNo);
   Clear();
 }

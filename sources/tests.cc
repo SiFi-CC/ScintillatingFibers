@@ -11,13 +11,15 @@
 #include "SFData.hh"
 #include "SFPeakFinder.hh"
 #include "SFAttenuation.hh"
+#include "SFTimingRes.hh"
 #include "TCanvas.h"
 
 int main(){
   
-  SFData *data = new SFData(3);
+  SFData *data = new SFData(1);
   data->Print();
   int n = data->GetNpoints();
+  double *positions = data->GetPositions();
   
   //----- tests of SFData class
   /*
@@ -103,8 +105,16 @@ int main(){
   
   
   //----- this part is for tests of SFAttenuation class
+  /*
+  SFAttenuation *att;
+  try{
+    att = new SFAttenuation(7);
+  } 
+  catch(const char* message){
+    cout << message << endl;
+    return 0;
+  }
   
-  SFAttenuation *att = new SFAttenuation(1);
   att->Print();
   
   att->AttAveragedCh();
@@ -131,13 +141,57 @@ int main(){
     peaks[i]->Write();
   }
   fileSFAttenuation->Close();
-  
+  */
   //-----
 
+  
+  //----- this part is for tests of SFTimingRes class
+  
+  SFTimingRes *tim;
+  try{
+    tim = new SFTimingRes(1,"ft","no cut");
+  }
+  catch(const char *message){
+    cout << message << endl;
+    return 0;
+  }
+  
+  tim->Print();
+  vector <TH1D*> T0Diff = tim->GetT0Diff();
+  vector <double> tres = tim->GetTimingResolutions();
+  vector <double> treserr = tim->GetTimingResErrors();
 
+  SFTimingRes *tim_cut;
+  try{
+    tim_cut = new SFTimingRes(1,"ft","with cut");
+  }
+  catch(const char *message){
+    cout << message << endl;
+    return 0;
+  }
+  
+  tim_cut->Print();
+  vector <TH1D*> T0Diff_cut = tim_cut->GetT0Diff();
+  vector <double> tres_cut = tim_cut->GetTimingResolutions();
+  vector <double> treserr_cut = tim_cut->GetTimingResErrors();
+  
+  TFile *fileSFTiming = new TFile("../results/SFTimingRes_tests.root","RECREATE");
+  fileSFTiming->cd();
+  for(int i=0; i<n; i++){
+    cout << "Energy resolution for position: " << positions[i] << "\t" << tres[i] << " +/- " << treserr[i] << endl;
+    cout << "With energy cut: " << tres_cut[i] << " +/- " << treserr_cut[i] << endl;
+    T0Diff[i]->Write();
+    T0Diff_cut[i]->Write();
+  }
+  fileSFTiming->Close();
+  
+  //-----
+  
   delete data;
   //delete peakfin;
-  delete att;
+  //delete att;
+  delete tim;
+  delete tim_cut;
   
   return 1;
 }

@@ -39,11 +39,14 @@ private:
   int            fNpoints;		///< Number of measurements in the series
   TString        fFiber;		///< Scintillating fiber type e.g. LuAG (1)
   TString        fDesc;			///< Description of the measurement series
+  TString	 fThreshold;		///< Flag to identify which tree should be opened.
+					///< Default value - "ft"
   TString        *fNames;		///< Array with names of measurements
   double         *fPositions;		///< Array with positions of radioactive source in mm
   TH1D           *fSpectrum;		///< Single requested spectrum
   TProfile       *fSignalProfile;	///< Average of n requested signals
   TH1D           *fSignal;		///< Histogram of single chosen signal
+  TH1D           *fRatio;		///< Ratio histogram of requested type
   vector <TH1D*> fSpectra;		///< Vector with all spectra from this series (requested type e.g. fPE)
   vector <TH1D*> fRatios;		///< Vector of ratio histograms for all measurements (requested type)
   
@@ -74,12 +77,15 @@ private:
 public:
   SFData();
   SFData(int seriesNo);
+  SFData(int seriesNo, TString threshold);
   ~SFData();
   
   bool           SetDetails(int seriesNo);
+  bool           SetThreshold(TString threshold);
   TH1D*          GetSpectrum(int ch, TString type, TString cut, double position);
   vector <TH1D*> GetSpectra(int ch, TString type, TString cut);
   vector <TH1D*> GetRatios(TString selection, TString cut);
+  TH1D*          GetRatio(TString selection, TString cut, double position);
   TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
   TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  
   void           Reset(void);
