@@ -498,8 +498,8 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
   ifstream input(iname,ios::binary);
  
-  TString hname = Form("sig_ch%i_pos_%.1f_num_%i_",ch,position,number)+fThreshold;
-  TString htitle = hname +" "+cut;
+  TString hname = "sig_profile";
+  TString htitle = "sig_profile";
   fSignalProfile = new TProfile(hname,htitle,ipoints,0,ipoints,"");
     
   int nentries = tree->GetEntries();
@@ -534,6 +534,11 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
      else break;
     }
   }
+  
+  hname = Form("sig_ch%i_pos_%.1f_num_%i_",ch,position,counter)+fThreshold;
+  htitle = hname +" "+cut;
+  fSignalProfile->SetName(hname);
+  fSignalProfile->SetTitle(htitle);
   
   if(counter<number) 
     cout << "##### Warning in SFData::GetSignalAverage()! " << counter 

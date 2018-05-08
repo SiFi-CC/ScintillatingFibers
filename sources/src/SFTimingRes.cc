@@ -72,6 +72,23 @@ int SFTimingRes::GetIndex(double position){
   return index;
 }
 //------------------------------------------------------------------
+///Private method to get ratio histograms necesarry to impose cuts.
+bool SFTimingRes::LoadRatios(void){
+  TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
+  TString cut = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
+  fRatios = fData->GetRatios(selection,cut);
+  return true;
+}
+//------------------------------------------------------------------
+///Formula for Lorentzian function
+double LorentzianFun(double *x, double *par){
+ //par0 - integral
+ //par1 - width
+ //par2 - center  
+ return (0.5*par[0]*par[1]/TMath::Pi())/
+        ((x[0]-par[2])*(x[0]-par[2])+.25*par[1]*par[1]);
+}
+//------------------------------------------------------------------
 ///Method for simple timing resolution determination. Timing resolution spectrum
 ///is build as difference between channel 0 and 1 signals with additional cut
 ///on scattered events. Timing resolution and its uncertainty is determined as 
@@ -81,21 +98,35 @@ bool SFTimingRes::AnalyzeNoECut(void){
   int npoints = fData->GetNpoints();
   double *positions = fData->GetPositions();
   
-  TString selection_ratio = "log(ch_0.fPE/ch_1.fPE)";
-  TString cut_ratio = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
-  TString selection_T0 = "ch_0.fT0-ch_1.fT0";
-  TString cut_T0;
-  
-  vector <TH1D*> ratios = fData->GetRatios(selection_ratio,cut_ratio);
+  TString selection = "ch_0.fT0-ch_1.fT0";
+  TString cut;
   double mean, sigma;
+  double min_fit, max_fit;
+  
+  if(fRatios.empty()) LoadRatios();
+  TF1 *lorentz = new TF1("lorentz",LorentzianFun,-100,100,3);
+  
+  fT0Graph = new TGraphErrors(npoints);
+  fT0Graph->GetXaxis()->SetTitle("source position [mm]");
+  fT0Graph->GetYaxis()->SetTitle("T0_{ch0} - T0_{ch1}");
+  fT0Graph->SetTitle("");
+  fT0Graph->SetMarkerStyle(8);
   
   for(int i=0; i<npoints; i++){
-    mean = ratios[i]->GetMean();
-    sigma = ratios[i]->GetRMS();
-    cut_T0 = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(ch_0.fPE/ch_1.fPE)>%f && log(ch_0.fPE/ch_1.fPE)<%f",mean-sigma, mean+sigma);
-    fT0Diff.push_back(fData->GetRatio(selection_T0,cut_T0,positions[i]));
-    fTimeRes.push_back(fT0Diff[i]->GetRMS());
-    fTimeResErr.push_back(0);
+    mean = fRatios[i]->GetMean();
+    sigma = fRatios[i]->GetRMS();
+    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-sigma, mean+sigma);
+    fT0Diff.push_back(fData->GetRatio(selection,cut,positions[i]));
+    lorentz->SetParameter(0,fT0Diff[i]->Integral());
+    lorentz->SetParameter(1,fT0Diff[i]->GetRMS());
+    lorentz->SetParameter(2,fT0Diff[i]->GetMean());
+    min_fit = fT0Diff[i]->GetMean()-3*fT0Diff[i]->GetRMS();
+    max_fit = fT0Diff[i]->GetMean()+3*fT0Diff[i]->GetRMS();
+    fT0Diff[i]->Fit(lorentz,"Q","",min_fit,max_fit);
+    fTimeRes.push_back(lorentz->GetParameter(1));
+    fTimeResErr.push_back(lorentz->GetParError(1));
+    fT0Graph->SetPoint(i,positions[i],lorentz->GetParameter(2));
+    fT0Graph->SetPointError(i,0,lorentz->GetParameter(1));
   }
   
   return true;
@@ -107,30 +138,42 @@ bool SFTimingRes::AnalyzeWithECut(void){
   int npoints = fData->GetNpoints();
   double *positions = fData->GetPositions();
   
+  if(fRatios.empty()) LoadRatios();
+  
   vector <TH1D*> hPEch0 = fData->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
   vector <TH1D*> hPEch1 = fData->GetSpectra(1,"fPE","ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
   vector <SFPeakFinder*> peakFin_ch0;
   vector <SFPeakFinder*> peakFin_ch1;
-  vector <TF1*> fun;
+  TF1* fun = new TF1("fun","gaus",-200,200);
   double xmin_ch0, xmax_ch0;
   double xmin_ch1, xmax_ch1;
+  double mean_ratio, sigma_ratio;
   double mean, sigma;
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   
+  fT0Graph = new TGraphErrors(npoints);
+  fT0Graph->GetXaxis()->SetTitle("source position [mm]");
+  fT0Graph->GetYaxis()->SetTitle("T0_{ch0} - T0_{ch1}");
+  fT0Graph->SetTitle("");
+  fT0Graph->SetMarkerStyle(8);
+  
   for(int i=0; i<npoints; i++){
-    peakFin_ch0.push_back(new SFPeakFinder(hPEch0[i],"511"));
-    peakFin_ch1.push_back(new SFPeakFinder(hPEch1[i],"511"));
+    peakFin_ch0.push_back(new SFPeakFinder(hPEch0[i],"511",false));
+    peakFin_ch1.push_back(new SFPeakFinder(hPEch1[i],"511",false));
     peakFin_ch0[i]->FindPeakRange(xmin_ch0,xmax_ch0);
     peakFin_ch1[i]->FindPeakRange(xmin_ch1,xmax_ch1);
-    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f", xmin_ch0,xmax_ch0,xmin_ch1,xmax_ch1);
+    mean_ratio = fRatios[i]->GetMean();
+    sigma_ratio = fRatios[i]->GetRMS();
+    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", xmin_ch0,xmax_ch0,xmin_ch1,xmax_ch1,mean_ratio-sigma_ratio, mean_ratio+sigma_ratio);
     fT0Diff.push_back(fData->GetRatio(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();
-    fun.push_back(new TF1("fun","gaus",mean-3*sigma,mean+3*sigma));
-    fT0Diff[i]->Fit(fun[i],"QR");
-    fTimeRes.push_back(fun[i]->GetParameter(2));
-    fTimeResErr.push_back(fun[i]->GetParError(2));
+    fT0Diff[i]->Fit(fun,"Q","",mean-3*sigma,mean+3*sigma);
+    fTimeRes.push_back(fun->GetParameter(2));
+    fTimeResErr.push_back(fun->GetParError(2));
+    fT0Graph->SetPoint(i,positions[i],fT0Diff[i]->GetMean());
+    fT0Graph->SetPointError(i,0,fT0Diff[i]->GetRMS());
   }
   
   return true;
@@ -155,6 +198,15 @@ TH1D* SFTimingRes::GetT0Diff(double position){
     return NULL;
   }
   return fT0Diff[index];
+}
+//------------------------------------------------------------------
+///Returns graph ch_0.T0-ch_1.T0 vs. source position.
+TGraphErrors* SFTimingRes::GetT0Graph(void){
+  if(fT0Graph==NULL){
+    cout << "##### Error in SFTimingRes::GetT0Graph()! Graph was not created!" << endl;
+    return NULL;
+  }
+  return fT0Graph;
 }
 //------------------------------------------------------------------
 ///Returns timing resolution value and its uncertainty for requested measurement.
@@ -195,9 +247,11 @@ vector <double> SFTimingRes::GetTimingResErrors(void){
 //------------------------------------------------------------------
 /// Prints details of SFTimingRes class object.
 void SFTimingRes::Print(void){
+  cout << "\n--------------------------------------------" << endl;
   cout << "This is print out of SFTimingRes class object" << endl;
   cout << "Experimental series number " << fSeriesNo << endl;
   cout << "Threshold type: " << fThreshold << endl;
   cout << "Analysis method: " << fMethod << endl;
+  cout << "--------------------------------------------\n" << endl;
 }
 //------------------------------------------------------------------

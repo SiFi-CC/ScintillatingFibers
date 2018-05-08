@@ -72,7 +72,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   
   if(fPeakID=="511"){
     search_min = 120;
-    search_max = 320;
+    search_max = 450;//320
   }
   else if(fPeakID=="1270"){
     search_min = 400;
@@ -105,7 +105,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   
   min = peak-fun->GetParameter(2);
   max = peak+fun->GetParameter(2);
-  //cout << "max peak: " << peak << endl;
+  //cout << "min peak: " << min << " max peak: " << peak << endl;
   
   if(max<min || fabs(min+1)<1E-8 || fabs(max+1)<1E-8){
    cout << "##### Error in SFPeakFinder::FindFitRange(). Incorrect range." << endl;
@@ -129,8 +129,8 @@ bool SFPeakFinder::Fit(void){
   
   //setting fitting option based on verbose level
   TString opt;
-  if(fVerbose) opt = "0R";
-  else opt = "Q0R";
+  if(fVerbose) opt = "R+";
+  else opt = "QR+";
   
   //fitting background function
   double peak_min, peak_max;

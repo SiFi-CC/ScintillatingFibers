@@ -30,12 +30,10 @@ class SFAttenuation : public TObject{
 private:
   int    fSeriesNo;		///< Number of experimental series to be analyzed
   SFData *fData;		///< SFData object of the analyzed series
-  
   double fAttnLen;		///< Attenuation length determined with averaged channels method [mm]
   double fAttnErr;		///< Error on attenuation length fAttnLen [mm]
   vector <TH1D*> fRatios;	///< Vector containing histograms of signal ratios from both channels, for whole series 
   TGraphErrors *fAttnGraph;	///< Attenuation graph i.e. ln(M_{FB}) vs. source position
-  
   double fAttnLenCh0;		///< Attenuation length for channel 0
   double fAttnLenCh1;		///< Attenuation length for channel 1
   double fAttnErrCh0;		///< Error on attenuation length for channel 0

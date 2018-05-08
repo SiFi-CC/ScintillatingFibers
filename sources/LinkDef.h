@@ -12,5 +12,7 @@
 #pragma link C++ class SFAttenuation+;
 #pragma link C++ class TFit+;
 #pragma link C++ class SFTimingRes+;
+#pragma link C++ class SFTimeConst+;
+#pragma link C++ class SFFitResults+;
 
 #endif

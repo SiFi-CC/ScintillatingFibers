@@ -43,12 +43,12 @@ SFAttenuation::~SFAttenuation(){
 ///is taken into account.
 bool SFAttenuation::AttAveragedCh(void){
  
-  cout << "\n----- Inside SFAttenuation::AttAveragedCh()" << endl;
+  cout << "\n----- Inside SFAttenuation::AttAveragedCh() for series " << fSeriesNo << endl;
   
   int npoints = fData->GetNpoints();
   double *positions = fData->GetPositions();
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
-  TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_1.fT0>0 && ch_1.fT0<590";
+  TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_1.fT0>0 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0";
   fRatios = fData->GetRatios(selection,cut);
   
   double mean, sigma;
@@ -56,7 +56,7 @@ bool SFAttenuation::AttAveragedCh(void){
   TString gname = Form("att_s%i",fSeriesNo);
   fAttnGraph = new TGraphErrors(npoints);
   fAttnGraph->GetXaxis()->SetTitle("source position [mm]");
-  fAttnGraph->GetYaxis()->SetTitle("log #(){#sqrt{#frac{ch0}{ch1}}}");
+  fAttnGraph->GetYaxis()->SetTitle("log(M_{FB})");
   fAttnGraph->SetTitle(gname);
   fAttnGraph->SetName(gname);
   fAttnGraph->SetMarkerStyle(4);
@@ -84,7 +84,7 @@ bool SFAttenuation::AttAveragedCh(void){
 ///\param ch - channel number
 bool SFAttenuation::AttSeparateCh(int ch){
  
-  cout << "\n----- Inside SFAttenuation::AttSeparateCh()" << endl;
+  cout << "\n----- Inside SFAttenuation::AttSeparateCh() for series " << fSeriesNo << endl;
   cout << "----- Analyzing channel " << ch << endl;
   
   int npoints = fData->GetNpoints();
@@ -95,7 +95,7 @@ bool SFAttenuation::AttSeparateCh(int ch){
   TString gname = Form("att_s%i_ch%i",fSeriesNo,ch);
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("P.E.");
+  graph->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
@@ -291,7 +291,9 @@ void SFAttenuation::Clear(void){
 //------------------------------------------------------------------
 ///Prints details of SFAttenuation class object.
 void SFAttenuation::Print(void){
+ cout << "\n-------------------------------------------" << endl;
  cout << "This is print out of SFAttenuation class object" << endl;
  cout << "Experimental series number " << fSeriesNo << endl;
+ cout << "-------------------------------------------\n" << endl;
 }
 //------------------------------------------------------------------
