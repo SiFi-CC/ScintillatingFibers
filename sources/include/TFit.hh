@@ -44,6 +44,9 @@ static TH1D* cur_sum;
 static TRandom3* resgenerator;
 static int Nbins;
 
+static int Fitboarder;
+static int minentry;
+
 static void calc_chi_square(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 static Double_t Templatefit_functionsplit(int bin,Double_t* par);
 
@@ -63,6 +66,7 @@ class TFit : public TObject{
 private:
   
 	Int_t seriesNo; ///< Series number that is analysed by the Fit
+	Int_t fmode;
 	
 	SFData* data; ///< Data of the measurement series
 	int Nspectra; ///< Number of spectra in the measurement series
@@ -71,11 +75,8 @@ private:
 	
 	SFMC* template_data; ///< Data of the simulated templates
 	
-	TRandom3* resolutiongenerator; 
-	TRandom3* anglegenerator;
-	TRandom3* comptongenerator;
+	TRandom3* resolutiongenerator; ///<Used to smear the templates 
 	
-	// Spectra that will analysed
 	std::vector<TH1D*> spectra; ///< Spectra that will be analysed 
 	
 	// Needed Templates
@@ -98,38 +99,97 @@ private:
 	std::vector<TH1D*> call; ///< scaled sumed compton spectra templates
 	std::vector<TH1D*> ebg; ///< background of other depositions within the fibre
 	
-	std::vector<TGraphErrors*> residual; ///< residuals of the fitted spectra
 	
 	
 	std::vector<THStack*> fittedtemplates; ///<THStacks that contain the fitted, weighted templates 
+	std::vector<TGraphErrors*> residual; ///< residuals of the fitted spectra
+	TH2D* GraphicWeights;
+	TH2D* EnergyConstants;
+	
+	TGraph* ec_a; ///<Graph containing the Constant [0] of the energy model for the best fits of the positions
+	TGraph* ec_b;///<Graph containing the Constant [1] of the energy model for the best fits of the positions
+	TGraph* ec_c;///<Graph containing the Constant [2] of the energy model for the best fits of the positions
+	TGraph* chigraph;///<Graph containing the chi/ndf of the best fits 
+	TGraphErrors* g_pp_511;///<Graph containing the weights of the pp_511 templates if this fit is executed 
+	TGraphErrors* g_c_511;///<Graph containing the weights of the c_511 templates if this fit is executed  
+	TGraphErrors* g_pp_1275;///<Graph containing the  weights of the pp_1275 templates if this fit is executed 
+	TGraphErrors* g_c_1275;///<Graph containing the weights of the cc_1275 templates if this fit is executed  
+	TGraphErrors* g_ibg;///<Graph containing the weights of the ibg templates if this fit is executed  
+	TGraphErrors* g_ebg;///<Graph containing the weights of the ebg templates if this fit is executed 
+	TGraphErrors* g_sum;///<Graph containing the weights of the geant4_sum templates if this fit is executed 
+	
 	std::vector<double*> templateweights; ///< Prozentual weights of the different templates of the spectra
+	std::vector<double*> energypara; ///< energy calibration parameter
+	std::vector<double> chindf; ///< Chi2 der fits
 	
 	std::vector<SFPeakFinder*> Peaks; ///< Peaks of the 511 keV Peak, needed for the start parameter of the energy model 
 
 	std::vector<TH2D*> Chi2Map;
 	
 	// Fitting function called in Constructer
-	THStack* FitSingleSpectrumSplit(int position, double *&weights); 
-	THStack* FitSingleSpectrumTwoSplit(int position, double *&weights);
-	THStack* FitSSSumEnergy(int position, double* &weight);
-	THStack* FitSSSumWeights(int position, double* &weight);
+	//------------------------------------------------------------------
+	///Function that performes a fit of all templates to the spectrum that is defined by the position
+	///\param position - defining spectrum that the templates are fitted to
+	///\param *weights - the fit weights are returned here
+	///\param *enerconst - the parameter of the energy model are returned here
+	THStack* FitSingleSpectrumSplit(int position, double *weights, double* enerconst); 
+	///Function that performes a fit of a compton and photon template to the spectrum that is defined by the position
+	///\param position - defining spectrum that the templates are fitted to
+	///\param *weights - the fit weights are returned here
+	///\param *enerconst - the parameter of the energy model are returned here
+	THStack* FitSingleSpectrumTwoSplit(int position, double *weights, double* enerconst);
+	///Function that performes a fit of sum template and the energy constants to the spectrum that is defined by the position
+	///\param position - defining spectrum that the templates are fitted to
+	///\param *weights - the fit weights are returned here
+	///\param *enerconst - the parameter of the energy model are returned here
+	THStack* FitSSSumEnergy(int position, double* weight, double* enerconst);
+	///Function that performes a fit of a sum of all templates to the spectrum that is defined by the position
+	///\param position - defining spectrum that the templates are fitted to
+	///\param *weights - the fit weights are returned here
+	///\param *enerconst - the parameter of the energy model are returned here
+	THStack* FitSSSumWeights(int position, double* weight, double* enerconst);
+	
+	///Function to set up the TMinuit for the different fitting modes 
+	///\param position - returns fitting parameter
+	///\param *weights - returns errors on fitting parameter
+	///\param *chi - retruns the chi/ndf 
+	///\param fitmode - sets the fitmode for the TMinuit
+	int SetTMiniut(double *fParam,double *fParErr,double &chi,int fitmode);
+	
+	///Function to call the Fit funcitons for each Position of a series
 	void FitSpectra();
 	
+	/// Function to reset everything
 	void Reset();
 
 	
 public:
 	TFit();
-	TFit(int series_No);
+	TFit(int series_No,TString FitMode);
+	///Deconstructer
 	~TFit();
+	///Function that sets up the series and the templates specifications that are requested
+	///\param series_No - Series to be analyzed
+	///\param FitMode - Defining the fit that is performed on the spectra of the serie
+	bool SetDetails(int serie_No,TString FitMode);
 
-	bool SetDetails(int serie_No);
-
-	std::vector<TH1D*> GetSpectra();
-	TH1D* GetBackground();
-	std::vector <THStack*> GetFittedTemplates();
-	std::vector <TH2D*> GetChi2Map();
-	std::vector <TGraphErrors*> GetResiduals();
+	std::vector<TH1D*> GetSpectra();///Returns the spectra of the series
+	TH1D* GetBackground();///Returns the internal background for the series
+	std::vector <THStack*> GetFittedTemplates();///returns the THStacks containing the fitted templates
+	TH2D* GetGraphicWeights();
+	TH2D* GetEnergyConstants();
+	TGraph* GetEC_a();///Returns Graph with the [0] parameter of the energy model for each position
+	TGraph* GetEC_b();///Returns Graph with the [1] parameter of the energy model for each position
+	TGraph* GetEC_c();///Returns Graph with the [2] parameter of the energy model for each position
+	TGraph* GetChi();///Returns Graph with the Chi/ndf of the fits at each position
+	TGraphErrors* GetIBG_W();///Returns TGraphErrors with the weights of the IBG for each position
+	TGraphErrors* GetPP511_W();///Returns TGraphErrors with the weights of the PP511 for each position
+	TGraphErrors* GetPP1275_W();///Returns TGraphErrors with the weights of the PP1275 for each position
+	TGraphErrors* GetEBG_W();///Returns TGraphErrors with the weights of the EBG for each position
+	TGraphErrors* GetC511_W();///Returns TGraphErrors with the weights of the C511 for each position
+	TGraphErrors* GetC1275_W();///Returns TGraphErrors with the weights of the C1275 for each position
+	TGraphErrors* GetSum_W();///Returns TGraphErrors with the weights of the sum_geant4 for each position
+	std::vector <TGraphErrors*> GetResiduals();///Returns TGraphErrors with the resiudlas to the spectrum of each position
   
 	ClassDef(TFit,1)
   

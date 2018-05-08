@@ -19,35 +19,52 @@
 
 int main(){
   
-  TFile *f = new TFile("test.root","RECREATE");
+  //TString mode="TotalSplit";
+  TString mode="NoSplit";
+
+  TFile *f = new TFile("../results/NoSplit_Series4_50_20_20.root","RECREATE");
   
-  SFData *data = new SFData(2);
-  data->Print();
+  //SFData *data = new SFData(2);
+  //data->Print();
   
-  int n = data->GetNpoints();
+  //int n = data->GetNpoints();
   
   //~ SFAttenuation *att = new SFAttenuation(1);
   //~ att->AttSeparateCh(0);
   //~ att->AttSeparateCh(1);
   //~ att->AttAveragedCh();
   
-   TFit* test = new TFit(1);
+   TFit* test = new TFit(4,mode);
     
    f->cd();
-   test->GetSpectra()[0]->Write();
-   //~ test->GetChi2Map()[0]->Write();
-   test->GetFittedTemplates()[0]->Write();
-   test->GetResiduals()[0]->Write();
-   TCanvas* mal = new TCanvas("mal","mal", 1500,1500);
-   TH1D* spec = test->GetSpectra()[0];
-   spec->SetLineColor(2);
-   spec->Draw("");
-   test->GetFittedTemplates()[0]->Draw("Same HIST");
-   mal->BuildLegend();
-   mal->SaveAs("Fit.png");
-   //~ TCanvas* mal1 = new TCanvas("mal1","mal1", 1500,1500);
-   //~ test->GetChi2Map()[0]->Draw("COLZ");
-   //~ mal1->SaveAs("Chi2.png");
+   for(int i=0;i<9;i++){//test->GetSpectra().size();i++){
+		test->GetSpectra()[i]->Write();
+		test->GetFittedTemplates()[i]->Write();
+		test->GetResiduals()[i]->Write();
+	}
+   test->GetChi()->Write();
+   if(mode=="TotalSplit"){
+	test->GetGraphicWeights()->Write();
+   	test->GetEnergyConstants()->Write();
+   	test->GetEC_a()->Write();
+   	test->GetEC_b()->Write();
+   	test->GetEC_c()->Write();
+   	test->GetIBG_W()->Write();
+   	test->GetEBG_W()->Write();
+   	test->GetPP511_W()->Write();
+   	test->GetPP1275_W()->Write();
+   	test->GetC511_W()->Write();
+   	test->GetC1275_W()->Write();
+   }
+   else if(mode=="NoSplit"){
+
+   	test->GetEC_a()->Write();
+   	test->GetEC_b()->Write();
+   	test->GetEC_c()->Write();
+   	test->GetIBG_W()->Write();
+   	test->GetSum_W()->Write();
+
+   }
   
   //~ TH1D *h1 = data->GetSpectrum(0,"fPE","ch_0.fT0>0",10);
   //~ TH1D *h2 = data1->GetSpectrum(0,"fPE","ch_0.fT0>0",1);
@@ -152,7 +169,7 @@ int main(){
   
   f->Close();
 
-  delete data;
+  //delete data;
   
   return 1;
 }

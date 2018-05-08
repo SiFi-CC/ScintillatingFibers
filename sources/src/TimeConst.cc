@@ -69,6 +69,9 @@ bool TimeConst::SetDetails(int series_No, string Option){
 		signals[Npoints*2+i]= data->GetSignalAverage(0,(i+1)*10,"ch_0.fPE>199.5 && ch_0.fPE<200.5",100,true);
 	}
 	
+	GraphicSlowComp= new TGraphErrors(Npoints*NperPoint);
+	GraphicFastComp= new TGraphErrors(Npoints*NperPoint);
+	
 
 	
 }
@@ -83,13 +86,13 @@ Double_t* TimeConst::FitSingleSignal(TProfile* Signal){
 		for(int i=0;i<5;i++){
 			singleexp= new TF1("singleexp","expo",tmax+(i+1)*10,1024);
 			Signal->Fit("singleexp","R");
-			if(lastchi==0 || fabs(1-lastchi)> fabs(1-(singleexp->GetChisquare()/singleexp->GetNDF()))){ 
-				lastchi=singleexp->GetChisquare()/singleexp->GetNDF();
+			if(lastchi==0 || lastchi> singleexp->GetChisquare()){ 
+				lastchi=singleexp->GetChisquare();
 				fitresults = new Double_t[4];
 				fitresults[0]= singleexp->Eval(tmax);
-				fitresults[2]= 1/singleexp->GetParameter(1);
-				fitresults[3]= singleexp->Eval(tmax);
-				fitresults[4]= singleexp->GetParameter(1)/singleexp->GetParError(1)/singleexp->GetParError(1);
+				fitresults[1]= 1/singleexp->GetParameter(1);
+				fitresults[2]= singleexp->Eval(tmax);
+				fitresults[3]= singleexp->GetParameter(1)/singleexp->GetParError(1)/singleexp->GetParError(1);
 			}
 		}
 	}
@@ -110,9 +113,10 @@ Double_t* TimeConst::FitSingleSignal(TProfile* Signal){
 				Signal->Fit("slowexp","R");
 				doubleexp->SetParameters(fastexp->GetParameter(0),fastexp->GetParameter(1),slowexp->GetParameter(0),slowexp->GetParameter(1));
 				Signal->Fit("doubleexp","R");
-				if(lastchi==0 || fabs(1-lastchi)> fabs(1-(doubleexp->GetChisquare()/doubleexp->GetNDF()))){
+				if(lastchi==0 || lastchi> doubleexp->GetChisquare()){
 					fastexp->SetParameters(doubleexp->GetParameter(0),doubleexp->GetParameter(1));
 					slowexp->SetParameters(doubleexp->GetParameter(2),doubleexp->GetParameter(3));
+					lastchi=doubleexp->GetChisquare();
 					fitresults = new Double_t[8];
 					fitresults[0]= fastexp->Eval(tmax);
 					fitresults[2]= 1/doubleexp->GetParameter(1);
@@ -130,9 +134,22 @@ Double_t* TimeConst::FitSingleSignal(TProfile* Signal){
 }
 void TimeConst::FitSignals(){
 	for(int i=0;i<signals.size();i++){
-		
+		fitresults.push_back(FitSingleSignal(signals[i]));
+		GraphicFastComp->SetPoint(i,i,fitresults[i][2]);
+		GraphicFastComp->SetPointError(i,0,fitresults[i][3]);
+		GraphicSlowComp->SetPoint(i,i,fitresults[i][6]);
+		GraphicSlowComp->SetPointError(i,0,fitresults[i][7]);
 	}
 	
+}
+
+
+TGraphErrors* TimeConst::GetSlowComponent(){
+	return GraphicSlowComp;		
+}
+
+TGraphErrors* TimeConst::GetFastComponent(){
+	return GraphicFastComp;		
 }
 ///Print method. 
 ///Prints the result of the fitting process according to the used methode 

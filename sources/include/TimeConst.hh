@@ -12,11 +12,12 @@
 #ifndef __TimeConst_H_
 #define __TimeConst_H_ 1
 #include "SFData.hh"
-#include "TObject.h"
-#include "TProfile.h"
-#include "TF1.h"
-#include "TCanvas.h"
-#include "TROOT.h"
+#include <TObject.h>
+#include <TProfile.h>
+#include <TF1.h>
+#include <TCanvas.h>
+#include <TROOT.h>
+#include <TGraphErrors.h>
 
 #include <string>
 #include <iostream>
@@ -46,6 +47,10 @@ private:
   TF1* fastexp;			///< function for the assumption of a double decay mode
   TF1* slowexp;			///< function for the assumption of a double decay mode
   
+  TGraphErrors* GraphicSlowComp;
+  TGraphErrors* GraphicFastComp;
+
+
   Double_t* FitSingleSignal(TProfile* Signal);
   void FitSignals();
   
@@ -62,7 +67,10 @@ public:
   std::vector <Double_t*> GetFitResults();
   std::vector <Double_t*> GetAveragedSignals();
   void Print(); 
-    
+  
+  TGraphErrors* GetSlowComponent();
+  TGraphErrors* GetFastComponent();
+  
   ClassDef(TimeConst,1)
   
 };

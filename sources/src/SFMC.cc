@@ -57,7 +57,7 @@ bool SFMC::SetDetails(int seriesNo){
   MCSeriesNo = seriesNo;
   
   ///- number of measurements in the series
-  if(MCSeriesNo==1) MCNpoints = 6;
+  if(MCSeriesNo==1) MCNpoints = 9;
 
   ///- fiber type
   if(MCSeriesNo==1) MCFiber = "LuAG:Ce";
