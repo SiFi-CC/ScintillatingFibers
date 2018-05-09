@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['sfdata',['SFData',['../classSFData.html',1,'']]]
+  ['bgfit',['BGFit',['../classBGFit.html',1,'']]]
 ];

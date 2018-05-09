@@ -81,55 +81,617 @@ Inheritance diagram for TFit:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:adfaac310a909b33f5b57c616d6ce21e0"><td class="memItemLeft" align="right" valign="top"><a id="adfaac310a909b33f5b57c616d6ce21e0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TFit</b> (TH1D *Spectrum, TH1D *Background)</td></tr>
-<tr class="separator:adfaac310a909b33f5b57c616d6ce21e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aedce30e45ea8fa8c57a800cc35d300c3"><td class="memItemLeft" align="right" valign="top"><a id="aedce30e45ea8fa8c57a800cc35d300c3"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TFit</b> (TH1D *Spectrum, TH1D *Background, TString Name)</td></tr>
-<tr class="separator:aedce30e45ea8fa8c57a800cc35d300c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac598f249e491689b32062963bb525fd7"><td class="memItemLeft" align="right" valign="top"><a id="ac598f249e491689b32062963bb525fd7"></a>
-TCanvas *&#160;</td><td class="memItemRight" valign="bottom"><b>DrawFittedSpectrum</b> ()</td></tr>
-<tr class="separator:ac598f249e491689b32062963bb525fd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4dc3b2f8ecf5ddaa725ddf29eca95b23"><td class="memItemLeft" align="right" valign="top"><a id="a4dc3b2f8ecf5ddaa725ddf29eca95b23"></a>
-Double_t *&#160;</td><td class="memItemRight" valign="bottom"><b>GetFitData</b> ()</td></tr>
-<tr class="separator:a4dc3b2f8ecf5ddaa725ddf29eca95b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73628a0ab1109e49223970bbee654ed8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a73628a0ab1109e49223970bbee654ed8">TFit</a> ()</td></tr>
+<tr class="separator:a73628a0ab1109e49223970bbee654ed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaac1ac681416b666ea78fd6ed4bf0a98"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#aaac1ac681416b666ea78fd6ed4bf0a98">TFit</a> (int series_No, TString FitMode)</td></tr>
+<tr class="separator:aaac1ac681416b666ea78fd6ed4bf0a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cc1685309339feb74dd5b2dd2aaf816"><td class="memItemLeft" align="right" valign="top"><a id="a8cc1685309339feb74dd5b2dd2aaf816"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a8cc1685309339feb74dd5b2dd2aaf816">~TFit</a> ()</td></tr>
+<tr class="memdesc:a8cc1685309339feb74dd5b2dd2aaf816"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deconstructer. <br /></td></tr>
+<tr class="separator:a8cc1685309339feb74dd5b2dd2aaf816"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71d10e1a73026d4f576ffe7932fcef29"><td class="memItemLeft" align="right" valign="top"><a id="a71d10e1a73026d4f576ffe7932fcef29"></a>
+TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a71d10e1a73026d4f576ffe7932fcef29">GetBackground</a> ()</td></tr>
+<tr class="memdesc:a71d10e1a73026d4f576ffe7932fcef29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the spectra of the series. <br /></td></tr>
+<tr class="separator:a71d10e1a73026d4f576ffe7932fcef29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f1c9568331fb014284fe0d331edfb13"><td class="memItemLeft" align="right" valign="top"><a id="a3f1c9568331fb014284fe0d331edfb13"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a3f1c9568331fb014284fe0d331edfb13">GetC1275_W</a> ()</td></tr>
+<tr class="memdesc:a3f1c9568331fb014284fe0d331edfb13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the C511 for each position. <br /></td></tr>
+<tr class="separator:a3f1c9568331fb014284fe0d331edfb13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7a869cf053a20ea1a49d4b6e374c7a7"><td class="memItemLeft" align="right" valign="top"><a id="af7a869cf053a20ea1a49d4b6e374c7a7"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#af7a869cf053a20ea1a49d4b6e374c7a7">GetC511_W</a> ()</td></tr>
+<tr class="memdesc:af7a869cf053a20ea1a49d4b6e374c7a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the EBG for each position. <br /></td></tr>
+<tr class="separator:af7a869cf053a20ea1a49d4b6e374c7a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4673093a06a78b13fad475536100f2c5"><td class="memItemLeft" align="right" valign="top"><a id="a4673093a06a78b13fad475536100f2c5"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a4673093a06a78b13fad475536100f2c5">GetChi</a> ()</td></tr>
+<tr class="memdesc:a4673093a06a78b13fad475536100f2c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns Graph with the [2] parameter of the energy model for each position. <br /></td></tr>
+<tr class="separator:a4673093a06a78b13fad475536100f2c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf5023bc353f104286f9477af8094dd0"><td class="memItemLeft" align="right" valign="top"><a id="acf5023bc353f104286f9477af8094dd0"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#acf5023bc353f104286f9477af8094dd0">GetEBG_W</a> ()</td></tr>
+<tr class="memdesc:acf5023bc353f104286f9477af8094dd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the PP1275 for each position. <br /></td></tr>
+<tr class="separator:acf5023bc353f104286f9477af8094dd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a738c89cb3c5dfd701bd5f3dc34f639f0"><td class="memItemLeft" align="right" valign="top"><a id="a738c89cb3c5dfd701bd5f3dc34f639f0"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a738c89cb3c5dfd701bd5f3dc34f639f0">GetEC_a</a> ()</td></tr>
+<tr class="memdesc:a738c89cb3c5dfd701bd5f3dc34f639f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns visualisation of all weights of each position. <br /></td></tr>
+<tr class="separator:a738c89cb3c5dfd701bd5f3dc34f639f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5da556df9603c0952c04007dee3278af"><td class="memItemLeft" align="right" valign="top"><a id="a5da556df9603c0952c04007dee3278af"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a5da556df9603c0952c04007dee3278af">GetEC_b</a> ()</td></tr>
+<tr class="memdesc:a5da556df9603c0952c04007dee3278af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns Graph with the [0] parameter of the energy model for each position. <br /></td></tr>
+<tr class="separator:a5da556df9603c0952c04007dee3278af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ff5106d83fa8e6445e89d56b315ce21"><td class="memItemLeft" align="right" valign="top"><a id="a7ff5106d83fa8e6445e89d56b315ce21"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a7ff5106d83fa8e6445e89d56b315ce21">GetEC_c</a> ()</td></tr>
+<tr class="memdesc:a7ff5106d83fa8e6445e89d56b315ce21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns Graph with the [1] parameter of the energy model for each position. <br /></td></tr>
+<tr class="separator:a7ff5106d83fa8e6445e89d56b315ce21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a988c54bfe17b7c915eaf6171d02f9416"><td class="memItemLeft" align="right" valign="top"><a id="a988c54bfe17b7c915eaf6171d02f9416"></a>
+std::vector&lt; THStack * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a988c54bfe17b7c915eaf6171d02f9416">GetFittedTemplates</a> ()</td></tr>
+<tr class="memdesc:a988c54bfe17b7c915eaf6171d02f9416"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the internal background for the series. <br /></td></tr>
+<tr class="separator:a988c54bfe17b7c915eaf6171d02f9416"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0074f8c8343159669c423751109d23f7"><td class="memItemLeft" align="right" valign="top"><a id="a0074f8c8343159669c423751109d23f7"></a>
+TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a0074f8c8343159669c423751109d23f7">GetGraphicWeights</a> ()</td></tr>
+<tr class="memdesc:a0074f8c8343159669c423751109d23f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">returns the THStacks containing the fitted templates <br /></td></tr>
+<tr class="separator:a0074f8c8343159669c423751109d23f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69deffa929e97ae7d9f87ddc446e7530"><td class="memItemLeft" align="right" valign="top"><a id="a69deffa929e97ae7d9f87ddc446e7530"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a69deffa929e97ae7d9f87ddc446e7530">GetIBG_W</a> ()</td></tr>
+<tr class="memdesc:a69deffa929e97ae7d9f87ddc446e7530"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns Graph with the Chi/ndf of the fits at each position. <br /></td></tr>
+<tr class="separator:a69deffa929e97ae7d9f87ddc446e7530"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69420ebec14f15b0baa546d3035c6051"><td class="memItemLeft" align="right" valign="top"><a id="a69420ebec14f15b0baa546d3035c6051"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a69420ebec14f15b0baa546d3035c6051">GetPP1275_W</a> ()</td></tr>
+<tr class="memdesc:a69420ebec14f15b0baa546d3035c6051"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the PP511 for each position. <br /></td></tr>
+<tr class="separator:a69420ebec14f15b0baa546d3035c6051"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4b286efced9ad878723282e9a8bde3f"><td class="memItemLeft" align="right" valign="top"><a id="ab4b286efced9ad878723282e9a8bde3f"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ab4b286efced9ad878723282e9a8bde3f">GetPP511_W</a> ()</td></tr>
+<tr class="memdesc:ab4b286efced9ad878723282e9a8bde3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the IBG for each position. <br /></td></tr>
+<tr class="separator:ab4b286efced9ad878723282e9a8bde3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d95cc44dcbde6e8c02e2af01618ba9a"><td class="memItemLeft" align="right" valign="top"><a id="a6d95cc44dcbde6e8c02e2af01618ba9a"></a>
+std::vector&lt; TGraphErrors * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a6d95cc44dcbde6e8c02e2af01618ba9a">GetResiduals</a> ()</td></tr>
+<tr class="memdesc:a6d95cc44dcbde6e8c02e2af01618ba9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the sum_geant4 for each position. <br /></td></tr>
+<tr class="separator:a6d95cc44dcbde6e8c02e2af01618ba9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9144a36836628e91c74387d4b886401e"><td class="memItemLeft" align="right" valign="top"><a id="a9144a36836628e91c74387d4b886401e"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSpectra</b> ()</td></tr>
+<tr class="separator:a9144a36836628e91c74387d4b886401e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7347cbb0edf182ae7dc6ff63458f5e99"><td class="memItemLeft" align="right" valign="top"><a id="a7347cbb0edf182ae7dc6ff63458f5e99"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a7347cbb0edf182ae7dc6ff63458f5e99">GetSum_W</a> ()</td></tr>
+<tr class="memdesc:a7347cbb0edf182ae7dc6ff63458f5e99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns TGraphErrors with the weights of the C1275 for each position. <br /></td></tr>
+<tr class="separator:a7347cbb0edf182ae7dc6ff63458f5e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4788236f37b1822ef23f38ebafd85fe"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#aa4788236f37b1822ef23f38ebafd85fe">SetDetails</a> (int serie_No, TString FitMode)</td></tr>
+<tr class="separator:aa4788236f37b1822ef23f38ebafd85fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a9806917649d8deb2b49d73e6d7c81904"><td class="memItemLeft" align="right" valign="top"><a id="a9806917649d8deb2b49d73e6d7c81904"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Fitting</b> ()</td></tr>
-<tr class="separator:a9806917649d8deb2b49d73e6d7c81904"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adfa68850d2e8ca87965b5347c5ce3cf9"><td class="memItemLeft" align="right" valign="top">THStack *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#adfa68850d2e8ca87965b5347c5ce3cf9">FitSingleSpectrumSplit</a> (int position, double *weights, double *enerconst)</td></tr>
+<tr class="separator:adfa68850d2e8ca87965b5347c5ce3cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5172ee306ce2d14a7d3d9d2edc3e8e3"><td class="memItemLeft" align="right" valign="top">THStack *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ab5172ee306ce2d14a7d3d9d2edc3e8e3">FitSingleSpectrumTwoSplit</a> (int position, double *weights, double *enerconst)</td></tr>
+<tr class="separator:ab5172ee306ce2d14a7d3d9d2edc3e8e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6923c40bd589a61daf2626fe6790a238"><td class="memItemLeft" align="right" valign="top"><a id="a6923c40bd589a61daf2626fe6790a238"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a6923c40bd589a61daf2626fe6790a238">FitSpectra</a> ()</td></tr>
+<tr class="memdesc:a6923c40bd589a61daf2626fe6790a238"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to call the Fit funcitons for each Position of a series. <br /></td></tr>
+<tr class="separator:a6923c40bd589a61daf2626fe6790a238"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17aba62feebc9513907a0be845fafd67"><td class="memItemLeft" align="right" valign="top">THStack *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a17aba62feebc9513907a0be845fafd67">FitSSSumEnergy</a> (int position, double *weight, double *enerconst)</td></tr>
+<tr class="separator:a17aba62feebc9513907a0be845fafd67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31f8012211d0e87706089411adda49ba"><td class="memItemLeft" align="right" valign="top">THStack *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a31f8012211d0e87706089411adda49ba">FitSSSumWeights</a> (int position, double *weight, double *enerconst)</td></tr>
+<tr class="separator:a31f8012211d0e87706089411adda49ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d37be63fc5ccd350b6729c61a943f7b"><td class="memItemLeft" align="right" valign="top"><a id="a2d37be63fc5ccd350b6729c61a943f7b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a2d37be63fc5ccd350b6729c61a943f7b">Reset</a> ()</td></tr>
+<tr class="memdesc:a2d37be63fc5ccd350b6729c61a943f7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to reset everything. <br /></td></tr>
+<tr class="separator:a2d37be63fc5ccd350b6729c61a943f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8387cb73b8ad4228ecb1ee2582b30d44"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a8387cb73b8ad4228ecb1ee2582b30d44">SetTMiniut</a> (double *fParam, double *fParErr, double &amp;chi, int fitmode)</td></tr>
+<tr class="separator:a8387cb73b8ad4228ecb1ee2582b30d44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a351443a3278df72bc21d415aeb727401"><td class="memItemLeft" align="right" valign="top"><a id="a351443a3278df72bc21d415aeb727401"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>background</b></td></tr>
+TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a351443a3278df72bc21d415aeb727401">background</a></td></tr>
+<tr class="memdesc:a351443a3278df72bc21d415aeb727401"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal activity background template. <br /></td></tr>
 <tr class="separator:a351443a3278df72bc21d415aeb727401"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a7f3ca7e6e7a380e5dbe1afb03ab794"><td class="memItemLeft" align="right" valign="top"><a id="a3a7f3ca7e6e7a380e5dbe1afb03ab794"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>compton1200</b></td></tr>
-<tr class="separator:a3a7f3ca7e6e7a380e5dbe1afb03ab794"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1359fe5442643a5a2d4117413a0753d"><td class="memItemLeft" align="right" valign="top"><a id="ad1359fe5442643a5a2d4117413a0753d"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>compton511</b></td></tr>
-<tr class="separator:ad1359fe5442643a5a2d4117413a0753d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b1eb058bfdfcbf5a419dd9b82642e0f"><td class="memItemLeft" align="right" valign="top"><a id="a6b1eb058bfdfcbf5a419dd9b82642e0f"></a>
-TString&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
-<tr class="separator:a6b1eb058bfdfcbf5a419dd9b82642e0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a2cb220336a2b00705ec8b35ecd854b"><td class="memItemLeft" align="right" valign="top"><a id="a8a2cb220336a2b00705ec8b35ecd854b"></a>
-Double_t&#160;</td><td class="memItemRight" valign="bottom"><b>position</b></td></tr>
-<tr class="separator:a8a2cb220336a2b00705ec8b35ecd854b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a469a6420eb6af2444ee1d8dced36a5f3"><td class="memItemLeft" align="right" valign="top"><a id="a469a6420eb6af2444ee1d8dced36a5f3"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>pp1200</b></td></tr>
-<tr class="separator:a469a6420eb6af2444ee1d8dced36a5f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6de47805b8a05cfafe568cc6ad0f76f0"><td class="memItemLeft" align="right" valign="top"><a id="a6de47805b8a05cfafe568cc6ad0f76f0"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>pp511</b></td></tr>
-<tr class="separator:a6de47805b8a05cfafe568cc6ad0f76f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a076fc26b5fc38935a36d48a025974cfe"><td class="memItemLeft" align="right" valign="top"><a id="a076fc26b5fc38935a36d48a025974cfe"></a>
-Double_t&#160;</td><td class="memItemRight" valign="bottom"><b>resolution</b></td></tr>
-<tr class="separator:a076fc26b5fc38935a36d48a025974cfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91a45bae6487905f91bea7d184b389ff"><td class="memItemLeft" align="right" valign="top"><a id="a91a45bae6487905f91bea7d184b389ff"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>spectrum</b></td></tr>
-<tr class="separator:a91a45bae6487905f91bea7d184b389ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89bb52f3fe0a6ba715920a967a69bc16"><td class="memItemLeft" align="right" valign="top"><a id="a89bb52f3fe0a6ba715920a967a69bc16"></a>
+<a class="el" href="classSFData.html">SFData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a89bb52f3fe0a6ba715920a967a69bc16">bgdata</a></td></tr>
+<tr class="memdesc:a89bb52f3fe0a6ba715920a967a69bc16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data of the background measurement series. <br /></td></tr>
+<tr class="separator:a89bb52f3fe0a6ba715920a967a69bc16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05f20f8f09b5941eb6dd459d1dec1688"><td class="memItemLeft" align="right" valign="top"><a id="a05f20f8f09b5941eb6dd459d1dec1688"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a05f20f8f09b5941eb6dd459d1dec1688">call</a></td></tr>
+<tr class="memdesc:a05f20f8f09b5941eb6dd459d1dec1688"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled sumed compton spectra templates <br /></td></tr>
+<tr class="separator:a05f20f8f09b5941eb6dd459d1dec1688"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af76c50d02b70e8c6545cc8c3f7ec0baa"><td class="memItemLeft" align="right" valign="top"><a id="af76c50d02b70e8c6545cc8c3f7ec0baa"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#af76c50d02b70e8c6545cc8c3f7ec0baa">chigraph</a></td></tr>
+<tr class="memdesc:af76c50d02b70e8c6545cc8c3f7ec0baa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the chi/ndf of the best fits. <br /></td></tr>
+<tr class="separator:af76c50d02b70e8c6545cc8c3f7ec0baa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec51bb606844db5369a2b4d522564ee7"><td class="memItemLeft" align="right" valign="top"><a id="aec51bb606844db5369a2b4d522564ee7"></a>
+std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#aec51bb606844db5369a2b4d522564ee7">chindf</a></td></tr>
+<tr class="memdesc:aec51bb606844db5369a2b4d522564ee7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Chi2 der fits. <br /></td></tr>
+<tr class="separator:aec51bb606844db5369a2b4d522564ee7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10167d142e94129d0894fd2d89347a3f"><td class="memItemLeft" align="right" valign="top"><a id="a10167d142e94129d0894fd2d89347a3f"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a10167d142e94129d0894fd2d89347a3f">compton1275</a></td></tr>
+<tr class="memdesc:a10167d142e94129d0894fd2d89347a3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled 1275 keV compton spectra templates <br /></td></tr>
+<tr class="separator:a10167d142e94129d0894fd2d89347a3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a636e55747cdd2dd33761d0a6d42841cb"><td class="memItemLeft" align="right" valign="top"><a id="a636e55747cdd2dd33761d0a6d42841cb"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a636e55747cdd2dd33761d0a6d42841cb">compton511</a></td></tr>
+<tr class="memdesc:a636e55747cdd2dd33761d0a6d42841cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled 1275 keV photonpeak templates <br /></td></tr>
+<tr class="separator:a636e55747cdd2dd33761d0a6d42841cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e5be6938816a5d6e88cf4f6f4ac1c9b"><td class="memItemLeft" align="right" valign="top"><a id="a8e5be6938816a5d6e88cf4f6f4ac1c9b"></a>
+<a class="el" href="classSFData.html">SFData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a8e5be6938816a5d6e88cf4f6f4ac1c9b">data</a></td></tr>
+<tr class="memdesc:a8e5be6938816a5d6e88cf4f6f4ac1c9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data of the measurement series. <br /></td></tr>
+<tr class="separator:a8e5be6938816a5d6e88cf4f6f4ac1c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34c2aecec98874e12a9763396317326b"><td class="memItemLeft" align="right" valign="top"><a id="a34c2aecec98874e12a9763396317326b"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a34c2aecec98874e12a9763396317326b">ebg</a></td></tr>
+<tr class="memdesc:a34c2aecec98874e12a9763396317326b"><td class="mdescLeft">&#160;</td><td class="mdescRight">background of other depositions within the fibre <br /></td></tr>
+<tr class="separator:a34c2aecec98874e12a9763396317326b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06a647d543589b4f0fdf75fe646ffa0d"><td class="memItemLeft" align="right" valign="top"><a id="a06a647d543589b4f0fdf75fe646ffa0d"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a06a647d543589b4f0fdf75fe646ffa0d">ec_a</a></td></tr>
+<tr class="memdesc:a06a647d543589b4f0fdf75fe646ffa0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the Constant [0] of the energy model for the best fits of the positions. <br /></td></tr>
+<tr class="separator:a06a647d543589b4f0fdf75fe646ffa0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6aefefb88da361f500b2feb6afcbc80d"><td class="memItemLeft" align="right" valign="top"><a id="a6aefefb88da361f500b2feb6afcbc80d"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a6aefefb88da361f500b2feb6afcbc80d">ec_b</a></td></tr>
+<tr class="memdesc:a6aefefb88da361f500b2feb6afcbc80d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the Constant [1] of the energy model for the best fits of the positions. <br /></td></tr>
+<tr class="separator:a6aefefb88da361f500b2feb6afcbc80d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5786b2849d9fb70a7ffe733c07123ac5"><td class="memItemLeft" align="right" valign="top"><a id="a5786b2849d9fb70a7ffe733c07123ac5"></a>
+TGraph *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a5786b2849d9fb70a7ffe733c07123ac5">ec_c</a></td></tr>
+<tr class="memdesc:a5786b2849d9fb70a7ffe733c07123ac5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the Constant [2] of the energy model for the best fits of the positions. <br /></td></tr>
+<tr class="separator:a5786b2849d9fb70a7ffe733c07123ac5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e161e064dd2f51fb886d5b2984b91b7"><td class="memItemLeft" align="right" valign="top"><a id="a6e161e064dd2f51fb886d5b2984b91b7"></a>
+std::vector&lt; double * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a6e161e064dd2f51fb886d5b2984b91b7">energypara</a></td></tr>
+<tr class="memdesc:a6e161e064dd2f51fb886d5b2984b91b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">energy calibration parameter <br /></td></tr>
+<tr class="separator:a6e161e064dd2f51fb886d5b2984b91b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3ad7cf0d37d7bae44cdba3582c02d81"><td class="memItemLeft" align="right" valign="top"><a id="ac3ad7cf0d37d7bae44cdba3582c02d81"></a>
+std::vector&lt; THStack * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ac3ad7cf0d37d7bae44cdba3582c02d81">fittedtemplates</a></td></tr>
+<tr class="memdesc:ac3ad7cf0d37d7bae44cdba3582c02d81"><td class="mdescLeft">&#160;</td><td class="mdescRight">THStacks that contain the fitted, weighted templates. <br /></td></tr>
+<tr class="separator:ac3ad7cf0d37d7bae44cdba3582c02d81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29aca530a5ef42baac7c12452a994da3"><td class="memItemLeft" align="right" valign="top"><a id="a29aca530a5ef42baac7c12452a994da3"></a>
+Int_t&#160;</td><td class="memItemRight" valign="bottom"><b>fmode</b></td></tr>
+<tr class="separator:a29aca530a5ef42baac7c12452a994da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3778878b17424b7571c1fed7940f0144"><td class="memItemLeft" align="right" valign="top"><a id="a3778878b17424b7571c1fed7940f0144"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a3778878b17424b7571c1fed7940f0144">g_c_1275</a></td></tr>
+<tr class="memdesc:a3778878b17424b7571c1fed7940f0144"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the cc_1275 templates if this fit is executed. <br /></td></tr>
+<tr class="separator:a3778878b17424b7571c1fed7940f0144"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a460a073468952e83e9c4c30ff229fdbb"><td class="memItemLeft" align="right" valign="top"><a id="a460a073468952e83e9c4c30ff229fdbb"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a460a073468952e83e9c4c30ff229fdbb">g_c_511</a></td></tr>
+<tr class="memdesc:a460a073468952e83e9c4c30ff229fdbb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the c_511 templates if this fit is executed. <br /></td></tr>
+<tr class="separator:a460a073468952e83e9c4c30ff229fdbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6838e6dc2410a009bec7f1a9f8ccc09"><td class="memItemLeft" align="right" valign="top"><a id="ab6838e6dc2410a009bec7f1a9f8ccc09"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ab6838e6dc2410a009bec7f1a9f8ccc09">g_ebg</a></td></tr>
+<tr class="memdesc:ab6838e6dc2410a009bec7f1a9f8ccc09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the ebg templates if this fit is executed. <br /></td></tr>
+<tr class="separator:ab6838e6dc2410a009bec7f1a9f8ccc09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e1d1b919c9ea3e5dab7a4031899fcaa"><td class="memItemLeft" align="right" valign="top"><a id="a6e1d1b919c9ea3e5dab7a4031899fcaa"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a6e1d1b919c9ea3e5dab7a4031899fcaa">g_ibg</a></td></tr>
+<tr class="memdesc:a6e1d1b919c9ea3e5dab7a4031899fcaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the ibg templates if this fit is executed. <br /></td></tr>
+<tr class="separator:a6e1d1b919c9ea3e5dab7a4031899fcaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a799c1cde5ae2ca9de89ae83bde10864a"><td class="memItemLeft" align="right" valign="top"><a id="a799c1cde5ae2ca9de89ae83bde10864a"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a799c1cde5ae2ca9de89ae83bde10864a">g_pp_1275</a></td></tr>
+<tr class="memdesc:a799c1cde5ae2ca9de89ae83bde10864a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the pp_1275 templates if this fit is executed. <br /></td></tr>
+<tr class="separator:a799c1cde5ae2ca9de89ae83bde10864a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f8c72b82af88b09415db93ded48fa58"><td class="memItemLeft" align="right" valign="top"><a id="a8f8c72b82af88b09415db93ded48fa58"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a8f8c72b82af88b09415db93ded48fa58">g_pp_511</a></td></tr>
+<tr class="memdesc:a8f8c72b82af88b09415db93ded48fa58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the pp_511 templates if this fit is executed. <br /></td></tr>
+<tr class="separator:a8f8c72b82af88b09415db93ded48fa58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5d532657bc839202b35db4fc6639744"><td class="memItemLeft" align="right" valign="top"><a id="ae5d532657bc839202b35db4fc6639744"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ae5d532657bc839202b35db4fc6639744">g_sum</a></td></tr>
+<tr class="memdesc:ae5d532657bc839202b35db4fc6639744"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph containing the weights of the geant4_sum templates if this fit is executed. <br /></td></tr>
+<tr class="separator:ae5d532657bc839202b35db4fc6639744"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44d6bde7f4cab557b7375360b486e364"><td class="memItemLeft" align="right" valign="top"><a id="a44d6bde7f4cab557b7375360b486e364"></a>
+TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a44d6bde7f4cab557b7375360b486e364">GraphicWeights</a></td></tr>
+<tr class="memdesc:a44d6bde7f4cab557b7375360b486e364"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains all Weights of each position. <br /></td></tr>
+<tr class="separator:a44d6bde7f4cab557b7375360b486e364"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac8f521e4a86803200763b1380d676b1"><td class="memItemLeft" align="right" valign="top"><a id="aac8f521e4a86803200763b1380d676b1"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#aac8f521e4a86803200763b1380d676b1">Nspectra</a></td></tr>
+<tr class="memdesc:aac8f521e4a86803200763b1380d676b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of spectra in the measurement series. <br /></td></tr>
+<tr class="separator:aac8f521e4a86803200763b1380d676b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a199d1d61ba45e35a40f90267ea99084b"><td class="memItemLeft" align="right" valign="top"><a id="a199d1d61ba45e35a40f90267ea99084b"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a199d1d61ba45e35a40f90267ea99084b">pall</a></td></tr>
+<tr class="memdesc:a199d1d61ba45e35a40f90267ea99084b"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled sumed photonpeak templates <br /></td></tr>
+<tr class="separator:a199d1d61ba45e35a40f90267ea99084b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da1e781bacd2dcbf365e322aeb6ccb4"><td class="memItemLeft" align="right" valign="top"><a id="a4da1e781bacd2dcbf365e322aeb6ccb4"></a>
+std::vector&lt; <a class="el" href="classSFPeakFinder.html">SFPeakFinder</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a4da1e781bacd2dcbf365e322aeb6ccb4">Peaks</a></td></tr>
+<tr class="memdesc:a4da1e781bacd2dcbf365e322aeb6ccb4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Peaks of the 511 keV Peak, needed for the start parameter of the energy model. <br /></td></tr>
+<tr class="separator:a4da1e781bacd2dcbf365e322aeb6ccb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13968eccc5b1c9bca5d61ca1aa2260ea"><td class="memItemLeft" align="right" valign="top"><a id="a13968eccc5b1c9bca5d61ca1aa2260ea"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a13968eccc5b1c9bca5d61ca1aa2260ea">pp1275</a></td></tr>
+<tr class="memdesc:a13968eccc5b1c9bca5d61ca1aa2260ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled 511 keV compton spectra templates <br /></td></tr>
+<tr class="separator:a13968eccc5b1c9bca5d61ca1aa2260ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ad521c4c5f69e96349be75dabcb98d7"><td class="memItemLeft" align="right" valign="top"><a id="a7ad521c4c5f69e96349be75dabcb98d7"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a7ad521c4c5f69e96349be75dabcb98d7">pp511</a></td></tr>
+<tr class="memdesc:a7ad521c4c5f69e96349be75dabcb98d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">scaled 511 keV photonpeak templates <br /></td></tr>
+<tr class="separator:a7ad521c4c5f69e96349be75dabcb98d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73384439e41227726e44ab2f48f17e92"><td class="memItemLeft" align="right" valign="top"><a id="a73384439e41227726e44ab2f48f17e92"></a>
+std::vector&lt; TGraphErrors * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a73384439e41227726e44ab2f48f17e92">residual</a></td></tr>
+<tr class="memdesc:a73384439e41227726e44ab2f48f17e92"><td class="mdescLeft">&#160;</td><td class="mdescRight">residuals of the fitted spectra <br /></td></tr>
+<tr class="separator:a73384439e41227726e44ab2f48f17e92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2fccf414533d86359adc5c4c88b6f0ed"><td class="memItemLeft" align="right" valign="top"><a id="a2fccf414533d86359adc5c4c88b6f0ed"></a>
+TRandom3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a2fccf414533d86359adc5c4c88b6f0ed">resolutiongenerator</a></td></tr>
+<tr class="memdesc:a2fccf414533d86359adc5c4c88b6f0ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to smear the templates. <br /></td></tr>
+<tr class="separator:a2fccf414533d86359adc5c4c88b6f0ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fcc2a505a50ffa0e7b3d980d85d6887"><td class="memItemLeft" align="right" valign="top"><a id="a5fcc2a505a50ffa0e7b3d980d85d6887"></a>
+Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a5fcc2a505a50ffa0e7b3d980d85d6887">seriesNo</a></td></tr>
+<tr class="memdesc:a5fcc2a505a50ffa0e7b3d980d85d6887"><td class="mdescLeft">&#160;</td><td class="mdescRight">Series number that is analysed by the Fit. <br /></td></tr>
+<tr class="separator:a5fcc2a505a50ffa0e7b3d980d85d6887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1e0af0b0ee4020d39bee20eaeb46b65"><td class="memItemLeft" align="right" valign="top"><a id="ad1e0af0b0ee4020d39bee20eaeb46b65"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ad1e0af0b0ee4020d39bee20eaeb46b65">spectra</a></td></tr>
+<tr class="memdesc:ad1e0af0b0ee4020d39bee20eaeb46b65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spectra that will be analysed. <br /></td></tr>
+<tr class="separator:ad1e0af0b0ee4020d39bee20eaeb46b65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5cf25a78ad40aba7718a4066748b11d"><td class="memItemLeft" align="right" valign="top"><a id="aa5cf25a78ad40aba7718a4066748b11d"></a>
+<a class="el" href="classSFMC.html">SFMC</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#aa5cf25a78ad40aba7718a4066748b11d">template_data</a></td></tr>
+<tr class="memdesc:aa5cf25a78ad40aba7718a4066748b11d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data of the simulated templates. <br /></td></tr>
+<tr class="separator:aa5cf25a78ad40aba7718a4066748b11d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af784a014dbab8e69330d038b8b51a892"><td class="memItemLeft" align="right" valign="top"><a id="af784a014dbab8e69330d038b8b51a892"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#af784a014dbab8e69330d038b8b51a892">templates_c1275</a></td></tr>
+<tr class="memdesc:af784a014dbab8e69330d038b8b51a892"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the 1275 keV compton spectra <br /></td></tr>
+<tr class="separator:af784a014dbab8e69330d038b8b51a892"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e798671320f7627d0559643b69ac0cc"><td class="memItemLeft" align="right" valign="top"><a id="a1e798671320f7627d0559643b69ac0cc"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a1e798671320f7627d0559643b69ac0cc">templates_c511</a></td></tr>
+<tr class="memdesc:a1e798671320f7627d0559643b69ac0cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the 511 keV compton spectra <br /></td></tr>
+<tr class="separator:a1e798671320f7627d0559643b69ac0cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e72650d1794b0318ea25d41827b9ad4"><td class="memItemLeft" align="right" valign="top"><a id="a0e72650d1794b0318ea25d41827b9ad4"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a0e72650d1794b0318ea25d41827b9ad4">templates_call</a></td></tr>
+<tr class="memdesc:a0e72650d1794b0318ea25d41827b9ad4"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the sumed compton spectra <br /></td></tr>
+<tr class="separator:a0e72650d1794b0318ea25d41827b9ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a982f85b22b6b2f66563d28139916f708"><td class="memItemLeft" align="right" valign="top"><a id="a982f85b22b6b2f66563d28139916f708"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a982f85b22b6b2f66563d28139916f708">templates_else</a></td></tr>
+<tr class="memdesc:a982f85b22b6b2f66563d28139916f708"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of other depositions within the fibres <br /></td></tr>
+<tr class="separator:a982f85b22b6b2f66563d28139916f708"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc3059859b0b9936e4b4e5fcbb2ee1d1"><td class="memItemLeft" align="right" valign="top"><a id="afc3059859b0b9936e4b4e5fcbb2ee1d1"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#afc3059859b0b9936e4b4e5fcbb2ee1d1">templates_p1275</a></td></tr>
+<tr class="memdesc:afc3059859b0b9936e4b4e5fcbb2ee1d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the 1275 keV compton spectra <br /></td></tr>
+<tr class="separator:afc3059859b0b9936e4b4e5fcbb2ee1d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a215c55e34010851be693bb93b4a711bd"><td class="memItemLeft" align="right" valign="top"><a id="a215c55e34010851be693bb93b4a711bd"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a215c55e34010851be693bb93b4a711bd">templates_p511</a></td></tr>
+<tr class="memdesc:a215c55e34010851be693bb93b4a711bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the 511 keV photon peak <br /></td></tr>
+<tr class="separator:a215c55e34010851be693bb93b4a711bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31169c0b2ef94c69a9e4f8e33af176e3"><td class="memItemLeft" align="right" valign="top"><a id="a31169c0b2ef94c69a9e4f8e33af176e3"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a31169c0b2ef94c69a9e4f8e33af176e3">templates_pall</a></td></tr>
+<tr class="memdesc:a31169c0b2ef94c69a9e4f8e33af176e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the sumed photon peak <br /></td></tr>
+<tr class="separator:a31169c0b2ef94c69a9e4f8e33af176e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab19412b02d63081c3e388279edc90c65"><td class="memItemLeft" align="right" valign="top"><a id="ab19412b02d63081c3e388279edc90c65"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#ab19412b02d63081c3e388279edc90c65">templates_sum</a></td></tr>
+<tr class="memdesc:ab19412b02d63081c3e388279edc90c65"><td class="mdescLeft">&#160;</td><td class="mdescRight">raw templates of the sumed depositions within the fibre <br /></td></tr>
+<tr class="separator:ab19412b02d63081c3e388279edc90c65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b0255b25ed5d1049dc422f34b1807be"><td class="memItemLeft" align="right" valign="top"><a id="a2b0255b25ed5d1049dc422f34b1807be"></a>
+std::vector&lt; double * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTFit.html#a2b0255b25ed5d1049dc422f34b1807be">templateweights</a></td></tr>
+<tr class="memdesc:a2b0255b25ed5d1049dc422f34b1807be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prozentual weights of the different templates of the spectra. <br /></td></tr>
+<tr class="separator:a2b0255b25ed5d1049dc422f34b1807be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a73628a0ab1109e49223970bbee654ed8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73628a0ab1109e49223970bbee654ed8">&#9670;&nbsp;</a></span>TFit() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TFit::TFit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Default constructor. If this constructer is used the details need to be called with <a class="el" href="classTFit.html#aa4788236f37b1822ef23f38ebafd85fe">SetDetails()</a>. </p>
+
+</div>
+</div>
+<a id="aaac1ac681416b666ea78fd6ed4bf0a98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaac1ac681416b666ea78fd6ed4bf0a98">&#9670;&nbsp;</a></span>TFit() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TFit::TFit </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>series_No</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>Fitmode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Constructor that takes the series number of the measurement series that is analysed. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">series_No</td><td>Series number of the measurement series that is analysed. For numbering se <a class="el" href="classSFData.html">SFData</a> class. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="adfa68850d2e8ca87965b5347c5ce3cf9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adfa68850d2e8ca87965b5347c5ce3cf9">&#9670;&nbsp;</a></span>FitSingleSpectrumSplit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">THStack * TFit::FitSingleSpectrumSplit </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>weights</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>enerconst</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Function that performes a fit of all templates to the spectrum that is defined by the position </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">position</td><td>- defining spectrum that the templates are fitted to </td></tr>
+    <tr><td class="paramname">*weights</td><td>- the fit weights are returned here </td></tr>
+    <tr><td class="paramname">*enerconst</td><td>- the parameter of the energy model are returned here </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab5172ee306ce2d14a7d3d9d2edc3e8e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5172ee306ce2d14a7d3d9d2edc3e8e3">&#9670;&nbsp;</a></span>FitSingleSpectrumTwoSplit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">THStack * TFit::FitSingleSpectrumTwoSplit </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>weights</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>enerconst</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Function that performes a fit of a compton and photon template to the spectrum that is defined by the position </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">position</td><td>- defining spectrum that the templates are fitted to </td></tr>
+    <tr><td class="paramname">*weights</td><td>- the fit weights are returned here </td></tr>
+    <tr><td class="paramname">*enerconst</td><td>- the parameter of the energy model are returned here </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a17aba62feebc9513907a0be845fafd67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17aba62feebc9513907a0be845fafd67">&#9670;&nbsp;</a></span>FitSSSumEnergy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">THStack * TFit::FitSSSumEnergy </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>enerconst</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Function that performes a fit of sum template and the energy constants to the spectrum that is defined by the position </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">position</td><td>- defining spectrum that the templates are fitted to </td></tr>
+    <tr><td class="paramname">*weight</td><td>- the fit weights are returned here </td></tr>
+    <tr><td class="paramname">*enerconst</td><td>- the parameter of the energy model are returned here </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a31f8012211d0e87706089411adda49ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31f8012211d0e87706089411adda49ba">&#9670;&nbsp;</a></span>FitSSSumWeights()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">THStack * TFit::FitSSSumWeights </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>position</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>weight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>enerconst</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Function that performes a fit of a sum of all templates to the spectrum that is defined by the position </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">position</td><td>- defining spectrum that the templates are fitted to </td></tr>
+    <tr><td class="paramname">*weight</td><td>- the fit weights are returned here </td></tr>
+    <tr><td class="paramname">*enerconst</td><td>- the parameter of the energy model are returned here </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa4788236f37b1822ef23f38ebafd85fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4788236f37b1822ef23f38ebafd85fe">&#9670;&nbsp;</a></span>SetDetails()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TFit::SetDetails </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>serie_No</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>FitMode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Function that sets up the series and the templates specifications that are requested </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">series_No</td><td>- Series to be analyzed </td></tr>
+    <tr><td class="paramname">FitMode</td><td>- Defining the fit that is performed on the spectra of the serie </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8387cb73b8ad4228ecb1ee2582b30d44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8387cb73b8ad4228ecb1ee2582b30d44">&#9670;&nbsp;</a></span>SetTMiniut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int TFit::SetTMiniut </td>
+          <td>(</td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>fParam</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>fParErr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>chi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fitmode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Function to set up the TMinuit for the different fitting modes </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">*fParam</td><td>- returns fitting parameter </td></tr>
+    <tr><td class="paramname">*fParErr</td><td>- returns errors on fitting parameter </td></tr>
+    <tr><td class="paramname">&amp;chi</td><td>- retruns the chi/ndf </td></tr>
+    <tr><td class="paramname">fitmode</td><td>- sets the fitmode for the TMinuit </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/jonas/DataAnalysis/ScintillatingFibers/sources/include/<a class="el" href="TFit_8hh_source.html">TFit.hh</a></li>
 <li>/home/jonas/DataAnalysis/ScintillatingFibers/sources/src/TFit.cc</li>

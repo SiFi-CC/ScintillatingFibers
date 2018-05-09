@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['getfitdata',['GetFitData',['../classTimeConst.html#a88835527e40e1158b3ff5804e3b532a8',1,'TimeConst']]]
+  ['clear',['Clear',['../classSFAttenuation.html#a3e9b610aa349b373b0c22729e24cd245',1,'SFAttenuation::Clear()'],['../classSFPeakFinder.html#a20e89c0231337647d4e196a217ef349c',1,'SFPeakFinder::Clear()']]]
 ];
