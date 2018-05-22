@@ -18,8 +18,6 @@ using namespace std;
 ClassImp(TFit);
 
 //------------------------------------------------------------------
-///Default constructor.
-///If this constructer is used the details need to be called with SetDetails().
 TFit::TFit():seriesNo(0)
 {
  cout << "##### Warning in TFit constructor!" << endl;
@@ -27,12 +25,10 @@ TFit::TFit():seriesNo(0)
 }
 
 //------------------------------------------------------------------
-///Constructor that takes the series number of the measurement series that is analysed.
-///\param series_No Series number of the measurement series that is analysed. For numbering se SFData class.
 
-TFit::TFit(int series_No, TString Fitmode)
+TFit::TFit(int series_No, TString Fitmode,int re_bin)
 {
-	SetDetails(series_No,Fitmode);
+	SetDetails(series_No,Fitmode,re_bin);
 	FitSpectra();
 }
 
@@ -46,6 +42,7 @@ void TFit::Reset(){
 	if(seriesNo>0 && seriesNo<5){
 		seriesNo=0;
 		Nspectra=0;
+		rebin=1;
 		spectra.clear();
 		templates_else.clear();
 		templates_c511.clear();
@@ -70,11 +67,17 @@ void TFit::Reset(){
 
 //-----------------------------------------------------------------
 
-bool TFit::SetDetails(int series_No, TString FitMode){
+bool TFit::SetDetails(int series_No, TString FitMode,int re_bin){
 	
 	Reset();
-	Fitboarder=70;
+	rebin=re_bin;
+	Fitboarder_low=70;
+	Fitboarder_up=650;
 	minentry=10;
+	
+	steps_par0=50;
+	steps_par1=20;
+	steps_par2=20;
 	
 	seriesNo= series_No;
 	
@@ -90,13 +93,19 @@ bool TFit::SetDetails(int series_No, TString FitMode){
 	Nspectra=data->GetNpoints();
 	//Nspectra=1;
 	spectra=data->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0< 590");
+	if(rebin!=1){
+		for(int i=0;i<spectra.size();i++){
+			spectra[i]->Rebin(rebin);	
+		}
+	}
 	
 	Nbins= spectra[0]->GetNbinsX();
 	
 	if(seriesNo == 1 || seriesNo==3) bgdata= new SFData(7);
 	else if(seriesNo == 2 || seriesNo==4) bgdata= new SFData(8);
 	background = bgdata->GetSpectrum(0,"fPE","ch_0.fT0>0 && ch_0.fT0< 590",1);
-	
+	if(rebin!=1) background->Rebin(rebin);
+
 	template_data =new SFMC(1);
 	templates_else= template_data->GetSpectra("Else","");
 	templates_c511= template_data->GetSpectra("Compton","511");
@@ -127,12 +136,11 @@ bool TFit::SetDetails(int series_No, TString FitMode){
 	energypara.reserve(Nspectra);
 	chindf.reserve(Nspectra);
 	
-	Chi2Map.reserve(Nspectra);
-	
 	resolutiongenerator = new TRandom3();
 	
 	for(int i=0;i<Nspectra;i++){
-		Peaks.push_back(new SFPeakFinder(spectra[i], "511"));
+		SFPeakFinder* temp = new SFPeakFinder(spectra[i],"511",true);
+		Peaks.push_back(temp);
 	}
 	
 	int nx;
@@ -165,13 +173,6 @@ bool TFit::SetDetails(int series_No, TString FitMode){
 			labels[j]=stringlist[j+10].c_str();
 			GraphicWeights->GetYaxis()->SetBinLabel(j+1,labels[j]);
 		}
-	}
-	
-	const char* energylabel[3]={"a","b","c"};
-	EnergyConstants = new TH2D(Form("EnergyConstant_snr%i",seriesNo),Form("EnergyConstant_snr%i;Position;Parameter",seriesNo),9,5,95,3,0,3);
-	for(int j=0;j<3;j++){
-		
-		EnergyConstants->GetYaxis()->SetBinLabel(j+1,energylabel[j]);
 	}
 	
 	ec_a= new TGraph(Nspectra);
@@ -226,9 +227,6 @@ THStack* TFit::FitSingleSpectrumSplit(int position, double* weights, double* ene
 	cur_ebg->SetTitle("ebg");
 	
 	
-	int steps_par0=50;
-	int steps_par1=20;
-	int steps_par2=20;
 	
 	Double_t StartPar[3]={200-(double(steps_par0)/2)*2,0.5-(double(steps_par1)/2*0.01),(cali[0]/511)-(double(steps_par2)/2*0.01)};
 	Double_t EnergyPar[3];
@@ -239,7 +237,7 @@ THStack* TFit::FitSingleSpectrumSplit(int position, double* weights, double* ene
 	Double_t old_chi= 2e9;
 	Double_t ndf;
 	for(int i=0;i<cur_spec->GetNbinsX();i++){
-		if(cur_spec->GetBinCenter(i) > Fitboarder){
+		if(cur_spec->GetBinCenter(i) > Fitboarder_low && cur_spec->GetBinCenter(i) < Fitboarder_up){
 			ndf=(cur_spec->GetNbinsX()-i-1)*6;
 			break;
 		}
@@ -359,7 +357,7 @@ THStack* TFit::FitSingleSpectrumSplit(int position, double* weights, double* ene
 	double x,y;
 	int start_bin=0;
 	for( int i=0;i<cur_spec->GetNbinsX();i++){
-		if(cur_spec->GetBinCenter(i) > Fitboarder && tempsum->GetBinContent(i)!=0 && cur_spec->GetBinContent(i)>10){
+		if(cur_spec->GetBinCenter(i) > Fitboarder_low && tempsum->GetBinContent(i)!=0 && cur_spec->GetBinContent(i)>10 && cur_spec->GetBinCenter(i)< Fitboarder_up){
 			if(start_bin==0) start_bin=i;
 			x=cur_spec->GetBinCenter(i);
 			y=(cur_spec->GetBinContent(i)-tempsum->GetBinContent(i))/cur_spec->GetBinContent(i);
@@ -416,10 +414,6 @@ THStack* TFit::FitSingleSpectrumTwoSplit(int position, double* weights, double* 
 	cur_pall->SetTitle("p511");
 	cur_ebg->SetTitle("ebg");
 	
-	
-	int steps_par0=50;
-	int steps_par1=20;
-	int steps_par2=20;
 	
 	Double_t StartPar[3]={200-double(steps_par0)/2,0.5-(double(steps_par1)/2*0.02),(cali[0]/511)-(double(steps_par2)/2*0.02)};
 	Double_t EnergyPar[3];
@@ -510,7 +504,7 @@ THStack* TFit::FitSingleSpectrumTwoSplit(int position, double* weights, double* 
 	double x,y;
 	int start_bin=0;
 	for( int i=0;i<cur_spec->GetNbinsX();i++){
-		if(cur_spec->GetBinCenter(i) > Fitboarder && tempsum->GetBinContent(i)!=0 &&cur_spec->GetBinContent(i)!=0){
+		if(cur_spec->GetBinCenter(i) > Fitboarder_low && tempsum->GetBinContent(i)!=0 &&cur_spec->GetBinContent(i)!=minentry && cur_spec->GetBinCenter(i)< Fitboarder_up ){
 			if(start_bin==0) start_bin=i;
 			x=cur_spec->GetBinCenter(i);
 			y=(cur_spec->GetBinContent(i)-tempsum->GetBinContent(i))/cur_spec->GetBinContent(i);
@@ -646,10 +640,6 @@ THStack* TFit::FitSSSumWeights(int position, double*  weights, double* enerconst
 	cur_sum->SetFillColor(3);
 	cur_sum->SetMarkerColor(3);
 	
-	int steps_par0=50;
-	int steps_par1=20;
-	int steps_par2=20;
-	
 	Double_t StartPar[3]={200-double(steps_par0)/2,0.5-(double(steps_par1)/2*0.02),(cali[0]/511)-(double(steps_par2)/2*0.02)};
 	Double_t EnergyPar[3];
 		
@@ -662,7 +652,7 @@ THStack* TFit::FitSSSumWeights(int position, double*  weights, double* enerconst
 	double old_chi=2e9;
 	Double_t ndf;
 	for(int i=0;i<cur_spec->GetNbinsX();i++){
-		if(cur_spec->GetBinCenter(i) > Fitboarder){
+		if(cur_spec->GetBinCenter(i) > Fitboarder_low && cur_spec->GetBinCenter(i) < Fitboarder_up){
 			ndf=(cur_spec->GetNbinsX()-i-1)*6;
 			break;
 		}
@@ -730,7 +720,7 @@ THStack* TFit::FitSSSumWeights(int position, double*  weights, double* enerconst
 	double x,y;
 	int start_bin=0;
 	for( int i=0;i<cur_spec->GetNbinsX();i++){
-		if(cur_spec->GetBinCenter(i) > Fitboarder && tempsum->GetBinContent(i)!=0 &&cur_spec->GetBinContent(i)!=0){
+		if(cur_spec->GetBinCenter(i) > Fitboarder_low && tempsum->GetBinContent(i)!=0 &&cur_spec->GetBinContent(i)>minentry && cur_spec->GetBinCenter(i)<Fitboarder_up){
 			if(start_bin==0) start_bin=i;
 			x=cur_spec->GetBinCenter(i);
 			y=(cur_spec->GetBinContent(i)-tempsum->GetBinContent(i))/cur_spec->GetBinContent(i);
@@ -802,7 +792,6 @@ void TFit::FitSpectra(){
 		cout << "The energy parametes for position" << (i+1)*10 <<"mm are " << endl;
 		for(int j=0;j<3;j++){
 			cout << energypara[i][j]  << endl;
-			EnergyConstants->Fill((i+1)*10,j,energypara[i][j]);
 		}
 		ec_a->SetPoint(i,(i+1)*10,energypara[i][0]);
 		ec_b->SetPoint(i,(i+1)*10,energypara[i][1]);
@@ -1007,11 +996,6 @@ TGraphErrors* TFit::GetSum_W(){
 	return g_sum;
 }
 
-//------------------------------------------------------------------
-
-TH2D* TFit::GetEnergyConstants(){
-	return EnergyConstants;
-}
 
 //------------------------------------------------------------------
 
@@ -1041,7 +1025,7 @@ void calc_chi_square(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int
   for (int i=0;i<Nbins; i++) {
     // chi square is the quadratic sum of the distance from the point to the function weighted by its error
     double delta  = 0;
-    if(cur_spec->GetBinCenter(i)>Fitboarder){
+    if(cur_spec->GetBinCenter(i)>Fitboarder_low && cur_spec->GetBinCenter(i)<Fitboarder_up){
 		if(cur_spec->GetBinContent(i)>minentry) delta= (cur_spec->GetBinContent(i)-Templatefit_functionsplit(i,par))/cur_spec->GetBinError(i);
 		chisq += delta*delta;
 	}
@@ -1089,7 +1073,7 @@ void calc_chi_square_sum(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par,
   for (int i=0;i<Nbins; i++) {
     // chi square is the quadratic sum of the distance from the point to the function weighted by its error
     double delta  = 0;
-    if(cur_spec->GetBinCenter(i)>Fitboarder){
+    if(cur_spec->GetBinCenter(i)>Fitboarder_low && cur_spec->GetBinCenter(i)<Fitboarder_up){
 		if(cur_spec->GetBinContent(i)>minentry) delta= (cur_spec->GetBinContent(i)-Templatefit_functionsumenergy(fit_sum->GetBinContent(i),cur_bg->GetBinContent(i),par))/cur_spec->GetBinError(i);
 		chisq += delta*delta;
 	}
@@ -1119,7 +1103,7 @@ void calc_chi_square_weights(Int_t &npar, Double_t *gin, Double_t &f, Double_t *
   for (int i=0;i<Nbins; i++) {
     // chi square is the quadratic sum of the distance from the point to the function weighted by its error
     double delta  = 0;
-    if(cur_spec->GetBinCenter(i)>Fitboarder){
+    if(cur_spec->GetBinCenter(i)>Fitboarder_low && cur_spec->GetBinCenter(i)<Fitboarder_up){
 		if(cur_spec->GetBinContent(i)>minentry) delta= (cur_spec->GetBinContent(i)-Templatefit_functionsumweights(cur_sum->GetBinContent(i),cur_bg->GetBinContent(i),par))/cur_spec->GetBinError(i);
 		chisq += delta*delta;
 	}
@@ -1147,7 +1131,7 @@ void calc_chi_square_twosplit(Int_t &npar, Double_t *gin, Double_t &f, Double_t 
   for (int i=0;i<Nbins; i++) {
     // chi square is the quadratic sum of the distance from the point to the function weighted by its error
     double delta  = 0;
-    if(cur_spec->GetBinCenter(i)>Fitboarder){
+    if(cur_spec->GetBinCenter(i)>Fitboarder_low && cur_spec->GetBinCenter(i)<Fitboarder_up){
 		if(cur_spec->GetBinContent(i)>minentry) delta= (cur_spec->GetBinContent(i)-Templatefit_functiontwosplit(i,par))/cur_spec->GetBinError(i);
 		chisq += delta*delta;
 	}

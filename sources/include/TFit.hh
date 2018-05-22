@@ -44,8 +44,13 @@ static TH1D* cur_sum;
 static TRandom3* resgenerator;
 static int Nbins;
 
-static int Fitboarder;
+static int Fitboarder_low;
+static int Fitboarder_up;
 static int minentry;
+static int steps_par0;
+static int steps_par1;
+static int steps_par2;
+
 
 static void calc_chi_square(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 static Double_t Templatefit_functionsplit(int bin,Double_t* par);
@@ -66,7 +71,9 @@ class TFit : public TObject{
 private:
   
 	Int_t seriesNo; ///< Series number that is analysed by the Fit
-	Int_t fmode;
+	Int_t fmode;///< Inticates the fit that is performed: 0 Total Split, 1 Split in Compton and Photopeak, 2 No split
+	Int_t rebin;
+
 	
 	SFData* data; ///< Data of the measurement series
 	int Nspectra; ///< Number of spectra in the measurement series
@@ -103,8 +110,7 @@ private:
 	
 	std::vector<THStack*> fittedtemplates; ///<THStacks that contain the fitted, weighted templates 
 	std::vector<TGraphErrors*> residual; ///< residuals of the fitted spectra
-	TH2D* GraphicWeights;
-	TH2D* EnergyConstants;
+	TH2D* GraphicWeights;///<Contains all Weights of each position
 	
 	TGraph* ec_a; ///<Graph containing the Constant [0] of the energy model for the best fits of the positions
 	TGraph* ec_b;///<Graph containing the Constant [1] of the energy model for the best fits of the positions
@@ -124,8 +130,6 @@ private:
 	
 	std::vector<SFPeakFinder*> Peaks; ///< Peaks of the 511 keV Peak, needed for the start parameter of the energy model 
 
-	std::vector<TH2D*> Chi2Map;
-	
 	// Fitting function called in Constructer
 	//------------------------------------------------------------------
 	///Function that performes a fit of all templates to the spectrum that is defined by the position
@@ -140,19 +144,19 @@ private:
 	THStack* FitSingleSpectrumTwoSplit(int position, double *weights, double* enerconst);
 	///Function that performes a fit of sum template and the energy constants to the spectrum that is defined by the position
 	///\param position - defining spectrum that the templates are fitted to
-	///\param *weights - the fit weights are returned here
+	///\param *weight - the fit weights are returned here
 	///\param *enerconst - the parameter of the energy model are returned here
 	THStack* FitSSSumEnergy(int position, double* weight, double* enerconst);
 	///Function that performes a fit of a sum of all templates to the spectrum that is defined by the position
 	///\param position - defining spectrum that the templates are fitted to
-	///\param *weights - the fit weights are returned here
+	///\param *weight - the fit weights are returned here
 	///\param *enerconst - the parameter of the energy model are returned here
 	THStack* FitSSSumWeights(int position, double* weight, double* enerconst);
 	
 	///Function to set up the TMinuit for the different fitting modes 
-	///\param position - returns fitting parameter
-	///\param *weights - returns errors on fitting parameter
-	///\param *chi - retruns the chi/ndf 
+	///\param *fParam - returns fitting parameter
+	///\param *fParErr - returns errors on fitting parameter
+	///\param &chi - retruns the chi/ndf 
 	///\param fitmode - sets the fitmode for the TMinuit
 	int SetTMiniut(double *fParam,double *fParErr,double &chi,int fitmode);
 	
@@ -164,20 +168,25 @@ private:
 
 	
 public:
+	///Default constructor.
+	///If this constructer is used the details need to be called with SetDetails().
 	TFit();
-	TFit(int series_No,TString FitMode);
+	///Constructor that takes the series number of the measurement series that is analysed.
+	///\param series_No Series number of the measurement series that is analysed. For numbering se SFData class.
+	///\param FitMode - specifies the Fit type that is done 
+	///\param re_bin - rebining factor for the spectra
+	TFit(int series_No,TString FitMode, int re_bin);
 	///Deconstructer
 	~TFit();
 	///Function that sets up the series and the templates specifications that are requested
 	///\param series_No - Series to be analyzed
 	///\param FitMode - Defining the fit that is performed on the spectra of the serie
-	bool SetDetails(int serie_No,TString FitMode);
+	bool SetDetails(int serie_No,TString FitMode, int re_bin);
 
 	std::vector<TH1D*> GetSpectra();///Returns the spectra of the series
 	TH1D* GetBackground();///Returns the internal background for the series
 	std::vector <THStack*> GetFittedTemplates();///returns the THStacks containing the fitted templates
-	TH2D* GetGraphicWeights();
-	TH2D* GetEnergyConstants();
+	TH2D* GetGraphicWeights(); ///Returns visualisation of all weights of each position 
 	TGraph* GetEC_a();///Returns Graph with the [0] parameter of the energy model for each position
 	TGraph* GetEC_b();///Returns Graph with the [1] parameter of the energy model for each position
 	TGraph* GetEC_c();///Returns Graph with the [2] parameter of the energy model for each position

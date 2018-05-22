@@ -36,7 +36,7 @@ private:
 
   Int_t tmax; 			///< Time of maximal signal amplitude
   Int_t tsplit; 		///< Time, where the slow decay process becomes dominant
-  vector <double> fitresults; 	///< Array containing the determined fit data
+  vector <double*> fitresults; 	///< Array containing the determined fit data
 
   vector <TProfile*> signals; 	///< Averraged signals that are analysed
   
