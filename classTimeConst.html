@@ -93,12 +93,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aef7c7a1c27d06f408902f71023f93d1c"><td class="memItemLeft" align="right" valign="top"><a id="aef7c7a1c27d06f408902f71023f93d1c"></a>
 std::vector&lt; Double_t * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetAveragedSignals</b> ()</td></tr>
 <tr class="separator:aef7c7a1c27d06f408902f71023f93d1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73ec1d0e3b0789d318dfb19183c68bb6"><td class="memItemLeft" align="right" valign="top"><a id="a73ec1d0e3b0789d318dfb19183c68bb6"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GetFastComponent</b> ()</td></tr>
+<tr class="separator:a73ec1d0e3b0789d318dfb19183c68bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afee6008fc43a9a4310aec465ce96ff76"><td class="memItemLeft" align="right" valign="top"><a id="afee6008fc43a9a4310aec465ce96ff76"></a>
 std::vector&lt; Double_t * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetFitResults</b> ()</td></tr>
 <tr class="separator:afee6008fc43a9a4310aec465ce96ff76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c052c2b635c0a7ce608b57cbd3b4520"><td class="memItemLeft" align="right" valign="top"><a id="a9c052c2b635c0a7ce608b57cbd3b4520"></a>
 std::vector&lt; TProfile * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSignals</b> ()</td></tr>
 <tr class="separator:a9c052c2b635c0a7ce608b57cbd3b4520"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c98c3a550393e5637ce411e02e3c7f0"><td class="memItemLeft" align="right" valign="top"><a id="a8c98c3a550393e5637ce411e02e3c7f0"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GetSlowComponent</b> ()</td></tr>
+<tr class="separator:a8c98c3a550393e5637ce411e02e3c7f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2658ecfdc8666e68550c1dffc7a0ecb1"><td class="memItemLeft" align="right" valign="top"><a id="a2658ecfdc8666e68550c1dffc7a0ecb1"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> ()</td></tr>
 <tr class="separator:a2658ecfdc8666e68550c1dffc7a0ecb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,10 +136,16 @@ TF1 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cla
 TF1 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#aaa67c8b961265245a15bc14b71c42fa8">fastexp</a></td></tr>
 <tr class="memdesc:aaa67c8b961265245a15bc14b71c42fa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">function for the assumption of a double decay mode <br /></td></tr>
 <tr class="separator:aaa67c8b961265245a15bc14b71c42fa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9af28c526be914fabc2b1253c4124a8"><td class="memItemLeft" align="right" valign="top"><a id="ac9af28c526be914fabc2b1253c4124a8"></a>
-std::vector&lt; Double_t * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#ac9af28c526be914fabc2b1253c4124a8">fitresults</a></td></tr>
-<tr class="memdesc:ac9af28c526be914fabc2b1253c4124a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing the determined fit data. <br /></td></tr>
-<tr class="separator:ac9af28c526be914fabc2b1253c4124a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3b9ce80c5336b3ab8aa3d0ed41ba9e3"><td class="memItemLeft" align="right" valign="top"><a id="af3b9ce80c5336b3ab8aa3d0ed41ba9e3"></a>
+vector&lt; double * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#af3b9ce80c5336b3ab8aa3d0ed41ba9e3">fitresults</a></td></tr>
+<tr class="memdesc:af3b9ce80c5336b3ab8aa3d0ed41ba9e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing the determined fit data. <br /></td></tr>
+<tr class="separator:af3b9ce80c5336b3ab8aa3d0ed41ba9e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae02013cade7fcd37b070978e6f125725"><td class="memItemLeft" align="right" valign="top"><a id="ae02013cade7fcd37b070978e6f125725"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GraphicFastComp</b></td></tr>
+<tr class="separator:ae02013cade7fcd37b070978e6f125725"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8418526b00f7b18c3b9a5508cd0517f"><td class="memItemLeft" align="right" valign="top"><a id="ad8418526b00f7b18c3b9a5508cd0517f"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GraphicSlowComp</b></td></tr>
+<tr class="separator:ad8418526b00f7b18c3b9a5508cd0517f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8d60e64c2bc578f683673abbe5b90b2"><td class="memItemLeft" align="right" valign="top"><a id="aa8d60e64c2bc578f683673abbe5b90b2"></a>
 Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#aa8d60e64c2bc578f683673abbe5b90b2">NperPoint</a></td></tr>
 <tr class="memdesc:aa8d60e64c2bc578f683673abbe5b90b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of Tprofils that are analysed per Point in the measurement series. <br /></td></tr>
@@ -150,10 +162,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#a686de870c1400ec97a20e8c04566a206">seriesNo</a></td></tr>
 <tr class="memdesc:a686de870c1400ec97a20e8c04566a206"><td class="mdescLeft">&#160;</td><td class="mdescRight">Series number of the measearument series that is analysed. <br /></td></tr>
 <tr class="separator:a686de870c1400ec97a20e8c04566a206"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae999d0ab6d0eea8264a6d5be63ed100c"><td class="memItemLeft" align="right" valign="top"><a id="ae999d0ab6d0eea8264a6d5be63ed100c"></a>
-std::vector&lt; TProfile * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#ae999d0ab6d0eea8264a6d5be63ed100c">signals</a></td></tr>
-<tr class="memdesc:ae999d0ab6d0eea8264a6d5be63ed100c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Averraged signals that are analysed. <br /></td></tr>
-<tr class="separator:ae999d0ab6d0eea8264a6d5be63ed100c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2db677eaf62d2a38921696bc71f2519"><td class="memItemLeft" align="right" valign="top"><a id="ab2db677eaf62d2a38921696bc71f2519"></a>
+vector&lt; TProfile * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#ab2db677eaf62d2a38921696bc71f2519">signals</a></td></tr>
+<tr class="memdesc:ab2db677eaf62d2a38921696bc71f2519"><td class="mdescLeft">&#160;</td><td class="mdescRight">Averraged signals that are analysed. <br /></td></tr>
+<tr class="separator:ab2db677eaf62d2a38921696bc71f2519"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac46c099b006aad5d761848f6929649f7"><td class="memItemLeft" align="right" valign="top"><a id="ac46c099b006aad5d761848f6929649f7"></a>
 TF1 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTimeConst.html#ac46c099b006aad5d761848f6929649f7">singleexp</a></td></tr>
 <tr class="memdesc:ac46c099b006aad5d761848f6929649f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">function for the assumption of a single decay mode <br /></td></tr>

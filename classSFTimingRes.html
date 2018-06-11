@@ -71,9 +71,6 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Class to determine timing resolution.  
- <a href="classSFTimingRes.html#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="SFTimingRes_8hh_source.html">SFTimingRes.hh</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for SFTimingRes:</div>
@@ -96,10 +93,20 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a65154371d895e67251ed4670d96af46b">~SFTimingRes</a> ()</td></tr>
 <tr class="memdesc:a65154371d895e67251ed4670d96af46b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:a65154371d895e67251ed4670d96af46b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa199d5ecde1fb1151517764deb4198a4"><td class="memItemLeft" align="right" valign="top"><a id="aa199d5ecde1fb1151517764deb4198a4"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#aa199d5ecde1fb1151517764deb4198a4">GetRatios</a> (void)</td></tr>
+<tr class="memdesc:aa199d5ecde1fb1151517764deb4198a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns vector of ratio histograms used for cut on scattered events. <br /></td></tr>
+<tr class="separator:aa199d5ecde1fb1151517764deb4198a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b045c2deb2797d0d2ec01c58233f29d"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a3b045c2deb2797d0d2ec01c58233f29d">GetSpectra</a> (int ch)</td></tr>
+<tr class="separator:a3b045c2deb2797d0d2ec01c58233f29d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade25ca2c23b566695759ef9e0800aa23"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ade25ca2c23b566695759ef9e0800aa23">GetT0Diff</a> (void)</td></tr>
 <tr class="separator:ade25ca2c23b566695759ef9e0800aa23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58cf9aa386de760a20b3bc9701154274"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a58cf9aa386de760a20b3bc9701154274">GetT0Diff</a> (double position)</td></tr>
 <tr class="separator:a58cf9aa386de760a20b3bc9701154274"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dccac1bc3b2129883fd639857813637"><td class="memItemLeft" align="right" valign="top"><a id="a5dccac1bc3b2129883fd639857813637"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a5dccac1bc3b2129883fd639857813637">GetT0Graph</a> (void)</td></tr>
+<tr class="memdesc:a5dccac1bc3b2129883fd639857813637"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns graph ch_0.T0-ch_1.T0 vs. source position. <br /></td></tr>
+<tr class="separator:a5dccac1bc3b2129883fd639857813637"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a824bc62beef43219e514818933403dc4"><td class="memItemLeft" align="right" valign="top">vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a824bc62beef43219e514818933403dc4">GetTimingResErrors</a> (void)</td></tr>
 <tr class="separator:a824bc62beef43219e514818933403dc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d714f983c5c1778909f39fe1f8418f4"><td class="memItemLeft" align="right" valign="top">vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a7d714f983c5c1778909f39fe1f8418f4">GetTimingResolution</a> (double position)</td></tr>
@@ -108,7 +115,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a317d600a8914fd6bf534ded834d1e4a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a546941b3d0b156d8cecf61210000264a"><td class="memItemLeft" align="right" valign="top"><a id="a546941b3d0b156d8cecf61210000264a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a546941b3d0b156d8cecf61210000264a">Print</a> (void)</td></tr>
-<tr class="memdesc:a546941b3d0b156d8cecf61210000264a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints details of <a class="el" href="classSFTimingRes.html" title="Class to determine timing resolution. ">SFTimingRes</a> class object. <br /></td></tr>
+<tr class="memdesc:a546941b3d0b156d8cecf61210000264a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints details of <a class="el" href="classSFTimingRes.html">SFTimingRes</a> class object. <br /></td></tr>
 <tr class="separator:a546941b3d0b156d8cecf61210000264a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
@@ -123,6 +130,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ab0dcaf183c70894c589b2ed61c821fee">GetIndex</a> (double position)</td></tr>
 <tr class="memdesc:ab0dcaf183c70894c589b2ed61c821fee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private method to get index of requested measurement based on source position. <br /></td></tr>
 <tr class="separator:ab0dcaf183c70894c589b2ed61c821fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad08dc7d501e242c106b6f36f2027dfe9"><td class="memItemLeft" align="right" valign="top"><a id="ad08dc7d501e242c106b6f36f2027dfe9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ad08dc7d501e242c106b6f36f2027dfe9">LoadRatios</a> (void)</td></tr>
+<tr class="memdesc:ad08dc7d501e242c106b6f36f2027dfe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private method to get ratio histograms necesarry to impose cuts. <br /></td></tr>
+<tr class="separator:ad08dc7d501e242c106b6f36f2027dfe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -134,26 +145,45 @@ Private Attributes</h2></td></tr>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a2d36eb86b8821d49a4678a6593170957">fMethod</a></td></tr>
 <tr class="memdesc:a2d36eb86b8821d49a4678a6593170957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag to determine type of analysis - with or without energy cut. <br /></td></tr>
 <tr class="separator:a2d36eb86b8821d49a4678a6593170957"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ca038be0c08f09786365669ecefa386"><td class="memItemLeft" align="right" valign="top"><a id="a3ca038be0c08f09786365669ecefa386"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a3ca038be0c08f09786365669ecefa386">fPEch0</a></td></tr>
+<tr class="memdesc:a3ca038be0c08f09786365669ecefa386"><td class="mdescLeft">&#160;</td><td class="mdescRight">PE spectra from ch0, necessary to impose 511 keV energy cut. <br /></td></tr>
+<tr class="separator:a3ca038be0c08f09786365669ecefa386"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97815a4c508afeff4c99d16835fc437f"><td class="memItemLeft" align="right" valign="top"><a id="a97815a4c508afeff4c99d16835fc437f"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a97815a4c508afeff4c99d16835fc437f">fPEch1</a></td></tr>
+<tr class="memdesc:a97815a4c508afeff4c99d16835fc437f"><td class="mdescLeft">&#160;</td><td class="mdescRight">PE spectra from ch1, necessary to impose 511 keV energy cut. <br /></td></tr>
+<tr class="separator:a97815a4c508afeff4c99d16835fc437f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d81dba069147ee0f56a79aade1682ea"><td class="memItemLeft" align="right" valign="top"><a id="a2d81dba069147ee0f56a79aade1682ea"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a2d81dba069147ee0f56a79aade1682ea">fRatios</a></td></tr>
+<tr class="memdesc:a2d81dba069147ee0f56a79aade1682ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ratio histograms necessary to impose cuts. <br /></td></tr>
+<tr class="separator:a2d81dba069147ee0f56a79aade1682ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a388f6f53fa0a6d8d6a7bcac15b630dd6"><td class="memItemLeft" align="right" valign="top"><a id="a388f6f53fa0a6d8d6a7bcac15b630dd6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a388f6f53fa0a6d8d6a7bcac15b630dd6">fSeriesNo</a></td></tr>
 <tr class="memdesc:a388f6f53fa0a6d8d6a7bcac15b630dd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of analyzed series. <br /></td></tr>
 <tr class="separator:a388f6f53fa0a6d8d6a7bcac15b630dd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14e8173049957bf99bba4b2738f07871"><td class="memItemLeft" align="right" valign="top"><a id="a14e8173049957bf99bba4b2738f07871"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fT0Diff</b></td></tr>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a14e8173049957bf99bba4b2738f07871">fT0Diff</a></td></tr>
+<tr class="memdesc:a14e8173049957bf99bba4b2738f07871"><td class="mdescLeft">&#160;</td><td class="mdescRight">Histograms ch_0.T0-ch_1.T0. <br /></td></tr>
 <tr class="separator:a14e8173049957bf99bba4b2738f07871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14e504995d66210d3d7313df711dfbcd"><td class="memItemLeft" align="right" valign="top"><a id="a14e504995d66210d3d7313df711dfbcd"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a14e504995d66210d3d7313df711dfbcd">fT0Graph</a></td></tr>
+<tr class="memdesc:a14e504995d66210d3d7313df711dfbcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph ch_0.T0-ch_1.T0 vs. source position. <br /></td></tr>
+<tr class="separator:a14e504995d66210d3d7313df711dfbcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53a579d1e338d4f9e2e29e3e87b6f8e9"><td class="memItemLeft" align="right" valign="top"><a id="a53a579d1e338d4f9e2e29e3e87b6f8e9"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a53a579d1e338d4f9e2e29e3e87b6f8e9">fThreshold</a></td></tr>
 <tr class="memdesc:a53a579d1e338d4f9e2e29e3e87b6f8e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Falg to identify which data should be analyzed. <br /></td></tr>
 <tr class="separator:a53a579d1e338d4f9e2e29e3e87b6f8e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3de83b49dad3acbce8d514c301efdec"><td class="memItemLeft" align="right" valign="top"><a id="ab3de83b49dad3acbce8d514c301efdec"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fTimeRes</b></td></tr>
+vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ab3de83b49dad3acbce8d514c301efdec">fTimeRes</a></td></tr>
+<tr class="memdesc:ab3de83b49dad3acbce8d514c301efdec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing timing resolution values for whole series. <br /></td></tr>
 <tr class="separator:ab3de83b49dad3acbce8d514c301efdec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab65b63befd83c27f8a56b02542546b2e"><td class="memItemLeft" align="right" valign="top"><a id="ab65b63befd83c27f8a56b02542546b2e"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fTimeResErr</b></td></tr>
+vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ab65b63befd83c27f8a56b02542546b2e">fTimeResErr</a></td></tr>
+<tr class="memdesc:ab65b63befd83c27f8a56b02542546b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing errors on timing resolutions for whole series. <br /></td></tr>
 <tr class="separator:ab65b63befd83c27f8a56b02542546b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p class="">Class to determine timing resolution. </p>
+<div class="textblock"><p class="">Class to determine timing resolution. Two methods available: "no cut" - cut imposed only on scattered events, "with cut" - cut imposed on scattered events and additional energy cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a087aede0d43c4592c793fe3d87ccd386"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a087aede0d43c4592c793fe3d87ccd386">&#9670;&nbsp;</a></span>SFTimingRes()</h2>
@@ -222,6 +252,30 @@ vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fTi
 </table>
 </div><div class="memdoc">
 <p class="">Method for simple timing resolution determination. Timing resolution spectrum is build as difference between channel 0 and 1 signals with additional cut on scattered events. Timing resolution and its uncertainty is determined as histogram's mean and RMS. </p>
+
+</div>
+</div>
+<a id="a3b045c2deb2797d0d2ec01c58233f29d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b045c2deb2797d0d2ec01c58233f29d">&#9670;&nbsp;</a></span>GetSpectra()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt; TH1D * &gt; SFTimingRes::GetSpectra </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns vector of PE spectra used for 511 keV energy cut. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number (0 or 1). </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

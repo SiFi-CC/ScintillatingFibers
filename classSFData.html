@@ -88,13 +88,20 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3041bb4688a8ce3a72f86bdcc7fbab53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cd1ee43593533cb8ec86909842b1007"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a3cd1ee43593533cb8ec86909842b1007">SFData</a> (int seriesNo)</td></tr>
 <tr class="separator:a3cd1ee43593533cb8ec86909842b1007"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff33d2a9966641ad89c6dac4be0b597a"><td class="memItemLeft" align="right" valign="top"><a id="aff33d2a9966641ad89c6dac4be0b597a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SFData</b> (int seriesNo, TString threshold)</td></tr>
+<tr class="memitem:aff33d2a9966641ad89c6dac4be0b597a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aff33d2a9966641ad89c6dac4be0b597a">SFData</a> (int seriesNo, TString threshold)</td></tr>
 <tr class="separator:aff33d2a9966641ad89c6dac4be0b597a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2ccfbc2c1474764c7d57a83efca720b"><td class="memItemLeft" align="right" valign="top"><a id="ae2ccfbc2c1474764c7d57a83efca720b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b">~SFData</a> ()</td></tr>
 <tr class="memdesc:ae2ccfbc2c1474764c7d57a83efca720b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:ae2ccfbc2c1474764c7d57a83efca720b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace2c2b0015a8615554b8757e14624f2b"><td class="memItemLeft" align="right" valign="top">TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ace2c2b0015a8615554b8757e14624f2b">GetCorrHistogram</a> (TString selection, TString cut, double position)</td></tr>
+<tr class="separator:ace2c2b0015a8615554b8757e14624f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49daa5f7ad477d8e4287111652673efe"><td class="memItemLeft" align="right" valign="top">vector&lt; TH2D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a49daa5f7ad477d8e4287111652673efe">GetCorrHistograms</a> (TString type, TString cut)</td></tr>
+<tr class="separator:a49daa5f7ad477d8e4287111652673efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98cfc4a752e6130f52329d5d99521d9c"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a98cfc4a752e6130f52329d5d99521d9c">GetCustomHistogram</a> (TString selection, TString cut, double position)</td></tr>
+<tr class="separator:a98cfc4a752e6130f52329d5d99521d9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29b92986b78753f26432875be7744bc1"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a29b92986b78753f26432875be7744bc1">GetCustomHistograms</a> (TString type, TString cut)</td></tr>
+<tr class="separator:a29b92986b78753f26432875be7744bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21eb858b2ac22fafc2977d2112d34676"><td class="memItemLeft" align="right" valign="top"><a id="a21eb858b2ac22fafc2977d2112d34676"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a21eb858b2ac22fafc2977d2112d34676">GetDescription</a> (void)</td></tr>
 <tr class="memdesc:a21eb858b2ac22fafc2977d2112d34676"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns description of the series. <br /></td></tr>
@@ -115,10 +122,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a2bfc96b7adca2a6c0074d20ddf0ee3fa">GetPositions</a> (void)</td></tr>
 <tr class="memdesc:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an array containing source positions for all measurements in this series. <br /></td></tr>
 <tr class="separator:a2bfc96b7adca2a6c0074d20ddf0ee3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a668bc9085d4eca31f41d5bed89782c6d"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a668bc9085d4eca31f41d5bed89782c6d">GetRatio</a> (TString selection, TString cut, double position)</td></tr>
-<tr class="separator:a668bc9085d4eca31f41d5bed89782c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73429fae117279fe74f2611a4402f32c"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a73429fae117279fe74f2611a4402f32c">GetRatios</a> (TString selection, TString cut)</td></tr>
-<tr class="separator:a73429fae117279fe74f2611a4402f32c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9fce8eb845b663085bf4861196983b9"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae9fce8eb845b663085bf4861196983b9">GetSignal</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
 <tr class="separator:ae9fce8eb845b663085bf4861196983b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0446ba8102cd62eb8236fd3b79bdc6ac"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0446ba8102cd62eb8236fd3b79bdc6ac">GetSignalAverage</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
@@ -146,6 +149,8 @@ Private Member Functions</h2></td></tr>
 <tr class="separator:a10a920c4940e62ad7e40266a42bddd5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8997c01855b6c851fc56b1a7e386cc0a"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8997c01855b6c851fc56b1a7e386cc0a">GetSelection</a> (int ch, TString type)</td></tr>
 <tr class="separator:a8997c01855b6c851fc56b1a7e386cc0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60647493595e5e30172befb66088925f"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a60647493595e5e30172befb66088925f">GetSelectionCustom</a> (TString selection)</td></tr>
+<tr class="separator:a60647493595e5e30172befb66088925f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fd7f8e62021cd8363f2cee6e93dcc5f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut</a> (DDSignal *sig, TString cut)</td></tr>
 <tr class="separator:a5fd7f8e62021cd8363f2cee6e93dcc5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -159,6 +164,22 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a31a35b4359edb08e2982ff31ae2d5e0f">fFiber</a></td></tr>
 <tr class="memdesc:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scintillating fiber type e.g. LuAG (1) <br /></td></tr>
 <tr class="separator:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11ec83a24dd3de4782e0183cb72fd111"><td class="memItemLeft" align="right" valign="top"><a id="a11ec83a24dd3de4782e0183cb72fd111"></a>
+TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a11ec83a24dd3de4782e0183cb72fd111">fHist</a></td></tr>
+<tr class="memdesc:a11ec83a24dd3de4782e0183cb72fd111"><td class="mdescLeft">&#160;</td><td class="mdescRight">Custom histogram of requested type. <br /></td></tr>
+<tr class="separator:a11ec83a24dd3de4782e0183cb72fd111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="memItemLeft" align="right" valign="top"><a id="ae84ee2d995e3d7a084f9eea264bb2d15"></a>
+TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae84ee2d995e3d7a084f9eea264bb2d15">fHist2D</a></td></tr>
+<tr class="memdesc:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D correlation histogram of requested type <br /></td></tr>
+<tr class="separator:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="memItemLeft" align="right" valign="top"><a id="a4116d1eadfc97a458c4dc1bc7e3c6f93"></a>
+vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4116d1eadfc97a458c4dc1bc7e3c6f93">fHists</a></td></tr>
+<tr class="memdesc:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of custom histograms for all measurements (requested type) <br /></td></tr>
+<tr class="separator:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="memItemLeft" align="right" valign="top"><a id="a0a99c1d041974fb36a70cfc89c86d1ca"></a>
+vector&lt; TH2D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0a99c1d041974fb36a70cfc89c86d1ca">fHists2D</a></td></tr>
+<tr class="memdesc:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of 2D correlation histograms for all measurements (requested type) <br /></td></tr>
+<tr class="separator:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cafb16979a5a79de3117f2a1900cff1"><td class="memItemLeft" align="right" valign="top"><a id="a9cafb16979a5a79de3117f2a1900cff1"></a>
 TString *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a9cafb16979a5a79de3117f2a1900cff1">fNames</a></td></tr>
 <tr class="memdesc:a9cafb16979a5a79de3117f2a1900cff1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array with names of measurements. <br /></td></tr>
@@ -171,14 +192,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad09de4ed6508fb4f3d0430ec773b5803">fPositions</a></td></tr>
 <tr class="memdesc:ad09de4ed6508fb4f3d0430ec773b5803"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array with positions of radioactive source in mm. <br /></td></tr>
 <tr class="separator:ad09de4ed6508fb4f3d0430ec773b5803"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2daf3e982d5246fb442a9b6df102d15"><td class="memItemLeft" align="right" valign="top"><a id="ac2daf3e982d5246fb442a9b6df102d15"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ac2daf3e982d5246fb442a9b6df102d15">fRatio</a></td></tr>
-<tr class="memdesc:ac2daf3e982d5246fb442a9b6df102d15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ratio histogram of requested type. <br /></td></tr>
-<tr class="separator:ac2daf3e982d5246fb442a9b6df102d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a927ccc9a2888e9dbb827486d695e5892"><td class="memItemLeft" align="right" valign="top"><a id="a927ccc9a2888e9dbb827486d695e5892"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a927ccc9a2888e9dbb827486d695e5892">fRatios</a></td></tr>
-<tr class="memdesc:a927ccc9a2888e9dbb827486d695e5892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of ratio histograms for all measurements (requested type) <br /></td></tr>
-<tr class="separator:a927ccc9a2888e9dbb827486d695e5892"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="memItemLeft" align="right" valign="top"><a id="ad0d9ef8c1d067566e01f3cb91e087d89"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad0d9ef8c1d067566e01f3cb91e087d89">fSeriesNo</a></td></tr>
 <tr class="memdesc:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Series number. <br /></td></tr>
@@ -205,60 +218,78 @@ TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
-<tr class="memitem:a195b8ef80d1b2f306ee407b5bde11ef2"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_1</b> [9]</td></tr>
+<tr class="memitem:a195b8ef80d1b2f306ee407b5bde11ef2"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a195b8ef80d1b2f306ee407b5bde11ef2">fNames_1</a> [9]</td></tr>
+<tr class="memdesc:a195b8ef80d1b2f306ee407b5bde11ef2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 1.  <a href="#a195b8ef80d1b2f306ee407b5bde11ef2">More...</a><br /></td></tr>
 <tr class="separator:a195b8ef80d1b2f306ee407b5bde11ef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb3b6c4396de8f0db326508bb1dd6545"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_2</b> [9]</td></tr>
+<tr class="memitem:afb3b6c4396de8f0db326508bb1dd6545"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#afb3b6c4396de8f0db326508bb1dd6545">fNames_2</a> [9]</td></tr>
+<tr class="memdesc:afb3b6c4396de8f0db326508bb1dd6545"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 2.  <a href="#afb3b6c4396de8f0db326508bb1dd6545">More...</a><br /></td></tr>
 <tr class="separator:afb3b6c4396de8f0db326508bb1dd6545"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a6dfc0d42151e9b04abeefd1339adae"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_3</b> [9]</td></tr>
+<tr class="memitem:a6a6dfc0d42151e9b04abeefd1339adae"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a6a6dfc0d42151e9b04abeefd1339adae">fNames_3</a> [9]</td></tr>
+<tr class="memdesc:a6a6dfc0d42151e9b04abeefd1339adae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 3.  <a href="#a6a6dfc0d42151e9b04abeefd1339adae">More...</a><br /></td></tr>
 <tr class="separator:a6a6dfc0d42151e9b04abeefd1339adae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc4c79a0cf80173f887edf1dc8fafca5"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_4</b> [9]</td></tr>
+<tr class="memitem:abc4c79a0cf80173f887edf1dc8fafca5"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#abc4c79a0cf80173f887edf1dc8fafca5">fNames_4</a> [9]</td></tr>
+<tr class="memdesc:abc4c79a0cf80173f887edf1dc8fafca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 4.  <a href="#abc4c79a0cf80173f887edf1dc8fafca5">More...</a><br /></td></tr>
 <tr class="separator:abc4c79a0cf80173f887edf1dc8fafca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a506433adcfeab6fa60713b16541533f2"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_5</b> [9]</td></tr>
+<tr class="memitem:a506433adcfeab6fa60713b16541533f2"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a506433adcfeab6fa60713b16541533f2">fNames_5</a> [9]</td></tr>
+<tr class="memdesc:a506433adcfeab6fa60713b16541533f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 5.  <a href="#a506433adcfeab6fa60713b16541533f2">More...</a><br /></td></tr>
 <tr class="separator:a506433adcfeab6fa60713b16541533f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a758ebf0eb234cc2718addaf37b382163"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_6</b> [5]</td></tr>
+<tr class="memitem:a758ebf0eb234cc2718addaf37b382163"><td class="memItemLeft" align="right" valign="top">static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a758ebf0eb234cc2718addaf37b382163">fNames_6</a> [5]</td></tr>
+<tr class="memdesc:a758ebf0eb234cc2718addaf37b382163"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 6.  <a href="#a758ebf0eb234cc2718addaf37b382163">More...</a><br /></td></tr>
 <tr class="separator:a758ebf0eb234cc2718addaf37b382163"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eb884479a9f93742f17ee00726463ff"><td class="memItemLeft" align="right" valign="top"><a id="a7eb884479a9f93742f17ee00726463ff"></a>
-static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_7</b> [1] = {&quot;2018_01_22_15_13&quot;}</td></tr>
+static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a7eb884479a9f93742f17ee00726463ff">fNames_7</a> [1] = {&quot;2018_01_22_15_13&quot;}</td></tr>
+<tr class="memdesc:a7eb884479a9f93742f17ee00726463ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 7. <br /></td></tr>
 <tr class="separator:a7eb884479a9f93742f17ee00726463ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff9084887f6b8f20f3f64d7797c29647"><td class="memItemLeft" align="right" valign="top"><a id="aff9084887f6b8f20f3f64d7797c29647"></a>
-static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_8</b> [1] = {&quot;2018_01_23_14_07&quot;}</td></tr>
+static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aff9084887f6b8f20f3f64d7797c29647">fNames_8</a> [1] = {&quot;2018_01_23_14_07&quot;}</td></tr>
+<tr class="memdesc:aff9084887f6b8f20f3f64d7797c29647"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 8. <br /></td></tr>
 <tr class="separator:aff9084887f6b8f20f3f64d7797c29647"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af31f533b66110c362d19daedc3bad830"><td class="memItemLeft" align="right" valign="top"><a id="af31f533b66110c362d19daedc3bad830"></a>
-static TString&#160;</td><td class="memItemRight" valign="bottom"><b>fNames_9</b> [2] = {&quot;2018_01_19_17_17&quot;,&quot;2018_01_22_15_37&quot;}</td></tr>
+static TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#af31f533b66110c362d19daedc3bad830">fNames_9</a> [2] = {&quot;2018_01_19_17_17&quot;,&quot;2018_01_22_15_37&quot;}</td></tr>
+<tr class="memdesc:af31f533b66110c362d19daedc3bad830"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measurements names, series 9. <br /></td></tr>
 <tr class="separator:af31f533b66110c362d19daedc3bad830"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe2026dda6b6957f7985bfbcb03806ee"><td class="memItemLeft" align="right" valign="top"><a id="abe2026dda6b6957f7985bfbcb03806ee"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_1</b> [9] = {10.3,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#abe2026dda6b6957f7985bfbcb03806ee">fPositions_1</a> [9] = {10.3,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+<tr class="memdesc:abe2026dda6b6957f7985bfbcb03806ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 1 [mm]. <br /></td></tr>
 <tr class="separator:abe2026dda6b6957f7985bfbcb03806ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d7e619cd0ddefe8874440fd5005611"><td class="memItemLeft" align="right" valign="top"><a id="ae6d7e619cd0ddefe8874440fd5005611"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_2</b> [9] = {10.2,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae6d7e619cd0ddefe8874440fd5005611">fPositions_2</a> [9] = {10.2,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+<tr class="memdesc:ae6d7e619cd0ddefe8874440fd5005611"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 2 [mm]. <br /></td></tr>
 <tr class="separator:ae6d7e619cd0ddefe8874440fd5005611"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac2524910bbfb433a0ee5fa3629bf9a6"><td class="memItemLeft" align="right" valign="top"><a id="aac2524910bbfb433a0ee5fa3629bf9a6"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_3</b> [9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aac2524910bbfb433a0ee5fa3629bf9a6">fPositions_3</a> [9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+<tr class="memdesc:aac2524910bbfb433a0ee5fa3629bf9a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 3 [mm]. <br /></td></tr>
 <tr class="separator:aac2524910bbfb433a0ee5fa3629bf9a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9441445a653f869ce38fc6ef037c4561"><td class="memItemLeft" align="right" valign="top"><a id="a9441445a653f869ce38fc6ef037c4561"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_4</b> [9] = {10.5,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a9441445a653f869ce38fc6ef037c4561">fPositions_4</a> [9] = {10.5,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+<tr class="memdesc:a9441445a653f869ce38fc6ef037c4561"><td class="mdescLeft">&#160;</td><td class="mdescRight">SOurce positions for series 4 [mm]. <br /></td></tr>
 <tr class="separator:a9441445a653f869ce38fc6ef037c4561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac781ca73eb856ec8f75a1d8bf9460b2f"><td class="memItemLeft" align="right" valign="top"><a id="ac781ca73eb856ec8f75a1d8bf9460b2f"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_5</b> [9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ac781ca73eb856ec8f75a1d8bf9460b2f">fPositions_5</a> [9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0}</td></tr>
+<tr class="memdesc:ac781ca73eb856ec8f75a1d8bf9460b2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 5 [mm]. <br /></td></tr>
 <tr class="separator:ac781ca73eb856ec8f75a1d8bf9460b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3eefb12beb64b2b2556536727b2c6fcf"><td class="memItemLeft" align="right" valign="top"><a id="a3eefb12beb64b2b2556536727b2c6fcf"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_6</b> [5] = {50.0,50.0,50.0,50.0,50.0}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a3eefb12beb64b2b2556536727b2c6fcf">fPositions_6</a> [5] = {50.0,50.0,50.0,50.0,50.0}</td></tr>
+<tr class="memdesc:a3eefb12beb64b2b2556536727b2c6fcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">SOurce positions for series 6 [mm]. <br /></td></tr>
 <tr class="separator:a3eefb12beb64b2b2556536727b2c6fcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a808441dd2260187bfa5f41c8394dba35"><td class="memItemLeft" align="right" valign="top"><a id="a808441dd2260187bfa5f41c8394dba35"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_7</b> [1] = {0.00}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a808441dd2260187bfa5f41c8394dba35">fPositions_7</a> [1] = {0.00}</td></tr>
+<tr class="memdesc:a808441dd2260187bfa5f41c8394dba35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 7 [mm]. <br /></td></tr>
 <tr class="separator:a808441dd2260187bfa5f41c8394dba35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0546b3fcddc1e5307f29b9860883357a"><td class="memItemLeft" align="right" valign="top"><a id="a0546b3fcddc1e5307f29b9860883357a"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_8</b> [1] = {0.00}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0546b3fcddc1e5307f29b9860883357a">fPositions_8</a> [1] = {0.00}</td></tr>
+<tr class="memdesc:a0546b3fcddc1e5307f29b9860883357a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 8 [mm]. <br /></td></tr>
 <tr class="separator:a0546b3fcddc1e5307f29b9860883357a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab871b878be66b7d693ae70e2a4a41cf6"><td class="memItemLeft" align="right" valign="top"><a id="ab871b878be66b7d693ae70e2a4a41cf6"></a>
-static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9</b> [2] = {0.00,0.00}</td></tr>
+static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ab871b878be66b7d693ae70e2a4a41cf6">fPositions_9</a> [2] = {0.00,0.00}</td></tr>
+<tr class="memdesc:ab871b878be66b7d693ae70e2a4a41cf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Source positions for series 9 [mm]. <br /></td></tr>
 <tr class="separator:ab871b878be66b7d693ae70e2a4a41cf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p class="">Class to access experiemntal data. It is possible to get single histograms and vectors of histograms of requested type. Single signals and averaged signals are also possible to access. Cutting functionality for all has been implemented. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3041bb4688a8ce3a72f86bdcc7fbab53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3041bb4688a8ce3a72f86bdcc7fbab53">&#9670;&nbsp;</a></span>SFData() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3041bb4688a8ce3a72f86bdcc7fbab53">&#9670;&nbsp;</a></span>SFData() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -276,7 +307,7 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </div>
 </div>
 <a id="a3cd1ee43593533cb8ec86909842b1007"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3cd1ee43593533cb8ec86909842b1007">&#9670;&nbsp;</a></span>SFData() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cd1ee43593533cb8ec86909842b1007">&#9670;&nbsp;</a></span>SFData() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -292,7 +323,43 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </div><div class="memdoc">
 <p class="">Standard constructor (recommended). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">seriesNo</td><td>is number of experimental series to analyze. </td></tr>
+    <tr><td class="paramname">seriesNo</td><td>is number of experimental series to analyze.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>By deafult data analyzed with fixed threshold in DD6 is accessed. If you need constant fraction data use <a class="el" href="classSFData.html#ad7404fc59cbb071fc05352c6326c6b34">SetThreshold()</a> function. </p>
+
+</div>
+</div>
+<a id="aff33d2a9966641ad89c6dac4be0b597a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff33d2a9966641ad89c6dac4be0b597a">&#9670;&nbsp;</a></span>SFData() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SFData::SFData </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>seriesNo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>threshold</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Standard constructor. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">seriesNo</td><td>is number of the experimental series to analyze. </td></tr>
+    <tr><td class="paramname">threshold</td><td>is threshold type in DD6 preliminary data analysis. Possible options are: "ft" - fixed threshold and "cf" - constant fraction. </td></tr>
   </table>
   </dd>
 </dl>
@@ -300,6 +367,160 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ace2c2b0015a8615554b8757e14624f2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace2c2b0015a8615554b8757e14624f2b">&#9670;&nbsp;</a></span>GetCorrHistogram()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TH2D * SFData::GetCorrHistogram </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>position</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns single requested correlation 2D histogram. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
+    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a49daa5f7ad477d8e4287111652673efe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49daa5f7ad477d8e4287111652673efe">&#9670;&nbsp;</a></span>GetCorrHistograms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt; TH2D * &gt; SFData::GetCorrHistograms </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns a vector of requested 2D correlation histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "ch_0.fPE:ch_1.fPE". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a98cfc4a752e6130f52329d5d99521d9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98cfc4a752e6130f52329d5d99521d9c">&#9670;&nbsp;</a></span>GetCustomHistogram()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TH1D * SFData::GetCustomHistogram </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>position</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns single requested custom 1D histogram. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
+    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a29b92986b78753f26432875be7744bc1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29b92986b78753f26432875be7744bc1">&#9670;&nbsp;</a></span>GetCustomHistograms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt; TH1D * &gt; SFData::GetCustomHistograms </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns a vector of requested custom 1D histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a10a920c4940e62ad7e40266a42bddd5e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a10a920c4940e62ad7e40266a42bddd5e">&#9670;&nbsp;</a></span>GetIndex()</h2>
 
@@ -324,83 +545,6 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <p class="">Returns index in the fNames and fPositions arrays for the measurement of requested source position in mm. If measurements in analyzed series don't have unique positions a number of measurement should be passed. Measurements counting starts at 1. </p>
-
-</div>
-</div>
-<a id="a668bc9085d4eca31f41d5bed89782c6d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a668bc9085d4eca31f41d5bed89782c6d">&#9670;&nbsp;</a></span>GetRatio()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">TH1D * SFData::GetRatio </td>
-          <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>cut</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p class="">Returns single requested ratio histogram. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
-    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
-    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a73429fae117279fe74f2611a4402f32c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73429fae117279fe74f2611a4402f32c">&#9670;&nbsp;</a></span>GetRatios()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">vector&lt; TH1D * &gt; SFData::GetRatios </td>
-          <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>cut</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p class="">Returns a vector of requested ratio histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
-    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -441,6 +585,38 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
   <table class="params">
     <tr><td class="paramname">ch</td><td>- channel number </td></tr>
     <tr><td class="paramname">type</td><td>- type of spectrum to be drawn. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a60647493595e5e30172befb66088925f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60647493595e5e30172befb66088925f">&#9670;&nbsp;</a></span>GetSelectionCustom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TString SFData::GetSelectionCustom </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>selection</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Returns selection for Draw method of TTree for custom histograms. It sets binning, ranges and unique names for created histograms. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">selection</td><td>is custom selection entered by user. </td></tr>
   </table>
   </dd>
 </dl>
@@ -774,6 +950,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_20_13_56&quot;</span>,<span class="stringliteral">&quot;2018_01_20_14_43&quot;</span>,<span class="stringliteral">&quot;2018_01_20_15_30&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_22_9_29&quot;</span>,<span class="stringliteral">&quot;2018_01_20_13_07&quot;</span>,<span class="stringliteral">&quot;2018_01_22_10_16&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_22_11_02&quot;</span>,<span class="stringliteral">&quot;2018_01_22_11_51&quot;</span>,<span class="stringliteral">&quot;2018_01_22_12_40&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 1. </p>
+
 </div>
 </div>
 <a id="afb3b6c4396de8f0db326508bb1dd6545"></a>
@@ -796,6 +974,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_22_16_59&quot;</span>,<span class="stringliteral">&quot;2018_01_22_17_54&quot;</span>,<span class="stringliteral">&quot;2018_01_22_18_42&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_23_9_54&quot;</span>,<span class="stringliteral">&quot;2018_01_23_10_46&quot;</span>,<span class="stringliteral">&quot;2018_01_23_11_38&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_23_12_27&quot;</span>,<span class="stringliteral">&quot;2018_01_23_14_56&quot;</span>,<span class="stringliteral">&quot;2018_01_23_15_46&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 2. </p>
+
 </div>
 </div>
 <a id="a6a6dfc0d42151e9b04abeefd1339adae"></a>
@@ -818,6 +998,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_25_9_20&quot;</span>,<span class="stringliteral">&quot;2018_01_25_9_52&quot;</span>,<span class="stringliteral">&quot;2018_01_25_10_23&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_25_10_54&quot;</span>,<span class="stringliteral">&quot;2018_01_25_8_47&quot;</span>,<span class="stringliteral">&quot;2018_01_25_11_26&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_25_12_00&quot;</span>,<span class="stringliteral">&quot;2018_01_25_12_32&quot;</span>,<span class="stringliteral">&quot;2018_01_25_13_10&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 3. </p>
+
 </div>
 </div>
 <a id="abc4c79a0cf80173f887edf1dc8fafca5"></a>
@@ -840,6 +1022,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_25_14_05&quot;</span>,<span class="stringliteral">&quot;2018_01_25_14_36&quot;</span>,<span class="stringliteral">&quot;2018_01_25_15_08&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_25_15_39&quot;</span>,<span class="stringliteral">&quot;2018_01_25_16_11&quot;</span>,<span class="stringliteral">&quot;2018_01_25_16_47&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_25_17_19&quot;</span>,<span class="stringliteral">&quot;2018_01_25_17_50&quot;</span>,<span class="stringliteral">&quot;2018_01_26_8_27&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 4. </p>
+
 </div>
 </div>
 <a id="a506433adcfeab6fa60713b16541533f2"></a>
@@ -862,6 +1046,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_26_10_03&quot;</span>,<span class="stringliteral">&quot;2018_01_26_10_36&quot;</span>,<span class="stringliteral">&quot;2018_01_26_11_07&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_26_11_39&quot;</span>,<span class="stringliteral">&quot;2018_01_26_12_11&quot;</span>,<span class="stringliteral">&quot;2018_01_26_12_42&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_26_13_14&quot;</span>,<span class="stringliteral">&quot;2018_01_26_13_46&quot;</span>,<span class="stringliteral">&quot;2018_01_26_14_18&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 5. </p>
+
 </div>
 </div>
 <a id="a758ebf0eb234cc2718addaf37b382163"></a>
@@ -884,6 +1070,8 @@ static double&#160;</td><td class="memItemRight" valign="bottom"><b>fPositions_9
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {<span class="stringliteral">&quot;2018_01_20_13_07&quot;</span>,<span class="stringliteral">&quot;2018_01_24_16_27&quot;</span>,<span class="stringliteral">&quot;2018_01_24_17_25&quot;</span>,</div><div class="line">                   <span class="stringliteral">&quot;2018_01_24_18_27&quot;</span>,<span class="stringliteral">&quot;2018_01_25_8_47&quot;</span>}</div></div><!-- fragment -->
+<p>Measurements names, series 6. </p>
+
 </div>
 </div>
 <a id="a8e7675868c0032c57906025671555a95"></a>
