@@ -49,14 +49,14 @@ bool SFAttenuation::AttAveragedCh(void){
   double *positions = fData->GetPositions();
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_1.fT0>0 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0";
-  fRatios = fData->GetRatios(selection,cut);
+  fRatios = fData->GetCustomHistograms(selection,cut);
   
   double mean, sigma;
   vector <TF1*> fun;
   TString gname = Form("att_s%i",fSeriesNo);
   fAttnGraph = new TGraphErrors(npoints);
   fAttnGraph->GetXaxis()->SetTitle("source position [mm]");
-  fAttnGraph->GetYaxis()->SetTitle("log(M_{FB})");
+  fAttnGraph->GetYaxis()->SetTitle("ln(M_{FB})");
   fAttnGraph->SetTitle(gname);
   fAttnGraph->SetName(gname);
   fAttnGraph->SetMarkerStyle(4);

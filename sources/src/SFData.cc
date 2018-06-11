@@ -60,10 +60,17 @@ SFData::SFData(){
 //------------------------------------------------------------------
 ///Standard constructor (recommended).
 ///\param seriesNo is number of experimental series to analyze.
+///
+///By deafult data analyzed with fixed threshold in DD6 is accessed.
+///If you need constant fraction data use SetThreshold() function.
 SFData::SFData(int seriesNo){
   SetDetails(seriesNo);
 }
 //------------------------------------------------------------------
+///Standard constructor.
+///\param seriesNo is number of the experimental series to analyze.
+///\param threshold is threshold type in DD6 preliminary data analysis.
+///Possible options are: "ft" - fixed threshold and "cf" - constant fraction.
 SFData::SFData(int seriesNo, TString threshold){
  SetDetails(seriesNo);
  if(!(threshold=="ft" || threshold=="cf")){
@@ -186,6 +193,37 @@ TString SFData::GetSelection(int ch, TString type){
   }
     
   return selection;
+}
+//------------------------------------------------------------------
+/// Returns selection for Draw method of TTree for custom histograms. 
+/// It sets binning, ranges and unique names for created histograms. 
+/// \param selection is custom selection entered by user.
+TString SFData::GetSelectionCustom(TString selection){
+ 
+  TString selectAndDraw;
+  gUnique = gRandom->Uniform(0,1);
+  
+  if(selection=="log(sqrt(ch_1.fPE/ch_0.fPE))")
+    selectAndDraw = selection+Form(">>htemp%.7f(500,-5,5)",gUnique);
+  else if(selection=="ch_0.fT0-ch_1.fT0")
+    selectAndDraw = selection+Form(">>htemp%.7f(500,-50,50)",gUnique);
+  else if(selection=="sqrt(ch_0.fPE*ch_1.fPE)")
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,-150,1200)",gUnique);
+  else if(selection=="sqrt(ch_0.fAmp*ch_1.fAmp)")
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,0,700)",gUnique);
+  else if(selection=="ch_0.fPE:ch_1.fPE")
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,-150,1200,1000,-150,1200)",gUnique);
+  else if(selection=="ch_0.fAmp:ch_1.fAmp")
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,0,700,1000,0,700)",gUnique);
+  else if(selection=="ch_0.fT0:ch_1.fT0")
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,-110,1100,1000,-110,1100)",gUnique);
+  else{
+    cout << "##### Warning in SFData::GetSelectionCustom()!" << endl;
+    cout << "Unknown selection! Deafault selection used!" << endl;
+    selectAndDraw = selection+Form(">>htemp%.7f",gUnique);
+  }
+  
+  return selectAndDraw;
 }
 //------------------------------------------------------------------
 /// Returns index in the fNames and fPositions arrays for the 
@@ -390,87 +428,97 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
 ///
 /// Like with sigle spectrum, it is possible to have cut and raw spectra.
 vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
- 
-  TString fname;
-  TString tname = string("tree_")+fThreshold;
-  TFile *file;
-  TTree *tree;
-  TString selection;
-  TString hname, htitle;
+
   bool empty = fSpectra.empty();
-  
   for(int i=0; i<fNpoints; i++){
-   fname = string(gPath)+fNames[i]+"/results.root";
-   file = new TFile(fname,"READ");
-   tree = (TTree*)file->Get(tname);
-   selection = GetSelection(ch,type);
-   tree->Draw(selection,cut);
    if(empty) fSpectra.push_back(new TH1D());
-   fSpectra[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-   hname = type+Form("_ch%i_pos%.1f_",ch,fPositions[i])+fThreshold;
-   htitle = hname+" "+cut;
-   fSpectra[i]->SetName(hname);
-   fSpectra[i]->SetTitle(htitle);
+   fSpectra[i] = GetSpectrum(ch,type,cut,fPositions[i]);
   }
   
   return fSpectra;
 }
 //------------------------------------------------------------------
-///Returns a vector of requested ratio histograms for all measurements in this series.
-///\param selection - selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". 
-///Redirection to specific histogram should not be entered here, it is done inside the function.
-///\param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
-///all events will be drawn.
-vector <TH1D*> SFData::GetRatios(TString selection, TString cut){
-  
-  TString fname;
-  TString tname = string("tree_")+fThreshold;
-  TFile *file;
-  TTree *tree;
-  TString selectAndDraw;
-  TString hname, htitle;
-  bool empty = fRatios.empty();
-  
-  for(int i=0; i<fNpoints; i++){
-   fname = string(gPath)+fNames[i]+"/results.root";
-   file = new TFile(fname,"READ");
-   tree = (TTree*)file->Get(tname);
-   gUnique = gRandom->Uniform(0,1);
-   selectAndDraw = selection+Form(">>htemp%.7f(500,-5,5)",gUnique);
-   tree->Draw(selectAndDraw,cut);
-   if(empty) fRatios.push_back(new TH1D());
-   fRatios[i] = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-   hname = Form("ratio_pos%.1f_",fPositions[i])+fThreshold;
-   htitle = selection+" "+cut;
-   fRatios[i]->SetName(hname);
-   fRatios[i]->SetTitle(htitle);
-  }
-  
-  return fRatios;
-}
-//------------------------------------------------------------------
-///Returns single requested ratio histogram.
+///Returns single requested custom 1D histogram.
 ///\param selection - selection like for Draw() method of TTree.
 ///\param cut - cut for drawn events. Also TTree-style syntax.
 ///\param position - position of source in mm. If position is not unique a 
 ///number of measurement should be entered.
-TH1D* SFData::GetRatio(TString selection, TString cut, double position){
+TH1D* SFData::GetCustomHistogram(TString selection, TString cut, double position){
   
   int index = GetIndex(position);
   TString fname = string(gPath)+fNames[index]+"/results.root";
   TFile *file = new TFile(fname,"READ");
   TString tname = string("tree_")+fThreshold;
   TTree *tree = (TTree*)file->Get(tname);
-  gUnique = gRandom->Uniform(0,1);
-  TString selectAndDraw = selection+Form(">>htemp%.7f",gUnique);
-  tree->Draw(selectAndDraw,cut);
-  fRatio = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-  TString hname = Form("ratio_pos%.1f_",position)+fThreshold;
-  TString htitle = selection+" "+cut;
-  fRatio->SetName(hname);
-  fRatio->SetTitle(htitle);
+  fHist = new TH1D();
   
-  return fRatio;
+  TString selectAndDraw = GetSelectionCustom(selection);
+  tree->Draw(selectAndDraw,cut);
+  fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+  TString hname = selection+Form("_pos%.1f_",position)+fThreshold;
+  TString htitle = hname+" "+cut;
+  fHist->SetName(hname);
+  fHist->SetTitle(htitle);
+  
+  return fHist;
+}
+//------------------------------------------------------------------
+///Returns a vector of requested custom 1D histograms for all measurements in this series.
+///\param selection - selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". 
+///Redirection to specific histogram should not be entered here, it is done inside the function.
+///\param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
+///all events will be drawn.
+vector <TH1D*> SFData::GetCustomHistograms(TString selection, TString cut){
+  
+  bool empty = fHists.empty();
+  for(int i=0; i<fNpoints; i++){
+    if(empty) fHists.push_back(new TH1D());
+    fHists[i] = GetCustomHistogram(selection,cut,fPositions[i]);
+  }
+  
+  return fHists;
+}
+//------------------------------------------------------------------
+///Returns single requested correlation 2D histogram.
+///\param selection - selection like for Draw() method of TTree.
+///\param cut - cut for drawn events. Also TTree-style syntax.
+///\param position - position of source in mm. If position is not unique a 
+///number of measurement should be entered.
+TH2D* SFData::GetCorrHistogram(TString selection, TString cut, double position){
+  
+  int index = GetIndex(position);
+  TString fname = string(gPath)+fNames[index]+"/results.root";
+  TFile *file = new TFile(fname,"READ");
+  TString tname = string("tree_")+fThreshold;
+  TTree *tree = (TTree*)file->Get(tname);
+  fHist2D = new TH2D();
+  
+  TString selectAndDraw = GetSelectionCustom(selection);
+  tree->Draw(selectAndDraw,cut,"colz");
+  fHist2D = (TH2D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
+  TString hname = selection+Form("_pos%.1f_",position)+fThreshold;
+  TString htitle = hname+" "+cut;
+  fHist2D->SetName(hname);
+  fHist2D->SetTitle(htitle);
+  
+  return fHist2D;
+}
+//------------------------------------------------------------------
+///Returns a vector of requested 2D correlation histograms for all measurements in 
+///this series.
+///\param selection - selection like for Draw() method of TTree, e.g. "ch_0.fPE:ch_1.fPE". 
+///Redirection to specific histogram should not be entered here, it is done inside the function.
+///\param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
+///all events will be drawn.
+vector <TH2D*> SFData::GetCorrHistograms(TString selection, TString cut){
+  
+  bool empty = fHists2D.empty();
+  for(int i=0; i<fNpoints; i++){
+    if(empty) fHists2D.push_back(new TH2D());
+    fHists2D[i] = GetCorrHistogram(selection,cut,fPositions[i]);
+  }
+  
+  return fHists2D;
 }
 //------------------------------------------------------------------
 /// Returns averaged signal.

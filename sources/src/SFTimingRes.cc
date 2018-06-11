@@ -74,9 +74,22 @@ int SFTimingRes::GetIndex(double position){
 //------------------------------------------------------------------
 ///Private method to get ratio histograms necesarry to impose cuts.
 bool SFTimingRes::LoadRatios(void){
+  
+  int npoints = fData->GetNpoints();
+  
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
-  fRatios = fData->GetRatios(selection,cut);
+  fRatios = fData->GetCustomHistograms(selection,cut);
+  
+  TF1 *gaus = new TF1("gaus","gaus",-100,100);
+  double min, max;
+  
+  for(int i=0; i<npoints; i++){
+    min = fRatios[i]->GetMean() - fRatios[i]->GetRMS();
+    max = fRatios[i]->GetMean() + fRatios[i]->GetRMS();
+    fRatios[i]->Fit(gaus,"Q","",min,max);
+  }
+ 
   return true;
 }
 //------------------------------------------------------------------
@@ -108,15 +121,15 @@ bool SFTimingRes::AnalyzeNoECut(void){
   
   fT0Graph = new TGraphErrors(npoints);
   fT0Graph->GetXaxis()->SetTitle("source position [mm]");
-  fT0Graph->GetYaxis()->SetTitle("T0_{ch0} - T0_{ch1}");
+  fT0Graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
   fT0Graph->SetTitle("");
   fT0Graph->SetMarkerStyle(8);
   
   for(int i=0; i<npoints; i++){
-    mean = fRatios[i]->GetMean();
-    sigma = fRatios[i]->GetRMS();
+    mean = fRatios[i]->GetFunction("gaus")->GetParameter(1);
+    sigma = fRatios[i]->GetFunction("gaus")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-sigma, mean+sigma);
-    fT0Diff.push_back(fData->GetRatio(selection,cut,positions[i]));
+    fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     lorentz->SetParameter(0,fT0Diff[i]->Integral());
     lorentz->SetParameter(1,fT0Diff[i]->GetRMS());
     lorentz->SetParameter(2,fT0Diff[i]->GetMean());
@@ -140,8 +153,8 @@ bool SFTimingRes::AnalyzeWithECut(void){
   
   if(fRatios.empty()) LoadRatios();
   
-  vector <TH1D*> hPEch0 = fData->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
-  vector <TH1D*> hPEch1 = fData->GetSpectra(1,"fPE","ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
+  fPEch0 = fData->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
+  fPEch1 = fData->GetSpectra(1,"fPE","ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
   vector <SFPeakFinder*> peakFin_ch0;
   vector <SFPeakFinder*> peakFin_ch1;
   TF1* fun = new TF1("fun","gaus",-200,200);
@@ -152,21 +165,24 @@ bool SFTimingRes::AnalyzeWithECut(void){
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   
+  double min0, max0;
+  double min1, max1;
+  
   fT0Graph = new TGraphErrors(npoints);
   fT0Graph->GetXaxis()->SetTitle("source position [mm]");
-  fT0Graph->GetYaxis()->SetTitle("T0_{ch0} - T0_{ch1}");
+  fT0Graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
   fT0Graph->SetTitle("");
   fT0Graph->SetMarkerStyle(8);
   
   for(int i=0; i<npoints; i++){
-    peakFin_ch0.push_back(new SFPeakFinder(hPEch0[i],"511",false));
-    peakFin_ch1.push_back(new SFPeakFinder(hPEch1[i],"511",false));
+    peakFin_ch0.push_back(new SFPeakFinder(fPEch0[i],"511",false));
+    peakFin_ch1.push_back(new SFPeakFinder(fPEch1[i],"511",false));
     peakFin_ch0[i]->FindPeakRange(xmin_ch0,xmax_ch0);
     peakFin_ch1[i]->FindPeakRange(xmin_ch1,xmax_ch1);
-    mean_ratio = fRatios[i]->GetMean();
-    sigma_ratio = fRatios[i]->GetRMS();
+    mean_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(1);
+    sigma_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", xmin_ch0,xmax_ch0,xmin_ch1,xmax_ch1,mean_ratio-sigma_ratio, mean_ratio+sigma_ratio);
-    fT0Diff.push_back(fData->GetRatio(selection,cut,positions[i]));
+    fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();
     fT0Diff[i]->Fit(fun,"Q","",mean-3*sigma,mean+3*sigma);
@@ -243,6 +259,27 @@ vector <double> SFTimingRes::GetTimingResErrors(void){
     cout << "##### Error in SFTimingRes::GetTimingResErrors()! Empty vector!" << endl;
   }
   return fTimeResErr;
+}
+//------------------------------------------------------------------
+/// Returns vector of ratio histograms used for cut on scattered events.
+vector <TH1D*> SFTimingRes::GetRatios(void){
+ if(fRatios.empty()){
+   cout << "##### Error in SFTimingRes::GetRatios()! Empty vector!" << endl;
+ }
+ return fRatios; 
+}
+//------------------------------------------------------------------
+/// Returns vector of PE spectra used for 511 keV energy cut. 
+/// \param ch - channel number (0 or 1).
+vector <TH1D*> SFTimingRes::GetSpectra(int ch){
+ if(fMethod=="no cut"){
+   cout << "##### Error in SFTimingRes::GetSpectra()! Incorrect method!" << endl;
+ }
+ if((ch==0 && fPEch0.empty()) || (ch==1 && fPEch1.empty())){
+   cout << "##### Error in SFTimingRes::GetSpectra()! Empty vector!" << endl;
+ }
+ if(ch==0)       return fPEch0; 
+ else if (ch==1) return fPEch1;
 }
 //------------------------------------------------------------------
 /// Prints details of SFTimingRes class object.

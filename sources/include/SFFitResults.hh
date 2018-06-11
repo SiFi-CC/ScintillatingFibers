@@ -12,87 +12,71 @@
 #define __SFFitResults_H_ 1
 #include "TObject.h"
 #include "TF1.h"
+#include "TMinuit.h"
 
 using namespace std;
+
+/// This class stores results of the fit and the fitted function.
 
 class SFFitResults : public TObject{
   
 private:
+  int     fNpar;
   double  fDecayTime;
   double  fDecayTimeErr;
-  double  fFastDec;
-  double  fFastDecErr;
-  double  fSlowDec;
-  double  fSlowDecErr;
-  double  fRiseTime;
-  double  fRiseTimeErr;
+  double  fFastDecTime;
+  double  fFastDecTimeErr;
+  double  fSlowDecTime;
+  double  fSlowDecTimeErr;
   double  fIslow;
   double  fIfast;
-  double  fChi2NDFRise;
-  double  fChi2NDFDec;
-  double  fXminRise;
-  double  fXmaxRise;
-  double  fXminDec;
-  double  fXmaxDec;
-  double  fTsplit;
-  TString fFormulaRise;
-  TString fFormulaDecay;
+  double  fChi2;
+  double  fNDF;
+  double  fFitXmin;
+  double  fFitXmax;
+  TString fFormula;
   TString fName;
-  TF1     *fDecayFun;
-  TF1     *fRiseFun;
-  vector <double> fDecayPar;
-  vector <double> fDecayParErr;
-  vector <double> fRisePar;
-  vector <double> fRiseParErr;
+  TF1     *fFunction;
+  vector <double> fParameters;
+  vector <double> fParErrors;
   
 public:
   SFFitResults();
   SFFitResults(TString name);
-  SFFitResults(TString name, TF1 *riseFun, TF1 *decayFun);
+  SFFitResults(TString name, TF1 *fun);
   ~SFFitResults();
   
-  void Reset();
-  void Print();
+  void Reset(void);
+  void Print(void);
   
-  bool SetFromFunctions(TF1 *riseFun, TF1 *decayFun);
+  bool SetFromFunction(TF1 *fun);
   void SetDecayTime(double t, double err);
   void SetFastDecTime(double t, double err);
   void SetSlowDecTime(double t, double err);
-  void SetRiseTime(double t, double err);
   void SetIntensities(double iSlow, double iFast);
-  void SetRiseChi2NDF(double Chi2NDF)   { fChi2NDFRise = Chi2NDF; }; 
-  void SetDecayChi2NDF(double Chi2NDF)  { fChi2NDFDec = Chi2NDF; };
-  void SetRangesRise(double xmin, double xmax);
-  void SetRangesDecay(double xmin, double xmax);
-  void SetSplitTime(double tSplit)      { fTsplit = tSplit; };
-  void SetFormulaRise(TString formula)  { fFormulaRise = formula; };
-  void SetFormulaDecay(TString formula) { fFormulaDecay = formula; };
-  void SetName(TString name)            { fName = name; };
-  bool SetDecayFun(TF1 *decFun);
-  bool SetRiseFun(TF1 *riseFun);
-  bool SetDecayPar(vector <double> par);
-  bool SetDecayParErrors(vector <double> parErr);
-  bool SetRisePar(vector <double> par);
-  bool SetRiseParErrors(vector <double> parErr);
+  void SetFitRange(double xmin, double xmax);
+  bool SetParameters(vector <double> par);
+  bool SetParErrors(vector <double> parErr);
+  void SetNpar(int npar)           { fNpar = npar; };
+  void SetChi2(double chi2)        { fChi2 = chi2; };
+  void SetNDF(double ndf)          { fNDF = ndf; };
+  void SetFormula(TString formula) { fFormula = formula; };
+  void SetName(TString name)       { fName = name; };
   
-  bool    GetDecayTime(double &t, double &err);
-  bool    GetFastDecTime(double &t, double &err);
-  bool    GetSlowDecTime(double &t, double &err);
-  bool    GetRiseTime(double &t, double &err);
-  bool    GetIntensities(double &iSlow, double &iFast);
-  bool    GetChi2NDF(double Chi2NDFRise, double Chi2NDFDec);
-  bool    GetRangesRise(double &xmin, double &xmax);
-  bool    GetRangesDecay(double &xmin, double &xmax);
-  double  GetSplitTime(void)           {return fTsplit; };
-  TString GetFormulaRise(void)         { return fFormulaRise; };
-  TString GetFormulaDecay(void)        { return fFormulaDecay; };
-  TString GetName(void)                { return fName; };
-  TF1*    GetDecayFunction(void)       { return fDecayFun; };
-  TF1*    GetRiseFunction(void)        { return fRiseFun; };
-  vector <double> GetDecayPar(void)    { return fDecayPar; };
-  vector <double> GetDecayParErr(void) { return fDecayParErr; };
-  vector <double> GetRisePar(void)     { return fRisePar; };
-  vector <double> GetRiseParErr(void)  { return fRiseParErr; };
+  bool            GetDecayTime(double &t, double &err);
+  bool            GetFastDecTime(double &t, double &err);
+  bool            GetSlowDecTime(double &t, double &err);
+  bool            GetIntensities(double &iSlow, double &iFast);
+  bool            GetFitRange(double &xmin, double &xmax);
+  vector <TF1*>   GetCompFunctions(void);
+  int             GetNpar(void)       { return fNpar; };
+  double          GetChi2(void)       { return fChi2; };
+  double          GetNDF(void)        { return fNDF; };
+  TString         GetFormula(void)    { return fFormula; };
+  TString         GetName(void)       { return fName; };
+  TF1*            GetFunction(void)   { return fFunction; };
+  vector <double> GetParameters(void) { return fParameters; };
+  vector <double> GetParErrors(void)  { return fParErrors; };
   
   ClassDef(SFFitResults,1)
 };

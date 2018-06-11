@@ -31,12 +31,13 @@ private:
   int     fSeriesNo;	///< Number of analyzed fSeriesNo
   SFData  *fData;	///< Data of the measurement series  
   double  fPE;		///< Value of signals PE
-  bool    fVerb;	///< Verbose level: 0 - quiet, 1 - verbose
+  bool    fVerb;	///< Verbose level: false - quiet, true - verbose
   
   vector <TProfile*>     fSignals;
-  vector <SFFitResults*> fResults;
+  vector <SFFitResults*> fResultsSingle;
+  vector <SFFitResults*> fResultsDouble;
   
-  int GetIndex(double position);
+  int    GetIndex(double position);
   
 public:
   SFTimeConst();
@@ -51,12 +52,12 @@ public:
   bool          FitSingleSignal(double position);
   bool          FitSingleSignal(double position, TString option);
   TProfile*     GetSingleSignal(double position);
-  SFFitResults* GetSingleResult(double position);
+  SFFitResults* GetSingleResult(double position, TString opt);
   void          Reset(void);
   void          Print(void);
   
   vector <TProfile*>     GetAllSignals(void) { return fSignals; };
-  vector <SFFitResults*> GetAllResults(void) { return fResults; };
+  vector <SFFitResults*> GetAllResults(TString opt);
   
   ClassDef(SFTimeConst,1)
   

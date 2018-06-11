@@ -33,6 +33,8 @@ private:
   TGraphErrors *fT0Graph;	///< Graph ch_0.T0-ch_1.T0 vs. source position
   
   vector <TH1D*>  fRatios;	///< Ratio histograms necessary to impose cuts
+  vector <TH1D*>  fPEch0;	///< PE spectra from ch0, necessary to impose 511 keV energy cut
+  vector <TH1D*>  fPEch1;	///< PE spectra from ch1, necessary to impose 511 keV energy cut
   vector <TH1D*>  fT0Diff;	///< Histograms ch_0.T0-ch_1.T0 
   vector <double> fTimeRes;	///< Vector containing timing resolution values for whole series
   vector <double> fTimeResErr;	///< Vector containing errors on timing resolutions for whole series
@@ -53,6 +55,8 @@ public:
   vector <double> GetTimingResolution(double position);
   vector <double> GetTimingResolutions(void);
   vector <double> GetTimingResErrors(void);
+  vector <TH1D*>  GetRatios(void);
+  vector <TH1D*>  GetSpectra(int ch);
   void            Print(void);
   
   ClassDef(SFTimingRes,1)

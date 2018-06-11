@@ -76,12 +76,14 @@ int main(int argc, char **argv){
   for(int i=0; i<npoints; i++){
    can_ratios->cd(i+1);
    gPad->SetGrid(1,1);
-   attRatios[i]->SetTitle(Form("log(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
+   attRatios[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
    attRatios[i]->GetXaxis()->SetRangeUser(-2,2);
+   attRatios[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
    attRatios[i]->Draw();
   }
   
   //----- drawing separate channels 
+  text.SetTextSize(0.04);
   TCanvas *can_separate_ch = new TCanvas("can_separate_ch","can_separate_ch",1000,500);
   can_separate_ch->Divide(2,1);
   can_separate_ch->cd(1);
@@ -107,7 +109,7 @@ int main(int argc, char **argv){
    can_spectra_ch0->cd(i+1);
    gPad->SetGrid(1,1);
    spectraCh0[i]->SetStats(false);
-   spectraCh0[i]->GetXaxis()->SetRangeUser(0,1000);
+   spectraCh0[i]->GetXaxis()->SetRangeUser(0,800);
    spectraCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
    spectraCh0[i]->GetXaxis()->SetTitle("P.E.");
    spectraCh0[i]->GetYaxis()->SetTitle("counts");
@@ -117,7 +119,7 @@ int main(int argc, char **argv){
    can_spectra_ch1->cd(i+1);
    gPad->SetGrid(1,1);
    spectraCh1[i]->SetStats(false);
-   spectraCh1[i]->GetXaxis()->SetRangeUser(0,1000);
+   spectraCh1[i]->GetXaxis()->SetRangeUser(0,800);
    spectraCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
    spectraCh1[i]->GetXaxis()->SetTitle("P.E.");
    spectraCh1[i]->GetYaxis()->SetTitle("counts");

@@ -113,6 +113,8 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
    return false;
   }
   
+  fSpectrum->GetXaxis()->UnZoom();
+  
   return true;
 }
 //------------------------------------------------------------------
@@ -159,6 +161,7 @@ bool SFPeakFinder::Fit(void){
   
   //fitting Gauss to the peak
   TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min,peak_max);
+  gaus_fun->SetParameters(100,(peak_max-peak_min)/2.,10);
   fPeak->Fit(gaus_fun,opt);
   
   fPosition = gaus_fun->GetParameter(1);
@@ -169,6 +172,7 @@ bool SFPeakFinder::Fit(void){
   if(fPosition<0 || fSigma<0){
    cout << "##### Error in SFPeakFinder(). Position and Sigma cannot be negative." << endl;
    cout << "position = " << fPosition << "\t fSigma = " << fSigma << endl;
+   fPeak->SaveAs("peak.root");
    return false;
   }
   

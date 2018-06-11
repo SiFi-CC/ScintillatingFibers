@@ -59,11 +59,13 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   
   for(int i=0; i<npoints; i++){
    fSignals.push_back(fData->GetSignalAverage(0,positions[i],selection, 100, true));
-   results_name = fSignals[i]->GetName();
-   fResults.push_back(new SFFitResults(results_name));
+   results_name = fSignals[i]->GetName() + string("_single_decay");
+   fResultsSingle.push_back(new SFFitResults(results_name));
+   results_name = fSignals[i]->GetName() + string("_double_decay");
+   fResultsDouble.push_back(new SFFitResults(results_name));
   }
-
-  ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(10000);
+  
+  ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
   
   return true;
 }
@@ -75,7 +77,8 @@ void SFTimeConst::Reset(void){
   fVerb     = false;
   fData     = NULL;
   if(!fSignals.empty()) fSignals.clear();
-  if(!fResults.empty()) fResults.clear();
+  if(!fResultsSingle.empty()) fResultsSingle.clear();
+  if(!fResultsDouble.empty()) fResultsDouble.clear();
 }
 //------------------------------------------------------------------
 ///Private method to get an index of requested measurements based on source position.
@@ -100,220 +103,71 @@ int SFTimeConst::GetIndex(double position){
   return index;
 }
 //------------------------------------------------------------------
-bool SFTimeConst::FitDecTimeSingle(TProfile *signal, double position){
-
+bool SFTimeConst::FitDecTimeDouble(TProfile *signal, double position){
+  
   TString opt;
-  if(fVerb) opt = "0";
-  else opt = "Q0";
-
-  double tmax = signal->GetBinCenter(signal->GetMaximumBin());
-  double xmin 	    = 0;
-  double lastChiNDF = 0;
-  double chiNDF     = 0;
-  double results[12]; 
-  
-  TF1 *fun  = new TF1("exp_single","-[0]*TMath::Exp(-x/[1])+[2]*TMath::Exp(-x/[3])+[4]",0,1024);
-  
-  TF1 *pol0 = new TF1("pol0","pol0",0,50);
-  signal->Fit(pol0,"Q0R");
-  fun->FixParameter(4,pol0->GetParameter(0));
-  
-  for(int i=0; i<7; i++){
-    fun->SetParameter(0,10);
-    fun->SetParameter(1,10);
-    fun->SetParameter(2,10);
-    fun->SetParameter(3,100);
-    xmin = tmax - (10*(i+3));
-    signal->Fit(fun,opt,"",xmin,1024);
-    chiNDF = fun->GetChisquare()/fun->GetNDF();
-    if(lastChiNDF==0 || (fabs(1-lastChiNDF)>fabs(1-chiNDF))){
-      lastChiNDF = chiNDF;
-      results[0] = fun->GetParameter(0);	//parameter 0
-      results[1] = fun->GetParameter(1);	//rise time [ns]
-      results[2] = fun->GetParameter(2);	//parameter 2
-      results[3] = fun->GetParameter(3);	//decay time [ns]
-      results[4] = fun->GetParameter(4);	//parameter 4
-      results[5] = fun->GetParError(0);		//parameter 0 error
-      results[6] = fun->GetParError(1);		//rise time error [ns]
-      results[7] = fun->GetParError(2);		//parameter 2 error
-      results[8] = fun->GetParError(3);		//decay time error [ns]
-      results[9] = fun->GetParError(4);		//para,eter 4 error
-      results[10] = xmin;			//lower fitting range
-      results[11] = chiNDF;			//Chi2/NDF
-    }
-  }
-  
+  if(fVerb) opt = "R0";
+  else opt = "QR0";
+   
   int index = GetIndex(position);
-  int npar = 5;
-  vector <double> par(npar);
-  vector <double> err(npar);
-  
-  for(int i=0; i<npar; i++){
-    par[i] = results[i];
-    err[i] = results[i+npar];
-  }
-  
-  TF1 *decayFunction = new TF1("single_decay","-[0]*TMath::Exp(-x/[1])+[2]*TMath::Exp(-x/[3])+[4]",results[10],1024);
-  
-  for(int i=0; i<npar; i++){
-    decayFunction->FixParameter(i,results[i]);
-  }
- 
-  //fResults[index]->SetDecayTime(results[1],results[4]);  
-  //fResults[index]->SetDecayChi2NDF(results[7]);
-  //fResults[index]->SetRangesDecay(results[6],1024);
-  fResults[index]->SetFormulaDecay(fun->GetExpFormula());
-  fResults[index]->SetDecayPar(par);
-  fResults[index]->SetDecayParErrors(err);
-  fResults[index]->SetDecayFun(decayFunction);
-    
-  cout << "\n-----------------------" << endl;
-  cout << signal->GetName() << endl;
-  cout << "Rise time: " << results[1] << " +/- " << results[6] << " ns" << endl;
-  cout << "Decay time: " << results[3] << " +/- " << results[8] << " ns" << endl;
-  cout << "Chi2/NDF: " << results[11] << endl;
-  cout << "Tmax = " << tmax << "\t Xmin = " << results[10] << endl;
-  cout << "-----------------------\n" << endl; 
+  double xmin = signal->GetBinCenter(signal->GetMaximumBin())+20;
+  double xmax = signal->GetBinCenter(signal->GetNbinsX());
 
+  TF1 *fun_BL = new TF1("fun_BL","pol0",0,50);
+  signal->Fit(fun_BL,opt);
+  
+  TF1 *fun_fast = new TF1("fun_fast","[0]*(exp(-(x-[1])/[2]))",xmin,xmin+50);
+  fun_fast->SetParameters(100,100,50);
+  fun_fast->SetParNames("A","t0","tau");
+  signal->Fit(fun_fast,opt);
+
+  TF1 *fun_slow = new TF1("fun_slow","[0]*(exp(-(x-[1])/[2]))",xmax-500,xmax);
+  fun_slow->SetParameters(100,100,400);
+  fun_slow->SetParNames("A","t0","tau");
+  fun_slow->FixParameter(1,fun_fast->GetParameter(1));
+  signal->Fit(fun_slow,opt);
+
+  TF1* fun_all = new TF1("fall","[0]*(exp(-(x-[1])/[2])) + [3]*(exp(-(x-[1])/[4]))+[5]",xmin,xmax);
+
+  fun_all->SetParNames("A_fast","t0","tau_fast","A_slow","tau_slow");
+  fun_all->SetParameter(0,fun_fast->GetParameter(0));
+  fun_all->FixParameter(1,fun_fast->GetParameter(1));
+  fun_all->SetParameter(2,fun_fast->GetParameter(2));
+  fun_all->SetParameter(3,fun_slow->GetParameter(0));
+  fun_all->SetParameter(4,fun_slow->GetParameter(2));
+  fun_all->FixParameter(5,fun_BL->GetParameter(0));
+  
+  fun_all->SetLineColor(kGreen+3);
+  signal->Fit(fun_all,opt);
+  fResultsDouble[index]->SetFromFunction(fun_all);
+  fResultsDouble[index]->Print();
+  
   return true;
 }
 //------------------------------------------------------------------
-bool SFTimeConst::FitDecTimeDouble(TProfile *signal, double position){
- 
-  TString opt;
-  if(fVerb) opt = "0";
-  else opt = "Q0";
+bool SFTimeConst::FitDecTimeSingle(TProfile *signal, double position){
 
-  double tmax = signal->GetBinCenter(signal->GetMaximumBin());
-  double xmin  = 0;
-  double split = 0;
-  double lastChiNDF = 0;
-  double chiNDF;
-  double results[16];
-  
-  TString formula = "-[0]*TMath::Exp(-x/[1])+[2]*TMath::Exp(-x/[3])+[4]*TMath::Exp(-x/[5])+[6]";
-  //TString formula = "[0]*TMath::Exp(-x/[1])+[2]*TMath::Exp(-x/[3])+[4]"
-  TF1 *fun = new TF1("exp_double",formula,0,1024);
-  
-  TF1 *fastExp = new TF1("fastExp","[0]*TMath::Exp(-x/[1])+[2]",0,1024);
-  TF1 *slowExp = new TF1("slowExp","[0]*TMath::Exp(-x/[1])+[2]",0,1024);
-  
-  TF1 *pol0 = new TF1("pol0","pol0",0,50); 
-  signal->Fit(pol0,"R0Q");
-  fun->FixParameter(6,pol0->GetParameter(0));
-  
-  //for(int i=0; i<7; i++){
-  while(xmin<tmax-50){
-    fun->SetParameter(0,10);
-    fun->SetParameter(1,10);
-    fun->SetParameter(2,10);
-    fun->SetParameter(3,100);
-    fun->SetParameter(4,10);
-    fun->SetParameter(5,300);
-    xmin = xmin + (10);
-    signal->Fit(fun,opt,"",xmin,1024);
-    chiNDF = fun->GetChisquare()/fun->GetNDF();
-    if(lastChiNDF==0 || (fabs(1-lastChiNDF)>fabs(1-chiNDF))){
-      lastChiNDF = chiNDF;
-      results[0]  = fun->GetParameter(0);	//parameter 0
-      results[1]  = fun->GetParameter(1); 	//rise time [ns]
-      results[2]  = fun->GetParameter(2);	//parameter 2
-      results[3]  = fun->GetParameter(3);	//fast decay time [ns]
-      results[4]  = fun->GetParameter(4);	//parameter 4
-      results[5]  = fun->GetParameter(5);	//slow decay time [ns]
-      results[6]  = fun->GetParameter(6);	//parameter 4
-      results[7]  = fun->GetParError(0);
-      results[8]  = fun->GetParError(1);
-      results[9]  = fun->GetParError(2);
-      results[10] = fun->GetParError(3);
-      results[11] = fun->GetParError(4);
-      results[12] = fun->GetParError(5);
-      results[13] = fun->GetParError(6);
-      results[14] = xmin;
-      results[15] = chiNDF;
-    }
-  }
-  
-  /*
-  for(int i=0; i<5; i++){
-    for(int ii=0; ii<5; ii++){
-      for(int bin=signal->GetMaximumBin(); bin<signal->GetNbinsX(); bin++){
-	if(signal->GetBinContent(bin) < (signal->GetMaximum()/(ii+2))){
-	  split = signal->GetBinCenter(bin);
-	  break;
-	}
-      }
-      xmin = tmax + (i*10);
-      fastExp->SetParameters(1,10,1);
-      slowExp->SetParameters(1,10,1);
-      signal->Fit(fastExp,opt,"",xmin,split);
-      signal->Fit(slowExp,opt,"",split,1024);
-      fun->SetParameter(0,fastExp->GetParameter(0));
-      fun->SetParameter(1,fastExp->GetParameter(1));
-      fun->SetParameter(2,slowExp->GetParameter(0));
-      fun->SetParameter(3,slowExp->GetParameter(1));
-      signal->Fit(fun,opt,"",xmin,1024);
-      chiNDF = fun->GetChisquare()/fun->GetNDF();
-      if(lastChiNDF==0 || (fabs(1-lastChiNDF) < fabs(1-chiNDF))){
-	lastChiNDF = chiNDF;
-	results[0]  = fun->GetParameter(0);	//parameter 0
-	results[1]  = fun->GetParameter(1); 	//fast decay time [ns]
-	results[2]  = fun->GetParameter(2);	//parameter 2
-	results[3]  = fun->GetParameter(3);	//slow decay time [ns]
-	results[4]  = fun->GetParameter(4);	//parameter 4
-	results[5]  = fun->GetParError(0);	//parameter 0 error
-	results[6]  = fun->GetParError(1);	//fast decay time error [ns]
-	results[7]  = fun->GetParError(2);	//parameter 2 error 
-	results[8]  = fun->GetParError(3);	//slow decay time error [ns]
-	results[9]  = fun->GetParError(4);	//parameter 4 error 
-	results[10] = xmin;			//lower fitting range
-	results[11] = split;			//fast/slow split time
-	results[12] = chiNDF;			//Chi2/NDF
-      }
-    }
-  }
- */
+  TString opt;
+  if(fVerb) opt = "R0";
+  else opt = "QR0";
   
   int index = GetIndex(position);
-  int npar = 5; 
-  vector <double> par(npar);
-  vector <double> err(npar);
+  double xmin = signal->GetBinCenter(signal->GetMaximumBin())+20;
+  double xmax = signal->GetBinCenter(signal->GetNbinsX());
   
-  for(int i=0; i<npar; i++){
-    par[i] = results[i];
-    err[i] = results[i+npar];
-  }
+  TF1 *fun_BL = new TF1("fun_BL","pol0",0,50);
+  signal->Fit(fun_BL,opt);
   
-  TF1* decayFunction = new TF1("double_decay",formula,results[14],1024);
-  for(int i=0; i<npar; i++){
-  decayFunction->FixParameter(i,results[i]);
-  }
+  TF1 *fun_dec = new TF1("fun_dec","[0]*(exp(-(x-[1])/[2])) + [3]",xmin,xmax);
+  fun_dec->SetParNames("A","t0","tau","const");
+  fun_dec->SetParameter(0,100);
+  fun_dec->SetParameter(1,100);
+  fun_dec->SetParameter(2,100);
+  fun_dec->FixParameter(3,fun_BL->GetParameter(0));
   
-  double denom = results[2]*results[3] + results[4]*results[5];
-  double Ifast = ((results[2]*results[3])/denom)*100;
-  double Islow = ((results[4]*results[5])/denom)*100;
-
-
-  //fResults[index]->SetFastDecTime(results[1],results[6]); 
-  //fResults[index]->SetSlowDecTime(results[3],results[8]);
-  fResults[index]->SetIntensities(Islow,Ifast);
-  //fResults[index]->SetSplitTime(results[11]);
-  //fResults[index]->SetRangesDecay(results[10],1024);
-  //fResults[index]->SetDecayChi2NDF(results[12]);
-  fResults[index]->SetDecayPar(par);
-  fResults[index]->SetDecayParErrors(err);
-  fResults[index]->SetDecayFun(decayFunction);
-  fResults[index]->SetFormulaDecay(fun->GetExpFormula());
-  
-  cout << "\n-----------------------" << endl;
-  cout << signal->GetName() << endl;
-  cout << "Rise time: " << results[1] << " +/- " << results[7] << " ns" << endl;
-  cout << "Fast decay time: " << results[3] << " +/- " << results[10] << " ns" << endl;
-  cout << "Slow decay time: " << results[5] << " +/- " << results[12] << " ns" << endl;
-  cout << "Fast component intensity: " << Form("%.2f",Ifast) << " %" << endl;
-  cout << "Slow component intensity: " << Form("%.2f",Islow) << " %" << endl;
-  cout << "Chi2/NDF: " << results[15] << endl;
-  cout << "-----------------------\n" << endl; 
+  signal->Fit(fun_dec,opt);
+  fResultsSingle[index]->SetFromFunction(fun_dec);
+  fResultsSingle[index]->Print();
   
   return true;
 }
@@ -375,9 +229,22 @@ TProfile* SFTimeConst::GetSingleSignal(double position){
 //------------------------------------------------------------------
 ///Returns fitting results for requested signal.
 ///\param position - position of the source in mm
-SFFitResults* SFTimeConst::GetSingleResult(double position){
+SFFitResults* SFTimeConst::GetSingleResult(double position, TString opt){
   int index = GetIndex(position);
-  return fResults[index];
+  if(opt=="single")      return fResultsSingle[index];
+  else if(opt=="double") return fResultsDouble[index];
+  else{
+    cout << "##### Error in SFTimeConst::GetSingleResult()! Incorrect option!" << endl;
+    return NULL;
+  }
+}
+//------------------------------------------------------------------
+vector <SFFitResults*> SFTimeConst::GetAllResults(TString opt){
+  if(opt!="single" || opt!="double"){
+    cout << "##### Error in SFTimeConst::GetAllResults()! Incorrecct option!" << endl;
+  }
+  if(opt=="single")      return fResultsSingle;
+  else if(opt=="double") return fResultsDouble;
 }
 //------------------------------------------------------------------
 ///Prints details of the SFTimeConst class ojbect.

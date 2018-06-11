@@ -31,14 +31,17 @@ target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES} $ENV{DD6PATH}build/l
 add_executable(scifi scifi.cc)
 target_link_libraries(scifi ScintillatingFibers)
 
-add_executable(tests tests.cc)
-target_link_libraries(tests ScintillatingFibers)
+add_executable(data data.cc)
+target_link_libraries(data ScintillatingFibers)
 
 add_executable(attenuation attenuation.cc)
 target_link_libraries(attenuation ScintillatingFibers)
 
 add_executable(timeres timeres.cc)
 target_link_libraries(timeres ScintillatingFibers)
+
+add_executable(tconst tconst.cc)
+target_link_libraries(tconst ScintillatingFibers)
 
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)
