@@ -172,7 +172,6 @@ bool SFPeakFinder::Fit(void){
   if(fPosition<0 || fSigma<0){
    cout << "##### Error in SFPeakFinder(). Position and Sigma cannot be negative." << endl;
    cout << "position = " << fPosition << "\t fSigma = " << fSigma << endl;
-   fPeak->SaveAs("peak.root");
    return false;
   }
   
