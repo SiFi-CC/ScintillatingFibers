@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['getallresults',['GetAllResults',['../classSFTimeConst.html#ad5237ee89c0377ee6f2631d9603e06e1',1,'SFTimeConst']]],
+  ['getallsignals',['GetAllSignals',['../classSFTimeConst.html#a1af7dca2bf5c9890d721ad01343430b7',1,'SFTimeConst']]],
   ['getattenuation',['GetAttenuation',['../classSFAttenuation.html#aab3ade0f40b0d2d761b438277f116f3b',1,'SFAttenuation::GetAttenuation(void)'],['../classSFAttenuation.html#a3cee2c6b6473016019e244ef1e76b33b',1,'SFAttenuation::GetAttenuation(int ch)']]],
   ['getatterror',['GetAttError',['../classSFAttenuation.html#a426f32d8d39b86528d3b7abac772dc33',1,'SFAttenuation::GetAttError(void)'],['../classSFAttenuation.html#aa546256b6d09ec8152220f336715aee9',1,'SFAttenuation::GetAttError(int ch)']]],
   ['getattgraph',['GetAttGraph',['../classSFAttenuation.html#ae9e3161b910bf4dd0362d522b91377b9',1,'SFAttenuation::GetAttGraph(void)'],['../classSFAttenuation.html#a9c4583314fb0b022fbc981b772e8dca6',1,'SFAttenuation::GetAttGraph(int ch)']]],
@@ -40,8 +42,8 @@ var searchData=
   ['getselectioncustom',['GetSelectionCustom',['../classSFData.html#a60647493595e5e30172befb66088925f',1,'SFData']]],
   ['getsignal',['GetSignal',['../classSFData.html#ae9fce8eb845b663085bf4861196983b9',1,'SFData']]],
   ['getsignalaverage',['GetSignalAverage',['../classSFData.html#a0446ba8102cd62eb8236fd3b79bdc6ac',1,'SFData']]],
-  ['getsingleresult',['GetSingleResult',['../classSFTimeConst.html#a9769bb1e7e2da0ac5189c536d2a30e68',1,'SFTimeConst']]],
-  ['getsinglesignal',['GetSingleSignal',['../classSFTimeConst.html#af508409bb9a6360b076870d6addb2a02',1,'SFTimeConst']]],
+  ['getsingleresult',['GetSingleResult',['../classSFTimeConst.html#ae5491e487f85e05f947d536302aea8cc',1,'SFTimeConst']]],
+  ['getsinglesignal',['GetSingleSignal',['../classSFTimeConst.html#a57db2bef81f4689c9a4b12626ab01ad5',1,'SFTimeConst']]],
   ['getspectra',['GetSpectra',['../classSFAttenuation.html#ad8e249452ec49e39981dfef72539a64e',1,'SFAttenuation::GetSpectra()'],['../classSFData.html#a73a21609b61a6435eecaafc40c2f7dac',1,'SFData::GetSpectra()'],['../classSFMC.html#aa2c08b6e646e8003f414b861d3a0afbf',1,'SFMC::GetSpectra()'],['../classSFTimingRes.html#a3b045c2deb2797d0d2ec01c58233f29d',1,'SFTimingRes::GetSpectra()']]],
   ['getspectrum',['GetSpectrum',['../classSFData.html#ab7e574dec6210364759d95fc84882870',1,'SFData::GetSpectrum()'],['../classSFMC.html#a3d0de422cec734efa253aa28ed7f6b91',1,'SFMC::GetSpectrum()']]],
   ['getsum_5fw',['GetSum_W',['../classTFit.html#a7347cbb0edf182ae7dc6ff63458f5e99',1,'TFit']]],

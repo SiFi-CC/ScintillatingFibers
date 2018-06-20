@@ -101,15 +101,21 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFFitResults.html#a66bb8be143ad0d9bbb32cd485534edba">~SFFitResults</a> ()</td></tr>
 <tr class="memdesc:a66bb8be143ad0d9bbb32cd485534edba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:a66bb8be143ad0d9bbb32cd485534edba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac46b30bee7b741c7201d03f522932d76"><td class="memItemLeft" align="right" valign="top"><a id="ac46b30bee7b741c7201d03f522932d76"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetAmpFast</b> (double &amp;ampFast, double &amp;ampFastErr)</td></tr>
+<tr class="separator:ac46b30bee7b741c7201d03f522932d76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92a3fc7131cd04a8ddcfb1407c064892"><td class="memItemLeft" align="right" valign="top"><a id="a92a3fc7131cd04a8ddcfb1407c064892"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetAmpSlow</b> (double &amp;ampSlow, double &amp;ampSlowErr)</td></tr>
+<tr class="separator:a92a3fc7131cd04a8ddcfb1407c064892"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af51d5eca524ccf0e983244f81b01d14e"><td class="memItemLeft" align="right" valign="top"><a id="af51d5eca524ccf0e983244f81b01d14e"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>GetChi2</b> (void)</td></tr>
 <tr class="separator:af51d5eca524ccf0e983244f81b01d14e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af84842d8a1a6f6040eff74ee99bb1c5b"><td class="memItemLeft" align="right" valign="top"><a id="af84842d8a1a6f6040eff74ee99bb1c5b"></a>
 vector&lt; TF1 * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetCompFunctions</b> (void)</td></tr>
 <tr class="separator:af84842d8a1a6f6040eff74ee99bb1c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac50ff2fb3d8e564139d384a93692ee20"><td class="memItemLeft" align="right" valign="top"><a id="ac50ff2fb3d8e564139d384a93692ee20"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetDecayTime</b> (double &amp;t, double &amp;err)</td></tr>
-<tr class="separator:ac50ff2fb3d8e564139d384a93692ee20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad71ff22389578f91e40eef26c4eef692"><td class="memItemLeft" align="right" valign="top"><a id="ad71ff22389578f91e40eef26c4eef692"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>GetConst</b> (void)</td></tr>
+<tr class="separator:ad71ff22389578f91e40eef26c4eef692"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5244f8dd598173f51fc478bf9f37b7b7"><td class="memItemLeft" align="right" valign="top"><a id="a5244f8dd598173f51fc478bf9f37b7b7"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetFastDecTime</b> (double &amp;t, double &amp;err)</td></tr>
 <tr class="separator:a5244f8dd598173f51fc478bf9f37b7b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -140,21 +146,36 @@ vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Get
 <tr class="memitem:a45b507335360476ee14e7742905d6afc"><td class="memItemLeft" align="right" valign="top"><a id="a45b507335360476ee14e7742905d6afc"></a>
 vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetParErrors</b> (void)</td></tr>
 <tr class="separator:a45b507335360476ee14e7742905d6afc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac84476e737f5834be36d45eb379bd673"><td class="memItemLeft" align="right" valign="top"><a id="ac84476e737f5834be36d45eb379bd673"></a>
+TPaveText *&#160;</td><td class="memItemRight" valign="bottom"><b>GetResultsPave</b> (void)</td></tr>
+<tr class="separator:ac84476e737f5834be36d45eb379bd673"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adca719b82637b60df84263de3e4f6b82"><td class="memItemLeft" align="right" valign="top"><a id="adca719b82637b60df84263de3e4f6b82"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetSlowDecTime</b> (double &amp;t, double &amp;err)</td></tr>
 <tr class="separator:adca719b82637b60df84263de3e4f6b82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17043e766454e6475ec31c8148909938"><td class="memItemLeft" align="right" valign="top"><a id="a17043e766454e6475ec31c8148909938"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>GetStat</b> (void)</td></tr>
+<tr class="separator:a17043e766454e6475ec31c8148909938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc50c56aea21959da39efb02e8438af4"><td class="memItemLeft" align="right" valign="top"><a id="afc50c56aea21959da39efb02e8438af4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetT0</b> (double &amp;t0, double &amp;t0Err)</td></tr>
+<tr class="separator:afc50c56aea21959da39efb02e8438af4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5161b0e24d61c179dfe162a8f1ef7ef2"><td class="memItemLeft" align="right" valign="top"><a id="a5161b0e24d61c179dfe162a8f1ef7ef2"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> (void)</td></tr>
 <tr class="separator:a5161b0e24d61c179dfe162a8f1ef7ef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6023f2b86e32d66ec9082b5f0c9d8c5"><td class="memItemLeft" align="right" valign="top"><a id="af6023f2b86e32d66ec9082b5f0c9d8c5"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Reset</b> (void)</td></tr>
 <tr class="separator:af6023f2b86e32d66ec9082b5f0c9d8c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4f4d18a270aa8ccedfc5cd1b7b2d74c"><td class="memItemLeft" align="right" valign="top"><a id="aa4f4d18a270aa8ccedfc5cd1b7b2d74c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetAmpFast</b> (double amp, double err)</td></tr>
+<tr class="separator:aa4f4d18a270aa8ccedfc5cd1b7b2d74c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a587f96ae5d6990e13154ecf3c74b3539"><td class="memItemLeft" align="right" valign="top"><a id="a587f96ae5d6990e13154ecf3c74b3539"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetAmpSlow</b> (double amp, double err)</td></tr>
+<tr class="separator:a587f96ae5d6990e13154ecf3c74b3539"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61ae25677c8e846fe57210da3db184b1"><td class="memItemLeft" align="right" valign="top"><a id="a61ae25677c8e846fe57210da3db184b1"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetChi2</b> (double chi2)</td></tr>
 <tr class="separator:a61ae25677c8e846fe57210da3db184b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab76c1017999dcd9b5c8d2d8a9eef3622"><td class="memItemLeft" align="right" valign="top"><a id="ab76c1017999dcd9b5c8d2d8a9eef3622"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetDecayTime</b> (double t, double err)</td></tr>
-<tr class="separator:ab76c1017999dcd9b5c8d2d8a9eef3622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a312edfabad357f4c9e1c75bbd9b58718"><td class="memItemLeft" align="right" valign="top"><a id="a312edfabad357f4c9e1c75bbd9b58718"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetConst</b> (double BL)</td></tr>
+<tr class="separator:a312edfabad357f4c9e1c75bbd9b58718"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43881d0e3edbe34d99f3724431976610"><td class="memItemLeft" align="right" valign="top"><a id="a43881d0e3edbe34d99f3724431976610"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetFastDecTime</b> (double t, double err)</td></tr>
 <tr class="separator:a43881d0e3edbe34d99f3724431976610"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -188,18 +209,33 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetParErrors</b> (vec
 <tr class="memitem:a90d4b6307474a6a0a2bf04847b100c7a"><td class="memItemLeft" align="right" valign="top"><a id="a90d4b6307474a6a0a2bf04847b100c7a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetSlowDecTime</b> (double t, double err)</td></tr>
 <tr class="separator:a90d4b6307474a6a0a2bf04847b100c7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c642ced1dd2ee8f4a30e53b2b614126"><td class="memItemLeft" align="right" valign="top"><a id="a2c642ced1dd2ee8f4a30e53b2b614126"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetStat</b> (int stat)</td></tr>
+<tr class="separator:a2c642ced1dd2ee8f4a30e53b2b614126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e47c745db76ee1dec0bee5ad59160df"><td class="memItemLeft" align="right" valign="top"><a id="a4e47c745db76ee1dec0bee5ad59160df"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetT0</b> (double t0, double err)</td></tr>
+<tr class="separator:a4e47c745db76ee1dec0bee5ad59160df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
+<tr class="memitem:aa3062966fc084a98e4290a600084c974"><td class="memItemLeft" align="right" valign="top"><a id="aa3062966fc084a98e4290a600084c974"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fAmpFast</b></td></tr>
+<tr class="separator:aa3062966fc084a98e4290a600084c974"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac31e8f7e62ae55c90ece57eb40b79f2b"><td class="memItemLeft" align="right" valign="top"><a id="ac31e8f7e62ae55c90ece57eb40b79f2b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fAmpFastErr</b></td></tr>
+<tr class="separator:ac31e8f7e62ae55c90ece57eb40b79f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a1880064893343bcf7969d86cd69385"><td class="memItemLeft" align="right" valign="top"><a id="a6a1880064893343bcf7969d86cd69385"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fAmpSlow</b></td></tr>
+<tr class="separator:a6a1880064893343bcf7969d86cd69385"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0657be74666fd97bb39b930ff05601e1"><td class="memItemLeft" align="right" valign="top"><a id="a0657be74666fd97bb39b930ff05601e1"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fAmpSlowErr</b></td></tr>
+<tr class="separator:a0657be74666fd97bb39b930ff05601e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a827188b0ad20e38f74bc647018d50584"><td class="memItemLeft" align="right" valign="top"><a id="a827188b0ad20e38f74bc647018d50584"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>fChi2</b></td></tr>
 <tr class="separator:a827188b0ad20e38f74bc647018d50584"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8849a698f1931649ff7faed97e3c3449"><td class="memItemLeft" align="right" valign="top"><a id="a8849a698f1931649ff7faed97e3c3449"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>fDecayTime</b></td></tr>
-<tr class="separator:a8849a698f1931649ff7faed97e3c3449"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec618433d23bc333ea85931a3e95b001"><td class="memItemLeft" align="right" valign="top"><a id="aec618433d23bc333ea85931a3e95b001"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>fDecayTimeErr</b></td></tr>
-<tr class="separator:aec618433d23bc333ea85931a3e95b001"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31186341fc8459dab665ac4364880ff4"><td class="memItemLeft" align="right" valign="top"><a id="a31186341fc8459dab665ac4364880ff4"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fConst</b></td></tr>
+<tr class="separator:a31186341fc8459dab665ac4364880ff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7481e94e87c592c8bae34dc0b8d0ed1"><td class="memItemLeft" align="right" valign="top"><a id="ab7481e94e87c592c8bae34dc0b8d0ed1"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>fFastDecTime</b></td></tr>
 <tr class="separator:ab7481e94e87c592c8bae34dc0b8d0ed1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -245,6 +281,15 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>fSlowDecTime</b></t
 <tr class="memitem:aa21185982e9f08f8765a84a41a05659f"><td class="memItemLeft" align="right" valign="top"><a id="aa21185982e9f08f8765a84a41a05659f"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>fSlowDecTimeErr</b></td></tr>
 <tr class="separator:aa21185982e9f08f8765a84a41a05659f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8deefef965e04b74613a74867462f95c"><td class="memItemLeft" align="right" valign="top"><a id="a8deefef965e04b74613a74867462f95c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>fStat</b></td></tr>
+<tr class="separator:a8deefef965e04b74613a74867462f95c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9de74179872042a6b78f092f0aa57f5c"><td class="memItemLeft" align="right" valign="top"><a id="a9de74179872042a6b78f092f0aa57f5c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fT0</b></td></tr>
+<tr class="separator:a9de74179872042a6b78f092f0aa57f5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01a34ec05bf300a7f7903c0ed0884a22"><td class="memItemLeft" align="right" valign="top"><a id="a01a34ec05bf300a7f7903c0ed0884a22"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>fT0Err</b></td></tr>
+<tr class="separator:a01a34ec05bf300a7f7903c0ed0884a22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p class="">This class stores results of the fit and the fitted function. </p>
