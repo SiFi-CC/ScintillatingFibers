@@ -128,7 +128,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
   for(int i=0; i<npoints; i++){
     mean = fRatios[i]->GetFunction("gaus")->GetParameter(1);
     sigma = fRatios[i]->GetFunction("gaus")->GetParameter(2);
-    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-sigma, mean+sigma);
+    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     lorentz->SetParameter(0,fT0Diff[i]->Integral());
     lorentz->SetParameter(1,fT0Diff[i]->GetRMS());
@@ -165,8 +165,8 @@ bool SFTimingRes::AnalyzeWithECut(void){
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   
-  double min0, max0;
-  double min1, max1;
+  double center_ch0, delta_ch0;		//changed here for smaller cut
+  double center_ch1, delta_ch1;		//
   
   fT0Graph = new TGraphErrors(npoints);
   fT0Graph->GetXaxis()->SetTitle("source position [mm]");
@@ -179,9 +179,13 @@ bool SFTimingRes::AnalyzeWithECut(void){
     peakFin_ch1.push_back(new SFPeakFinder(fPEch1[i],"511",false));
     peakFin_ch0[i]->FindPeakRange(xmin_ch0,xmax_ch0);
     peakFin_ch1[i]->FindPeakRange(xmin_ch1,xmax_ch1);
+    center_ch0 = xmin_ch0+(xmax_ch0-xmin_ch0)/2.;	//changed here for smaller cut
+    delta_ch0  = (xmax_ch0-xmin_ch0)/6.;		//
+    center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;	//
+    delta_ch1  = (xmax_ch1-xmin_ch1)/6.;		//
     mean_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(1);
     sigma_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(2);
-    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", xmin_ch0,xmax_ch0,xmin_ch1,xmax_ch1,mean_ratio-sigma_ratio, mean_ratio+sigma_ratio);
+    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0,center_ch0+delta_ch0,center_ch1-delta_ch1,center_ch1+delta_ch1,mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);	//changed here for smaller cut
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();

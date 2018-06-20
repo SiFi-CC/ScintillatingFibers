@@ -128,6 +128,12 @@ int main(int argc, char **argv){
   double mean, sigma;
   double max;
   double xmin, xmax;
+  double center, delta;		//changed here for smaller cut
+  
+  double sum_ft = 0;
+  double sum_cf = 0;
+  double sum_ft_cut = 0;
+  double sum_cf_cut = 0;
   
   for(int i=0; i<npoints; i++){
     title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm",seriesNo,positions[i]);
@@ -140,6 +146,7 @@ int main(int argc, char **argv){
     T0diff_ft[i]->GetXaxis()->SetRangeUser(-50,50);
     T0diff_ft[i]->Draw();
     text.DrawLatex(0.15,0.8,string);
+    sum_ft += tres_ft[i];
     
     can_ft_ratio->cd(i+1);
     gPad->SetGrid(1,1);
@@ -150,8 +157,8 @@ int main(int argc, char **argv){
     mean = ratio_ft[i]->GetFunction("gaus")->GetParameter(1);
     sigma = ratio_ft[i]->GetFunction("gaus")->GetParameter(2);
     ratio_ft[i]->Draw();
-    line.DrawLine(mean-sigma,0,mean-sigma,max);
-    line.DrawLine(mean+sigma,0,mean+sigma,max);
+    line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
+    line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
     
     can_ft_cut->cd(i+1);
     gPad->SetGrid(1,1);
@@ -161,6 +168,7 @@ int main(int argc, char **argv){
     T0diff_ft_cut[i]->GetXaxis()->SetRangeUser(-20,20);
     T0diff_ft_cut[i]->Draw();
     text.DrawLatex(0.15,0.8,string);
+    sum_ft_cut += tres_ft_cut[i]; 
     
     can_ft_spec_0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -168,14 +176,16 @@ int main(int argc, char **argv){
     spec_ft_cut_0[i]->GetYaxis()->SetTitle("counts");
     spec_ft_cut_0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
     spec_ft_cut_0[i]->SetStats(false);
-    spec_ft_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
     spec_ft_cut_0[i]->GetYaxis()->SetMaxDigits(2);
     peakfin->SetSpectrum(spec_ft_cut_0[i],"511");
     peakfin->FindPeakRange(xmin,xmax);
+    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
+    delta  = (xmax-xmin)/6; 		//
     max = spec_ft_cut_0[i]->GetBinContent(spec_ft_cut_0[i]->GetMaximumBin());
     spec_ft_cut_0[i]->Draw();
-    line.DrawLine(xmin,0,xmin,max);
-    line.DrawLine(xmax,0,xmax,max);
+    line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
+    line.DrawLine(center+delta,0,center+delta,max);	//
+    spec_ft_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
     
     can_ft_spec_1->cd(i+1);
     gPad->SetGrid(1,1);
@@ -183,14 +193,16 @@ int main(int argc, char **argv){
     spec_ft_cut_1[i]->GetYaxis()->SetTitle("counts");
     spec_ft_cut_1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
     spec_ft_cut_1[i]->SetStats(false);
-    spec_ft_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
     spec_ft_cut_1[i]->GetYaxis()->SetMaxDigits(2);
     peakfin->SetSpectrum(spec_ft_cut_1[i],"511");
     peakfin->FindPeakRange(xmin,xmax);
+    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
+    delta  = (xmax-xmin)/6; 		//
     max = spec_ft_cut_1[i]->GetBinContent(spec_ft_cut_1[i]->GetMaximumBin());
     spec_ft_cut_1[i]->Draw();
-    line.DrawLine(xmin,0,xmin,max);
-    line.DrawLine(xmax,0,xmax,max);
+    line.DrawLine(center-delta,0,center-delta,max);		//changed here for smaller cut
+    line.DrawLine(center+delta,0,center+delta,max);		//
+    spec_ft_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
     
     can_cf->cd(i+1);
     gPad->SetGrid(1,1);
@@ -200,6 +212,7 @@ int main(int argc, char **argv){
     T0diff_cf[i]->GetXaxis()->SetRangeUser(-50,50);
     T0diff_cf[i]->Draw();
     text.DrawLatex(0.15,0.8,string);
+    sum_cf += tres_cf[i];
     
     can_cf_ratio->cd(i+1);
     gPad->SetGrid(1,1);
@@ -210,8 +223,8 @@ int main(int argc, char **argv){
     mean = ratio_cf[i]->GetFunction("gaus")->GetParameter(1);
     sigma = ratio_cf[i]->GetFunction("gaus")->GetParameter(2);
     ratio_cf[i]->Draw();
-    line.DrawLine(mean-sigma,0,mean-sigma,max);
-    line.DrawLine(mean+sigma,0,mean+sigma,max);
+    line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
+    line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
     
     can_cf_cut->cd(i+1);
     gPad->SetGrid(1,1);
@@ -221,6 +234,7 @@ int main(int argc, char **argv){
     T0diff_cf_cut[i]->GetXaxis()->SetRangeUser(-20,20);
     T0diff_cf_cut[i]->Draw();
     text.DrawLatex(0.2,0.8,string);
+    sum_cf_cut += tres_cf_cut[i];
     
     can_cf_spec_0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -229,13 +243,15 @@ int main(int argc, char **argv){
     spec_cf_cut_0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
     spec_cf_cut_0[i]->SetStats(false);
     spec_cf_cut_0[i]->GetYaxis()->SetMaxDigits(2);
-    spec_cf_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
     peakfin->SetSpectrum(spec_cf_cut_0[i],"511");
     peakfin->FindPeakRange(xmin,xmax);
+    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
+    delta  = (xmax-xmin)/6; 		//
     max = spec_cf_cut_0[i]->GetBinContent(spec_cf_cut_0[i]->GetMaximumBin());
     spec_cf_cut_0[i]->Draw();
-    line.DrawLine(xmin,0,xmin,max);
-    line.DrawLine(xmax,0,xmax,max);
+    line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
+    line.DrawLine(center+delta,0,center+delta,max);	//
+    spec_cf_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
     
     can_cf_spec_1->cd(i+1);
     gPad->SetGrid(1,1);
@@ -244,13 +260,15 @@ int main(int argc, char **argv){
     spec_cf_cut_1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
     spec_cf_cut_1[i]->SetStats(false);
     spec_cf_cut_1[i]->GetYaxis()->SetMaxDigits(2);
-    spec_cf_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
     peakfin->SetSpectrum(spec_cf_cut_1[i],"511");
     peakfin->FindPeakRange(xmin,xmax);
+    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
+    delta  = (xmax-xmin)/6; 		//
     max = spec_cf_cut_1[i]->GetBinContent(spec_cf_cut_1[i]->GetMaximumBin());
     spec_cf_cut_1[i]->Draw();
-    line.DrawLine(xmin,0,xmin,max);
-    line.DrawLine(xmax,0,xmax,max);
+    line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
+    line.DrawLine(center+delta,0,center+delta,max);	//
+    spec_cf_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
   }
   
   TCanvas *can_gr_ft = new TCanvas("can_gr_ft","can_gr_ft",1000,500);
@@ -274,6 +292,19 @@ int main(int argc, char **argv){
   gPad->SetGrid(1,1);
   gr_cf_cut->SetTitle(Form("Series %i, constant fraction, cut on 511 keV peak",seriesNo));
   gr_cf_cut->Draw("AP");
+  
+  //-----printing
+  cout << "\n\n-------------------------------" << endl;
+  cout << "Average timing resolution time for:" << endl;
+  cout << "\t Fixed threshold, scattered events rejected: " << sum_ft/npoints << " ns +/- "
+       << TMath::StdDev(&tres_ft[0],&tres_ft[npoints-1])/sqrt(npoints) << " ns" << endl;
+  cout << "\t Constant fraction, scattered events rejected: " << sum_cf/npoints << " ns +/- "
+       << TMath::StdDev(&tres_cf[0],&tres_cf[npoints-1])/sqrt(npoints) << " ns" << endl; 
+  cout << "\t Fixed threshold, cut on 511 keV peak: " << sum_ft_cut/npoints << " ns +/- " 
+       << TMath::StdDev(&tres_ft_cut[0],&tres_ft_cut[npoints-1])/sqrt(npoints) << " ns" << endl;
+  cout << "\t Constant fraction, cut on 511 keV peak: " << sum_cf_cut/npoints << " ns +/- " 
+       << TMath::StdDev(&tres_cf_cut[0],&tres_cf_cut[npoints-1])/sqrt(npoints) << " ns" << endl;
+  cout << "\n\n" << endl;
   
   //----- saving
   TString fname = Form("../results/timingres_series%i.root",seriesNo);

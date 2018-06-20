@@ -33,10 +33,11 @@ private:
   double  fPE;		///< Value of signals PE
   bool    fVerb;	///< Verbose level: false - quiet, true - verbose
   
-  vector <TProfile*>     fSignals;
-  vector <SFFitResults*> fResultsSingle;
-  vector <SFFitResults*> fResultsDouble;
-  
+  vector <TProfile*>     fSignalsCh0;	///< Vector containing all signals from channel 0
+  vector <TProfile*>     fSignalsCh1;	///< Vector containing all signals from channel 1 
+  vector <SFFitResults*> fResultsCh0;	///< Vector containing fit results for signals of channel 0
+  vector <SFFitResults*> fResultsCh1;	///< Vector containing fit results for signals of channel 1
+
   int    GetIndex(double position);
   
 public:
@@ -45,19 +46,16 @@ public:
   ~SFTimeConst();
   
   bool          SetDetails(int seriesNo, double PE, bool verb);
-  bool          FitDecTimeSingle(TProfile *signal, double position);
-  bool          FitDecTimeDouble(TProfile *signal, double position);
+  bool          FitDecayTime(TProfile *signal, double position);
   bool          FitAllSignals(void);
-  bool          FitAllSignals(TString option);
-  bool          FitSingleSignal(double position);
-  bool          FitSingleSignal(double position, TString option);
-  TProfile*     GetSingleSignal(double position);
-  SFFitResults* GetSingleResult(double position, TString opt);
+  bool          FitAllSignals(int ch);
+  bool          FitSingleSignal(int ch, double position);
+  TProfile*     GetSingleSignal(int ch, double position);
+  SFFitResults* GetSingleResult(int ch, double position);
   void          Reset(void);
   void          Print(void);
-  
-  vector <TProfile*>     GetAllSignals(void) { return fSignals; };
-  vector <SFFitResults*> GetAllResults(TString opt);
+  vector <TProfile*>     GetAllSignals(int ch);
+  vector <SFFitResults*> GetAllResults(int ch);
   
   ClassDef(SFTimeConst,1)
   

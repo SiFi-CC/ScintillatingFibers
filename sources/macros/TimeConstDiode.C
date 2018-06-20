@@ -128,7 +128,7 @@ bool TimeConstDiode(int ch=1){
   cout << "sum: " << sum << endl;
   cout << "counter:" << counter << endl;
   cout << "average decay time: " << average << " ns" << endl;
-  cout << "stdev: " << TMath::StdDev(&dectime[0],&dectime[counter-1])<< " ns" << endl; 
+  cout << "stdev: " << TMath::StdDev(&dectime[0],&dectime[counter-1])/sqrt(counter)<< " ns" << endl; 
   
   return true;
 }
