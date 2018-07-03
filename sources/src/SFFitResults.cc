@@ -35,6 +35,7 @@ SFFitResults::SFFitResults(TString name, TF1 *fun){
 SFFitResults::~SFFitResults(){
 }
 //------------------------------------------------------------------
+///Resets private members of the class to their default values.
 void SFFitResults::Reset(void){
   fStat           = -1;
   fNpar           = -1;
@@ -62,6 +63,11 @@ void SFFitResults::Reset(void){
   if(!fParErrors.empty())  fParErrors.clear();
 }
 //------------------------------------------------------------------
+///Sets values of the private members of the class based on the passed
+///pointer to the fitted function. Inside this function fast and slow
+///decay components are recognized, their intensities are calculculated
+///and fit validity is chacked.
+///\param fun - fitted function
 bool SFFitResults::SetFromFunction(TF1 *fun){
  
   if(fun==NULL){
@@ -82,31 +88,22 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
    fParErrors.push_back(fFunction->GetParError(i));
   }
 
-  fT0       = fParameters[1];
-  fT0Err    = fParErrors[1];
-  fConst    = fParameters[fNpar-1];
+  SetT0(fParameters[1],fParErrors[1]);
+  SetConst(fParameters[fNpar-1]);
   
   //----- Recognizing fast and slow component
   //----- Assigning ambiguous parameters
   if(fParameters[2]<fParameters[4]){
-    fFastDecTime    = fParameters[2];
-    fSlowDecTime    = fParameters[4];
-    fAmpFast        = fParameters[0];
-    fAmpSlow        = fParameters[3];
-    fFastDecTimeErr = fParErrors[2];
-    fSlowDecTimeErr = fParErrors[4];
-    fAmpFastErr     = fParErrors[0];
-    fAmpSlowErr     = fParErrors[3];
+    SetFastDecTime(fParameters[2],fParErrors[2]);
+    SetSlowDecTime(fParameters[4],fParErrors[4]);
+    SetAmpFast(fParameters[0],fParErrors[0]);
+    SetAmpSlow(fParameters[3],fParErrors[3]);
   }
   else{
-    fFastDecTime    = fParameters[4];
-    fSlowDecTime    = fParameters[2];
-    fAmpFast        = fParameters[3];
-    fAmpSlow        = fParameters[0];
-    fFastDecTimeErr = fParErrors[4];
-    fSlowDecTimeErr = fParErrors[2];
-    fAmpFastErr     = fParErrors[3];
-    fAmpSlowErr     = fParErrors[0];
+    SetFastDecTime(fParameters[4],fParErrors[4]);
+    SetSlowDecTime(fParameters[2],fParErrors[2]);
+    SetAmpFast(fParameters[3],fParErrors[3]);
+    SetAmpSlow(fParameters[0],fParErrors[0]);
   }
   
   //----- Calculating intensities
@@ -136,41 +133,73 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
   return true;
 }
 //------------------------------------------------------------------
+///Sets fast decay time and its uncertainty.
+///\param t - fast decay time [ns]
+///\param err - uncertainty
 void SFFitResults::SetFastDecTime(double t, double err){
   fFastDecTime    = t;
   fFastDecTimeErr = err;
+  return;
 }
 //------------------------------------------------------------------
+///Sets slow decay time and its uncertainty.
+///\param t - slow decay time [ns]
+///\param err - uncertainty
 void SFFitResults::SetSlowDecTime(double t, double err){
    fSlowDecTime    = t;
    fSlowDecTimeErr = err;
+   return;
 }
 //------------------------------------------------------------------
+///Sets amplitude of the of the fast decay component and its
+///uncertainty.
+///\param amp - amplitude
+///\param err - uncertainty
 void SFFitResults::SetAmpFast(double amp, double err){
    fAmpFast    = amp;
    fAmpFastErr = err;
+   return;
 }
 //------------------------------------------------------------------
+///Sets amplitude of the slow decay component and its 
+///uncertainty.
+///\param amp - amplitude 
+///\param err - uncertainty 
 void SFFitResults::SetAmpSlow(double amp, double err){
    fAmpSlow    = amp;
    fAmpSlowErr = err;
+   return;
 }
 //------------------------------------------------------------------
+///Sets time offset and its uncertainty.
+///\param t0 - time offset [ns]
+///\param err - uncertainty 
 void SFFitResults::SetT0(double t0, double err){
    fT0    = t0;
    fT0Err = err;
+   return;
 }
 //------------------------------------------------------------------
+///Sets intensities of decay components.
+///\param iSlow - intensity of the slow component [%]
+///\param iFast - intensity of the fast component [%]
 void SFFitResults::SetIntensities(double iSlow, double iFast){
   fIslow = iSlow;
   fIfast = iFast;
+  return;
 }
 //------------------------------------------------------------------
+///Sets fitting range. 
+///\param xmin - lower fitting range
+///\param xmax - upper fitting range 
 void SFFitResults::SetFitRange(double xmin, double xmax){
   fFitXmin = xmin;
   fFitXmax = xmax;
+  return;
 }
 //------------------------------------------------------------------
+///Fills vector fParameters containing fitted parameters. 
+///\param par - vector of parameters
 bool SFFitResults::SetParameters(vector <double> par){
   if(par.empty()) return false;
   int size = par.size();
@@ -180,6 +209,8 @@ bool SFFitResults::SetParameters(vector <double> par){
   return true;
 }
 //------------------------------------------------------------------
+///Fills vector fParErrors containing errors of parameters.
+///\param parErr - vector of parameters errors
 bool SFFitResults::SetParErrors(vector <double> parErr){
   if(parErr.empty()) return false;
   int size = parErr.size();
@@ -189,6 +220,9 @@ bool SFFitResults::SetParErrors(vector <double> parErr){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the fast decay time and its uncertainty.
+///\param t - fast decay time [ns]
+///\param err - uncertainty
 bool SFFitResults::GetFastDecTime(double &t, double &err){
   if(fFastDecTime==-1 || fFastDecTimeErr==-1){
     cout << "##### Error in SFFitResults::GetFastDecTime()!" << endl;
@@ -199,6 +233,9 @@ bool SFFitResults::GetFastDecTime(double &t, double &err){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the slow decay time and its uncertainty.
+///\param t - slow decay time [ns]
+///\param err - uncertainty
 bool SFFitResults::GetSlowDecTime(double &t, double &err){
   if(fSlowDecTime==-1 || fSlowDecTimeErr==1){
   cout << "##### Error in SFFitResults::GetSlowDecTime()!" << endl;
@@ -209,6 +246,9 @@ bool SFFitResults::GetSlowDecTime(double &t, double &err){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the amplitude of the fast decay component.
+///\param ampFast - amplitude
+///\param ampFastErr - uncertainty
 bool SFFitResults::GetAmpFast(double &ampFast, double &ampFastErr){
   if(fAmpFast==-1 || fAmpFastErr==-1){
     cout << "##### Error in SFFitResults::GetAmpFast()" << endl;
@@ -219,6 +259,9 @@ bool SFFitResults::GetAmpFast(double &ampFast, double &ampFastErr){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the amplitude of the slow decay component. 
+///\param ampSlow - amplitude
+///\param ampSlowErr - uncertainty
 bool SFFitResults::GetAmpSlow(double &ampSlow, double &ampSlowErr){
   if(fAmpSlow==-1 || fAmpSlowErr==-1){
     cout << "##### Error in SFFitResults::GetAmpSlow()" << endl;
@@ -229,6 +272,9 @@ bool SFFitResults::GetAmpSlow(double &ampSlow, double &ampSlowErr){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the time offset and its uncertainty.
+///\param t0 - time offset
+///\param t0Err - uncertainty
 bool SFFitResults::GetT0(double &t0, double &t0Err){
   if(fT0==-1 || fT0Err==-1){
     cout << "##### Error in SFFitResults::GetT0()" << endl;
@@ -239,6 +285,9 @@ bool SFFitResults::GetT0(double &t0, double &t0Err){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the intensities of decay components.
+///\param iSlow - intensity of slow component [%]
+///\param iFast - intensity of fast component [%]
 bool SFFitResults::GetIntensities(double &iSlow, double &iFast){
   if(fIslow==-1 || fIfast==-1){
     cout << "##### Error in SFFitResults::GetIntensities()" << endl;
@@ -249,6 +298,9 @@ bool SFFitResults::GetIntensities(double &iSlow, double &iFast){
   return true;
 }
 //------------------------------------------------------------------
+///Returns references to the fitting range. 
+///\param xmin - lower fitting range
+///\param xmax - upper fitting range
 bool SFFitResults::GetFitRange(double &xmin, double &xmax){
   if(fFitXmin==-1 || fFitXmax==-1){
     cout << "##### Error in SFFitResults::GetFitRange()" << endl;
@@ -259,6 +311,9 @@ bool SFFitResults::GetFitRange(double &xmin, double &xmax){
   return true;
 }
 //------------------------------------------------------------------
+///Returns vector containing functions representing each component 
+///of the decay process. Order in the vector: constant, fast decay,
+///slow component.
 vector <TF1*> SFFitResults::GetCompFunctions(void){
   
  vector <TF1*> functions;
@@ -286,6 +341,7 @@ vector <TF1*> SFFitResults::GetCompFunctions(void){
  return functions;  
 }
 //------------------------------------------------------------------
+///Returns pointer to the pave with results of the fit.
 TPaveText *SFFitResults::GetResultsPave(void){
  
   TPaveText *pave = new TPaveText(0.456,0.436,0.903,0.901,"NBNDC");
@@ -303,6 +359,7 @@ TPaveText *SFFitResults::GetResultsPave(void){
   return pave;
 }
 //------------------------------------------------------------------
+///Prints details of the SFFitResults class object.
 void SFFitResults::Print(void){
   cout << "\n------------------------------------------------------" << endl;
   cout << "This is Print of SFFitResults class object " << fName << endl;

@@ -200,13 +200,23 @@ bool SFTimeConst::FitAllSignals(void){
   }
   
   //----- Calculating average time constants
-  vector <double> fastAll;
-  vector <double> slowAll;
+  //----- abd intensities
   double statCh0, statCh1;
+  
+  vector <double> fastDecAll;
+  vector <double> slowDecAll;
   double fastDec, fastDecErr;
   double slowDec, slowDecErr;
-  double fastSum = 0;
-  double slowSum = 0;
+  double fastDecSum = 0;
+  double slowDecSum = 0;
+  
+  vector <double> fastAmpAll;
+  vector <double> slowAmpAll;
+  double fastAmp, fastAmpErr;
+  double slowAmp, slowAmpErr;
+  double fastAmpSum = 0;
+  double slowAmpSum = 0;
+  
   int counter = 0;
   
   for(int i=0; i<n; i++){
@@ -216,33 +226,60 @@ bool SFTimeConst::FitAllSignals(void){
     if(statCh0==0){
       fResultsCh0[i]->GetFastDecTime(fastDec,fastDecErr);
       fResultsCh0[i]->GetSlowDecTime(slowDec,slowDecErr);
-      fastAll.push_back(fastDec);
-      slowAll.push_back(slowDec);
-      fastSum += fastDec;
-      slowSum += slowDec;
+      fastDecAll.push_back(fastDec);
+      slowDecAll.push_back(slowDec);
+      fastDecSum += fastDec;
+      slowDecSum += slowDec;
+      
+      fResultsCh0[i]->GetAmpFast(fastAmp,fastAmpErr);
+      fResultsCh0[i]->GetAmpSlow(slowAmp,slowAmpErr);
+      fastAmpAll.push_back(fastAmp);
+      slowAmpAll.push_back(slowAmp);
+      fastAmpSum += fastAmp;
+      slowAmpSum += slowAmp;
+      
       counter++;
     }
     
     if(statCh1==0){
       fResultsCh1[i]->GetFastDecTime(fastDec,fastDecErr);
       fResultsCh1[i]->GetSlowDecTime(slowDec,slowDecErr);
-      fastAll.push_back(fastDec);
-      slowAll.push_back(slowDec);
-      fastSum += fastDec;
-      slowSum += slowDec;
+      fastDecAll.push_back(fastDec);
+      slowDecAll.push_back(slowDec);
+      fastDecSum += fastDec;
+      slowDecSum += slowDec;
+      
+      fResultsCh1[i]->GetAmpFast(fastAmp,fastAmpErr);
+      fResultsCh1[i]->GetAmpSlow(slowAmp,slowAmpErr);
+      fastAmpAll.push_back(fastAmp);
+      slowAmpAll.push_back(slowAmp);
+      fastAmpSum += fastAmp;
+      slowAmpSum += slowAmp;
+      
       counter++;
     }
   }
   
-  double fastAverage = fastSum/counter;
-  double slowAverage = slowSum/counter;
-  double fastAvErr = TMath::StdDev(&fastAll[0],&fastAll[counter-1])/sqrt(counter);
-  double slowAvErr = TMath::StdDev(&slowAll[0],&slowAll[counter-1])/sqrt(counter);
+  double fastDecAverage = fastDecSum/counter;
+  double slowDecAverage = slowDecSum/counter;
+  double fastDecAvErr = TMath::StdDev(&fastDecAll[0],&fastDecAll[counter-1])/sqrt(counter);
+  double slowDecAvErr = TMath::StdDev(&slowDecAll[0],&slowDecAll[counter-1])/sqrt(counter);
+  
+  double fastAmpAverage = fastAmpSum/counter;
+  double slowAmpAverage = slowAmpSum/counter;
+  double fastAmpAvErr = TMath::StdDev(&fastAmpAll[0],&fastAmpAll[counter-1])/sqrt(counter);
+  double slowAmpAvErr = TMath::StdDev(&slowAmpAll[0],&slowAmpAll[counter-1])/sqrt(counter);
+  
+  double denom = fastAmpAverage*fastDecAverage + slowAmpAverage*slowDecAverage;
+  double Ifast = ((fastAmpAverage*fastDecAverage)/denom) * 100;
+  double Islow = ((slowAmpAverage*slowDecAverage)/denom) * 100;
   
   cout << "\n\n----------------------------------" << endl;
   cout << "Average decay constants for whole series:" << endl;
-  cout << "Fast decay: " << fastAverage << " +/- " << fastAvErr << " ns" << endl;
-  cout << "Slow decay: " << slowAverage << " +/- " << slowAvErr << " ns" << endl;
+  cout << "Fast decay: " << fastDecAverage << " +/- " << fastDecAvErr << " ns" << endl;
+  cout << "Fast component intensity: " << Ifast << " %" << endl; 
+  cout << "Slow decay: " << slowDecAverage << " +/- " << slowDecAvErr << " ns" << endl;
+  cout << "Slow component intensity: " << Islow << " %" << endl; 
   cout << "Counter: " << counter << endl;
   cout << "----------------------------------" << endl;
   

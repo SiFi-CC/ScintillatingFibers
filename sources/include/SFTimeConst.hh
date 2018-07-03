@@ -25,6 +25,17 @@
 
 using namespace std;
 
+///Class for determination of decay time constants from the averaged signals.
+///The accessed histograms are averaging of maximum of 50 signals. 
+///In order to determine the time constants a sum of two exponential functions 
+///is fitted to the signal TProfile histograms. Details of the fitting and the
+///function can be found in the presenation of KR posted on wiki [LINK](http://bragg.if.uj.edu.pl/gccbwiki/images/5/5e/KR_20180604_TimeConstSummary.pdf)
+///, on slide 15. Double decay mode is assumed, i.e. we determine fast and slow 
+///decay time constants. Additionally, only falling slope of the signal is fitted, 
+///i.e. the rise time is not determined. Fitting results are stored in SFFitResults 
+///class objects. If function FitAllSignals() is called, average values of time constants 
+///and intensities for the whole series are calculated.
+
 class SFTimeConst : public TObject{
   
 private:

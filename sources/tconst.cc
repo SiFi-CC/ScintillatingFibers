@@ -56,6 +56,8 @@ int main(int argc, char **argv){
   TCanvas *canCh1 = new TCanvas("canCh1","canCh1",1500,1200);
   canCh1->Divide(3,3);
   
+  double ymin, ymax;
+  
   for(int i=0; i<npoints; i++){
     canCh0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -64,6 +66,11 @@ int main(int argc, char **argv){
     signalsCh0[i]->SetTitle(Form("Averaged signal, source position %.2f mm",positions[i]));
     signalsCh0[i]->GetXaxis()->SetTitle("time [ns]");
     signalsCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
+    ymax = signalsCh0[i]->GetBinContent(signalsCh0[i]->GetMaximumBin());
+    ymax = ymax+0.2*ymax;
+    ymin = signalsCh0[i]->GetBinContent(signalsCh0[i]->GetMinimumBin());
+    ymin = ymin-2;
+    signalsCh0[i]->GetYaxis()->SetRangeUser(ymin,ymax);
     if(resultsCh0[i]->GetStat()==0){
       resultsCh0[i]->GetFunction()->Draw("same");
       resultsCh0[i]->GetResultsPave()->Draw();
@@ -80,6 +87,11 @@ int main(int argc, char **argv){
     signalsCh1[i]->SetTitle(Form("Averaged signal, source position %.2f mm",positions[i]));
     signalsCh1[i]->GetXaxis()->SetTitle("time [ns]");
     signalsCh1[i]->GetYaxis()->SetTitle("amplitude [mV]");
+    ymax = signalsCh1[i]->GetBinContent(signalsCh1[i]->GetMaximumBin());
+    ymax = ymax+0.2*ymax;
+    ymin = signalsCh1[i]->GetBinContent(signalsCh1[i]->GetMinimumBin());
+    ymin = ymin-2;
+    signalsCh1[i]->GetYaxis()->SetRangeUser(ymin,ymax);
     if(resultsCh1[i]->GetStat()==0){
       resultsCh1[i]->GetFunction()->Draw("same");
       resultsCh1[i]->GetResultsPave()->Draw();
