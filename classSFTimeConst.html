@@ -70,6 +70,8 @@ $(function() {
 <div class="title">SFTimeConst Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="SFTimeConst_8hh_source.html">SFTimeConst.hh</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for SFTimeConst:</div>
 <div class="dyncontent">
@@ -160,7 +162,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memdesc:a57bfc5e7b5ee9ab23ff1d63172c208f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verbose level: false - quiet, true - verbose. <br /></td></tr>
 <tr class="separator:a57bfc5e7b5ee9ab23ff1d63172c208f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">Class for determination of decay time constants from the averaged signals. The accessed histograms are averaging of maximum of 50 signals. In order to determine the time constants a sum of two exponential functions is fitted to the signal TProfile histograms. Details of the fitting and the function can be found in the presenation of KR posted on wiki <a href="http://bragg.if.uj.edu.pl/gccbwiki/images/5/5e/KR_20180604_TimeConstSummary.pdf">LINK</a> , on slide 15. Double decay mode is assumed, i.e. we determine fast and slow decay time constants. Additionally, only falling slope of the signal is fitted, i.e. the rise time is not determined. Fitting results are stored in <a class="el" href="classSFFitResults.html">SFFitResults</a> class objects. If function <a class="el" href="classSFTimeConst.html#a8acad00d9f455ce813cda5996b402ea1">FitAllSignals()</a> is called, average values of time constants and intensities for the whole series are calculated. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a0395bf9634a783555ac20e58b2154b74"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0395bf9634a783555ac20e58b2154b74">&#9670;&nbsp;</a></span>SFTimeConst()</h2>
 
@@ -272,7 +276,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">This function performs fitting to the given TProfile signal. Double decay function if fitted to the falling slope of the signal. Results of the fit are subsequently written in the <a class="el" href="classSFFitResults.html" title="This class stores results of the fit and the fitted function. ">SFFitResults</a> class object. Function returns true if fitting was successful and fit results are valid. </p>
+<p class="">This function performs fitting to the given TProfile signal. Double decay function if fitted to the falling slope of the signal. Results of the fit are subsequently written in the <a class="el" href="classSFFitResults.html">SFFitResults</a> class object. Function returns true if fitting was successful and fit results are valid. </p>
 
 </div>
 </div>
@@ -462,7 +466,7 @@ chosen channel </p><dl class="params"><dt>Parameters</dt><dd>
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">Sets values to private members of the calss. Loads TProfile histograms of average signals for requested PE vlaue. Creates vectors of <a class="el" href="classSFFitResults.html" title="This class stores results of the fit and the fitted function. ">SFFitResults</a> objects. </p><dl class="params"><dt>Parameters</dt><dd>
+<p class="">Sets values to private members of the calss. Loads TProfile histograms of average signals for requested PE vlaue. Creates vectors of <a class="el" href="classSFFitResults.html">SFFitResults</a> objects. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">seriesNo</td><td>- number of the series </td></tr>
     <tr><td class="paramname">PE</td><td>- PE value </td></tr>
