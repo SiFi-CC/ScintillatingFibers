@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['residual',['residual',['../classTFit.html#a73384439e41227726e44ab2f48f17e92',1,'TFit']]],
-  ['resolutiongenerator',['resolutiongenerator',['../classTFit.html#a2fccf414533d86359adc5c4c88b6f0ed',1,'TFit']]]
+  ['seriesno',['seriesNo',['../classTFit.html#a5fcc2a505a50ffa0e7b3d980d85d6887',1,'TFit']]],
+  ['spectra',['spectra',['../classTFit.html#ad1e0af0b0ee4020d39bee20eaeb46b65',1,'TFit']]]
 ];

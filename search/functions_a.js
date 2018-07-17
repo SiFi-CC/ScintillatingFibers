@@ -1,12 +1,4 @@
 var searchData=
 [
-  ['_7esfattenuation',['~SFAttenuation',['../classSFAttenuation.html#afe27bcba7d0b0e6a11906c781748122a',1,'SFAttenuation']]],
-  ['_7esfdata',['~SFData',['../classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b',1,'SFData']]],
-  ['_7esffitresults',['~SFFitResults',['../classSFFitResults.html#a66bb8be143ad0d9bbb32cd485534edba',1,'SFFitResults']]],
-  ['_7esfmc',['~SFMC',['../classSFMC.html#a32c83e03b459909c6ac550acae631ba1',1,'SFMC']]],
-  ['_7esfpeakfinder',['~SFPeakFinder',['../classSFPeakFinder.html#aaa6b6a8c933120a2a378e085d863cd54',1,'SFPeakFinder']]],
-  ['_7esftimeconst',['~SFTimeConst',['../classSFTimeConst.html#a19ac087caa12c81f4e6ec5955ea01c19',1,'SFTimeConst']]],
-  ['_7esftimingres',['~SFTimingRes',['../classSFTimingRes.html#a65154371d895e67251ed4670d96af46b',1,'SFTimingRes']]],
-  ['_7etfit',['~TFit',['../classTFit.html#a8cc1685309339feb74dd5b2dd2aaf816',1,'TFit']]],
-  ['_7etimeconst',['~TimeConst',['../classTimeConst.html#ad5b9c7df62a443f3481a94a9a3a64481',1,'TimeConst']]]
+  ['tfit',['TFit',['../classTFit.html#a73628a0ab1109e49223970bbee654ed8',1,'TFit::TFit()'],['../classTFit.html#abc373b8c8938477dd3b1473dcdade501',1,'TFit::TFit(int series_No, TString FitMode, int re_bin)']]]
 ];
