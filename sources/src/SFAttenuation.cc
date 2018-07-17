@@ -19,18 +19,29 @@ SFAttenuation::SFAttenuation(){
   cout << "You are using default constructor!" << endl;
   fSeriesNo = -1;
   fData = NULL;
-  Clear();
+  Reset();
 }
 //------------------------------------------------------------------
 ///Standard constructor (recommended)
 ///\param seriesNo is number of experimental series to be analyzed. 
 SFAttenuation::SFAttenuation(int seriesNo){
   fSeriesNo = seriesNo;
-  if(seriesNo>5){
-    throw "##### Error in SFAttenuation constructor! Incorrect series number!"; 
+  
+  try{
+    fData = new SFData(fSeriesNo);
   }
-  fData = new SFData(fSeriesNo);
-  Clear();
+  catch(const char *message){
+    cout << message << endl;
+    throw "##### Exception in SFAttenuation constructor!";
+  }
+  
+  TString desc = fData->GetDescription();
+  if(!desc.Contains("Regular series")){
+    cout << "##### Warning in SFAttenuation constructor!";
+    cout << "Calculating attenuation length with non-regular series!" << endl;
+  }
+  
+  Reset();
 }
 //------------------------------------------------------------------
 ///Default destructor.
@@ -46,7 +57,7 @@ bool SFAttenuation::AttAveragedCh(void){
   cout << "\n----- Inside SFAttenuation::AttAveragedCh() for series " << fSeriesNo << endl;
   
   int npoints = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_1.fT0>0 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0";
   fRatios = fData->GetCustomHistograms(selection,cut);
@@ -88,7 +99,7 @@ bool SFAttenuation::AttSeparateCh(int ch){
   cout << "----- Analyzing channel " << ch << endl;
   
   int npoints = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   TString cut = Form("ch_%i.fT0>0 && ch_%i.fT0<590 && ch_%i.fPE>0",ch,ch,ch);
   vector <TH1D*> spectra = fData->GetSpectra(ch,"fPE",cut);
   
@@ -120,7 +131,7 @@ bool SFAttenuation::AttSeparateCh(int ch){
   graph->Fit(fexp,"QR");
   double attenuation = fabs(1./fexp->GetParameter(1));
   double att_error = fexp->GetParError(1)/pow(fexp->GetParameter(1),2);
-  
+ 
   cout << "\n\tAttenuation for channel "<< ch << ": " << attenuation << " +/- " << att_error << " mm\n" << endl;
   
   if(ch==0){
@@ -272,7 +283,7 @@ double SFAttenuation::GetAttError(int ch){
 }
 //------------------------------------------------------------------
 ///Resets values of private members of the class to their default values.
-void SFAttenuation::Clear(void){
+void SFAttenuation::Reset(void){
  fAttnLen      = -1;
  fAttnErr      = -1;
  fAttnLenCh0   = -1;

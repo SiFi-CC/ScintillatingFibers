@@ -17,10 +17,7 @@ ClassImp(SFTimingRes);
 SFTimingRes::SFTimingRes(){
   cout << "##### Warning in SFTimingRes constructor!" << endl;
   cout << "You are using default constructor!" <<endl;
-  fSeriesNo  = -1;
-  fThreshold = "dummy";
-  fMethod    = "dummy";
-  fData      = NULL;
+  Reset();
 }
 //------------------------------------------------------------------
 /// Standard constructor (recommended)
@@ -31,17 +28,30 @@ SFTimingRes::SFTimingRes(){
 /// with cut - for analysis with energy cut on 511 keV, no cut - cutting only
 /// scattered events.
 SFTimingRes::SFTimingRes(int seriesNo, TString threshold, TString method){
+  
+  Reset();
+  
   if(!(threshold=="ft" || threshold=="cf")){
     throw "##### Error in SFTimingRes constructor! Incorrect threshold type!\nPossible options are: ft, cf";
   }
+  
   if(!(method=="with cut" || method=="no cut")){
     throw "##### Error in SFTimingRes constructor! Incorrect method!\nPossible options are: with cut, no cut";
   }
+  
   fSeriesNo = seriesNo;
   fThreshold = threshold;
   fMethod = method;
-  fData = new SFData(fSeriesNo,threshold);
-  if(fMethod=="no cut") AnalyzeNoECut();
+  
+  try{
+    fData = new SFData(fSeriesNo,threshold);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    throw "##### Exception in SFTimingRes constructor!";
+  }
+  
+  if(fMethod=="no cut")        AnalyzeNoECut();
   else if(fMethod=="with cut") AnalyzeWithECut();
 }
 //------------------------------------------------------------------
@@ -52,23 +62,29 @@ SFTimingRes::~SFTimingRes(){
 //------------------------------------------------------------------
 ///Private method to get index of requested measurement based on source position.
 int SFTimingRes::GetIndex(double position){
+  
   int index = -1;
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   int npoints = fData->GetNpoints();
-  if(fSeriesNo>5){
+  TString desc = fData->GetDescription();
+  
+  if(!desc.Contains("Regular series")){
     index = position-1;
     return index;
   }
+  
   for(int i=0; i<npoints; i++){
     if(fabs(positions[i]-position)<1){
       index = i;
       break;
     }
   }
+  
   if(index==-1){
    cout << "##### Error in SFTimingRes::GetIndex()! Incorrecct position!" << endl;
    return index;
   }
+  
   return index;
 }
 //------------------------------------------------------------------
@@ -109,7 +125,7 @@ double LorentzianFun(double *x, double *par){
 bool SFTimingRes::AnalyzeNoECut(void){
   
   int npoints = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
@@ -149,7 +165,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
 bool SFTimingRes::AnalyzeWithECut(void){
   
   int npoints = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   
   if(fRatios.empty()) LoadRatios();
   
@@ -284,6 +300,21 @@ vector <TH1D*> SFTimingRes::GetSpectra(int ch){
  }
  if(ch==0)       return fPEch0; 
  else if (ch==1) return fPEch1;
+}
+//------------------------------------------------------------------
+///Resets private members of the class to their default values.
+void SFTimingRes::Reset(void){
+  fSeriesNo  = -1;
+  fThreshold = "dummy";
+  fMethod    = "dummy";
+  fData      = NULL;
+  fT0Graph   = NULL;
+  if(!fRatios.empty())      fRatios.clear();
+  if(!fPEch0.empty())       fPEch0.clear();
+  if(!fPEch1.empty())       fPEch1.clear();
+  if(!fT0Diff.empty())      fT0Diff.clear();
+  if(!fTimeRes.empty())     fTimeRes.clear();
+  if(!fTimeResErr.empty())  fTimeResErr.clear();
 }
 //------------------------------------------------------------------
 /// Prints details of SFTimingRes class object.

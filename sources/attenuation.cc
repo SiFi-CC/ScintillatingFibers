@@ -22,18 +22,27 @@ int main(int argc, char **argv){
  
   int seriesNo = atoi(argv[1]);
 
-  SFData *data = new SFData(seriesNo);
+  SFData *data;
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char* message){
+   cout << message << endl;
+   cout << "##### Exception in attenuation.cc!" << endl;
+   return 0;
+  }
+  
   int npoints = data->GetNpoints();
-  double *positions = data->GetPositions();
+  vector <double> positions = data->GetPositions();
   data->Print();
  
   SFAttenuation *att;
-  
   try{
     att = new SFAttenuation(seriesNo);
   }
   catch(const char* message){
     cout << message << endl;
+    cout << "##### Exception in attenuation.cc!" << endl;
     return 0;
   }
   
@@ -138,6 +147,7 @@ int main(int argc, char **argv){
   can_spectra_ch1->Write();
   file->Close();
   
+  delete data;
   delete att;
   
   return 1;

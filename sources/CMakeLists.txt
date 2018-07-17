@@ -24,7 +24,7 @@ ROOT_GENERATE_DICTIONARY(G__ScintillatingFibers ${headers} LINKDEF LinkDef.h)
 
 #---Creating a shared library with generated dictionary
 add_library(ScintillatingFibers SHARED scifi.cc ${sources} G__ScintillatingFibers.cxx)
-target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES} $ENV{DD6PATH}build/libDesktopDigitizer6.so)
+target_link_libraries(ScintillatingFibers ${ROOT_LIBRARIES} $ENV{DD6PATH}build/libDesktopDigitizer6.so libsqlite3.so)
 
 
 #---Creating a main program using the library

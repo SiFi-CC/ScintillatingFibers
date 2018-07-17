@@ -13,49 +13,17 @@
 ClassImp(SFData);
 
 //------------------------------------------------------------------
-double gUnique = 0.;
-char   *gPath = getenv("SFDATA");
+char *gPath         = getenv("SFDATA");
+double gUnique      = 0.;
 int    gBaselineMax = 50;
-double gmV = 4.096;
-//------------------------------------------------------------------
-TString SFData::fNames_1[9] = {"2018_01_20_13_56","2018_01_20_14_43","2018_01_20_15_30",
-			       "2018_01_22_9_29","2018_01_20_13_07","2018_01_22_10_16",
-			       "2018_01_22_11_02","2018_01_22_11_51","2018_01_22_12_40"};
-TString SFData::fNames_2[9] = {"2018_01_22_16_59","2018_01_22_17_54","2018_01_22_18_42",
-			       "2018_01_23_9_54","2018_01_23_10_46","2018_01_23_11_38",
-			       "2018_01_23_12_27","2018_01_23_14_56","2018_01_23_15_46"};
-TString SFData::fNames_3[9] = {"2018_01_25_9_20","2018_01_25_9_52","2018_01_25_10_23",
-			       "2018_01_25_10_54","2018_01_25_8_47","2018_01_25_11_26",
-			       "2018_01_25_12_00","2018_01_25_12_32","2018_01_25_13_10"};
-TString SFData::fNames_4[9] = {"2018_01_25_14_05","2018_01_25_14_36","2018_01_25_15_08",
-			       "2018_01_25_15_39","2018_01_25_16_11","2018_01_25_16_47",
-			       "2018_01_25_17_19","2018_01_25_17_50","2018_01_26_8_27"};
-TString SFData::fNames_5[9] = {"2018_01_26_10_03","2018_01_26_10_36","2018_01_26_11_07",
-			       "2018_01_26_11_39","2018_01_26_12_11","2018_01_26_12_42",
-			       "2018_01_26_13_14","2018_01_26_13_46","2018_01_26_14_18"};
-TString SFData::fNames_6[5] = {"2018_01_20_13_07","2018_01_24_16_27","2018_01_24_17_25",
-			       "2018_01_24_18_27","2018_01_25_8_47"};
-TString SFData::fNames_7[1] = {"2018_01_22_15_13"};
-TString SFData::fNames_8[1] = {"2018_01_23_14_07"};
-TString SFData::fNames_9[2] = {"2018_01_19_17_17","2018_01_22_15_37"};
-//------------------------------------------------------------------
-double SFData::fPositions_1[9] = {10.3,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
-double SFData::fPositions_2[9] = {10.2,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
-double SFData::fPositions_3[9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
-double SFData::fPositions_4[9] = {10.5,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
-double SFData::fPositions_5[9] = {10.4,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
-double SFData::fPositions_6[5] = {50.0,50.0,50.0,50.0,50.0};
-double SFData::fPositions_7[1] = {0.00};
-double SFData::fPositions_8[1] = {0.00};
-double SFData::fPositions_9[2] = {0.00,0.00};
-
+double gmV          = 4.096;
 //------------------------------------------------------------------
 ///Default constructor. If this constructor is used the series 
 ///number should be set via SetDetails(int seriesNo) function.
 SFData::SFData(){
  Reset();
  cout << "##### Warning in SFData constructor!" << endl;
- cout << "You are using the default constructor. Set the series number." <<endl;
+ cout << "You are using the default constructor. Set the series number & open data base!" <<endl;
 }
 //------------------------------------------------------------------
 ///Standard constructor (recommended).
@@ -64,7 +32,11 @@ SFData::SFData(){
 ///By deafult data analyzed with fixed threshold in DD6 is accessed.
 ///If you need constant fraction data use SetThreshold() function.
 SFData::SFData(int seriesNo){
-  SetDetails(seriesNo);
+ bool db_stat  = OpenDataBase("ScintFib");
+ bool set_stat = SetDetails(seriesNo);
+ if(!db_stat || !set_stat){
+   throw "##### Exception in SFData constructor!";
+ }
 }
 //------------------------------------------------------------------
 ///Standard constructor.
@@ -72,15 +44,42 @@ SFData::SFData(int seriesNo){
 ///\param threshold is threshold type in DD6 preliminary data analysis.
 ///Possible options are: "ft" - fixed threshold and "cf" - constant fraction.
 SFData::SFData(int seriesNo, TString threshold){
- SetDetails(seriesNo);
+ bool db_stat  = OpenDataBase("ScintFib");
+ bool set_stat = SetDetails(seriesNo);
+ if(!db_stat || !set_stat){
+   throw "##### Exception in SFData constructor!";
+ }
  if(!(threshold=="ft" || threshold=="cf")){
-  throw "##### Error in SFData constructor! Incorrect threshold type!"; 
+  throw "##### Exception in SFData constructor! Incorrect threshold type!"; 
  }
  fThreshold = threshold; 
 }
 //------------------------------------------------------------------
 ///Default destructor.
 SFData::~SFData(){
+ int status = sqlite3_close(fDB);
+ if(status==0) 
+   cout << "In SFSeries destructor. Data base clossed succesfully!" << endl;
+ else 
+   cout << "In SFSeries destructor. Data base corrupted!" << endl;
+}
+//------------------------------------------------------------------
+///Opens SQLite3 data base containing details of experimental series
+///and measurements.
+bool SFData::OpenDataBase(TString name){
+
+ TString db_name = string(gPath)+"/DB/"+name;
+ int status = sqlite3_open(db_name,&fDB);
+ 
+ if(status!=0){
+   cout << "##### Error in SFData::OpenDataBase()!" << endl;
+   cout << "Could not access data base!" << endl;
+   return false;
+ }
+ else
+   cout << "Data base opened succesfully!" << endl;
+ 
+ return true;
 }
 //------------------------------------------------------------------
 ///Sets all details of selected experimental series. If default constructor
@@ -88,66 +87,96 @@ SFData::~SFData(){
 ///of requested series as an argument. The following attributes are set 
 ///within this function:
 bool SFData::SetDetails(int seriesNo){
- 
-  if(seriesNo>9 || seriesNo<1){
-    cout << "##### Error in SFData::SetDetails()!" << endl;
-    cout << "There is no " << seriesNo << " series in the database!" << endl;
-    return false;
-  }
+  
+  TString query;
+  sqlite3_stmt *statement;
+  int status;
   
   Reset();
   fSeriesNo = seriesNo;
   fThreshold = "ft";	//default - fixed threshold
   
+  //-----Checking if series number is valid
+  int maxSeries;
+  query = "SELECT COUNT(*) FROM SERIES";
+  status = sqlite3_prepare_v2(fDB,query,-1,&statement,NULL);
+  
+  if(status!=SQLITE_OK){
+    cout << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << endl;
+  }
+  
+  while((status=sqlite3_step(statement)) == SQLITE_ROW){
+    maxSeries = sqlite3_column_int(statement,0);
+  }
+  
+  if(status!=SQLITE_DONE){
+    cout << "##### SQL Error: " << sqlite3_errmsg(fDB) << endl;
+  }
+  
+  sqlite3_finalize(statement);
+
+  if(fSeriesNo<1 || fSeriesNo>maxSeries){
+   cout << "##### Error in SFData::SetDetails()! Series number out of range!" << endl;
+   return false;
+  }
+  //-----
+  
+  //----- Setting series attributes
+  ///- fiber type 
+  ///- radioactive source type
   ///- number of measurements in the series
-  if(fSeriesNo<6) fNpoints = 9;
-  else if(fSeriesNo==6) fNpoints = 5;
-  else if(fSeriesNo==7 || fSeriesNo==8) fNpoints = 1;
-  else if(fSeriesNo==9) fNpoints = 2;
+  ///- description of the series
+  query = Form("SELECT FIBER, SOURCE, NO_MEASUREMENTS, DESCRIPTION FROM SERIES WHERE SERIES_NO = %i",fSeriesNo);
+  status = sqlite3_prepare_v2(fDB,query,-1,&statement,NULL);
   
-  ///- fiber type
-  if(fSeriesNo==2 || fSeriesNo==4 || fSeriesNo==8) fFiber = "LuAG:Ce (2)";
-  else if(fSeriesNo==9) fFiber = "none";
-  else fFiber = "LuAG:Ce (1)";
-  
-  ///- measurement description
-  switch(fSeriesNo){
-    case 1: fDesc = "First measurement";   break;
-    case 2: fDesc = "First measurement";   break;
-    case 3: fDesc = "Reameasuring";	   break;
-    case 4: fDesc = "Reameasuring";	   break;
-    case 5: fDesc = "With Al coating";	   break;
-    case 6: fDesc = "Different couplings"; break;
-    case 7: fDesc = "Internal activity";   break;
-    case 8: fDesc = "Internal activity";   break;
-    case 9: fDesc = "PE callibration";	   break;
+  if(status!=SQLITE_OK){
+    cout << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << endl;
+    return false;
   }
   
-  ///- positions of radioactive source for all measurements
-  switch(fSeriesNo){
-    case 1: fPositions = fPositions_1; break;
-    case 2: fPositions = fPositions_2; break;
-    case 3: fPositions = fPositions_3; break;
-    case 4: fPositions = fPositions_4; break;
-    case 5: fPositions = fPositions_5; break;
-    case 6: fPositions = fPositions_6; break;
-    case 7: fPositions = fPositions_7; break;
-    case 8: fPositions = fPositions_8; break;
-    case 9: fPositions = fPositions_9; break;
+  while((status=sqlite3_step(statement)) == SQLITE_ROW){
+    const unsigned char *fiber = sqlite3_column_text(statement,0);
+    const unsigned char *source = sqlite3_column_text(statement,1);
+    const unsigned char *description = sqlite3_column_text(statement,3);
+    fNpoints = sqlite3_column_int(statement,2);
+    fFiber = string(reinterpret_cast<const char*>(fiber));
+    fSource = string(reinterpret_cast<const char*>(source));
+    fDesc = string(reinterpret_cast<const char*>(description));
   }
   
-  ///- names of measurements in this series 
-  switch(fSeriesNo){
-    case 1: fNames = fNames_1; break;
-    case 2: fNames = fNames_2; break;
-    case 3: fNames = fNames_3; break;
-    case 4: fNames = fNames_4; break;
-    case 5: fNames = fNames_5; break;
-    case 6: fNames = fNames_6; break;
-    case 7: fNames = fNames_7; break;
-    case 8: fNames = fNames_8; break;
-    case 9: fNames = fNames_9; break;
+  if(status!=SQLITE_DONE){
+    cout << "##### SQL Error: " << sqlite3_errmsg(fDB) << endl;
+    return false;
   }
+  
+  sqlite3_finalize(statement);
+  //-----
+  
+  //----- Setting measurements attributes
+  ///- list of measurements names
+  ///- list of source positions
+  ///- list of measurements times
+  query = Form("SELECT NAME, POSITION, TIME FROM MEASUREMENTS WHERE SERIES_NO = %i",fSeriesNo);
+  status = sqlite3_prepare_v2(fDB,query,-1,&statement,NULL);
+  
+  if(status!=SQLITE_OK){
+    cout << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << endl;
+    return false;
+  }
+  
+  while((status=sqlite3_step(statement)) == SQLITE_ROW){
+    const unsigned char *name = sqlite3_column_text(statement,0);
+    fNames.push_back(string(reinterpret_cast<const char*>(name)));
+    fPositions.push_back(sqlite3_column_double(statement,1));
+    fTimes.push_back(sqlite3_column_double(statement,2)*60);
+  }
+  
+  if(status!=SQLITE_DONE){
+    cout << "##### SQL Error: " << sqlite3_errmsg(fDB) << endl;
+    return false;
+  }
+  
+  sqlite3_finalize(statement);
    
   return true;
 }
@@ -235,7 +264,7 @@ int SFData::GetIndex(double position){
    
   int index = -1;
   
-  if(fSeriesNo>5){
+  if(!fDesc.Contains("Regular series")){
     index = position-1;
     return index;
   }
@@ -667,13 +696,14 @@ void SFData::Reset(void){
  fSeriesNo      = 0;
  fNpoints       = 0;
  fFiber         = "dummy";
+ fSource        = "dummy";
  fDesc          = "dummy"; 
  fThreshold     = "dummy"; 
- fNames         = NULL;
- fPositions     = NULL;
  fSpectrum      = NULL;
  fSignalProfile = NULL;
  fSignal        = NULL;
+ fNames.clear();
+ fPositions.clear();
 }
 //------------------------------------------------------------------
 ///Prints details of currently analyzed experimental series
@@ -685,10 +715,12 @@ void SFData::Print(void){
  cout << "Type of threshold used in DD6 data analysis: " << fThreshold << endl;
  cout << "Number of measurements in this series: " << fNpoints << endl;
  cout << "Fiber: " << fFiber << endl;
+ cout << "Radioactive source: " << fSource << endl;
  cout << "List of measurements in this series:" << endl;
  for(int i=0; i<fNpoints; i++){
-  cout << setw(20);
-  cout << fNames[i] << "\t" << Form("%.1f",fPositions[i]) << " mm" << endl; 
+  cout << setw(30);
+  cout << fNames[i] << "\t\t" << Form("%.1f mm",fPositions[i]) 
+       << "\t\t" << Form("%.1f s",fTimes[i]) << endl; 
  }
  cout << "\n" << endl;
 }

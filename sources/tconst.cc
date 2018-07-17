@@ -25,7 +25,7 @@ int main(int argc, char **argv){
   
   SFData *data = new SFData(seriesNo);
   int npoints = data->GetNpoints();
-  double *positions = data->GetPositions();
+  vector <double> positions = data->GetPositions();
   data->Print();
   
   SFTimeConst *tconst;

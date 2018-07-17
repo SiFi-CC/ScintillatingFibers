@@ -66,7 +66,7 @@ public:
   double          GetAttError(int ch);
   
   void Print(void);
-  void Clear();
+  void Reset();
   
   ClassDef(SFAttenuation,1)
 };

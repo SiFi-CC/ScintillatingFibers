@@ -39,7 +39,7 @@ private:
   vector <double> fTimeRes;	///< Vector containing timing resolution values for whole series
   vector <double> fTimeResErr;	///< Vector containing errors on timing resolutions for whole series
   
-  int GetIndex(double position);
+  int  GetIndex(double position);
   bool LoadRatios(void);
   bool AnalyzeWithECut(void);
   bool AnalyzeNoECut(void);
@@ -57,6 +57,7 @@ public:
   vector <double> GetTimingResErrors(void);
   vector <TH1D*>  GetRatios(void);
   vector <TH1D*>  GetSpectra(int ch);
+  void            Reset(void);
   void            Print(void);
   
   ClassDef(SFTimingRes,1)

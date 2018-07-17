@@ -26,10 +26,7 @@ SFTimeConst::SFTimeConst(){
 ///\param PE - PE value for signals selection
 ///\param verb - verbose level
 SFTimeConst::SFTimeConst(int seriesNo, double PE, bool verb){
-  bool flag = SetDetails(seriesNo,PE,verb);
-  if(!flag){
-    throw "##### Error in SFTimeConst constructor! Something went wrong in SetDetails()!";
-  }
+  SetDetails(seriesNo,PE,verb);
 }
 //------------------------------------------------------------------
 /// Default destructor.
@@ -45,18 +42,20 @@ SFTimeConst::~SFTimeConst(){
 ///\param verb - verbose level
 bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   
-  if(seriesNo<1 || seriesNo>9){
-   cout << "##### Error in SFTimeConst::SetDetails()! Incorrect series number!" << endl;
-   return false;
-  }
-  
   fSeriesNo = seriesNo;
   fPE       = PE;
   fVerb     = verb;
-  fData     = new SFData(fSeriesNo);
+  
+  try{
+    fData = new SFData(fSeriesNo);
+  }
+  catch(const char* message){
+    cout << message << endl;
+    throw "##### Exception in SFTimeConst constructor!";
+  }
   
   int npoints = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   TString selection = Form("ch_0.fPE>%.1f && ch_0.fPE<%.1f",fPE-0.5,fPE+0.5);
   TString results_name;
   
@@ -89,23 +88,29 @@ void SFTimeConst::Reset(void){
 //------------------------------------------------------------------
 ///Private method to get an index of requested measurements based on source position.
 int SFTimeConst::GetIndex(double position){
+ 
   int index = -1;
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   int npoints = fData->GetNpoints();
-  if(fSeriesNo>5){
+  TString desc = fData->GetDescription();
+  
+  if(!desc.Contains("Regular series")){
     index = position-1;
     return index;
   }
+  
   for(int i=0; i<npoints; i++){
     if(fabs(positions[i]-position)<1){
       index = i;
       break;
     }
   }
+  
   if(index==-1){
    cout << "##### Error in SFTimingRes::GetIndex()! Incorrecct position!" << endl;
    return index;
   }
+  
   return index;
 }
 //------------------------------------------------------------------
@@ -192,7 +197,7 @@ bool SFTimeConst::FitDecayTime(TProfile *signal, double position){
 bool SFTimeConst::FitAllSignals(void){
  
   int n = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   
   for(int i=0; i<n; i++){
    FitDecayTime(fSignalsCh0[i],positions[i]);
@@ -291,7 +296,7 @@ bool SFTimeConst::FitAllSignals(void){
 bool SFTimeConst::FitAllSignals(int ch){
  
   int n = fData->GetNpoints();
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   
   if(ch!=0 || ch!=1){
     cout << "##### Error in SFTimeConst::FitAllSignals()!" << endl;
@@ -314,7 +319,7 @@ bool SFTimeConst::FitAllSignals(int ch){
 bool SFTimeConst::FitSingleSignal(int ch, double position){
 
   int index = GetIndex(position);
-  double *positions = fData->GetPositions();
+  vector <double> positions = fData->GetPositions();
   
   if(ch==0)      FitDecayTime(fSignalsCh0[index],positions[index]);
   else if(ch==1) FitDecayTime(fSignalsCh1[index],positions[index]);

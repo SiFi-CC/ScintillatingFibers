@@ -23,9 +23,18 @@ int main(int argc, char **argv){
   
   int seriesNo = atoi(argv[1]);
   
-  SFData *data = new SFData(seriesNo);
+  SFData *data;
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    cout << "##### Exception in timeres.cc!" << endl;
+    return 0;
+  }
+  
   int npoints = data->GetNpoints();
-  double *positions = data->GetPositions();
+  vector <double> positions = data->GetPositions();
   data->Print();
   
   SFTimingRes *tim_ft;
@@ -45,6 +54,7 @@ int main(int argc, char **argv){
   }
   catch(const char* message){
     cout << message << endl;
+    cout << "##### Exception in timeres.cc!" << endl;
     return 0;
   }
   

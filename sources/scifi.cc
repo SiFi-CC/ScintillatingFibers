@@ -9,7 +9,6 @@
 // *****************************************
 
 #include "SFData.hh"
-#include "TimeConst.hh"
 #include "TFit.hh"
 #include "SFPeakFinder.hh"
 #include "SFAttenuation.hh"

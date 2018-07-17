@@ -25,7 +25,10 @@ SFPeakFinder::SFPeakFinder(){
 ///\param peakID - flag to identify the peak for analysis. Possible options are: 511 or 1270.
 ///\param verbose - print-outs level
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose){
-  SetSpectrum(spectrum,peakID);
+  int stat = SetSpectrum(spectrum,peakID);
+  if(stat==false){
+    throw "##### Exception in SFPeakFinder constructor!";
+  }
   fVerbose = verbose;
 }
 //------------------------------------------------------------------
@@ -34,7 +37,10 @@ SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose){
 ///\param spectrum - analyzed spectrum
 ///\param peakID - flag to identify the peak for analysis. Possible options are: 511 or 1270.
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID){
-  SetSpectrum(spectrum,peakID);
+  int stat = SetSpectrum(spectrum,peakID);
+  if(stat==false){
+    throw "##### Exception in SFPeakFinder constructor!";
+  }
   cout << "##### Warning in SFPeakFinder constructor. Quiet mode on, no print outs." << endl;
   cout << "##### To set verbose level use SetVerbLevel(bool)" << endl;
 }
