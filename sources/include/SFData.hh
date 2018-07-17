@@ -89,10 +89,14 @@ public:
   TString  GetFiber(void){ return fFiber; };
   ///Returns description of the series
   TString  GetDescription(void){ return fDesc; };
-  ///Returns an array containing names of all measurements in this series
-  vector <TString> GetNames(void) { return fNames; };
-  ///Returns an array containing source positions for all measurements in this series
-  vector <double>  GetPositions(void) { return fPositions; };
+  ///Returns source type
+  TString  GetSource(void){ return fSource; };
+  ///Returns a vector containing names of all measurements in this series
+  vector <TString> GetNames(void){ return fNames; };
+  ///Returns a vector containing source positions for all measurements in this series
+  vector <double>  GetPositions(void){ return fPositions; };
+  ///Returns a vector containing times of measurements.
+  vector <double> GetTimes(void){ return fTimes; };
   
   ClassDef(SFData,1)
   
