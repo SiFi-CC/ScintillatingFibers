@@ -43,6 +43,9 @@ target_link_libraries(timeres ScintillatingFibers)
 add_executable(tconst tconst.cc)
 target_link_libraries(tconst ScintillatingFibers)
 
+add_executable(lightout lightout.cc)
+target_link_libraries(lightout ScintillatingFibers)
+
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)
 
