@@ -14,6 +14,7 @@
 #include "TH1D.h"
 #include "TF1.h"
 #include "BGFit.hh"
+#include "SFData.hh"
 #include <vector>
 #include <iostream>
 
@@ -37,7 +38,8 @@ private:
   double  fSigErr;	///< Error of the peak sigma
   bool    fVerbose;	///< Print-outs level
   
-  bool Fit(void);
+  bool    Fit(void);
+  TString GetFiberMaterial(void);
   
 public:
   SFPeakFinder();

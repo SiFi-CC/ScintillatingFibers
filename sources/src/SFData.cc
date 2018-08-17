@@ -13,7 +13,7 @@
 ClassImp(SFData);
 
 //------------------------------------------------------------------
-char *gPath         = getenv("SFDATA");
+char  *gPath        = getenv("SFDATA");
 double gUnique      = 0.;
 int    gBaselineMax = 50;
 double gmV          = 4.096;
@@ -46,22 +46,19 @@ SFData::SFData(int seriesNo){
 SFData::SFData(int seriesNo, TString threshold){
  bool db_stat  = OpenDataBase("ScintFib");
  bool set_stat = SetDetails(seriesNo);
- if(!db_stat || !set_stat){
+ bool thr_stat = SetThreshold(threshold);
+ if(!db_stat || !set_stat || !thr_stat){
    throw "##### Exception in SFData constructor!";
  }
- if(!(threshold=="ft" || threshold=="cf")){
-  throw "##### Exception in SFData constructor! Incorrect threshold type!"; 
- }
- fThreshold = threshold; 
 }
 //------------------------------------------------------------------
 ///Default destructor.
 SFData::~SFData(){
  int status = sqlite3_close(fDB);
  if(status==0) 
-   cout << "In SFSeries destructor. Data base clossed succesfully!" << endl;
+   cout << "In SFData destructor. Data base clossed succesfully!" << endl;
  else 
-   cout << "In SFSeries destructor. Data base corrupted!" << endl;
+   cout << "In SFData destructor. Data base corrupted!" << endl;
 }
 //------------------------------------------------------------------
 ///Opens SQLite3 data base containing details of experimental series
@@ -168,7 +165,7 @@ bool SFData::SetDetails(int seriesNo){
     const unsigned char *name = sqlite3_column_text(statement,0);
     fNames.push_back(string(reinterpret_cast<const char*>(name)));
     fPositions.push_back(sqlite3_column_double(statement,1));
-    fTimes.push_back(sqlite3_column_double(statement,2)*60);
+    fTimes.push_back(sqlite3_column_double(statement,2));
   }
   
   if(status!=SQLITE_DONE){
@@ -263,14 +260,14 @@ TString SFData::GetSelectionCustom(TString selection){
 int SFData::GetIndex(double position){
    
   int index = -1;
-  
+
   if(!fDesc.Contains("Regular series")){
     index = position-1;
     return index;
   }
 
   for(int i=0; i<fNpoints; i++){
-    if(fabs(fPositions[i]-position)<1){
+    if(fabs(fPositions[i]-position)<3){
       index = i;
       break;
     }
@@ -442,7 +439,7 @@ TH1D* SFData::GetSpectrum(int ch, TString type, TString cut, double position){
   TString selection = GetSelection(ch,type);
   tree->Draw(selection,cut);
   fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-  TString hname = type+Form("_ch%i_pos%.1f_",ch,position)+fThreshold;
+  TString hname = Form("S%i_ch%i_pos%.1f_",fSeriesNo,ch,position)+type+string("_")+fThreshold;
   TString htitle = hname+" "+cut;
   fSpectrum->SetName(hname);
   fSpectrum->SetTitle(htitle);
@@ -461,7 +458,10 @@ vector <TH1D*> SFData::GetSpectra(int ch, TString type, TString cut){
   bool empty = fSpectra.empty();
   for(int i=0; i<fNpoints; i++){
    if(empty) fSpectra.push_back(new TH1D());
-   fSpectra[i] = GetSpectrum(ch,type,cut,fPositions[i]);
+   if(fDesc.Contains("Regular series"))
+     fSpectra[i] = GetSpectrum(ch,type,cut,fPositions[i]);
+   else 
+     fSpectra[i] = GetSpectrum(ch,type,cut,i+1);
   }
   
   return fSpectra;
@@ -484,7 +484,7 @@ TH1D* SFData::GetCustomHistogram(TString selection, TString cut, double position
   TString selectAndDraw = GetSelectionCustom(selection);
   tree->Draw(selectAndDraw,cut);
   fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-  TString hname = selection+Form("_pos%.1f_",position)+fThreshold;
+  TString hname = Form("S%i_pos%.1f_",fSeriesNo,position)+selection+string("_")+fThreshold;
   TString htitle = hname+" "+cut;
   fHist->SetName(hname);
   fHist->SetTitle(htitle);
@@ -502,7 +502,10 @@ vector <TH1D*> SFData::GetCustomHistograms(TString selection, TString cut){
   bool empty = fHists.empty();
   for(int i=0; i<fNpoints; i++){
     if(empty) fHists.push_back(new TH1D());
-    fHists[i] = GetCustomHistogram(selection,cut,fPositions[i]);
+    if(fDesc.Contains("Regular series"))
+      fHists[i] = GetCustomHistogram(selection,cut,fPositions[i]);
+    else 
+      fHists[i] = GetCustomHistogram(selection,cut,i+1);
   }
   
   return fHists;
@@ -525,7 +528,7 @@ TH2D* SFData::GetCorrHistogram(TString selection, TString cut, double position){
   TString selectAndDraw = GetSelectionCustom(selection);
   tree->Draw(selectAndDraw,cut,"colz");
   fHist2D = (TH2D*)gROOT->FindObjectAny(Form("htemp%.7f",gUnique));
-  TString hname = selection+Form("_pos%.1f_",position)+fThreshold;
+  TString hname = selection+Form("S%i_pos%.1f_",fSeriesNo,position)+selection+string("_")+fThreshold;
   TString htitle = hname+" "+cut;
   fHist2D->SetName(hname);
   fHist2D->SetTitle(htitle);
@@ -544,7 +547,10 @@ vector <TH2D*> SFData::GetCorrHistograms(TString selection, TString cut){
   bool empty = fHists2D.empty();
   for(int i=0; i<fNpoints; i++){
     if(empty) fHists2D.push_back(new TH2D());
-    fHists2D[i] = GetCorrHistogram(selection,cut,fPositions[i]);
+    if(fDesc.Contains("Regular series"))
+      fHists2D[i] = GetCorrHistogram(selection,cut,fPositions[i]);
+    else 
+      fHists2D[i] = GetCorrHistogram(selection,cut,i+1);
   }
   
   return fHists2D;
@@ -612,7 +618,7 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
     }
   }
   
-  hname = Form("sig_ch%i_pos_%.1f_num_%i_",ch,position,counter)+fThreshold;
+  hname = Form("S%i_ch%i_pos_%.1f_sig_num_%i_",fSeriesNo,ch,position,counter)+fThreshold;
   htitle = hname +" "+cut;
   fSignalProfile->SetName(hname);
   fSignalProfile->SetTitle(htitle);
@@ -650,7 +656,7 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
   ifstream input(iname,ios::binary);
   
-  TString hname = Form("sig_ch%i_pos_%.1f_no%i_",ch,position,number)+fThreshold;
+  TString hname = Form("S%i_ch%i_pos_%.1f_sig_no%i_",fSeriesNo,ch,position,number)+fThreshold;
   TString htitle = hname+" "+cut;
   
   fSignal = new TH1D(hname,htitle,ipoints,0,ipoints);
@@ -700,10 +706,16 @@ void SFData::Reset(void){
  fDesc          = "dummy"; 
  fThreshold     = "dummy"; 
  fSpectrum      = NULL;
+ fHist          = NULL;
+ fHist2D        = NULL;
  fSignalProfile = NULL;
  fSignal        = NULL;
  fNames.clear();
  fPositions.clear();
+ fTimes.clear();
+ fSpectra.clear();
+ fHists.clear();
+ fHists2D.clear();
 }
 //------------------------------------------------------------------
 ///Prints details of currently analyzed experimental series

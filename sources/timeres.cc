@@ -32,6 +32,13 @@ int main(int argc, char **argv){
     cout << "##### Exception in timeres.cc!" << endl;
     return 0;
   }
+  TString desc = data->GetDescription();
+  if(!desc.Contains("Regular series")){
+    cout << "##### Error in timeres.cc! This is not regular series!" << endl;
+    cout << "Series number: " << seriesNo << endl;
+    cout << "GetDescription: " << desc << endl;
+    return 0;
+  }
   
   int npoints = data->GetNpoints();
   vector <double> positions = data->GetPositions();

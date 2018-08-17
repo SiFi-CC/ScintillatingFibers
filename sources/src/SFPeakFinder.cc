@@ -69,20 +69,95 @@ bool SFPeakFinder::SetSpectrum(TH1D *spectrum, TString peakID){
   return true;
 }
 //------------------------------------------------------------------
+///Extracts series number from the name of the analyzed spectrum.
+///Once series number is known, checks what was the fiber used in
+///this measurement.
+TString SFPeakFinder::GetFiberMaterial(void){
+ 
+  TString material = "";
+  
+  string sname = fSpectrum->GetName();
+  int nletters = sname.length();
+  char letters[nletters];
+  strcpy(letters,sname.c_str());
+  
+  int iposition = -1;
+  for(int i=0; i<nletters; i++){
+    if(letters[i]=='_'){
+      iposition = i;
+      break;
+    }
+  }
+  
+  if(iposition==-1){
+   cout << "##### Error in SFPeakFinder::GetFiberMaterial()!" << endl;
+   cout << "Cannot interpret spectrum name!" << endl;
+   return material;
+  }
+  
+  TString seriesName = string(&letters[1], &letters[iposition]);
+  int seriesNo = atoi(seriesName);
+  
+  SFData *data;
+  
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    cout << "##### Exception in SFPeakFinder::GetFiberMaterial()!" << endl;
+    return material;
+  }
+  
+  TString fiber = data->GetFiber();
+  
+  if(fiber.Contains("LYSO")){
+    material = "LYSO";
+  }
+  else if(fiber.Contains("LuAG:Ce")){
+    material = "LuAG";
+  }
+  else{
+    cout << "##### Error in SFPeakFinder::GetFiberMaterial()!" << endl;
+    cout << "Unknown material!" << endl;
+  }
+  
+  delete data;
+  
+  return material;
+}
+//------------------------------------------------------------------
 ///Finds ranges of the analyzed peak. Ranges are returned by reference.
 bool SFPeakFinder::FindPeakRange(double &min, double &max){
  
   min = -1;
   max = -1;
   double search_min,search_max;
+  TString material = GetFiberMaterial();
   
-  if(fPeakID=="511"){
-    search_min = 120;
-    search_max = 450;//320
+  if(material=="LuAG"){
+   if(fPeakID=="511"){
+     search_min = 120;
+     search_max = 450;
+   }
+   else if(fPeakID=="1270"){
+     search_min = 400;
+     search_max = 1000;
+   }
   }
-  else if(fPeakID=="1270"){
-    search_min = 400;
-    search_max = 1000;
+  else if(material=="LYSO"){
+   if(fPeakID=="511"){
+     search_min = 90;
+     search_max = 300;
+   }
+   else if(fPeakID=="1270"){
+     search_min = 300;	//if ever needed needs to be verified
+     search_max = 500;	//
+   }
+  }
+  else{
+    search_min = 0;
+    search_max = fSpectrum->GetXaxis()->GetXmax();
   }
   
   int bin_min = fSpectrum->FindBin(search_min);

@@ -22,6 +22,8 @@ using namespace std;
 /// on scattered events, "with cut" - cut imposed on scattered events and additional energy 
 /// cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions
 /// and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. 
+/// IMPORTANT: timing resolution is determined as FWHM of lorentzian and gaussian functions
+/// fitted to the ch_0.fT0-ch_1.fT0 distributions.
 
 class SFTimingRes : public TObject{
  

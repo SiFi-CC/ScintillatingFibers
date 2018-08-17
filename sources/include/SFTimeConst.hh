@@ -57,7 +57,8 @@ public:
   ~SFTimeConst();
   
   bool          SetDetails(int seriesNo, double PE, bool verb);
-  bool          FitDecayTime(TProfile *signal, double position);
+  bool          FitDecayTimeDouble(TProfile *signal, double position);
+  bool          FitDecayTimeSingle(TProfile *signal, double position);
   bool          FitAllSignals(void);
   bool          FitAllSignals(int ch);
   bool          FitSingleSignal(int ch, double position);

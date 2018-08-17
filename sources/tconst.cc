@@ -23,7 +23,25 @@ int main(int argc, char **argv){
   
   int seriesNo = atoi(argv[1]);
   
-  SFData *data = new SFData(seriesNo);
+  SFData *data;
+  
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char* message){
+    cout << message << endl;
+    cout << "##### Exception in tconst.cc!" << endl;
+    return 0;
+  }
+  
+  TString desc = data->GetDescription();
+  if(!desc.Contains("Regular series")){
+    cout << "##### Error in tconst.cc! This is not regular series!" << endl;
+    cout << "Series number: " << seriesNo << endl;
+    cout << "Description: " << desc << endl;
+    return 0;
+  }
+  
   int npoints = data->GetNpoints();
   vector <double> positions = data->GetPositions();
   data->Print();
@@ -102,19 +120,30 @@ int main(int argc, char **argv){
     }
   }
   
+  int ncomp = resultsCh0[0]->GetNcomponents();
+  
   TLegend *legCh0 = new TLegend(0.633,0.278,0.893,0.451);
+  TLegend *legCh1 = new TLegend(0.633,0.278,0.893,0.451);
+  
   legCh0->AddEntry(compFunCh0[0],"Base line","L");
-  legCh0->AddEntry(compFunCh0[1],"Fast component","L");
-  legCh0->AddEntry(compFunCh0[2],"Slow component","L");
+  legCh1->AddEntry(compFunCh1[0],"Base line","L");
+  
+  if(ncomp==1){
+    legCh0->AddEntry(compFunCh0[1],"Decay","L");
+    legCh1->AddEntry(compFunCh0[1],"Decay","L");
+  }
+  else if(ncomp==2){
+   legCh0->AddEntry(compFunCh0[1],"Fast component","L");
+   legCh0->AddEntry(compFunCh0[2],"Slow component","L");
+   legCh1->AddEntry(compFunCh1[1],"Fast component","L");
+   legCh1->AddEntry(compFunCh1[2],"Slow component","L");
+  }
+  
   legCh0->AddEntry(resultsCh0[0]->GetFunction(),"Double decay","L");
+  legCh1->AddEntry(resultsCh1[0]->GetFunction(),"Double decay","L");
+  
   canCh0->cd(1);
   legCh0->Draw();
-  
-  TLegend *legCh1 = new TLegend(0.633,0.278,0.893,0.451);
-  legCh1->AddEntry(compFunCh1[0],"Base line","L");
-  legCh1->AddEntry(compFunCh1[1],"Fast component","L");
-  legCh1->AddEntry(compFunCh1[2],"Slow component","L");
-  legCh1->AddEntry(resultsCh1[0]->GetFunction(),"Double decay","L");
   canCh1->cd(1);
   legCh1->Draw();
   

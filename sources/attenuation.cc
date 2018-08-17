@@ -32,6 +32,14 @@ int main(int argc, char **argv){
    return 0;
   }
   
+  TString desc = data->GetDescription();
+  if(!desc.Contains("Regular series")){
+    cout << "##### Error in attenuation.cc! This is not regular series!" << endl;
+    cout << "Series number: " << seriesNo << endl;
+    cout << "Description: " << desc << endl;
+    return 0;
+  }
+  
   int npoints = data->GetNpoints();
   vector <double> positions = data->GetPositions();
   data->Print();

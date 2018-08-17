@@ -25,11 +25,19 @@ int main(int argc, char **argv){
   SFData *data;
   
   try{
-    data = new SFData(seriesNo);
+    data = new SFData(seriesNo,"ft");
   }
   catch(const char *message){
     cout << message << endl;
     cout << "##### Exception in data.cc!" << endl;
+    return 0;
+  }
+  
+  TString desc = data->GetDescription();
+  if(!desc.Contains("Regular series")){
+    cout << "##### Error in data.cc! This is not regular series!" << endl;
+    cout << "Series number: " << seriesNo << endl;
+    cout << "Description: " << desc << endl;
     return 0;
   }
   

@@ -63,6 +63,7 @@ bool SFAttenuation::AttAveragedCh(void){
   fRatios = fData->GetCustomHistograms(selection,cut);
   
   double mean, sigma;
+  double fit_min, fit_max;
   vector <TF1*> fun;
   TString gname = Form("att_s%i",fSeriesNo);
   fAttnGraph = new TGraphErrors(npoints);
@@ -75,7 +76,19 @@ bool SFAttenuation::AttAveragedCh(void){
   for(int i=0; i<npoints; i++){
     mean = fRatios[i]->GetMean();
     sigma = fRatios[i]->GetRMS();
-    fun.push_back(new TF1("fun","gaus",mean-sigma,mean+sigma));
+    if(i<npoints/2){
+      fit_min = mean-(1.5*sigma);
+      fit_max = mean+(0.5*sigma);
+    }
+    else if(i==npoints/2 && npoints%2==1){
+      fit_min = mean-sigma;
+      fit_max = mean+sigma;
+    }
+    else{
+      fit_min = mean-(0.5*sigma);
+      fit_max = mean+(1.5*sigma);
+    }
+    fun.push_back(new TF1("fun","gaus",fit_min,fit_max));
     fRatios[i]->Fit(fun[i],"QR");
     fAttnGraph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
     fAttnGraph->SetPointError(i,0,fun[i]->GetParError(1));

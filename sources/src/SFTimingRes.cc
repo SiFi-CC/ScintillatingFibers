@@ -101,8 +101,18 @@ bool SFTimingRes::LoadRatios(void){
   double min, max;
   
   for(int i=0; i<npoints; i++){
-    min = fRatios[i]->GetMean() - fRatios[i]->GetRMS();
-    max = fRatios[i]->GetMean() + fRatios[i]->GetRMS();
+    if(i<npoints/2){
+      min = fRatios[i]->GetMean() - (1.5*fRatios[i]->GetRMS());
+      max = fRatios[i]->GetMean() + (0.5*fRatios[i]->GetRMS());
+    }
+    else if(i==npoints/2 && npoints%2==1){
+      min = fRatios[i]->GetMean() - fRatios[i]->GetRMS();
+      max = fRatios[i]->GetMean() + fRatios[i]->GetRMS();
+    }
+    else{
+      min = fRatios[i]->GetMean() - (0.5*fRatios[i]->GetRMS());
+      max = fRatios[i]->GetMean() + (1.5*fRatios[i]->GetRMS());
+    }
     fRatios[i]->Fit(gaus,"Q","",min,max);
   }
  
@@ -112,10 +122,10 @@ bool SFTimingRes::LoadRatios(void){
 ///Formula for Lorentzian function
 double LorentzianFun(double *x, double *par){
  //par0 - integral
- //par1 - width
- //par2 - center  
+ //par1 - width (FWHM)
+ //par2 - mean  
  return (0.5*par[0]*par[1]/TMath::Pi())/
-        ((x[0]-par[2])*(x[0]-par[2])+.25*par[1]*par[1]);
+        ((x[0]-par[2])*(x[0]-par[2])+0.25*par[1]*par[1]);
 }
 //------------------------------------------------------------------
 ///Method for simple timing resolution determination. Timing resolution spectrum
@@ -134,6 +144,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
   
   if(fRatios.empty()) LoadRatios();
   TF1 *lorentz = new TF1("lorentz",LorentzianFun,-100,100,3);
+  lorentz->SetParNames("Integral","FWHM","Mean");
   
   fT0Graph = new TGraphErrors(npoints);
   fT0Graph->GetXaxis()->SetTitle("source position [mm]");
@@ -152,10 +163,10 @@ bool SFTimingRes::AnalyzeNoECut(void){
     min_fit = fT0Diff[i]->GetMean()-3*fT0Diff[i]->GetRMS();
     max_fit = fT0Diff[i]->GetMean()+3*fT0Diff[i]->GetRMS();
     fT0Diff[i]->Fit(lorentz,"Q","",min_fit,max_fit);
-    fTimeRes.push_back(lorentz->GetParameter(1));
+    fTimeRes.push_back(fabs(lorentz->GetParameter(1)));
     fTimeResErr.push_back(lorentz->GetParError(1));
     fT0Graph->SetPoint(i,positions[i],lorentz->GetParameter(2));
-    fT0Graph->SetPointError(i,0,lorentz->GetParameter(1));
+    fT0Graph->SetPointError(i,0,fabs(lorentz->GetParameter(1)));
   }
   
   return true;
@@ -178,6 +189,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
   double xmin_ch1, xmax_ch1;
   double mean_ratio, sigma_ratio;
   double mean, sigma;
+  double f = 2*sqrt(2*log(2));		//to recalculate sigma into FWHM
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   
@@ -206,10 +218,10 @@ bool SFTimingRes::AnalyzeWithECut(void){
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();
     fT0Diff[i]->Fit(fun,"Q","",mean-3*sigma,mean+3*sigma);
-    fTimeRes.push_back(fun->GetParameter(2));
-    fTimeResErr.push_back(fun->GetParError(2));
-    fT0Graph->SetPoint(i,positions[i],fT0Diff[i]->GetMean());
-    fT0Graph->SetPointError(i,0,fT0Diff[i]->GetRMS());
+    fTimeRes.push_back(f*fun->GetParameter(2));		//Timing resolution as FWHM of gaussian distribution
+    fTimeResErr.push_back(f*fun->GetParError(2));
+    fT0Graph->SetPoint(i,positions[i],fun->GetParameter(1));
+    fT0Graph->SetPointError(i,0,f*fun->GetParameter(2));
   }
   
   return true;
