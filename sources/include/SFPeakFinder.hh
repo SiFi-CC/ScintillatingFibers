@@ -40,6 +40,7 @@ private:
   
   bool    Fit(void);
   TString GetFiberMaterial(void);
+  TString GetMeasureType(void);
   
 public:
   SFPeakFinder();

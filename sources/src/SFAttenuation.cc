@@ -126,18 +126,14 @@ bool SFAttenuation::AttSeparateCh(int ch){
   
   vector <SFPeakFinder*> peakfin;
   vector <TH1D*> peaks;
-  vector <TF1*> fun;
-  double mean, sigma;
+  vector <double> parameter;
   
   for(int i=0; i<npoints; i++){
     peakfin.push_back(new SFPeakFinder(spectra[i],"511",false));
     peaks.push_back(peakfin[i]->GetPeak());
-    mean = peaks[i]->GetMean();
-    sigma = peaks[i]->GetRMS();
-    fun.push_back(new TF1("fun","gaus",mean-3*sigma,mean+3*sigma));
-    peaks[i]->Fit(fun[i],"QR");
-    graph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
-    graph->SetPointError(i,0,fun[i]->GetParError(1));
+    parameter=peakfin[i]->GetParameter();
+    graph->SetPoint(i,positions[i],parameter[0]);
+    graph->SetPointError(i,0,parameter[2]);
   }
   
   TF1 *fexp = new TF1("fexp","expo",positions[0],positions[npoints-1]);

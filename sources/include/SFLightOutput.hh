@@ -31,6 +31,7 @@ private:
   SFData *fData;		///< SFData object of the analyzed series
   SFAttenuation *fAtt;		///< SFAttenuation object of the analyzed series
   double fPDE; ///< Photon Detection Efficiency of the SiPM
+  double fCrossTalk; ///< CrossTalk Propability of the SiPM
   double fLightOutAve;		///< Lightoutput averaged for all positions [#photons/MeV] 
   double fLightOutAveErr;		///< Error on lightoutput fLightOut [#photons/MeV]
   double fLightOutAveCh0;		///< Lightoutput Ch0 for all positions [#photons/MeV] 
@@ -51,8 +52,8 @@ private:
   TGraphErrors *fLightOutSepGraphCh1;	///< LightOutput graph for channel 1 - cal wiht sep attlen
   vector <TH1D*> fSpectraCh0;	///< Vector containing charge spectra from channel 0
   vector <TH1D*> fSpectraCh1;	///< Vector containing charge spectra from channel 1
-  vector <TH1D*> fPeaksCh0;	///< Vector containing 511 keV peaks, channel 0
-  vector <TH1D*> fPeaksCh1;	///< Vector containing 511 keV peaks, channel 1
+  vector <SFPeakFinder*> fPFCh0;
+  vector <SFPeakFinder*> fPFCh1;
   vector <double> fAttLen; ///< Contains the averaged Attenuation Length and the Error
   vector <double> fAttLenCh0; ///< Contains the Attenuation Length and the Error for Ch0
   vector <double> fAttLenCh1; ///< Contains the Attenuation Length and the Error for Ch1

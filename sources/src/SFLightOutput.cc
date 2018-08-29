@@ -28,7 +28,6 @@ SFLightOutput::SFLightOutput(){
 SFLightOutput::SFLightOutput(int seriesNo){
   Reset();
   fSeriesNo = seriesNo;
-  fPDE=0.31; 
   try{
     fData = new SFData(fSeriesNo);
   }
@@ -41,7 +40,15 @@ SFLightOutput::SFLightOutput(int seriesNo){
     cout << "##### Warning in SFLightOutput constructor!";
     cout << "Calculating lightouput length with non-regular series!" << endl;
   }
-
+  TString type = fData->GetMeasureType();
+  if(!type.Contains("Lead")){
+	fPDE=0.31; 
+	fCrossTalk=0.07; 
+  }
+  else{
+	fPDE=0.4;
+	fCrossTalk=0.03;
+  }
   try{
     fAtt = new SFAttenuation(fSeriesNo);
   }
@@ -56,13 +63,15 @@ SFLightOutput::SFLightOutput(int seriesNo){
   //----- separate channels method
   fAtt->AttSeparateCh(0);
   fSpectraCh0  = fAtt->GetSpectra(0);
-  fPeaksCh0    = fAtt->GetPeaks(0);
   fAttLenCh0   = fAtt->GetAttenuation(0);
   
   fAtt->AttSeparateCh(1);
   fSpectraCh1 = fAtt->GetSpectra(1);
-  fPeaksCh1   = fAtt->GetPeaks(1);
   fAttLenCh1   = fAtt->GetAttenuation(1);
+  for (int i=0;i<fData->GetNpoints();i++){
+	fPFCh0.push_back(new SFPeakFinder(fSpectraCh0[i],"511",false));
+	fPFCh1.push_back(new SFPeakFinder(fSpectraCh1[i],"511",false));
+  }
   CalculateLO(0,0);
   CalculateLO(0,1);
   CalculateSLO(0);
@@ -87,14 +96,14 @@ void SFLightOutput::CalculateLO(bool mode,int ch){
   int npoints = fData->GetNpoints();
   vector <double> positions = fData->GetPositions();
   vector <TH1D*> spectra;
-  vector <TH1D*> peaks;
+  vector <SFPeakFinder*> tempPF;
   if(ch==0){
 	spectra =fSpectraCh0;
-  	peaks = fPeaksCh0;
+	tempPF = fPFCh0;
   }
   else if(ch==1){
 	spectra =fSpectraCh1;
-  	peaks = fPeaksCh1;
+	tempPF = fPFCh1;
   }
   TString gname;
   if(mode==0)gname = Form("LOAve_s%i_ch%i",fSeriesNo,ch);
@@ -102,14 +111,12 @@ void SFLightOutput::CalculateLO(bool mode,int ch){
   
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("LightOutput [P.E./MeV]");
+  graph->GetYaxis()->SetTitle("light output [Ph./MeV]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  vector <TF1*> fun;
-  double mean=0;
-  double sigma=0;
+  vector<double> peak_par;
   double correctedLO=0;
   double correctedLOE=0;
   double dist=0;
@@ -125,14 +132,11 @@ void SFLightOutput::CalculateLO(bool mode,int ch){
 	else if(ch==1) temp_fat=fAttLenCh1;
   }
   for(int i=0; i<npoints; i++){
-    mean = peaks[i]->GetMean();
-    sigma = peaks[i]->GetRMS();
-    fun.push_back(new TF1("fun","gaus",mean-3*sigma,mean+3*sigma));
-    peaks[i]->Fit(fun[i],"QR");
+    peak_par=tempPF[i]->GetParameter();
     if(ch==0) dist=positions[i];
     else if(ch==1) dist=100-positions[i];
-    correctedLO= fun[i]->GetParameter(1)/fPDE/0.511/TMath::Exp(-dist/temp_fat[0]);
-    correctedLOE= TMath::Sqrt((correctedLO*correctedLO/fun[i]->GetParameter(1)/fun[i]->GetParameter(1)*fun[i]->GetParameter(2)*fun[i]->GetParameter(2))+(correctedLO*correctedLO/temp_fat[0]/temp_fat[0]/temp_fat[0]/temp_fat[0]*temp_fat[1]*temp_fat[1]));
+    correctedLO= peak_par[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-dist/temp_fat[0]);
+    correctedLOE= TMath::Sqrt((correctedLO*correctedLO/peak_par[0]/peak_par[0]*peak_par[1]*peak_par[1])+(correctedLO*correctedLO/temp_fat[0]/temp_fat[0]/temp_fat[0]/temp_fat[0]*temp_fat[1]*temp_fat[1]));
     graph->SetPoint(i,positions[i],correctedLO);
     graph->SetPointError(i,0,correctedLOE);
     lightout+=correctedLO*(1/correctedLOE/correctedLOE);
@@ -245,8 +249,6 @@ void SFLightOutput::Reset(void){
  fLightOutSepGraphCh1 = NULL;
  if(!fSpectraCh0.empty()) fSpectraCh0.clear();
  if(!fSpectraCh1.empty()) fSpectraCh1.clear();
- if(!fPeaksCh0.empty()) fPeaksCh0.clear();
- if(!fPeaksCh1.empty()) fPeaksCh1.clear();
  if(!fAttLen.empty()) fAttLen.clear();
  if(!fAttLenCh0.empty()) fAttLenCh1.clear();
  if(!fAttLenCh1.empty()) fAttLenCh0.clear();

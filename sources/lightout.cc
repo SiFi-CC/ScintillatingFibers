@@ -30,7 +30,7 @@ int main(int argc, char **argv){
 	}
 	catch(const char* message){
 	        cout << message << endl;
-	        cout << "##### Exception in attenuation.cc!" << endl;
+	        cout << "##### Exception in lightout.cc!" << endl;
 	        return 0;
 	}
 
@@ -66,50 +66,61 @@ int main(int argc, char **argv){
 	TCanvas *can_averaged_ch_ave = new TCanvas("can_averaged_ch_ave","can_averaged_ch_ave",700,500);
 	can_averaged_ch_ave->cd();
 	gPad->SetGrid(1,1);
-	loutGraph_ave->SetTitle(Form("Series %i, Ave, lightoutput curve",seriesNo));
+	//loutGraph_ave->SetTitle(Form("Series %i, Ave, lightoutput curve",seriesNo));
+	loutGraph_ave->SetTitle("");
 	loutGraph_ave->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) mm",lightout_ave[0],lightout_ave[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) PH./MeV",lightout_ave[0],lightout_ave[1]));
 
 	TCanvas *can_single_ch0_ave= new TCanvas("can_single_ch0_ave","can_single_ch0_ave",700,500);
 	can_single_ch0_ave->cd();
 	gPad->SetGrid(1,1);
-	loutGraphCh0_ave->SetTitle(Form("Series %i Ch0, Ave, lightoutput curve",seriesNo));
+	//loutGraphCh0_ave->SetTitle(Form("Series %i Ch0, Ave, lightoutput curve",seriesNo));
+	loutGraphCh0_ave->SetTitle("");
 	loutGraphCh0_ave->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_ave[0],lightoutCh0_ave[1]));
+	//text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_ave[0],lightoutCh0_ave[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_ave[0],lightoutCh0_ave[1]));
 
 	TCanvas *can_single_ch1_ave= new TCanvas("can_single_ch1_ave","can_single_ch1_ave",700,500);
 	can_single_ch1_ave->cd();
 	gPad->SetGrid(1,1);
-	loutGraphCh1_ave->SetTitle(Form("Series %i Ch1, Ave, lightoutput curve",seriesNo));
+	//loutGraphCh1_ave->SetTitle(Form("Series %i Ch1, Ave, lightoutput curve",seriesNo));
+	loutGraphCh1_ave->SetTitle("");
 	loutGraphCh1_ave->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave[0],lightoutCh1_ave[1]));
+	//text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave[0],lightoutCh1_ave[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh1_ave[0],lightoutCh1_ave[1]));
 	//----------seperate attenuation length
 	TCanvas *can_averaged_ch_sep = new TCanvas("can_averaged_ch_sep","can_averaged_ch_sep",700,500);
 	can_averaged_ch_sep->cd();
 	gPad->SetGrid(1,1);
-	loutGraph_sep->SetTitle(Form("Series %i, Sep, lightoutput curve",seriesNo));
+	//loutGraph_sep->SetTitle(Form("Series %i, Sep, lightoutput curve",seriesNo));
+	loutGraph_sep->SetTitle("");
 	loutGraph_sep->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) mm",lightout_sep[0],lightout_sep[1]));
+	//text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) mm",lightout_sep[0],lightout_sep[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightout_sep[0],lightout_sep[1]));
 
 	TCanvas *can_single_ch0_sep= new TCanvas("can_single_ch0_sep","can_single_ch0_sep",700,500);
 	can_single_ch0_sep->cd();
 	gPad->SetGrid(1,1);
-	loutGraphCh0_sep->SetTitle(Form("Series %i Ch0, Sep, lightoutput curve",seriesNo));
+	//loutGraphCh0_sep->SetTitle(Form("Series %i Ch0, Sep, lightoutput curve",seriesNo));
+	loutGraphCh0_sep->SetTitle("");
 	loutGraphCh0_sep->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_sep[0],lightoutCh0_sep[1]));
+	//text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_sep[0],lightoutCh0_sep[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_sep[0],lightoutCh0_sep[1]));
 
 	TCanvas *can_single_ch1_sep= new TCanvas("can_single_ch1_sep","can_single_ch1_sep",700,500);
 	can_single_ch1_sep->cd();
 	gPad->SetGrid(1,1);
-	loutGraphCh1_sep->SetTitle(Form("Series %i Ch1, Sep, lightoutput curve",seriesNo));
+	//loutGraphCh1_sep->SetTitle(Form("Series %i Ch1, Sep, lightoutput curve",seriesNo));
+	loutGraphCh1_sep->SetTitle("");
 	loutGraphCh1_sep->Draw();
 	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_sep[0],lightoutCh1_sep[1]));
+	//text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_sep[0],lightoutCh1_sep[1]));
+	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh1_sep[0],lightoutCh1_sep[1]));
 	//----- saving
 	TString fname = Form("../results/lighoutput_series_%i.root",seriesNo);
 	TFile *file = new TFile(fname,"RECREATE");
@@ -134,7 +145,7 @@ int main(int argc, char **argv){
 	}
 	catch(const char* message){
 	        cout << message << endl;
-	        cout << "##### Exception in attenuation.cc!" << endl;
+	        cout << "##### Exception in lightout.cc!" << endl;
 	        return 0;
 	}
 
@@ -200,7 +211,8 @@ int main(int argc, char **argv){
 
 	for(int i=0;i<4;i++){	
 		can_averaged_ch_ave->cd();
-		loutGraph_ave.at(i)->SetTitle("Averaged, lightoutput curve");
+		loutGraph_ave.at(i)->SetTitle("");
+		//loutGraph_ave.at(i)->SetTitle("Averaged, lightoutput curve");
 		loutGraph_ave.at(i)->SetMarkerStyle(20+i);
 		loutGraph_ave.at(i)->SetMarkerColor(i+1);
 		loutGraph_ave.at(i)->SetLineColor(i+1);
@@ -208,10 +220,12 @@ int main(int argc, char **argv){
 		else loutGraph_ave.at(i)->Draw("P SAME");
 		text.SetTextSize(0.04);
 		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i = (%.2f +/- %.2f) mm",i,lightout_ave.at(i)[0],lightout_ave.at(i)[1]));
+		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO%i = (%.2f +/- %.2f) Ph./MeV",i,lightout_ave.at(i)[0],lightout_ave.at(i)[1]));
+		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightout_ave.at(i)[0],lightout_ave.at(i)[1]));
 
 		can_single_ch0_ave->cd();
-		loutGraphCh0_ave.at(i)->SetTitle("Ch0, Averaged, lightoutput curve");
+		loutGraphCh0_ave.at(i)->SetTitle("");
+		//loutGraphCh0_ave.at(i)->SetTitle("Ch0, Averaged, lightoutput curve");
 		loutGraphCh0_ave.at(i)->SetMarkerStyle(20+i);
 		loutGraphCh0_ave.at(i)->SetMarkerColor(i+1);
 		loutGraphCh0_ave.at(i)->SetLineColor(i+1);
@@ -219,10 +233,12 @@ int main(int argc, char **argv){
 		else loutGraphCh0_ave.at(i)->Draw("P SAME");
 		text.SetTextSize(0.04);
 		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i_Ch0 = (%.2f +/- %.2f) mm",i,lightoutCh0_ave.at(i)[0],lightoutCh0_ave.at(i)[1]));
+		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_ave.at(i)[0],lightoutCh0_ave.at(i)[1]));
+		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i_Ch0 = (%.2f +/- %.2f) Ph./MeV",i,lightoutCh0_ave.at(i)[0],lightoutCh0_ave.at(i)[1]));
 
 		can_single_ch1_ave->cd();
-		loutGraphCh1_ave.at(i)->SetTitle("Ch1, Averaged, lightoutput curve");
+		//loutGraphCh1_ave.at(i)->SetTitle("Ch1, Averaged, lightoutput curve");
+		loutGraphCh1_ave.at(i)->SetTitle("");
 		loutGraphCh1_ave.at(i)->SetMarkerStyle(20+i);
 		loutGraphCh1_ave.at(i)->SetMarkerColor(i+1);
 		loutGraphCh1_ave.at(i)->SetLineColor(i+1);
@@ -230,7 +246,8 @@ int main(int argc, char **argv){
 		else loutGraphCh1_ave.at(i)->Draw("P SAME");
 		text.SetTextSize(0.04);
 		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave.at(i)[0],lightoutCh1_ave.at(i)[1]));
+		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave.at(i)[0],lightoutCh1_ave.at(i)[1]));
+		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) ",lightoutCh1_ave.at(i)[0],lightoutCh1_ave.at(i)[1]));
 	}
 	//----------seperate attenuation length
 	TCanvas *can_averaged_ch_sep = new TCanvas("can_averaged_ch_sep","can_averaged_ch_sep",700,500);
@@ -247,7 +264,8 @@ int main(int argc, char **argv){
 
 	for(int i=0;i<4;i++){	
 		can_averaged_ch_sep->cd();
-		loutGraph_sep.at(i)->SetTitle("Seperate, lightoutput curve");
+		//loutGraph_sep.at(i)->SetTitle("Seperate, lightoutput curve");
+		loutGraph_sep.at(i)->SetTitle("");
 		loutGraph_sep.at(i)->SetMarkerStyle(20+i);
 		loutGraph_sep.at(i)->SetMarkerColor(i+1);
 		loutGraph_sep.at(i)->SetLineColor(i+1);

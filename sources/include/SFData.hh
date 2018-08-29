@@ -19,6 +19,7 @@
 #include "TROOT.h"
 #include "TRandom.h"
 #include "TProfile.h"
+#include "TVectorT.h"
 #include "DDSignal.hh"
 #include <iostream>
 #include <fstream>
@@ -42,6 +43,7 @@ private:
   int            fNpoints;		///< Number of measurements in the series
   TString        fFiber;		///< Scintillating fiber type e.g. LuAG (1)
   TString        fSource;		///< Type of the radioactive source
+  TString        fType;			///< Type of the measurement ( Lead o electrical collimator == Cracow or Aachen data) 
   TString        fDesc;			///< Description of the measurement series
   TString	 fThreshold;		///< Flag to identify which tree should be opened.
 					///< Default value - "ft"
@@ -70,16 +72,16 @@ public:
   ~SFData();
   
   bool           OpenDataBase(TString name);
-  bool           SetDetails(int seriesNo);
-  bool           SetThreshold(TString threshold);
+  bool           SetDetails(int seriesNo);///// abfangen wege nur ft
+  bool           SetThreshold(TString threshold);///// abfangen wege nur ft
   TH1D*          GetSpectrum(int ch, TString type, TString cut, double position);
   TH1D*          GetCustomHistogram(TString selection, TString cut, double position);
   TH2D*          GetCorrHistogram(TString selection, TString cut, double position);
   vector <TH1D*> GetSpectra(int ch, TString type, TString cut);
   vector <TH1D*> GetCustomHistograms(TString type, TString cut);
   vector <TH2D*> GetCorrHistograms(TString type, TString cut);
-  TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
-  TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  
+  TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);///// abfangen different saveformat 
+  TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  ///// saveformat
   void           Reset(void);
   void           Print(void);
   
@@ -89,6 +91,8 @@ public:
   TString  GetFiber(void){ return fFiber; };
   ///Returns description of the series
   TString  GetDescription(void){ return fDesc; };
+  ///Returns measurement type of the series
+  TString  GetMeasureType(void){ return fType; };
   ///Returns source type
   TString  GetSource(void){ return fSource; };
   ///Returns a vector containing names of all measurements in this series

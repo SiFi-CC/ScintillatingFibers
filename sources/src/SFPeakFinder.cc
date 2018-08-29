@@ -17,6 +17,7 @@ ClassImp(SFPeakFinder);
 SFPeakFinder::SFPeakFinder(){
   cout << "#### Warning in SFPeakFinder constructor!" << endl;
   cout << "You are using default constructor!" << endl;
+  fVerbose=false;
   Clear();
 }
 //------------------------------------------------------------------
@@ -25,11 +26,11 @@ SFPeakFinder::SFPeakFinder(){
 ///\param peakID - flag to identify the peak for analysis. Possible options are: 511 or 1270.
 ///\param verbose - print-outs level
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose){
+  fVerbose = verbose;
   int stat = SetSpectrum(spectrum,peakID);
   if(stat==false){
     throw "##### Exception in SFPeakFinder constructor!";
   }
-  fVerbose = verbose;
 }
 //------------------------------------------------------------------
 ///Standard constructor. Vebose level set by default to quiet. In order to change verbose
@@ -37,6 +38,7 @@ SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose){
 ///\param spectrum - analyzed spectrum
 ///\param peakID - flag to identify the peak for analysis. Possible options are: 511 or 1270.
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID){
+  fVerbose=false;
   int stat = SetSpectrum(spectrum,peakID);
   if(stat==false){
     throw "##### Exception in SFPeakFinder constructor!";
@@ -127,74 +129,159 @@ TString SFPeakFinder::GetFiberMaterial(void){
   return material;
 }
 //------------------------------------------------------------------
+///Extracts series number from the name of the analyzed spectrum.
+///Once series number is known, checks what was the measurement type for 
+///this measurement.
+TString SFPeakFinder::GetMeasureType(void){
+ 
+  TString type = "";
+  
+  string sname = fSpectrum->GetName();
+  int nletters = sname.length();
+  char letters[nletters];
+  strcpy(letters,sname.c_str());
+  
+  int iposition = -1;
+  for(int i=0; i<nletters; i++){
+    if(letters[i]=='_'){
+      iposition = i;
+      break;
+    }
+  }
+  
+  if(iposition==-1){
+   cout << "##### Error in SFPeakFinder::GetFiberMaterial()!" << endl;
+   cout << "Cannot interpret spectrum name!" << endl;
+   return type;
+  }
+  
+  TString seriesName = string(&letters[1], &letters[iposition]);
+  int seriesNo = atoi(seriesName);
+  
+  SFData *data;
+  
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    cout << "##### Exception in SFPeakFinder::GetFiberMaterial()!" << endl;
+    return type;
+  }
+  
+  TString measuretype= data->GetMeasureType();
+  
+  if(measuretype.Contains("Lead")){
+    type = "Lead";
+  }
+  else if(measuretype.Contains("Electric")){
+    type = "Electric";
+  }
+  else{
+    cout << "##### Error in SFPeakFinder::GetMeasureType()!" << endl;
+    cout << "Unknown measuremenet type!" << endl;
+  }
+  
+  delete data;
+  
+  return type;
+}
+//------------------------------------------------------------------
 ///Finds ranges of the analyzed peak. Ranges are returned by reference.
 bool SFPeakFinder::FindPeakRange(double &min, double &max){
- 
   min = -1;
   max = -1;
   double search_min,search_max;
+  TString type = GetMeasureType();
   TString material = GetFiberMaterial();
   
-  if(material=="LuAG"){
-   if(fPeakID=="511"){
-     search_min = 120;
-     search_max = 450;
-   }
-   else if(fPeakID=="1270"){
-     search_min = 400;
-     search_max = 1000;
-   }
+  if(type =="Lead"){
+	if(material=="LuAG"){
+	        if(fPeakID=="511"){
+	      	  search_min = 120;
+	      	  search_max = 450;
+	        }
+	        else if(fPeakID=="1270"){
+	      	  search_min = 400;
+	      	  search_max = 1000;
+	        }
+	}
+	else if(material=="LYSO"){
+	        if(fPeakID=="511"){
+	      	  search_min = 90;
+	      	  search_max = 300;
+	        }
+	        else if(fPeakID=="1270"){
+	      	  search_min = 300;	//if ever needed needs to be verified
+	      	  search_max = 500;	//
+	        }
+	}
+	else{
+	        search_min = 0;
+	        search_max = fSpectrum->GetXaxis()->GetXmax();
+	}
+	int bin_min = fSpectrum->FindBin(search_min);
+	int bin_max = fSpectrum->FindBin(search_max);
+	int bin_delta = 0;
+	int bin_peak = 0;
+	int step = 10;
+
+	while(bin_delta<step){
+	        fSpectrum->GetXaxis()->SetRange(bin_min,bin_max);
+	        bin_peak = fSpectrum->GetMaximumBin();
+	        bin_delta = fabs(bin_peak-bin_min);
+	        //cout << "bin_min = " << bin_min << "\t bin_delta = " << bin_delta <<endl;
+	        bin_min+=step;
+	}
+
+	double peak = fSpectrum->GetBinCenter(bin_peak);
+
+	//setting fitting option based on verbose level
+	TString opt;
+	if(fVerbose) opt = "0R";
+	else opt = "Q0R";
+
+	TF1 *fun = new TF1("fun","gaus",peak-30,peak+30);
+	fSpectrum->Fit(fun,opt);
+
+	min = peak-fun->GetParameter(2);
+	max = peak+fun->GetParameter(2);
+	//cout << "min peak: " << min << " max peak: " << peak << endl;
+
+	if(max<min || fabs(min+1)<1E-8 || fabs(max+1)<1E-8){
+	        cout << "##### Error in SFPeakFinder::FindFitRange(). Incorrect range." << endl;
+	        cout << "min = " << min << "\t max = " << max << endl;
+	        return false;
+	}
+
+	fSpectrum->GetXaxis()->UnZoom();
   }
-  else if(material=="LYSO"){
-   if(fPeakID=="511"){
-     search_min = 90;
-     search_max = 300;
-   }
-   else if(fPeakID=="1270"){
-     search_min = 300;	//if ever needed needs to be verified
-     search_max = 500;	//
-   }
+  else if(type=="Electric"){
+	if(material =="LuAG"){
+		  if(fPeakID=="511"){
+			  min = 0;
+			  max = 150;
+		  }
+		  else if(fPeakID=="1270"){
+			  min = 400;
+			  max = 1000;
+		  }
+	}
+	  else if(material=="LYSO"){
+		  if(fPeakID=="511"){
+			  min = 90;
+			  max = 300;
+		  }
+		  else if(fPeakID=="1270"){
+			  min = 300;	//if ever needed needs to be verified
+			  max = 500;	//
+		  }
+	  }
+	  else{
+		  search_min = 0;
+		  search_max = fSpectrum->GetXaxis()->GetXmax();
+	  }
   }
-  else{
-    search_min = 0;
-    search_max = fSpectrum->GetXaxis()->GetXmax();
-  }
-  
-  int bin_min = fSpectrum->FindBin(search_min);
-  int bin_max = fSpectrum->FindBin(search_max);
-  int bin_delta = 0;
-  int bin_peak = 0;
-  int step = 10;
-  
-  while(bin_delta<step){
-   fSpectrum->GetXaxis()->SetRange(bin_min,bin_max);
-   bin_peak = fSpectrum->GetMaximumBin();
-   bin_delta = fabs(bin_peak-bin_min);
-   //cout << "bin_min = " << bin_min << "\t bin_delta = " << bin_delta <<endl;
-   bin_min+=step;
-  }
-  
-  double peak = fSpectrum->GetBinCenter(bin_peak);
-  
-  //setting fitting option based on verbose level
-  TString opt;
-  if(fVerbose) opt = "0R";
-  else opt = "Q0R";
-  
-  TF1 *fun = new TF1("fun","gaus",peak-30,peak+30);
-  fSpectrum->Fit(fun,opt);
-  
-  min = peak-fun->GetParameter(2);
-  max = peak+fun->GetParameter(2);
-  //cout << "min peak: " << min << " max peak: " << peak << endl;
-  
-  if(max<min || fabs(min+1)<1E-8 || fabs(max+1)<1E-8){
-   cout << "##### Error in SFPeakFinder::FindFitRange(). Incorrect range." << endl;
-   cout << "min = " << min << "\t max = " << max << endl;
-   return false;
-  }
-  
-  fSpectrum->GetXaxis()->UnZoom();
   
   return true;
 }
@@ -208,6 +295,7 @@ bool SFPeakFinder::Fit(void){
   TString tmp = fSpectrum->GetName();
   TString pname = tmp.Append("_peak");
   fPeak = (TH1D*) fSpectrum->Clone(pname);
+  TString type = GetMeasureType();
   fPeak->Reset();
   
   //setting fitting option based on verbose level
@@ -215,40 +303,63 @@ bool SFPeakFinder::Fit(void){
   if(fVerbose) opt = "R+";
   else opt = "QR+";
   
-  //fitting background function
   double peak_min, peak_max;
   FindPeakRange(peak_min,peak_max);
   //cout << "peak min = " << peak_min << "\t peak max = " << peak_max << endl;
-  double fit_min = peak_min-10;
-  double fit_max = peak_max+70;
-  BGFit *bg = new BGFit(peak_min,peak_max);
-  TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::EvaluateExpo,fit_min,fit_max,2,"BGFit","Evaluate");
-  fSpectrum->Fit("bg_fun",opt);
-  
-  //background subtraction
-  int nbins = fSpectrum->GetXaxis()->GetNbins();
-  double x, y;
-  
-  for(int i=1; i<nbins+1; i++){
-   x = fSpectrum->GetBinCenter(i);
-   if(x>fit_min && x<fit_max){
-    y = fSpectrum->GetBinContent(i) - bg_fun->Eval(x);
-    if(y<0) y=0;
-    fPeak->SetBinContent(i,y);
-   }
-   else
-     fPeak->SetBinContent(i,0);
+  //fitting background function
+  if(type=="Lead"){
+  	double fit_min = peak_min-10;
+  	double fit_max = peak_max+70;
+	BGFit *bg = new BGFit(peak_min,peak_max);
+	TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::EvaluateExpo,fit_min,fit_max,2,"BGFit","Evaluate");
+	fSpectrum->Fit("bg_fun",opt);
+
+	//background subtraction
+	int nbins = fSpectrum->GetXaxis()->GetNbins();
+	double x, y;
+
+	for(int i=1; i<nbins+1; i++){
+	        x = fSpectrum->GetBinCenter(i);
+	        if(x>fit_min && x<fit_max){
+	      	  y = fSpectrum->GetBinContent(i) - bg_fun->Eval(x);
+	      	  if(y<0) y=0;
+	      	  fPeak->SetBinContent(i,y);
+	        }
+	        else
+	      	  fPeak->SetBinContent(i,0);
+	}
+	//fitting Gauss to the peak
+	TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min-20,peak_max+20);
+	gaus_fun->SetParameters(100,(peak_max-peak_min)/2.,10);
+	fPeak->Fit(gaus_fun,opt);
+
+	fPosition = gaus_fun->GetParameter(1);
+	fPosErr = gaus_fun->GetParError(1);
+	fSigma = gaus_fun->GetParameter(2);
+	fSigErr = gaus_fun->GetParError(2);
   }
+  else if(type=="Electric"){
+	int nbins = fSpectrum->GetXaxis()->GetNbins();
+
+	for(int i=1; i<nbins+1; i++){
+		fPeak->SetBinContent(i,fSpectrum->GetBinContent(i));
+	}
+  	//fitting two Gaussian to the peaks
+  	TF1 *gaus_fun = new TF1("fun_gaus","gaus(0)+gaus(3)",peak_min,peak_max);
+  	gaus_fun->SetParameters(fPeak->GetMaximum(),peak_min+((peak_max-peak_min)/4.),10,fPeak->GetMaximum(),peak_min+(peak_max-peak_min)*3/4.,10);
+  	gaus_fun->SetParLimits(0,0,fPeak->GetMaximum()*2);
+  	gaus_fun->SetParLimits(1,0,100);
+  	gaus_fun->SetParLimits(2,0,30);
+  	gaus_fun->SetParLimits(3,0,fPeak->GetMaximum()*2);
+  	gaus_fun->SetParLimits(4,0,200);
+  	gaus_fun->SetParLimits(5,0,30);
+	fPeak->Fit(gaus_fun,opt);
   
-  //fitting Gauss to the peak
-  TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min,peak_max);
-  gaus_fun->SetParameters(100,(peak_max-peak_min)/2.,10);
-  fPeak->Fit(gaus_fun,opt);
-  
-  fPosition = gaus_fun->GetParameter(1);
-  fPosErr = gaus_fun->GetParError(1);
-  fSigma = gaus_fun->GetParameter(2);
-  fSigErr = gaus_fun->GetParError(2);
+ 	fPosition = gaus_fun->GetParameter(4);
+  	fPosErr = gaus_fun->GetParError(4);
+  	fSigma = gaus_fun->GetParameter(5);
+  	fSigErr = gaus_fun->GetParError(5);
+  }
   
   if(fPosition<0 || fSigma<0){
    cout << "##### Error in SFPeakFinder(). Position and Sigma cannot be negative." << endl;
@@ -275,7 +386,7 @@ vector<double> SFPeakFinder::GetParameter(){
 void SFPeakFinder::Clear(void){
  fSpectrum = NULL;
  fPeak     = NULL;
- fVerbose  = false;
+ //fVerbose  = false;
  fPeakID   = "dummy";
  fPosition = -100;
  fPosErr   = -100;

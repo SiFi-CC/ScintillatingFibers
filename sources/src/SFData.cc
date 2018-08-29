@@ -32,7 +32,7 @@ SFData::SFData(){
 ///By deafult data analyzed with fixed threshold in DD6 is accessed.
 ///If you need constant fraction data use SetThreshold() function.
 SFData::SFData(int seriesNo){
- bool db_stat  = OpenDataBase("ScintFib");
+ bool db_stat  = OpenDataBase("ScintFibTest");
  bool set_stat = SetDetails(seriesNo);
  if(!db_stat || !set_stat){
    throw "##### Exception in SFData constructor!";
@@ -44,7 +44,7 @@ SFData::SFData(int seriesNo){
 ///\param threshold is threshold type in DD6 preliminary data analysis.
 ///Possible options are: "ft" - fixed threshold and "cf" - constant fraction.
 SFData::SFData(int seriesNo, TString threshold){
- bool db_stat  = OpenDataBase("ScintFib");
+ bool db_stat  = OpenDataBase("ScintFibTest");
  bool set_stat = SetDetails(seriesNo);
  bool thr_stat = SetThreshold(threshold);
  if(!db_stat || !set_stat || !thr_stat){
@@ -120,10 +120,11 @@ bool SFData::SetDetails(int seriesNo){
   
   //----- Setting series attributes
   ///- fiber type 
+  ///- measurement type 
   ///- radioactive source type
   ///- number of measurements in the series
   ///- description of the series
-  query = Form("SELECT FIBER, SOURCE, NO_MEASUREMENTS, DESCRIPTION FROM SERIES WHERE SERIES_NO = %i",fSeriesNo);
+  query = Form("SELECT FIBER, SOURCE, NO_MEASUREMENTS, DESCRIPTION, MEASURE_TYPE FROM SERIES WHERE SERIES_NO = %i",fSeriesNo);
   status = sqlite3_prepare_v2(fDB,query,-1,&statement,NULL);
   
   if(status!=SQLITE_OK){
@@ -135,10 +136,12 @@ bool SFData::SetDetails(int seriesNo){
     const unsigned char *fiber = sqlite3_column_text(statement,0);
     const unsigned char *source = sqlite3_column_text(statement,1);
     const unsigned char *description = sqlite3_column_text(statement,3);
+    const unsigned char *measure_type = sqlite3_column_text(statement,4);
     fNpoints = sqlite3_column_int(statement,2);
     fFiber = string(reinterpret_cast<const char*>(fiber));
     fSource = string(reinterpret_cast<const char*>(source));
     fDesc = string(reinterpret_cast<const char*>(description));
+    fType = string(reinterpret_cast<const char*>(measure_type));
   }
   
   if(status!=SQLITE_DONE){
@@ -183,13 +186,23 @@ bool SFData::SetDetails(int seriesNo){
 /// Possible options are: ft - fixed threshold (default) and cf - constant
 /// fraction. 
 bool SFData::SetThreshold(TString threshold){
-  if(!(threshold=="ft" || threshold=="cf")){
-    cout << "##### Error in SFData::SetThreshold()! Incorrect threshold type!" << endl;
-    cout << "Possible options are: ft for fixed threshold and cf for constant fraction" << endl;
-    return false;
+  if(fType=="Lead"){
+  	if(!(threshold=="ft" || threshold=="cf")){
+    	cout << "##### Error in SFData::SetThreshold()! Incorrect threshold type!" << endl;
+    	cout << "Possible options are: ft for fixed threshold and cf for constant fraction" << endl;
+    	return false;
+  	}
+  	fThreshold = threshold;
+  	return true;
   }
-  fThreshold = threshold;
-  return true;
+  else{
+    	if(!(threshold=="ft")){
+		cout << "##### Error in SFData::SetThreshold()! Set threshold not possible!" << endl;
+    		cout << "For the measurements with the electric collimator is it not possible to set the threshold type" << endl;
+		return false;
+	}
+	else return true;	
+  }
 }
 //------------------------------------------------------------------
 /// Returns proper selection for Draw() method of TTree. It sets binning, 
@@ -653,9 +666,24 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i",ch),&sig);
   
-  TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
-  ifstream input(iname,ios::binary);
+  TString iname; 
+  ifstream input;
+  TFile* iFile;
+  TTree* iTree;
+  TVectorT<float>* iVolt= new TVectorT<float>(ipoints);
   
+  if(fType=="Lead"){
+	iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
+	input.open(iname,ios::binary);
+  }
+  else{
+	iname = string(gPath)+fNames[index]+"/waves.root";
+	iFile = new TFile(iname,"READ");
+	iTree = (TTree*)iFile->Get("wavetree");
+	iname = Form("voltages_ch_%i",ch);
+	iTree->SetBranchAddress(iname,&iVolt);
+  }
+
   TString hname = Form("S%i_ch%i_pos_%.1f_sig_no%i_",fSeriesNo,ch,position,number)+fThreshold;
   TString htitle = hname+" "+cut;
   
@@ -666,33 +694,49 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   int infile = 0;
   int counter = 0;
   bool condition = true;
-  
-  for(int i=0; i<nentries; i++){
-    tree->GetEntry(i);
-    condition = InterpretCut(sig,cut);
-    if(condition){
-      counter++;
-      if(counter!=number) continue;
-      infile = sizeof(x)*ipoints*i;
-      if(bl){
-        input.seekg(infile);
-        baseline = 0;
-        for(int ii=0; ii<gBaselineMax; ii++){
-          input.read((char*)&x,sizeof(x));
-          baseline += x/gmV;
-        }
-        baseline = baseline/gBaselineMax;
-      }
-      input.seekg(infile);
-      for(int ii=1; ii<ipoints+1; ii++){
-        input.read((char*)&x,sizeof(x));
-        if(bl) fSignal->SetBinContent(ii,(x/gmV)-baseline);
-        else   fSignal->SetBinContent(ii,(x/gmV));
-      }
-    }
+  if(fType=="Lead"){
+	  for(int i=0; i<nentries; i++){
+		  tree->GetEntry(i);
+		  condition = InterpretCut(sig,cut);
+		  if(condition){
+			  counter++;
+			  if(counter!=number) continue;
+			  infile = sizeof(x)*ipoints*i;
+			  if(bl){
+				  input.seekg(infile);
+				  baseline = 0;
+				  for(int ii=0; ii<gBaselineMax; ii++){
+					  input.read((char*)&x,sizeof(x));
+					  baseline += x/gmV;
+				  }
+				  baseline = baseline/gBaselineMax;
+			  }
+			  input.seekg(infile);
+			  for(int ii=1; ii<ipoints+1; ii++){
+				  input.read((char*)&x,sizeof(x));
+				  if(bl) fSignal->SetBinContent(ii,(x/gmV)-baseline);
+				  else   fSignal->SetBinContent(ii,(x/gmV));
+			  }
+		  }
+	  }
+  	  input.close();
   }
-  
-  input.close();
+  else{
+	  for(int i=0; i<nentries; i++){
+		  tree->GetEntry(i);
+		  iTree->GetEntry(i);
+		  condition = InterpretCut(sig,cut);
+		  if(condition){
+			  counter++;
+			  if(counter!=number) continue;
+			  for(int ii=0; ii<ipoints; ii++){
+				  fSignal->SetBinContent(ii+1,(*iVolt)[ii]);
+			  }
+		  }
+	  }
+
+
+  }
   
   return fSignal;
 }
@@ -704,6 +748,7 @@ void SFData::Reset(void){
  fFiber         = "dummy";
  fSource        = "dummy";
  fDesc          = "dummy"; 
+ fType		= "dummy"; 
  fThreshold     = "dummy"; 
  fSpectrum      = NULL;
  fHist          = NULL;
@@ -724,6 +769,7 @@ void SFData::Print(void){
  cout << "This is Print() for SFData class object" << endl;
  cout << "Number of the experimental series: " << fSeriesNo << endl;
  cout << fDesc << endl;
+ cout << "Type of measurements: " << fType << endl;
  cout << "Type of threshold used in DD6 data analysis: " << fThreshold << endl;
  cout << "Number of measurements in this series: " << fNpoints << endl;
  cout << "Fiber: " << fFiber << endl;
