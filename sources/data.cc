@@ -61,7 +61,6 @@ int main(int argc, char **argv){
   vector <TH2D*> hCorrAmp = data->GetCorrHistograms("ch_0.fAmp:ch_1.fAmp","");
   vector <TH2D*> hCorrPE  = data->GetCorrHistograms("ch_0.fPE:ch_1.fPE","ch_0.fPE>0 && ch_1.fPE>0");
   vector <TH2D*> hCorrT0  = data->GetCorrHistograms("ch_0.fT0:ch_1.fT0","ch_0.fTOT>-100 && ch_1.fTOT>-100");
-  
   //----- accessing signals
   int nsig = 6;
   int number = 0;
@@ -70,9 +69,9 @@ int main(int argc, char **argv){
   
   for(int i=0; i<nsig/2; i++){
     number = 10*(i+1);
-    hSigCh0[i]          = data->GetSignal(0,20,"",number,true);
+    hSigCh0[i]          = data->GetSignal(0,30,"",number,true);
     hSigCh0[i+(nsig/2)] = data->GetSignal(0,70,"",number,true);
-    hSigCh1[i]          = data->GetSignal(1,20,"",number,true);
+    hSigCh1[i]          = data->GetSignal(1,30,"",number,true);
     hSigCh1[i+(nsig/2)] = data->GetSignal(1,70,"",number,true);
   }
   

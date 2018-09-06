@@ -46,6 +46,9 @@ target_link_libraries(tconst ScintillatingFibers)
 add_executable(lightout lightout.cc)
 target_link_libraries(lightout ScintillatingFibers)
 
+add_executable(energyres energyres.cc)
+target_link_libraries(energyres ScintillatingFibers)
+
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)
 

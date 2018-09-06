@@ -260,7 +260,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	if(material =="LuAG"){
 		  if(fPeakID=="511"){
 			  min = 0;
-			  max = 150;
+			  max = 140;
 		  }
 		  else if(fPeakID=="1270"){
 			  min = 400;
@@ -269,7 +269,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	}
 	  else if(material=="LYSO"){
 		  if(fPeakID=="511"){
-			  min = 90;
+			  min = 0;
 			  max = 300;
 		  }
 		  else if(fPeakID=="1270"){
@@ -346,13 +346,14 @@ bool SFPeakFinder::Fit(void){
 	}
   	//fitting two Gaussian to the peaks
   	TF1 *gaus_fun = new TF1("fun_gaus","gaus(0)+gaus(3)",peak_min,peak_max);
-  	gaus_fun->SetParameters(fPeak->GetMaximum(),peak_min+((peak_max-peak_min)/4.),10,fPeak->GetMaximum(),peak_min+(peak_max-peak_min)*3/4.,10);
-  	gaus_fun->SetParLimits(0,0,fPeak->GetMaximum()*2);
-  	gaus_fun->SetParLimits(1,0,100);
-  	gaus_fun->SetParLimits(2,0,30);
-  	gaus_fun->SetParLimits(3,0,fPeak->GetMaximum()*2);
-  	gaus_fun->SetParLimits(4,0,200);
-  	gaus_fun->SetParLimits(5,0,30);
+  	//gaus_fun->SetParameters(fPeak->GetMaximum(),peak_min+((peak_max-peak_min)/4.),10,fPeak->GetMaximum(),peak_min+(peak_max-peak_min)*3/4.,10);
+  	gaus_fun->SetParameters(fPeak->GetMaximum(),fPeak->GetMean()-(fPeak->GetMean()/2),20,fPeak->GetMaximum(),fPeak->GetMean()+(fPeak->GetMean()/2),20);
+  	gaus_fun->SetParLimits(0,0,fPeak->GetMaximum()*1.5);
+  	gaus_fun->SetParLimits(1,0,fPeak->GetMean()-10);
+  	gaus_fun->SetParLimits(2,10,40);
+  	gaus_fun->SetParLimits(3,0,fPeak->GetMaximum()*1.5);
+  	gaus_fun->SetParLimits(4,fPeak->GetMean()+10,120);
+  	gaus_fun->SetParLimits(5,10,40);
 	fPeak->Fit(gaus_fun,opt);
   
  	fPosition = gaus_fun->GetParameter(4);

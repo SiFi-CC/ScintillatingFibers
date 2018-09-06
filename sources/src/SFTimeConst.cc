@@ -60,6 +60,7 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   
   int     npoints = fData->GetNpoints();
   TString fiber   = fData->GetFiber();
+  TString type = fData->GetMeasureType();
   vector <double> positions = fData->GetPositions();
   TString selection = Form("ch_0.fPE>%.1f && ch_0.fPE<%.1f",fPE-0.5,fPE+0.5);
   TString results_name;
@@ -67,7 +68,7 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   int nsig = 0;
   if(fiber.Contains("LuAG")) 
     nsig = 50;
-  else if(fiber.Contains("LYSO")) 
+  else if(fiber.Contains("LYSO") | type.Contains("Electric")) 
     nsig = 1;
   else{
     cout << "##### Error in SFTimeConst::SetDetails()! Unknown fiber material!" << endl;

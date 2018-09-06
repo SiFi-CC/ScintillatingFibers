@@ -14,5 +14,6 @@
 #pragma link C++ class SFTimeConst+;
 #pragma link C++ class SFFitResults+;
 #pragma link C++ class SFLightOutput+;
+#pragma link C++ class SFEnergyResolution+;
 
 #endif

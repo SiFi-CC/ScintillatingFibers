@@ -57,6 +57,7 @@ bool SFAttenuation::AttAveragedCh(void){
   cout << "\n----- Inside SFAttenuation::AttAveragedCh() for series " << fSeriesNo << endl;
   
   int npoints = fData->GetNpoints();
+  TString type = fData->GetMeasureType();
   vector <double> positions = fData->GetPositions();
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_1.fT0>0 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0";
@@ -76,17 +77,23 @@ bool SFAttenuation::AttAveragedCh(void){
   for(int i=0; i<npoints; i++){
     mean = fRatios[i]->GetMean();
     sigma = fRatios[i]->GetRMS();
-    if(i<npoints/2){
-      fit_min = mean-(1.5*sigma);
-      fit_max = mean+(0.5*sigma);
+    if(type.Contains("Lead")){
+   	 if(i<npoints/2){
+   	   fit_min = mean-(1.5*sigma);
+   	   fit_max = mean+(0.5*sigma);
+   	 }
+   	 else if(i==npoints/2 && npoints%2==1){
+   	   fit_min = mean-sigma;
+   	   fit_max = mean+sigma;
+   	 }
+   	 else{
+   	   fit_min = mean-(0.5*sigma);
+   	   fit_max = mean+(1.5*sigma);
+   	 }
     }
-    else if(i==npoints/2 && npoints%2==1){
-      fit_min = mean-sigma;
-      fit_max = mean+sigma;
-    }
-    else{
-      fit_min = mean-(0.5*sigma);
-      fit_max = mean+(1.5*sigma);
+    else if(type.Contains("Electric")){
+      fit_min = mean-2*sigma;
+      fit_max = mean+2*sigma;
     }
     fun.push_back(new TF1("fun","gaus",fit_min,fit_max));
     fRatios[i]->Fit(fun[i],"QR");
