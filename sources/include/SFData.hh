@@ -72,16 +72,16 @@ public:
   ~SFData();
   
   bool           OpenDataBase(TString name);
-  bool           SetDetails(int seriesNo);///// abfangen wege nur ft
-  bool           SetThreshold(TString threshold);///// abfangen wege nur ft
+  bool           SetDetails(int seriesNo);
+  bool           SetThreshold(TString threshold);
   TH1D*          GetSpectrum(int ch, TString type, TString cut, double position);
   TH1D*          GetCustomHistogram(TString selection, TString cut, double position);
   TH2D*          GetCorrHistogram(TString selection, TString cut, double position);
   vector <TH1D*> GetSpectra(int ch, TString type, TString cut);
   vector <TH1D*> GetCustomHistograms(TString type, TString cut);
   vector <TH2D*> GetCorrHistograms(TString type, TString cut);
-  TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);///// abfangen different saveformat 
-  TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  ///// saveformat
+  TProfile*      GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
+  TH1D*          GetSignal(int ch, double position, TString cut, int number, bool bl);  
   void           Reset(void);
   void           Print(void);
   

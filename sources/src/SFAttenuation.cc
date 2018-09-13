@@ -40,7 +40,7 @@ SFAttenuation::SFAttenuation(int seriesNo){
     cout << "##### Warning in SFAttenuation constructor!";
     cout << "Calculating attenuation length with non-regular series!" << endl;
   }
-  
+  fType = fData->GetMeasureType(); 
   Reset();
 }
 //------------------------------------------------------------------
@@ -98,7 +98,9 @@ bool SFAttenuation::AttAveragedCh(void){
     fun.push_back(new TF1("fun","gaus",fit_min,fit_max));
     fRatios[i]->Fit(fun[i],"QR");
     fAttnGraph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
-    fAttnGraph->SetPointError(i,0,fun[i]->GetParError(1));
+    if(fType.Contains("Lead"))	fAttnGraph->SetPointError(i,0,fun[i]->GetParError(1));
+    else if (fType.Contains("Electric") )fAttnGraph->SetPointError(i,1.5,fun[i]->GetParError(1));
+
   }
   
   TF1 *fpol1 = new TF1("fpol1","pol1",positions[0],positions[npoints-1]);

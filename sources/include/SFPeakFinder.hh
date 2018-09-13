@@ -36,6 +36,7 @@ private:
   double  fPosErr;	///< Error of the peak position
   double  fSigma;	///< Energy resolution, determined as sigma of the Gaussian fit
   double  fSigErr;	///< Error of the peak sigma
+  double  fChi2ndf;	///< Chi2 /ndf of the fit at the peak itself 
   bool    fVerbose;	///< Print-outs level
   
   bool    Fit(void);
@@ -64,6 +65,8 @@ public:
   double GetPeakSigma(void)    { return fSigma; };
   /// Returns error on peak's sigma
   double GetPeakSigError(void) { return fSigErr; };
+  /// Returns the chi2 od the peak fit 
+  double GetChi2ndf(void) { return fChi2ndf; };
   /// Returns background-subtracted histogram. 
   TH1D*  GetPeak(void)         { return fPeak; };
   

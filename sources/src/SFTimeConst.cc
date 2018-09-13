@@ -69,7 +69,7 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   if(fiber.Contains("LuAG")) 
     nsig = 50;
   else if(fiber.Contains("LYSO") | type.Contains("Electric")) 
-    nsig = 1;
+    nsig = 2;
   else{
     cout << "##### Error in SFTimeConst::SetDetails()! Unknown fiber material!" << endl;
     return false;
@@ -145,7 +145,6 @@ double funDecaySingle(double *x, double *par){
 }
 //------------------------------------------------------------------
 bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, double position){
-  
   TString opt;
   if(fVerb) opt = "R0";
   else opt = "QR0";

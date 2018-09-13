@@ -50,6 +50,8 @@ SFTimingRes::SFTimingRes(int seriesNo, TString threshold, TString method){
     cout << message << endl;
     throw "##### Exception in SFTimingRes constructor!";
   }
+  fType = fData->GetMeasureType();
+
   
   if(fMethod=="no cut")        AnalyzeNoECut();
   else if(fMethod=="with cut") AnalyzeWithECut();
@@ -157,11 +159,13 @@ bool SFTimingRes::AnalyzeNoECut(void){
     sigma = fRatios[i]->GetFunction("gaus")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
-    lorentz->SetParameter(0,fT0Diff[i]->Integral());
+    if(fType.Contains("Electric")) fT0Diff.back()->Rebin(2);
+    lorentz->SetParameter(0,fT0Diff[i]->Integral()/2);
+    lorentz->SetParLimits(0,fT0Diff[i]->Integral()/3,fT0Diff[i]->Integral()*2);
     lorentz->SetParameter(1,fT0Diff[i]->GetRMS());
     lorentz->SetParameter(2,fT0Diff[i]->GetMean());
-    min_fit = fT0Diff[i]->GetMean()-3*fT0Diff[i]->GetRMS();
-    max_fit = fT0Diff[i]->GetMean()+3*fT0Diff[i]->GetRMS();
+    min_fit = fT0Diff[i]->GetMean()-2*fT0Diff[i]->GetRMS();
+    max_fit = fT0Diff[i]->GetMean()+2*fT0Diff[i]->GetRMS();
     fT0Diff[i]->Fit(lorentz,"Q","",min_fit,max_fit);
     fTimeRes.push_back(fabs(lorentz->GetParameter(1)));
     fTimeResErr.push_back(lorentz->GetParError(1));

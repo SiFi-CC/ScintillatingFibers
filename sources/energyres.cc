@@ -88,7 +88,7 @@ int main(int argc, char **argv){
 		Spec_Ch1[i]->Draw();
 	}
 	//----- saving
-	TString fname = Form("../results/enerygres_series_%i.root",seriesNo);
+	TString fname = Form("../results/energyres_series_%i.root",seriesNo);
 	TFile *file = new TFile(fname,"RECREATE");
 	can_ch_0->Write();
 	can_ch_1->Write();

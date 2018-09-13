@@ -31,7 +31,9 @@ int main(int argc, char **argv){
    cout << "##### Exception in attenuation.cc!" << endl;
    return 0;
   }
-  
+ 
+  data->Print();
+ 
   TString desc = data->GetDescription();
   if(!desc.Contains("Regular series")){
     cout << "##### Error in attenuation.cc! This is not regular series!" << endl;
@@ -39,7 +41,9 @@ int main(int argc, char **argv){
     cout << "Description: " << desc << endl;
     return 0;
   }
-  
+ 
+  TString mtype= data->GetMeasureType();
+ 
   int npoints = data->GetNpoints();
   vector <double> positions = data->GetPositions();
   data->Print();
@@ -117,32 +121,56 @@ int main(int argc, char **argv){
   text.DrawLatex(0.3,0.8,Form("L_{att} = (%.2f +/- %.2f) mm",attlenCh1[0],attlenCh1[1]));
   
   TCanvas *can_spectra_ch0 = new TCanvas("can_spectra_ch0","can_spectra_ch0",1200,1200);
-  can_spectra_ch0->Divide(3,3);
+  if(mtype.Contains("Lead")) can_spectra_ch0->Divide(3,3);
+  else if(mtype.Contains("Electric")) can_spectra_ch0->Divide(2,3);
   
   TCanvas *can_spectra_ch1 = new TCanvas("can_spectra_ch1","can_spectra_ch1",1200,1200);
-  can_spectra_ch1->Divide(3,3);
+  if(mtype.Contains("Lead")) can_spectra_ch1->Divide(3,3);
+  else if(mtype.Contains("Electric")) can_spectra_ch1->Divide(2,3);
   
   for(int i=0; i<npoints; i++){
    can_spectra_ch0->cd(i+1);
    gPad->SetGrid(1,1);
-   spectraCh0[i]->SetStats(false);
-   spectraCh0[i]->GetXaxis()->SetRangeUser(0,800);
-   spectraCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
-   spectraCh0[i]->GetXaxis()->SetTitle("P.E.");
-   spectraCh0[i]->GetYaxis()->SetTitle("counts");
-   spectraCh0[i]->GetYaxis()->SetMaxDigits(2);
-   spectraCh0[i]->Draw();
-   peaksCh0[i]->Draw("same");
+   if(mtype.Contains("Lead")){
+	spectraCh0[i]->SetStats(false);
+	spectraCh0[i]->GetXaxis()->SetRangeUser(0,800);
+	spectraCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
+	spectraCh0[i]->GetXaxis()->SetTitle("P.E.");
+	spectraCh0[i]->GetYaxis()->SetTitle("counts");
+	spectraCh0[i]->GetYaxis()->SetMaxDigits(2);
+	spectraCh0[i]->Draw();
+	peaksCh0[i]->Draw("same");
+   }
+   else if(mtype.Contains("Electric")){
+	peaksCh0[i]->SetStats(false);
+	peaksCh0[i]->GetXaxis()->SetRangeUser(0,800);
+	peaksCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
+	peaksCh0[i]->GetXaxis()->SetTitle("P.E.");
+	peaksCh0[i]->GetYaxis()->SetTitle("counts");
+	peaksCh0[i]->GetYaxis()->SetMaxDigits(2);
+   	peaksCh0[i]->Draw();
+   }
    can_spectra_ch1->cd(i+1);
    gPad->SetGrid(1,1);
-   spectraCh1[i]->SetStats(false);
-   spectraCh1[i]->GetXaxis()->SetRangeUser(0,800);
-   spectraCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
-   spectraCh1[i]->GetXaxis()->SetTitle("P.E.");
-   spectraCh1[i]->GetYaxis()->SetTitle("counts");
-   spectraCh1[i]->GetYaxis()->SetMaxDigits(2);
-   spectraCh1[i]->Draw();
-   peaksCh1[i]->Draw("same");
+   if(mtype.Contains("Lead")){
+	spectraCh1[i]->SetStats(false);
+	spectraCh1[i]->GetXaxis()->SetRangeUser(0,800);
+	spectraCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
+	spectraCh1[i]->GetXaxis()->SetTitle("P.E.");
+	spectraCh1[i]->GetYaxis()->SetTitle("counts");
+	spectraCh1[i]->GetYaxis()->SetMaxDigits(2);
+	spectraCh1[i]->Draw();
+	peaksCh1[i]->Draw("same");
+   }
+   else if(mtype.Contains("Electric")){
+	peaksCh1[i]->SetStats(false);
+	peaksCh1[i]->GetXaxis()->SetRangeUser(0,800);
+	peaksCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
+	peaksCh1[i]->GetXaxis()->SetTitle("P.E.");
+	peaksCh1[i]->GetYaxis()->SetTitle("counts");
+	peaksCh1[i]->GetYaxis()->SetMaxDigits(2);
+   	peaksCh1[i]->Draw();
+   }
   }
   
   //----- saving

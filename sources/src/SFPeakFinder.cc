@@ -257,32 +257,41 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	fSpectrum->GetXaxis()->UnZoom();
   }
   else if(type=="Electric"){
+	int bin_add=0;
 	if(material =="LuAG"){
 		  if(fPeakID=="511"){
-			  min = 0;
-			  max = 140;
+			  search_min = 10;
+			  search_max = 40;
+			  bin_add=70/fPeak->GetBinWidth(5);
 		  }
 		  else if(fPeakID=="1270"){
 			  min = 400;
 			  max = 1000;
 		  }
 	}
-	  else if(material=="LYSO"){
-		  if(fPeakID=="511"){
-			  min = 0;
-			  max = 300;
-		  }
-		  else if(fPeakID=="1270"){
-			  min = 300;	//if ever needed needs to be verified
-			  max = 500;	//
-		  }
-	  }
-	  else{
-		  search_min = 0;
-		  search_max = fSpectrum->GetXaxis()->GetXmax();
-	  }
+	else if(material=="LYSO"){
+		if(fPeakID=="511"){
+			search_min = 10;
+			search_max = 150;
+			bin_add=150/fPeak->GetBinWidth(5);
+		}
+		else if(fPeakID=="1270"){
+			min = 300;	//if ever needed needs to be verified
+			max = 500;	//
+		}
+	}
+
+	int bin_min = fPeak->FindBin(search_min);
+	int bin_max = fPeak->FindBin(search_max);
+	fPeak->GetXaxis()->SetRange(bin_min,bin_max);
+	min = fPeak->GetBinCenter(fPeak->GetMaximumBin());
+	bin_min+=bin_add; 
+	bin_max+=bin_add;
+	fPeak->GetXaxis()->SetRange(bin_min,bin_max);
+	max = fPeak->GetBinCenter(fPeak->GetMaximumBin());
+	fPeak->GetXaxis()->UnZoom();
+	
   }
-  
   return true;
 }
 //------------------------------------------------------------------
@@ -304,10 +313,10 @@ bool SFPeakFinder::Fit(void){
   else opt = "QR+";
   
   double peak_min, peak_max;
-  FindPeakRange(peak_min,peak_max);
   //cout << "peak min = " << peak_min << "\t peak max = " << peak_max << endl;
   //fitting background function
   if(type=="Lead"){
+  	FindPeakRange(peak_min,peak_max);
   	double fit_min = peak_min-10;
   	double fit_max = peak_max+70;
 	BGFit *bg = new BGFit(peak_min,peak_max);
@@ -344,22 +353,44 @@ bool SFPeakFinder::Fit(void){
 	for(int i=1; i<nbins+1; i++){
 		fPeak->SetBinContent(i,fSpectrum->GetBinContent(i));
 	}
-  	//fitting two Gaussian to the peaks
-  	TF1 *gaus_fun = new TF1("fun_gaus","gaus(0)+gaus(3)",peak_min,peak_max);
-  	//gaus_fun->SetParameters(fPeak->GetMaximum(),peak_min+((peak_max-peak_min)/4.),10,fPeak->GetMaximum(),peak_min+(peak_max-peak_min)*3/4.,10);
-  	gaus_fun->SetParameters(fPeak->GetMaximum(),fPeak->GetMean()-(fPeak->GetMean()/2),20,fPeak->GetMaximum(),fPeak->GetMean()+(fPeak->GetMean()/2),20);
-  	gaus_fun->SetParLimits(0,0,fPeak->GetMaximum()*1.5);
-  	gaus_fun->SetParLimits(1,0,fPeak->GetMean()-10);
-  	gaus_fun->SetParLimits(2,10,40);
-  	gaus_fun->SetParLimits(3,0,fPeak->GetMaximum()*1.5);
-  	gaus_fun->SetParLimits(4,fPeak->GetMean()+10,120);
-  	gaus_fun->SetParLimits(5,10,40);
+	fPeak->Rebin(4);
+  	FindPeakRange(peak_min,peak_max);
+  	//fitting Gaussian + espo to the peaks
+	double fit_min=peak_min+30;
+	double fit_max=peak_max+80;
+	//double fit_min=peak_min+40;
+	//double fit_max=peak_max+70;
+	
+	TF1 *gaus_fun = new TF1("fun_gaus","expo(0)+gaus(2)",fit_min,fit_max);
+  	gaus_fun->SetParameters(5,-0.01,fPeak->GetMaximum(),peak_max,20);
+  	gaus_fun->SetParLimits(0,0,10);
+  	gaus_fun->SetParLimits(1,0,-0.2);
+  	gaus_fun->SetParLimits(2,0,fPeak->GetMaximum()*1.5);
+  	gaus_fun->SetParLimits(3,peak_max-50,peak_max+170);
+  	gaus_fun->SetParLimits(4,10,40);
 	fPeak->Fit(gaus_fun,opt);
-  
- 	fPosition = gaus_fun->GetParameter(4);
-  	fPosErr = gaus_fun->GetParError(4);
-  	fSigma = gaus_fun->GetParameter(5);
-  	fSigErr = gaus_fun->GetParError(5);
+	//fPeak->Fit(gaus_fun,"R+");
+	fPosition = gaus_fun->GetParameter(3);
+  	fPosErr = gaus_fun->GetParError(3);
+  	fSigma = gaus_fun->GetParameter(4);
+  	fSigErr = gaus_fun->GetParError(4);
+
+/*	
+	TF1 *gaus_fun = new TF1("fun_gaus","expo(0)+landau(2)",fit_min,fit_max);
+  	gaus_fun->SetParameters(5,-0.015,fPeak->GetMaximum(),peak_max+50,40);
+  	gaus_fun->SetParLimits(0,0,10);
+  	gaus_fun->SetParLimits(1,0,-0.2);
+  	gaus_fun->SetParLimits(2,0,fPeak->GetMaximum()*4);
+  	gaus_fun->SetParLimits(3,0,3*peak_max);
+  	gaus_fun->SetParLimits(4,0,100);
+	fPeak->Fit(gaus_fun,opt);
+	fPosition = gaus_fun->GetParameter(3);
+  	fPosErr = gaus_fun->GetParError(3);
+  	fSigma = gaus_fun->GetParameter(4);
+  	fSigErr = gaus_fun->GetParError(4);
+*/
+	fChi2ndf= gaus_fun->GetChisquare()/(fPeak->GetBin(fit_max)-fPeak->GetBin(fit_min)-5);
+	//cout << "Chi2 is " << fChi2ndf << endl; 
   }
   
   if(fPosition<0 || fSigma<0){

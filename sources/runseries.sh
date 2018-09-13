@@ -12,6 +12,7 @@ cd ../build/
 ./timeres     $SERIES_NO | tee -a $LOG_NAME
 ./tconst      $SERIES_NO | tee -a $LOG_NAME 
 ./lightout    $SERIES_NO | tee -a $LOG_NAME
+./energyres   $SERIES_NO | tee -a $LOG_NAME
 
 if
    cd ../results/$DIR_NAME ; then
@@ -28,6 +29,7 @@ mv ../attenuation_series$SERIES_NO.root ./
 mv ../timingres_series$SERIES_NO.root ./
 mv ../timeconst_series$SERIES_NO.root ./
 mv ../lighoutput_series_$SERIES_NO.root ./
+mv ../energyres_series_$SERIES_NO.root ./
 
 DATE=$(date +%d-%m-%Y" "%H:%M:%S)
 echo "" >> $LOG_NAME

@@ -591,9 +591,22 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i",ch),&sig);
   
-  TString iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
-  ifstream input(iname,ios::binary);
- 
+  TFile* iFile;
+  TTree* iTree;
+  TVectorT<float>* iVolt= new TVectorT<float>(ipoints);
+  TString iname; 
+  ifstream input;
+  if(fType.Contains("Lead")){
+  	iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
+  	input.open(iname,ios::binary);
+  }
+  else if(fType.Contains("Electric")){
+	iname = string(gPath)+fNames[index]+"/waves.root";
+	iFile = new TFile(iname,"READ");
+	iTree = (TTree*)iFile->Get("wavetree");
+	iname = Form("voltages_ch_%i",ch);
+	iTree->SetBranchAddress(iname,&iVolt);
+  }
   TString hname = "sig_profile";
   TString htitle = "sig_profile";
   fSignalProfile = new TProfile(hname,htitle,ipoints,0,ipoints,"");
@@ -610,21 +623,29 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
    condition = InterpretCut(sig,cut);
    if(condition && fabs(firstT0)<1E-10) firstT0 = sig->GetT0();
    if(condition && fabs(sig->GetT0()-firstT0)<1){
-     infile = sizeof(x)*ipoints*i;
-     if(bl){
-       input.seekg(infile);
-       baseline = 0.;
-       for(int ii=0; ii<gBaselineMax; ii++){
-         input.read((char*)&x,sizeof(x));
-         baseline += x/gmV;
-       }
-       baseline = baseline/gBaselineMax;
+     if(fType.Contains("Lead")){
+     	infile = sizeof(x)*ipoints*i;
+     	if(bl){
+     	  input.seekg(infile);
+     	  baseline = 0.;
+     	  for(int ii=0; ii<gBaselineMax; ii++){
+     	    input.read((char*)&x,sizeof(x));
+     	    baseline += x/gmV;
+     	  }
+     	  baseline = baseline/gBaselineMax;
+     	}
+     	input.seekg(infile);
+     	for(int ii=0; ii<ipoints; ii++){
+     	  input.read((char*)&x,sizeof(x));
+     	  if(bl) fSignalProfile->Fill(ii,(x/gmV)-baseline);
+     	  else   fSignalProfile->Fill(ii,(x/gmV));
+     	}
      }
-     input.seekg(infile);
-     for(int ii=0; ii<ipoints; ii++){
-       input.read((char*)&x,sizeof(x));
-       if(bl) fSignalProfile->Fill(ii,(x/gmV)-baseline);
-       else   fSignalProfile->Fill(ii,(x/gmV));
+     else if(fType.Contains("Electric")){
+	iTree->GetEntry(i);
+	for(int ii=0; ii<ipoints; ii++){
+		  fSignalProfile->Fill(ii+1,(*iVolt)[ii]);
+	}
      }
      if(counter<number) counter++;
      else break;
@@ -672,11 +693,11 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   TTree* iTree;
   TVectorT<float>* iVolt= new TVectorT<float>(ipoints);
   
-  if(fType=="Lead"){
+  if(fType.Contains("Lead")){
 	iname = string(gPath)+fNames[index]+Form("/wave_%i.dat",ch);
 	input.open(iname,ios::binary);
   }
-  else{
+  else if(fType.Contains("Electric")){
 	iname = string(gPath)+fNames[index]+"/waves.root";
 	iFile = new TFile(iname,"READ");
 	iTree = (TTree*)iFile->Get("wavetree");

@@ -30,6 +30,7 @@ class SFAttenuation : public TObject{
 private:
   int    fSeriesNo;		///< Number of experimental series to be analyzed
   SFData *fData;		///< SFData object of the analyzed series
+  TString fType;		///< TString descpibing the collimator form 
   double fAttnLen;		///< Attenuation length determined with averaged channels method [mm]
   double fAttnErr;		///< Error on attenuation length fAttnLen [mm]
   vector <TH1D*> fRatios;	///< Vector containing histograms of signal ratios from both channels, for whole series 

@@ -31,6 +31,7 @@ private:
   int          fSeriesNo;	///< Number of analyzed series.
   TString      fThreshold;	///< Falg to identify which data should be analyzed.
   TString      fMethod;		///< Flag to determine type of analysis - with or without energy cut.
+  TString      fType;		///< Indicates the measurement type 
   SFData       *fData;		///< Experimental series to be analyzed.
   TGraphErrors *fT0Graph;	///< Graph ch_0.T0-ch_1.T0 vs. source position
   
