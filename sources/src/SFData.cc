@@ -32,7 +32,7 @@ SFData::SFData(){
 ///By deafult data analyzed with fixed threshold in DD6 is accessed.
 ///If you need constant fraction data use SetThreshold() function.
 SFData::SFData(int seriesNo){
- bool db_stat  = OpenDataBase("ScintFibTest");
+ bool db_stat  = OpenDataBase("ScintFib");
  bool set_stat = SetDetails(seriesNo);
  if(!db_stat || !set_stat){
    throw "##### Exception in SFData constructor!";
@@ -44,7 +44,7 @@ SFData::SFData(int seriesNo){
 ///\param threshold is threshold type in DD6 preliminary data analysis.
 ///Possible options are: "ft" - fixed threshold and "cf" - constant fraction.
 SFData::SFData(int seriesNo, TString threshold){
- bool db_stat  = OpenDataBase("ScintFibTest");
+ bool db_stat  = OpenDataBase("ScintFib");
  bool set_stat = SetDetails(seriesNo);
  bool thr_stat = SetThreshold(threshold);
  if(!db_stat || !set_stat || !thr_stat){
@@ -657,9 +657,11 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   fSignalProfile->SetName(hname);
   fSignalProfile->SetTitle(htitle);
   
-  if(counter<number) 
+  if(counter<number){ 
     cout << "##### Warning in SFData::GetSignalAverage()! " << counter 
          << " out of " << number << " plotted." << endl;
+    cout << "Position: " << position << "\t channel: " << ch << endl; 
+  }
   
   input.close();
   

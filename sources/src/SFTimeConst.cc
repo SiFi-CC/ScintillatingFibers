@@ -68,7 +68,9 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   int nsig = 0;
   if(fiber.Contains("LuAG")) 
     nsig = 50;
-  else if(fiber.Contains("LYSO") | type.Contains("Electric")) 
+  else if(fiber.Contains("LYSO") && type.Contains("Lead"))
+    nsig = 1;
+  else if(fiber.Contains("LYSO") && type.Contains("Electric")) 
     nsig = 2;
   else{
     cout << "##### Error in SFTimeConst::SetDetails()! Unknown fiber material!" << endl;
@@ -413,7 +415,7 @@ bool SFTimeConst::FitAllSignals(void){
     
     cout << "\n\n----------------------------------" << endl;
     cout << "Average decay constant for the whole series:" << endl;
-    cout << "Decay constant: " << decAverage << " ns" << endl;
+    cout << "Decay constant: " << decAverage << " +/- " << decAvErr << "" ns" << endl;
     cout << "Counter: " << counter << endl;
     cout << "----------------------------------" << endl;
     
