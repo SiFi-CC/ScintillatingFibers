@@ -94,30 +94,36 @@ int SFTimingRes::GetIndex(double position){
 bool SFTimingRes::LoadRatios(void){
   
   int npoints = fData->GetNpoints();
+  TString type = fData->GetMeasureType();
   
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
   fRatios = fData->GetCustomHistograms(selection,cut);
   
-  TF1 *gaus = new TF1("gaus","gaus",-100,100);
+  vector <TF1*> fun;
   double min, max;
   
   for(int i=0; i<npoints; i++){
-    if(i<npoints/2){
-      min = fRatios[i]->GetMean() - (1.5*fRatios[i]->GetRMS());
-      max = fRatios[i]->GetMean() + (0.5*fRatios[i]->GetRMS());
+    if(type.Contains("Lead")){
+      fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-1,1));
+      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thin gauss
+      fun[i]->SetParameter(1,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2,6E-2);
+      fun[i]->SetParameter(3,0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
+      if(i<npoints/2)
+        fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
+      else
+	fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
+      fun[i]->SetParameter(5,2E-1);
+      fRatios[i]->Fit(fun[i],"QR");
     }
-    else if(i==npoints/2 && npoints%2==1){
-      min = fRatios[i]->GetMean() - fRatios[i]->GetRMS();
-      max = fRatios[i]->GetMean() + fRatios[i]->GetRMS();
+    else if(type.Contains("Electric")){
+      min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
+      max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
+      fun.push_back(new TF1("fun","gaus"));		//single gauss
     }
-    else{
-      min = fRatios[i]->GetMean() - (0.5*fRatios[i]->GetRMS());
-      max = fRatios[i]->GetMean() + (1.5*fRatios[i]->GetRMS());
-    }
-    fRatios[i]->Fit(gaus,"Q","",min,max);
   }
- 
+
   return true;
 }
 //------------------------------------------------------------------
@@ -155,8 +161,8 @@ bool SFTimingRes::AnalyzeNoECut(void){
   fT0Graph->SetMarkerStyle(8);
   
   for(int i=0; i<npoints; i++){
-    mean = fRatios[i]->GetFunction("gaus")->GetParameter(1);
-    sigma = fRatios[i]->GetFunction("gaus")->GetParameter(2);
+    mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
+    sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     if(fType.Contains("Electric")) fT0Diff.back()->Rebin(2);
@@ -215,8 +221,8 @@ bool SFTimingRes::AnalyzeWithECut(void){
     delta_ch0  = (xmax_ch0-xmin_ch0)/6.;		//
     center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;	//
     delta_ch1  = (xmax_ch1-xmin_ch1)/6.;		//
-    mean_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(1);
-    sigma_ratio = fRatios[i]->GetFunction("gaus")->GetParameter(2);
+    mean_ratio = fRatios[i]->GetFunction("fun")->GetParameter(1);
+    sigma_ratio = fRatios[i]->GetFunction("fun")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0,center_ch0+delta_ch0,center_ch1-delta_ch1,center_ch1+delta_ch1,mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);	//changed here for smaller cut
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();

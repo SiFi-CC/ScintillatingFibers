@@ -78,32 +78,32 @@ bool SFAttenuation::AttAveragedCh(void){
     mean = fRatios[i]->GetMean();
     sigma = fRatios[i]->GetRMS();
     if(type.Contains("Lead")){
-   	 if(i<npoints/2){
-   	   fit_min = mean-(1.5*sigma);
-   	   fit_max = mean+(0.5*sigma);
-   	 }
-   	 else if(i==npoints/2 && npoints%2==1){
-   	   fit_min = mean-sigma;
-   	   fit_max = mean+sigma;
-   	 }
-   	 else{
-   	   fit_min = mean-(0.5*sigma);
-   	   fit_max = mean+(1.5*sigma);
-   	 }
+      fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-1,1));
+      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thin gauss
+      fun[i]->SetParameter(1,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2,6E-2);
+      fun[i]->SetParameter(3,0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
+      if(i<npoints/2)
+        fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
+      else
+	fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
+      fun[i]->SetParameter(5,2E-1);
     }
     else if(type.Contains("Electric")){
       fit_min = mean-2*sigma;
       fit_max = mean+2*sigma;
+      fun.push_back(new TF1("fun","gaus",fit_min,fit_max));	//single gauss
     }
-    fun.push_back(new TF1("fun","gaus",fit_min,fit_max));
     fRatios[i]->Fit(fun[i],"QR");
     fAttnGraph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
-    if(fType.Contains("Lead"))	fAttnGraph->SetPointError(i,0,fun[i]->GetParError(1));
-    else if (fType.Contains("Electric") )fAttnGraph->SetPointError(i,1.5,fun[i]->GetParError(1));
-
+    if(fType.Contains("Lead"))	
+      fAttnGraph->SetPointError(i,2,fun[i]->GetParError(1));
+    else if (fType.Contains("Electric"))
+      fAttnGraph->SetPointError(i,1.5,fun[i]->GetParError(1));
   }
   
   TF1 *fpol1 = new TF1("fpol1","pol1",positions[0],positions[npoints-1]);
+  fpol1->SetParameters(-0.15,0.005);
   fAttnGraph->Fit(fpol1,"QR");
   fAttnLen = fabs(1./fpol1->GetParameter(1));
   fAttnErr = fpol1->GetParError(1)/pow(fpol1->GetParameter(1),2);
@@ -142,7 +142,10 @@ bool SFAttenuation::AttSeparateCh(int ch){
     peaks.push_back(peakfin[i]->GetPeak());
     parameter=peakfin[i]->GetParameter();
     graph->SetPoint(i,positions[i],parameter[0]);
-    graph->SetPointError(i,0,parameter[2]);
+    if(fType.Contains("Lead"))	
+      graph->SetPointError(i,2,parameter[2]);
+    else if (fType.Contains("Electric"))
+      graph->SetPointError(i,1.5,parameter[2]);
   }
   
   TF1 *fexp = new TF1("fexp","expo",positions[0],positions[npoints-1]);

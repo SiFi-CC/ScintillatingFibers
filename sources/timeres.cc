@@ -140,6 +140,7 @@ int main(int argc, char **argv){
   for(int i=0; i<npoints; i++){
     title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm",seriesNo,positions[i]);
     
+    cout << "testtt" << endl;
     can_ft->cd(i+1);
     gPad->SetGrid(1,1);
     string = Form("%.2f +/- %.2f ns",tres_ft[i],treserr_ft[i]);
@@ -156,8 +157,8 @@ int main(int argc, char **argv){
     ratio_ft[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
     ratio_ft[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
     max = ratio_ft[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
-    mean = ratio_ft[i]->GetFunction("gaus")->GetParameter(1);
-    sigma = ratio_ft[i]->GetFunction("gaus")->GetParameter(2);
+    mean = ratio_ft[i]->GetFunction("fun")->GetParameter(1);
+    sigma = ratio_ft[i]->GetFunction("fun")->GetParameter(2);
     ratio_ft[i]->Draw();
     line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
     line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
@@ -205,6 +206,7 @@ int main(int argc, char **argv){
     line.DrawLine(center-delta,0,center-delta,max);		//changed here for smaller cut
     line.DrawLine(center+delta,0,center+delta,max);		//
     spec_ft_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
+    cout << "testtt" << endl;
   }
   
   TCanvas *can_gr_ft = new TCanvas("can_gr_ft","can_gr_ft",1000,500);
@@ -273,8 +275,8 @@ int main(int argc, char **argv){
 		ratio_cf[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
 		ratio_cf[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
 		max = ratio_cf[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
-		mean = ratio_cf[i]->GetFunction("gaus")->GetParameter(1);
-		sigma = ratio_cf[i]->GetFunction("gaus")->GetParameter(2);
+		mean = ratio_cf[i]->GetFunction("fun")->GetParameter(1);
+		sigma = ratio_cf[i]->GetFunction("fun")->GetParameter(2);
 		ratio_cf[i]->Draw();
 		line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
 		line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
