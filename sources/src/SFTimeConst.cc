@@ -68,10 +68,8 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   int nsig = 0;
   if(fiber.Contains("LuAG")) 
     nsig = 50;
-  else if(fiber.Contains("LYSO") && type.Contains("Lead"))
-    nsig = 1;
-  else if(fiber.Contains("LYSO") && type.Contains("Electric")) 
-    nsig = 2;
+  else if(fiber.Contains("LYSO")) 
+    nsig = 10;
   else{
     cout << "##### Error in SFTimeConst::SetDetails()! Unknown fiber material!" << endl;
     return false;
@@ -469,7 +467,7 @@ bool SFTimeConst::FitSingleSignal(int ch, double position){
   vector <double> positions = fData->GetPositions();
   TString fiber = fData->GetFiber();
   
-  if(ch!=0 || ch!=1){
+  if(!(ch==0 || ch==1)){
    cout << "##### Error in SFTimeConst::FitSingleSignal()" << endl;
    cout << "Incorrect channel number. Possible options are: 0 or 1" << endl;
    return false;

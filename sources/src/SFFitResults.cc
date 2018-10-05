@@ -112,7 +112,7 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
   //----- Assigning ambiguous parameters
   //----- In double decay: Recognizing fast and slow component
   if(fComponents==1){
-    SetAmp(fParameters[1],fParErrors[1]);
+    SetAmp(fParameters[0],fParErrors[0]);
     SetDecTime(fParameters[2],fParErrors[2]);
   }
   else if(fComponents==2){

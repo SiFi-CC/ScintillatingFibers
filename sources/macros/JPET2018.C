@@ -44,7 +44,7 @@ bool JPET2018(void){
   gAttS5->SetLineColor(kMagenta);
   gAttS5->SetTitle("");
   gAttS5->GetFunction("fpol1")->SetLineColor(kMagenta);
-  gAttS5->GetYaxis()->SetRangeUser(-0.25,0.30);
+  gAttS5->GetYaxis()->SetRangeUser(-0.3,0.30);
   
   gAttS14->SetMarkerColor(kGreen+3);
   gAttS14->SetMarkerStyle(23);
@@ -52,11 +52,11 @@ bool JPET2018(void){
   gAttS14->SetLineColor(kGreen+3);
   gAttS14->GetFunction("fpol1")->SetLineColor(kGreen+3);
   
-  TLegend *leg = new TLegend(0.133,0.732,0.434,0.882);
-  leg->AddEntry(gAttS3,"LuAG:Ce (1) ","PE");
-  leg->AddEntry(gAttS4,"LuAG:Ce (2)", "PE");
-  leg->AddEntry(gAttS5,"LuAG:Ce (1) + coating","PE");
-  leg->AddEntry(gAttS14,"LYSO:Ce","PE");
+  TLegend *legAtt = new TLegend(0.133,0.732,0.434,0.882);
+  legAtt->AddEntry(gAttS3,"LuAG:Ce (1) ","PE");
+  legAtt->AddEntry(gAttS4,"LuAG:Ce (2)", "PE");
+  legAtt->AddEntry(gAttS5,"LuAG:Ce (1) + coating","PE");
+  legAtt->AddEntry(gAttS14,"LYSO:Ce","PE");
   
   TLatex text;
   text.SetTextSize(0.030);
@@ -89,7 +89,7 @@ bool JPET2018(void){
   gLOS3->SetMarkerSize(1);
   gLOS3->SetMarkerColor(kRed);
   gLOS3->SetLineColor(kRed);
-  gLOS3->GetYaxis()->SetRangeUser(3000,8100);
+  gLOS3->GetYaxis()->SetRangeUser(2000,6200);
   gLOS3->SetTitle("");
     
   gLOS4->SetMarkerStyle(21);
@@ -107,6 +107,12 @@ bool JPET2018(void){
   gLOS14->SetMarkerColor(kGreen+3);
   gLOS14->SetLineColor(kGreen+3);
   gLOS14->GetYaxis()->SetTitle("");
+  
+  TLegend *legLO = new TLegend(0.59,0.52,0.89,0.67);
+  legLO->AddEntry(gLOS3,"LuAG:Ce (1) ","PE");
+  legLO->AddEntry(gLOS4,"LuAG:Ce (2)", "PE");
+  legLO->AddEntry(gLOS5,"LuAG:Ce (1) + coating","PE");
+  legLO->AddEntry(gLOS14,"LYSO:Ce","PE");
   
   delete loS3;
   delete loS5;
@@ -135,23 +141,29 @@ bool JPET2018(void){
   gTRS3->SetMarkerSize(1);
   gTRS3->SetMarkerColor(kRed);
   gTRS3->SetLineColor(kRed);
-  gTRS3->SetTitle("");
-  gTRS3->GetYaxis()->SetRangeUser(-15,15);
+  gTRS3->SetTitle("LuAG:Ce (1)");
+  gTRS3->GetYaxis()->SetRangeUser(-5.2,6.2);
   
   gTRS4->SetMarkerStyle(21);
   gTRS4->SetMarkerSize(1);
   gTRS4->SetMarkerColor(kBlue);
   gTRS4->SetLineColor(kBlue);
+  gTRS4->SetTitle("LuAG:Ce (2)");
+  gTRS4->GetYaxis()->SetRangeUser(-5.2,6.2);
   
   gTRS5->SetMarkerStyle(22);
   gTRS5->SetMarkerSize(1.2);
   gTRS5->SetMarkerColor(kMagenta);
   gTRS5->SetLineColor(kMagenta);
+  gTRS5->SetTitle("LuAG:Ce (1 + coating)");
+  gTRS5->GetYaxis()->SetRangeUser(-5.2,6.2);
   
   gTRS14->SetMarkerStyle(23);
   gTRS14->SetMarkerSize(1.2);
   gTRS14->SetMarkerColor(kGreen+3);
   gTRS14->SetLineColor(kGreen+3);
+  gTRS14->SetTitle("LYSO:Ce");
+  gTRS14->GetYaxis()->SetRangeUser(-5.2,6.6);
   
   double sumS3 = 0;
   double sumS5 = 0;
@@ -189,7 +201,7 @@ bool JPET2018(void){
   gAttS3->Draw("P");
   gAttS4->Draw("P");
   gAttS14->Draw("P");
-  leg->Draw();
+  legAtt->Draw();
   text.SetTextColor(kRed);
   text.DrawLatex(0.14,0.65,Form("L_{att} = (%.2f +/- %.2f) mm",attlenS3[0],attlenS3[1]));
   text.SetTextColor(kBlue);
@@ -207,6 +219,7 @@ bool JPET2018(void){
   gLOS5->Draw("P");
   gLOS4->Draw("P");
   gLOS14->Draw("P");
+  legLO->Draw();
   text.SetTextColor(kRed);
   text.DrawLatex(0.14,0.65,Form("LO = (%.0f +/- %.0f) P.E./MeV",vLOS3[0],vLOS3[1]));
   text.SetTextColor(kBlue);
@@ -217,21 +230,33 @@ bool JPET2018(void){
   text.DrawLatex(0.14,0.50,Form("LO = (%.0f +/- %.0f) P.E./MeV",vLOS14[0],vLOS14[1]));
   
   
-  TCanvas *canTR = new TCanvas("canTR","canTR",1000,700);
+  TCanvas *canTR = new TCanvas("canTR","canTR",1400,1000);
+  canTR->Divide(2,2);
+  text.SetTextSize(0.045);
   
+  canTR->cd(1);
   gPad->SetGrid(1,1);
   gTRS3->Draw("AP");
-  gTRS5->Draw("P");
-  gTRS4->Draw("P");
-  gTRS14->Draw("P");
   text.SetTextColor(kRed);
-  text.DrawLatex(0.14,0.85,Form("TR = (%.3f +/- %.3f) ns",avS3,errS3));
+  text.DrawLatex(0.15,0.80,Form("TR = (%.3f +/- %.3f) ns",avS3,errS3));
+  
+  canTR->cd(2);
+  gPad->SetGrid(1,1);
+  gTRS4->Draw("AP");
   text.SetTextColor(kBlue);
-  text.DrawLatex(0.14,0.80,Form("TR = (%.2f +/- %.2f) ns",avS4,errS4));
+  text.DrawLatex(0.15,0.80,Form("TR = (%.3f +/- %.3f) ns",avS4,errS4));
+  
+  canTR->cd(3);
+  gPad->SetGrid(1,1);
+  gTRS5->Draw("AP");
   text.SetTextColor(kMagenta);
-  text.DrawLatex(0.14,0.75,Form("TR = (%.3f +/- %.3f) ns",avS5,errS5));
+  text.DrawLatex(0.15,0.80,Form("TR = (%.3f +/- %.3f) ns",avS5,errS5));
+  
+  canTR->cd(4);
+  gPad->SetGrid(1,1);
+  gTRS14->Draw("AP");
   text.SetTextColor(kGreen+3);
-  text.DrawLatex(0.14,0.70,Form("TR = (%.4f +/- %.4f) ns",avS14,errS14));
+  text.DrawLatex(0.15,0.80,Form("TR = (%.4f +/- %.4f) ns",avS14,errS14));
   
   canAtt->SaveAs("canAtt.png");
   canLO->SaveAs("canLO.png");

@@ -13,6 +13,7 @@
 #include "TObject.h"
 #include "TH1D.h"
 #include "TF1.h"
+#include "TSpectrum.h"
 #include "BGFit.hh"
 #include "SFData.hh"
 #include <vector>

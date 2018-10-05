@@ -55,10 +55,10 @@ SFData::SFData(int seriesNo, TString threshold){
 ///Default destructor.
 SFData::~SFData(){
  int status = sqlite3_close(fDB);
- if(status==0) 
-   cout << "In SFData destructor. Data base clossed succesfully!" << endl;
- else 
+ if(status!=0) 
    cout << "In SFData destructor. Data base corrupted!" << endl;
+ //else 
+ //  cout << "In SFData destructor. Data base clossed succesfully!" << endl;
 }
 //------------------------------------------------------------------
 ///Opens SQLite3 data base containing details of experimental series
@@ -73,8 +73,8 @@ bool SFData::OpenDataBase(TString name){
    cout << "Could not access data base!" << endl;
    return false;
  }
- else
-   cout << "Data base opened succesfully!" << endl;
+ //else
+ //  cout << "Data base opened succesfully!" << endl;
  
  return true;
 }
