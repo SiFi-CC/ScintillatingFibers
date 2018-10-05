@@ -51,6 +51,19 @@ SFEnergyResolution::SFEnergyResolution(int seriesNo){
   }
   CalculateER(0);
   CalculateER(1);
+
+  try{
+    fAtt = new SFAttenuation(fSeriesNo);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    throw "##### Exception in SFEnergyResolution constructor!";
+  }
+
+  fAtt->AttAveragedCh();
+  fAttLen   = fAtt->GetAttenuation();
+
+  CalculateERAve();
 }
 //------------------------------------------------------------------
 ///Default destructor.
@@ -120,6 +133,63 @@ void SFEnergyResolution::CalculateER(int ch){
   cout << "\n      For channel " << ch << " is the EnergyRes: " << ER << " +/- " << ERerr << "%" << endl;
 }
 
+void SFEnergyResolution::CalculateERAve(){
+
+  cout << "\n----- Inside SFEnergyResolution::Averaged() for series " << fSeriesNo << endl;
+
+  vector <SFPeakFinder*> tempPF;
+  
+  int npoints = fData->GetNpoints();
+  vector <double> positions = fData->GetPositions();
+  double dist0,dist1;
+ 
+  for (int i=0;i<fData->GetNpoints();i++){
+    	dist0=positions[i];
+    	dist1=100-positions[i];
+	fSpectraCorCh0.push_back(fData->GetCustomHistogram(Form("AttLength ch_0.fPE/exp(%f/%f)",-dist0,fAttLen[0]),"",positions[i]));
+	fSpectraCorCh1.push_back(fData->GetCustomHistogram(Form("AttLength ch_1.fPE/exp(%f/%f)",-dist1,fAttLen[0]),"",positions[i]));
+ 	fSpectraAve.push_back(fData->GetCustomHistogram(Form("AttLength ch_1.fPE/exp(%f/%f)+ch_1.fPE/exp(%f/%f)",-dist1,fAttLen[0],-dist0,fAttLen[0]),"",positions[i]));
+
+  }
+ 
+  for (int i=0;i<fData->GetNpoints();i++){
+	tempPF.push_back(new SFPeakFinder(fSpectraAve[i],"511Sum",true));
+  }
+  TString gname = Form("ER_s%i_ave",fSeriesNo);
+  
+  TGraphErrors *graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("energy resolution [%]");
+  graph->SetTitle(gname);
+  graph->SetName(gname);
+  graph->SetMarkerStyle(4);
+  
+  vector<double> peak_par;
+  double ER_single=0;
+  double ER_singleerr=0;
+
+  double ER=0;
+  double ERerr=0;
+
+  for(int i=0; i<npoints; i++){
+    peak_par=tempPF[i]->GetParameter();
+    ER_single= peak_par[1]/peak_par[0];
+    ER_singleerr=ER_single*TMath::Sqrt((peak_par[2]*peak_par[2]/peak_par[0]/peak_par[0])+(peak_par[3]*peak_par[3]/peak_par[1]/peak_par[1]));
+    ER_single=ER_single*100;
+    ER_singleerr=ER_singleerr*100;
+    graph->SetPoint(i,positions[i],ER_single);
+    graph->SetPointError(i,0,ER_singleerr);
+    ER+=ER_single*(1/ER_singleerr/ER_singleerr);
+    ERerr+=(1/ER_singleerr/ER_singleerr);
+  }
+   
+  ER=ER/ERerr;
+  ERerr=TMath::Sqrt(1/ERerr);
+  fEnergyResGraphAve=graph;
+  fEnergyResAve=ER;
+  fEnergyResErrAve=ERerr;
+  cout << "\n      Averaged is the EnergyRes: " << ER << " +/- " << ERerr << "%" << endl;
+}
 //------------------------------------------------------------------
 ///Resets values of private members of the class to their default values.
 void SFEnergyResolution::Reset(void){
@@ -141,9 +211,9 @@ void SFEnergyResolution::Print(void){
  cout << "-------------------------------------------\n" << endl;
 }
 //------------------------------------------------------------------
-/*TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(){
-  return fEnergyRes;
-}*/
+TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(){
+  return fEnergyResGraphAve;
+}
 //------------------------------------------------------------------
 TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(int ch){
 	if (ch==0)return fEnergyResGraphCh0;
@@ -153,7 +223,18 @@ TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(int ch){
 vector<TH1D*> SFEnergyResolution::GetSpectra(int ch){
   vector<TH1D*> temp_spec;
   if (ch==0) temp_spec=fSpectraCh0;
-  else if (ch==1) temp_spec=fSpectraCh0;
+  else if (ch==1) temp_spec=fSpectraCh1;
+  return temp_spec;
+}
+//------------------------------------------------------------------
+vector<TH1D*> SFEnergyResolution::GetAveSpectra(){
+  return fSpectraAve;
+}
+//------------------------------------------------------------------
+vector<TH1D*> SFEnergyResolution::GetAveSpectra(int ch){
+  vector<TH1D*> temp_spec;
+  if (ch==0) temp_spec=fSpectraCorCh0;
+  else if (ch==1) temp_spec=fSpectraCorCh1;
   return temp_spec;
 }
 //------------------------------------------------------------------
@@ -167,5 +248,12 @@ vector<double> SFEnergyResolution::GetEnergyResolution(int ch){
 	  er_return.push_back(fEnergyResCh1);
 	  er_return.push_back(fEnergyResErrCh1);
   }
+  return er_return;
+}
+//------------------------------------------------------------------
+vector<double> SFEnergyResolution::GetEnergyResolution(){
+  vector<double> er_return;
+  er_return.push_back(fEnergyResAve);
+  er_return.push_back(fEnergyResErrAve);
   return er_return;
 }

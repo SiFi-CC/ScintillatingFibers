@@ -59,7 +59,7 @@ bool SFPeakFinder::SetSpectrum(TH1D *spectrum, TString peakID){
   fSpectrum = spectrum;
   fPeakID = peakID;
   
-  if(!(peakID=="511" || peakID=="1270")){
+  if(!(peakID=="511" || peakID=="511Sum" || peakID=="1270")){
     cout << "##### Error in SFPeakFinder::SetSpectrum(). Incorrect peak ID." << endl;
     cout << "Possible options are: 511 or 1270" << endl;
     return false;
@@ -268,6 +268,11 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 			  min = 400;
 			  max = 1000;
 		  }
+		  else if(fPeakID=="511Sum"){
+			  search_min = 10;
+			  search_max = 150;
+			  bin_add=150/fPeak->GetBinWidth(5);
+		  }
 	}
 	else if(material=="LYSO"){
 		if(fPeakID=="511"){
@@ -276,8 +281,14 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 			bin_add=150/fPeak->GetBinWidth(5);
 		}
 		else if(fPeakID=="1270"){
-			min = 300;	//if ever needed needs to be verified
-			max = 500;	//
+			  search_min = 10;
+			  search_max = 40;
+			  bin_add=70/fPeak->GetBinWidth(5);
+		}
+		else if(fPeakID=="511Sum"){
+			  search_min = 150;
+			  search_max = 400;
+			  bin_add=400/fPeak->GetBinWidth(5);
 		}
 	}
 
@@ -367,7 +378,7 @@ bool SFPeakFinder::Fit(void){
   	gaus_fun->SetParLimits(1,0,-0.2);
   	gaus_fun->SetParLimits(2,0,fPeak->GetMaximum()*1.5);
   	gaus_fun->SetParLimits(3,peak_max-50,peak_max+170);
-  	gaus_fun->SetParLimits(4,10,40);
+  	gaus_fun->SetParLimits(4,10,50);
 	fPeak->Fit(gaus_fun,opt);
 	//fPeak->Fit(gaus_fun,"R+");
 	fPosition = gaus_fun->GetParameter(3);

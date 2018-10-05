@@ -415,7 +415,7 @@ bool SFTimeConst::FitAllSignals(void){
     
     cout << "\n\n----------------------------------" << endl;
     cout << "Average decay constant for the whole series:" << endl;
-    cout << "Decay constant: " << decAverage << " +/- " << decAvErr << "" ns" << endl;
+    cout << "Decay constant: " << decAverage << " +/- " << decAvErr << " ns" << endl;
     cout << "Counter: " << counter << endl;
     cout << "----------------------------------" << endl;
     

@@ -256,6 +256,10 @@ TString SFData::GetSelectionCustom(TString selection){
     selectAndDraw = selection+Form(">>htemp%.7f(1000,0,700,1000,0,700)",gUnique);
   else if(selection=="ch_0.fT0:ch_1.fT0")
     selectAndDraw = selection+Form(">>htemp%.7f(1000,-110,1100,1000,-110,1100)",gUnique);
+  else if(selection.Contains("AttLength")){
+    selection.Remove(0,10);
+    selectAndDraw = selection+Form(">>htemp%.7f(1000,-150,1200)",gUnique);
+  }
   else{
     cout << "##### Warning in SFData::GetSelectionCustom()!" << endl;
     cout << "Unknown selection! Deafault selection used!" << endl;

@@ -44,17 +44,30 @@ int main(int argc, char **argv){
 		return 0;
 	}
 	int npoints = data->GetNpoints();
+	TGraphErrors* enresGraphAve= enres->GetEnergyResolutionGraph(); 
 	TGraphErrors* enresGraphCh0= enres->GetEnergyResolutionGraph(0); 
 	TGraphErrors* enresGraphCh1= enres->GetEnergyResolutionGraph(1); 
+	vector<double> EnergyResAve= enres->GetEnergyResolution(); 
 	vector<double> EnergyResCh0= enres->GetEnergyResolution(0); 
 	vector<double> EnergyResCh1 = enres->GetEnergyResolution(1); 
+	vector<TH1D*> SpecAve = enres->GetAveSpectra();
 	vector<TH1D*> Spec_Ch0= enres->GetSpectra(0);
+	vector<TH1D*> Spec_CorCh0= enres->GetAveSpectra(0);
 	vector<TH1D*> Spec_Ch1= enres->GetSpectra(1);
+	vector<TH1D*> Spec_CorCh1= enres->GetAveSpectra(1);
 
 
 	//-----drawing channels
 	TLatex text;
 	text.SetNDC(true);
+	// ----------- ave 
+	TCanvas *can_ave = new TCanvas("can_ave","can_ave",700,500);
+	can_ave->cd();
+	gPad->SetGrid(1,1);
+	enresGraphAve->SetTitle("");
+	enresGraphAve->Draw();
+	text.SetTextSize(0.04);
+	text.DrawLatex(0.2,0.8,Form("ER = (%.2f +/- %.2f) ",EnergyResAve[0],EnergyResAve[1]));
 	// ----------- ch 0 
 	TCanvas *can_ch_0 = new TCanvas("can_ch_0","can_ch_0",700,500);
 	can_ch_0->cd();
@@ -74,11 +87,23 @@ int main(int argc, char **argv){
 	text.DrawLatex(0.2,0.8,Form("ER = (%.2f +/- %.2f) ",EnergyResCh1[0],EnergyResCh1[1]));
 	
 	// ----------- spectra 
+  	TCanvas *can_spec_ave = new TCanvas("can_spec_ave","can_spec_ave",1200,1200);
+  	can_spec_ave->Divide(3,3);
+	for(int i=0;i< npoints;i++){
+		can_spec_ave->cd(i+1);
+		SpecAve[i]->Draw();
+	}
   	TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0","can_spec_Ch0",1200,1200);
   	can_spec_ch0->Divide(3,3);
 	for(int i=0;i< npoints;i++){
 		can_spec_ch0->cd(i+1);
 		Spec_Ch0[i]->Draw();
+	}
+  	TCanvas *can_spec_cor_ch0 = new TCanvas("can_spec_cor_ch0","can_spec_cor_Ch0",1200,1200);
+  	can_spec_cor_ch0->Divide(3,3);
+	for(int i=0;i< npoints;i++){
+		can_spec_cor_ch0->cd(i+1);
+		Spec_CorCh0[i]->Draw();
 	}
 	
   	TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1","can_spec_Ch1",1200,1200);
@@ -87,13 +112,24 @@ int main(int argc, char **argv){
 		can_spec_ch1->cd(i+1);
 		Spec_Ch1[i]->Draw();
 	}
+  	
+	TCanvas *can_spec_cor_ch1 = new TCanvas("can_spec_cor_ch1","can_spec_cor_Ch1",1200,1200);
+  	can_spec_cor_ch1->Divide(3,3);
+	for(int i=0;i< npoints;i++){
+		can_spec_cor_ch1->cd(i+1);
+		Spec_CorCh1[i]->Draw();
+	}
 	//----- saving
 	TString fname = Form("../results/energyres_series_%i.root",seriesNo);
 	TFile *file = new TFile(fname,"RECREATE");
+	can_ave->Write();
 	can_ch_0->Write();
 	can_ch_1->Write();
+	can_spec_ave->Write();
 	can_spec_ch0->Write();
 	can_spec_ch1->Write();
+	can_spec_cor_ch0->Write();
+	can_spec_cor_ch1->Write();
     	file->Close();
 
 
