@@ -258,7 +258,7 @@ TString SFData::GetSelectionCustom(TString selection){
     selectAndDraw = selection+Form(">>htemp%.7f(1000,-110,1100,1000,-110,1100)",gUnique);
   else if(selection.Contains("AttLength")){
     selection.Remove(0,10);
-    selectAndDraw = selection+Form(">>htemp%.7f(1000,-150,1200)",gUnique);
+    selectAndDraw = selection+Form(">>htemp%.7f(1300,-155,1600)",gUnique);
   }
   else{
     cout << "##### Warning in SFData::GetSelectionCustom()!" << endl;

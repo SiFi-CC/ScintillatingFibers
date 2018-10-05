@@ -281,6 +281,7 @@ bool SFPeakFinder::Fit(void){
   if(type=="Lead"){
   	FindPeakRange(peak_min,peak_max);
   	double fit_min = peak_min-10;
+	if(fPeakID == "511Sum") fit_min = peak_min-40;
   	double fit_max = peak_max+70;
 	BGFit *bg = new BGFit(peak_min,peak_max);
 	TF1 *bg_fun = new TF1("bg_fun",bg,&BGFit::EvaluateExpo,fit_min,fit_max,2,"BGFit","Evaluate");
