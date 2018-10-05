@@ -90,11 +90,12 @@ int SFTimingRes::GetIndex(double position){
   return index;
 }
 //------------------------------------------------------------------
-///Private method to get ratio histograms necesarry to impose cuts.
+///Private method to get ratio histograms necesarry to impose cuts. 
+///Depending on measurement type single or double gaussian function
+///is fitted to the histograms.
 bool SFTimingRes::LoadRatios(void){
   
   int npoints = fData->GetNpoints();
-  TString type = fData->GetMeasureType();
   
   TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
   TString cut = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
@@ -104,9 +105,9 @@ bool SFTimingRes::LoadRatios(void){
   double min, max;
   
   for(int i=0; i<npoints; i++){
-    if(type.Contains("Lead")){
+    if(fType.Contains("Lead")){
       fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-1,1));
-      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thin gauss
+      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));		//thin gauss
       fun[i]->SetParameter(1,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
       fun[i]->SetParameter(2,6E-2);
       fun[i]->SetParameter(3,0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
@@ -117,17 +118,18 @@ bool SFTimingRes::LoadRatios(void){
       fun[i]->SetParameter(5,2E-1);
       fRatios[i]->Fit(fun[i],"QR");
     }
-    else if(type.Contains("Electric")){
+    else if(fType.Contains("Electric")){
       min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
       max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
-      fun.push_back(new TF1("fun","gaus"));		//single gauss
+      fun.push_back(new TF1("fun","gaus",min,max));		//single gauss
+      fRatios[i]->Fit(fun[i],"QR");
     }
   }
 
   return true;
 }
 //------------------------------------------------------------------
-///Formula for Lorentzian function
+///Formula for Lorentzian function (if needed).
 double LorentzianFun(double *x, double *par){
  //par0 - integral
  //par1 - width (FWHM)
@@ -138,8 +140,10 @@ double LorentzianFun(double *x, double *par){
 //------------------------------------------------------------------
 ///Method for simple timing resolution determination. Timing resolution spectrum
 ///is build as difference between channel 0 and 1 signals with additional cut
-///on scattered events. Timing resolution and its uncertainty is determined as 
-///histogram's mean and RMS. 
+///on scattered events. Timing resolution and its uncertainty is determined 
+///based on Gaussian function as its sigma.
+///If measurement was taken with lead collimator - double Gauss fitted.
+///If measurement was taken with electronic collimatir - single Gaussian.
 bool SFTimingRes::AnalyzeNoECut(void){
   
   int npoints = fData->GetNpoints();
@@ -148,12 +152,10 @@ bool SFTimingRes::AnalyzeNoECut(void){
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   double mean, sigma;
-  double min_fit, max_fit;
   
   if(fRatios.empty()) LoadRatios();
-  TF1 *lorentz = new TF1("lorentz",LorentzianFun,-100,100,3);
-  lorentz->SetParNames("Integral","FWHM","Mean");
-  
+  vector <TF1*> fun;
+
   fT0Graph = new TGraphErrors(npoints);
   fT0Graph->GetXaxis()->SetTitle("source position [mm]");
   fT0Graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
@@ -161,28 +163,46 @@ bool SFTimingRes::AnalyzeNoECut(void){
   fT0Graph->SetMarkerStyle(8);
   
   for(int i=0; i<npoints; i++){
+    
     mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
     sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
     cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
-    if(fType.Contains("Electric")) fT0Diff.back()->Rebin(2);
-    lorentz->SetParameter(0,fT0Diff[i]->Integral()/2);
-    lorentz->SetParLimits(0,fT0Diff[i]->Integral()/3,fT0Diff[i]->Integral()*2);
-    lorentz->SetParameter(1,fT0Diff[i]->GetRMS());
-    lorentz->SetParameter(2,fT0Diff[i]->GetMean());
-    min_fit = fT0Diff[i]->GetMean()-2*fT0Diff[i]->GetRMS();
-    max_fit = fT0Diff[i]->GetMean()+2*fT0Diff[i]->GetRMS();
-    fT0Diff[i]->Fit(lorentz,"Q","",min_fit,max_fit);
-    fTimeRes.push_back(fabs(lorentz->GetParameter(1)));
-    fTimeResErr.push_back(lorentz->GetParError(1));
-    fT0Graph->SetPoint(i,positions[i],lorentz->GetParameter(2));
-    fT0Graph->SetPointError(i,0,fabs(lorentz->GetParameter(1)));
+    
+    if(fType.Contains("Lead")){
+      fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-100,100));
+      fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1,fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(2,fT0Diff[i]->GetRMS());
+      fun[i]->SetParameter(3,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/4);
+      if(i<npoints/2)
+	fun[i]->SetParameter(4,fT0Diff[i]->GetMean()-5);
+      else
+	fun[i]->SetParameter(4,fT0Diff[i]->GetMean()+5);
+      fun[i]->SetParameter(5,fT0Diff[i]->GetRMS()*2);
+      fT0Diff[i]->Fit(fun[i],"QR");
+    }
+    else if(fType.Contains("Electric")){
+      fT0Diff.back()->Rebin(2);
+      fun.push_back(new TF1("fun","gaus",-50,50));
+      fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1,fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(2,fT0Diff[i]->GetRMS());
+      fT0Diff[i]->Fit(fun[i],"QR");
+    }
+
+    fTimeRes.push_back(fabs(fun[i]->GetParameter(2)));
+    fTimeResErr.push_back(fun[i]->GetParError(2));
+    fT0Graph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
+    fT0Graph->SetPointError(i,2,fabs(fun[i]->GetParameter(2)));	//position uncertainty 2mm
   }
-  
+
   return true;
 }
 //------------------------------------------------------------------
 ///Method for timing resolution determination with an energy cut on 511 keV peak.
+///Timing resolution based on the Gaussian fit to the histogram - sigma of the fitted
+///function. Regardless the measurement type - always sigle Gauss fitted.
 bool SFTimingRes::AnalyzeWithECut(void){
   
   int npoints = fData->GetNpoints();
@@ -199,7 +219,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
   double xmin_ch1, xmax_ch1;
   double mean_ratio, sigma_ratio;
   double mean, sigma;
-  double f = 2*sqrt(2*log(2));		//to recalculate sigma into FWHM
+  //double f = 2*sqrt(2*log(2));		//to recalculate sigma into FWHM
   TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   
@@ -227,11 +247,12 @@ bool SFTimingRes::AnalyzeWithECut(void){
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();
-    fT0Diff[i]->Fit(fun,"Q","",mean-3*sigma,mean+3*sigma);
-    fTimeRes.push_back(f*fun->GetParameter(2));		//Timing resolution as FWHM of gaussian distribution
-    fTimeResErr.push_back(f*fun->GetParError(2));
+    fT0Diff[i]->Fit(fun,"Q","",mean-5*sigma,mean+5*sigma);
+    fTimeRes.push_back(fun->GetParameter(2));	//Timing resolution as sigma, if FWHM needed multiply by f
+    fTimeResErr.push_back(fun->GetParError(2));		//FWHM - multiply by f
     fT0Graph->SetPoint(i,positions[i],fun->GetParameter(1));
-    fT0Graph->SetPointError(i,0,f*fun->GetParameter(2));
+    fT0Graph->SetPointError(i,2,fun->GetParameter(2));	//position uncertainy 2 mm
+							//FWHM - multiply by f
   }
   
   return true;

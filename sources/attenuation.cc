@@ -42,9 +42,8 @@ int main(int argc, char **argv){
     return 0;
   }
  
-  TString mtype= data->GetMeasureType();
- 
   int npoints = data->GetNpoints();
+  TString mtype= data->GetMeasureType();
   vector <double> positions = data->GetPositions();
   data->Print();
  
@@ -94,6 +93,10 @@ int main(int argc, char **argv){
   TString htitle;
   text.SetTextSize(0.02);
   
+  TF1 *fun;
+  TF1 *fthin = new TF1("fthin","gaus",-1,1);
+  TF1 *fthick = new TF1("fthick","gaus",-1,1);
+  
   for(int i=0; i<npoints; i++){
    can_ratios->cd(i+1);
    gPad->SetGrid(1,1);
@@ -101,6 +104,19 @@ int main(int argc, char **argv){
    attRatios[i]->GetXaxis()->SetRangeUser(-2,2);
    attRatios[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
    attRatios[i]->Draw();
+   if(mtype=="Lead"){
+     fun = attRatios[i]->GetFunction("fun");
+     fthin->SetParameters(fun->GetParameter(0),
+  			  fun->GetParameter(1),
+			  fun->GetParameter(2));
+     fthick->SetParameters(fun->GetParameter(3),
+			   fun->GetParameter(4),
+			   fun->GetParameter(5));
+     fthin->SetLineColor(kMagenta);
+     fthick->SetLineColor(kMagenta-10);
+     fthin->DrawClone("same");
+     fthick->DrawClone("same");
+   }
   }
   
   //----- drawing separate channels 

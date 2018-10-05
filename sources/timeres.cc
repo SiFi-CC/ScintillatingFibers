@@ -41,10 +41,9 @@ int main(int argc, char **argv){
   }
   
   int npoints = data->GetNpoints();
+  TString type = data->GetMeasureType(); 
   vector <double> positions = data->GetPositions();
   data->Print();
-  
-  TString type = data->GetMeasureType(); 
  
   SFTimingRes *tim_ft;
   SFTimingRes *tim_ft_cut;
@@ -52,12 +51,12 @@ int main(int argc, char **argv){
   SFTimingRes *tim_cf_cut;
   
   try{
-    tim_ft     = new SFTimingRes(seriesNo,"ft","no cut");
+    tim_ft = new SFTimingRes(seriesNo,"ft","no cut");
     tim_ft->Print();
     tim_ft_cut = new SFTimingRes(seriesNo,"ft","with cut");
     tim_ft_cut->Print();
     if((type=="Lead")){
-	    tim_cf     = new SFTimingRes(seriesNo,"cf","no cut");
+	    tim_cf = new SFTimingRes(seriesNo,"cf","no cut");
 	    tim_cf->Print();
 	    tim_cf_cut = new SFTimingRes(seriesNo,"cf","with cut");
 	    tim_cf_cut->Print();
@@ -93,12 +92,6 @@ int main(int argc, char **argv){
   TCanvas *can_ft_cut = new TCanvas("can_ft_cut","cut_ft_cut",1200,1200);
   can_ft_cut->Divide(3,3);
   
-  TCanvas *can_cf = new TCanvas("can_cf","can_cf",1200,1200);
-  can_cf->Divide(3,3);
-  
-  TCanvas *can_cf_cut = new TCanvas("can_cf_cut","can_cf_cut",1200,1200);
-  can_cf_cut->Divide(3,3);
- 
   TCanvas *can_ft_ratio = new TCanvas("can_ft_ratio","can_ft_ratio",1200,1200);
   can_ft_ratio->Divide(3,3);
   
@@ -107,6 +100,12 @@ int main(int argc, char **argv){
   
   TCanvas *can_ft_spec_1 = new TCanvas("can_ft_spec_1","can_ft_spec_1",1200,1200);
   can_ft_spec_1->Divide(3,3);
+  
+  TCanvas *can_cf = new TCanvas("can_cf","can_cf",1200,1200);
+  can_cf->Divide(3,3);
+  
+  TCanvas *can_cf_cut = new TCanvas("can_cf_cut","can_cf_cut",1200,1200);
+  can_cf_cut->Divide(3,3);
   
   TCanvas *can_cf_ratio = new TCanvas("can_cf_ratio","can_cf_ratio",1200,1200);
   can_cf_ratio->Divide(3,3);
@@ -137,23 +136,41 @@ int main(int argc, char **argv){
   double sum_ft = 0;
   double sum_ft_cut = 0;
   
+  TF1* T0thin = new TF1("T0thin","gaus",-50,50);
+  TF1* T0thick = new TF1("T0thick","gaus",-50,50);
+  T0thin->SetLineColor(kMagenta);
+  T0thick->SetLineColor(kMagenta-10);
+  
+  TF1* Rthin = new TF1("Rthin","gaus",-1,1);
+  TF1* Rthick = new TF1("Rthick","gaus",-1,1);
+  Rthin->SetLineColor(kMagenta);
+  Rthick->SetLineColor(kMagenta-10);
+  
   for(int i=0; i<npoints; i++){
     title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm",seriesNo,positions[i]);
     
-    cout << "testtt" << endl;
     can_ft->cd(i+1);
     gPad->SetGrid(1,1);
     string = Form("%.2f +/- %.2f ns",tres_ft[i],treserr_ft[i]);
     T0diff_ft[i]->SetTitle(title);
     T0diff_ft[i]->GetXaxis()->SetTitle("time difference [ns]");
-    T0diff_ft[i]->GetXaxis()->SetRangeUser(-50,50);
     T0diff_ft[i]->Draw();
     text.DrawLatex(0.15,0.8,string);
     sum_ft += tres_ft[i];
+    if(type=="Lead"){
+      T0thin->FixParameter(0,T0diff_ft[i]->GetFunction("fun")->GetParameter(0));
+      T0thin->FixParameter(1,T0diff_ft[i]->GetFunction("fun")->GetParameter(1));
+      T0thin->FixParameter(2,T0diff_ft[i]->GetFunction("fun")->GetParameter(2));
+      T0thick->FixParameter(0,T0diff_ft[i]->GetFunction("fun")->GetParameter(3));
+      T0thick->FixParameter(1,T0diff_ft[i]->GetFunction("fun")->GetParameter(4));
+      T0thick->FixParameter(2,T0diff_ft[i]->GetFunction("fun")->GetParameter(5));
+      T0thin->DrawClone("same");
+      T0thick->DrawClone("same");
+    }
+    T0diff_ft[i]->GetXaxis()->SetRangeUser(-50,50);
     
     can_ft_ratio->cd(i+1);
     gPad->SetGrid(1,1);
-    ratio_ft[i]->GetXaxis()->SetRangeUser(-1,1);
     ratio_ft[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
     ratio_ft[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
     max = ratio_ft[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
@@ -162,6 +179,17 @@ int main(int argc, char **argv){
     ratio_ft[i]->Draw();
     line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
     line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
+    if(type=="Lead"){
+      Rthin->FixParameter(0,ratio_ft[i]->GetFunction("fun")->GetParameter(0));
+      Rthin->FixParameter(1,ratio_ft[i]->GetFunction("fun")->GetParameter(1));
+      Rthin->FixParameter(2,ratio_ft[i]->GetFunction("fun")->GetParameter(2));
+      Rthick->FixParameter(0,ratio_ft[i]->GetFunction("fun")->GetParameter(3));
+      Rthick->FixParameter(1,ratio_ft[i]->GetFunction("fun")->GetParameter(4));
+      Rthick->FixParameter(2,ratio_ft[i]->GetFunction("fun")->GetParameter(5));
+      Rthin->DrawClone("same");
+      Rthick->DrawClone("same");
+    }
+    ratio_ft[i]->GetXaxis()->SetRangeUser(-1,1);
     
     can_ft_cut->cd(i+1);
     gPad->SetGrid(1,1);
@@ -206,7 +234,6 @@ int main(int argc, char **argv){
     line.DrawLine(center-delta,0,center-delta,max);		//changed here for smaller cut
     line.DrawLine(center+delta,0,center+delta,max);		//
     spec_ft_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
-    cout << "testtt" << endl;
   }
   
   TCanvas *can_gr_ft = new TCanvas("can_gr_ft","can_gr_ft",1000,500);
@@ -219,6 +246,7 @@ int main(int argc, char **argv){
   gPad->SetGrid(1,1);
   gr_ft_cut->SetTitle(Form("Series %i, fixed threshold, cut on 511 keV peak",seriesNo));
   gr_ft_cut->Draw("AP");
+  
   //-----printing
   cout << "\n\n-------------------------------" << endl;
   cout << "Average timing resolution time for:" << endl;
@@ -226,6 +254,7 @@ int main(int argc, char **argv){
        << TMath::StdDev(&tres_ft[0],&tres_ft[npoints-1])/sqrt(npoints) << " ns" << endl;
   cout << "\t Fixed threshold, cut on 511 keV peak: " << sum_ft_cut/npoints << " ns +/- " 
        << TMath::StdDev(&tres_ft_cut[0],&tres_ft_cut[npoints-1])/sqrt(npoints) << " ns" << endl;
+       
   //----- saving
   TString fname = Form("../results/timingres_series%i.root",seriesNo);
   TFile *file = new TFile(fname,"RECREATE");
@@ -264,14 +293,21 @@ int main(int argc, char **argv){
 		string = Form("%.2f +/- %.2f ns",tres_cf[i],treserr_cf[i]);
 		T0diff_cf[i]->SetTitle(title);
 		T0diff_cf[i]->GetXaxis()->SetTitle("time difference [ns]");
-		T0diff_cf[i]->GetXaxis()->SetRangeUser(-50,50);
 		T0diff_cf[i]->Draw();
 		text.DrawLatex(0.15,0.8,string);
 		sum_cf += tres_cf[i];
+		T0thin->FixParameter(0,T0diff_cf[i]->GetFunction("fun")->GetParameter(0));
+		T0thin->FixParameter(1,T0diff_cf[i]->GetFunction("fun")->GetParameter(1));
+		T0thin->FixParameter(2,T0diff_cf[i]->GetFunction("fun")->GetParameter(2));
+		T0thick->FixParameter(0,T0diff_cf[i]->GetFunction("fun")->GetParameter(3));
+		T0thick->FixParameter(1,T0diff_cf[i]->GetFunction("fun")->GetParameter(4));
+		T0thick->FixParameter(2,T0diff_cf[i]->GetFunction("fun")->GetParameter(5));
+		T0thin->DrawClone("same");
+		T0thick->DrawClone("same");
+		T0diff_cf[i]->GetXaxis()->SetRangeUser(-50,50);
 
 		can_cf_ratio->cd(i+1);
 		gPad->SetGrid(1,1);
-		ratio_cf[i]->GetXaxis()->SetRangeUser(-1,1);
 		ratio_cf[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
 		ratio_cf[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
 		max = ratio_cf[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
@@ -280,6 +316,15 @@ int main(int argc, char **argv){
 		ratio_cf[i]->Draw();
 		line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
 		line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
+		Rthin->FixParameter(0,ratio_cf[i]->GetFunction("fun")->GetParameter(0));
+		Rthin->FixParameter(1,ratio_cf[i]->GetFunction("fun")->GetParameter(1));
+		Rthin->FixParameter(2,ratio_cf[i]->GetFunction("fun")->GetParameter(2));
+		Rthick->FixParameter(0,ratio_cf[i]->GetFunction("fun")->GetParameter(3));
+		Rthick->FixParameter(1,ratio_cf[i]->GetFunction("fun")->GetParameter(4));
+		Rthick->FixParameter(2,ratio_cf[i]->GetFunction("fun")->GetParameter(5));
+		Rthin->DrawClone("same");
+		Rthick->DrawClone("same");
+		ratio_cf[i]->GetXaxis()->SetRangeUser(-1,1);
 
 		can_cf_cut->cd(i+1);
 		gPad->SetGrid(1,1);
@@ -349,6 +394,7 @@ int main(int argc, char **argv){
 	can_cf_spec_1->Write();
 	can_gr_cf->Write();
   }
+  
   file->Close();
   
   delete tim_ft;

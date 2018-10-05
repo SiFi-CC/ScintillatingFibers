@@ -79,7 +79,7 @@ bool SFAttenuation::AttAveragedCh(void){
     sigma = fRatios[i]->GetRMS();
     if(type.Contains("Lead")){
       fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-1,1));
-      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thin gauss
+      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));		//thin gauss
       fun[i]->SetParameter(1,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
       fun[i]->SetParameter(2,6E-2);
       fun[i]->SetParameter(3,0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
@@ -97,9 +97,9 @@ bool SFAttenuation::AttAveragedCh(void){
     fRatios[i]->Fit(fun[i],"QR");
     fAttnGraph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
     if(fType.Contains("Lead"))	
-      fAttnGraph->SetPointError(i,2,fun[i]->GetParError(1));
+      fAttnGraph->SetPointError(i,2,fun[i]->GetParError(1));	//position error 2mm
     else if (fType.Contains("Electric"))
-      fAttnGraph->SetPointError(i,1.5,fun[i]->GetParError(1));
+      fAttnGraph->SetPointError(i,1.5,fun[i]->GetParError(1));	//position error 1.5mm
   }
   
   TF1 *fpol1 = new TF1("fpol1","pol1",positions[0],positions[npoints-1]);

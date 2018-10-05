@@ -28,8 +28,10 @@ bool DiffCouplings(void){
      hCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
      hCh0[i]->GetYaxis()->SetTitle("counts normalized");
      hCh1[i]->GetYaxis()->SetTitle("counts normalized");
-     hCh0[i]->SetTitle("Influence of coupling - Ch0");
-     hCh1[i]->SetTitle("Influence of coupling - Ch1");
+     //hCh0[i]->SetTitle("Influence of coupling - Ch0");
+     //hCh1[i]->SetTitle("Influence of coupling - Ch1");
+     hCh0[i]->SetTitle("channel 0");
+     hCh1[i]->SetTitle("channel 1");
      maxCh0 = hCh0[i]->GetBinContent(hCh0[i]->GetMaximumBin());
      maxCh1 = hCh1[i]->GetBinContent(hCh1[i]->GetMaximumBin());
    }

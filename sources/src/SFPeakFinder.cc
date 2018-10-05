@@ -111,18 +111,7 @@ TString SFPeakFinder::GetFiberMaterial(void){
     return material;
   }
   
-  TString fiber = data->GetFiber();
-  
-  if(fiber.Contains("LYSO")){
-    material = "LYSO";
-  }
-  else if(fiber.Contains("LuAG:Ce")){
-    material = "LuAG";
-  }
-  else{
-    cout << "##### Error in SFPeakFinder::GetFiberMaterial()!" << endl;
-    cout << "Unknown material!" << endl;
-  }
+  material = data->GetFiber();
   
   delete data;
   
@@ -196,51 +185,16 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   TString material = GetFiberMaterial();
   
   if(type =="Lead"){
-	if(material=="LuAG"){
-	        if(fPeakID=="511"){
-	      	  search_min = 120;
-	      	  search_max = 450;
-	        }
-	        else if(fPeakID=="1270"){
-	      	  search_min = 400;
-	      	  search_max = 1000;
-	        }
-	}
-	else if(material=="LYSO"){
-	        if(fPeakID=="511"){
-	      	  search_min = 90;
-	      	  search_max = 300;
-	        }
-	        else if(fPeakID=="1270"){
-	      	  search_min = 300;	//if ever needed needs to be verified
-	      	  search_max = 500;	//
-	        }
-	}
-	else{
-	        search_min = 0;
-	        search_max = fSpectrum->GetXaxis()->GetXmax();
-	}
-	int bin_min = fSpectrum->FindBin(search_min);
-	int bin_max = fSpectrum->FindBin(search_max);
-	int bin_delta = 0;
-	int bin_peak = 0;
-	int step = 10;
-
-	while(bin_delta<step){
-	        fSpectrum->GetXaxis()->SetRange(bin_min,bin_max);
-	        bin_peak = fSpectrum->GetMaximumBin();
-	        bin_delta = fabs(bin_peak-bin_min);
-	        //cout << "bin_min = " << bin_min << "\t bin_delta = " << bin_delta <<endl;
-	        bin_min+=step;
-	}
-
-	double peak = fSpectrum->GetBinCenter(bin_peak);
-
+	TSpectrum *spec = new TSpectrum(5);
+	int npeaks = spec->Search(fSpectrum,10,"goff");
+	double *peaksX = spec->GetPositionX();
+	double peak = TMath::Max(peaksX[0],peaksX[1]);
+	  
 	//setting fitting option based on verbose level
 	TString opt;
 	if(fVerbose) opt = "0R";
-	else opt = "Q0R";
-
+	else opt = "Q0R";  
+	
 	TF1 *fun = new TF1("fun","gaus",peak-30,peak+30);
 	fSpectrum->Fit(fun,opt);
 
@@ -253,8 +207,6 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	        cout << "min = " << min << "\t max = " << max << endl;
 	        return false;
 	}
-
-	fSpectrum->GetXaxis()->UnZoom();
   }
   else if(type=="Electric"){
 	int bin_add=0;
@@ -290,8 +242,8 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	fPeak->GetXaxis()->SetRange(bin_min,bin_max);
 	max = fPeak->GetBinCenter(fPeak->GetMaximumBin());
 	fPeak->GetXaxis()->UnZoom();
-	
   }
+  
   return true;
 }
 //------------------------------------------------------------------
@@ -338,7 +290,7 @@ bool SFPeakFinder::Fit(void){
 	      	  fPeak->SetBinContent(i,0);
 	}
 	//fitting Gauss to the peak
-	TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min-20,peak_max+20);
+	TF1 *gaus_fun = new TF1("fun_gaus","gaus",peak_min-30,peak_max+30);
 	gaus_fun->SetParameters(100,(peak_max-peak_min)/2.,10);
 	fPeak->Fit(gaus_fun,opt);
 
