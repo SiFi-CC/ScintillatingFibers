@@ -184,12 +184,14 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   TString type = GetMeasureType();
   TString material = GetFiberMaterial();
   
-  if(type =="Lead"){
-	TSpectrum *spec = new TSpectrum(5);
-	int npeaks = spec->Search(fSpectrum,10,"goff");
+  //if(type =="Lead" | type =="Electric"){
+	TSpectrum *spec= new TSpectrum(8);
+	int npeaks =0;
+	if(type =="Lead" | material.Contains("LuAG")) npeaks =spec->Search(fSpectrum,10,"goff");
+	else if(type =="Electric" && fPeakID != "511Sum" ) npeaks=spec->Search(fSpectrum,15,"goff");
+	else if(type =="Electric" && fPeakID == "511Sum" ) npeaks=spec->Search(fSpectrum,10,"goff");
 	double *peaksX = spec->GetPositionX();
 	double peak = TMath::Max(peaksX[0],peaksX[1]);
-	  
 	//setting fitting option based on verbose level
 	TString opt;
 	if(fVerbose) opt = "0R";
@@ -207,8 +209,8 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	        cout << "min = " << min << "\t max = " << max << endl;
 	        return false;
 	}
-  }
-  else if(type=="Electric"){
+ /* }
+  else if(type=="Electricasd"){
 	int bin_add=0;
 	if(material =="LuAG"){
 		  if(fPeakID=="511"){
@@ -254,7 +256,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
 	max = fPeak->GetBinCenter(fPeak->GetMaximumBin());
 	fPeak->GetXaxis()->UnZoom();
   }
-  
+  */
   return true;
 }
 //------------------------------------------------------------------
@@ -268,6 +270,7 @@ bool SFPeakFinder::Fit(void){
   TString pname = tmp.Append("_peak");
   fPeak = (TH1D*) fSpectrum->Clone(pname);
   TString type = GetMeasureType();
+  TString material = GetFiberMaterial();
   fPeak->Reset();
   
   //setting fitting option based on verbose level
@@ -317,20 +320,30 @@ bool SFPeakFinder::Fit(void){
 	for(int i=1; i<nbins+1; i++){
 		fPeak->SetBinContent(i,fSpectrum->GetBinContent(i));
 	}
-	fPeak->Rebin(4);
+	if(fPeakID!="511Sum")fPeak->Rebin(4);
+	else fPeak->Rebin(8);
   	FindPeakRange(peak_min,peak_max);
   	//fitting Gaussian + espo to the peaks
-	double fit_min=peak_min+30;
+	double fit_min=peak_min-30;
+	if(material.Contains("LuAG")) fit_min=peak_min;
 	double fit_max=peak_max+80;
-	//double fit_min=peak_min+40;
-	//double fit_max=peak_max+70;
+	if(fPeakID=="511Sum" && material.Contains("LYSO")) {
+		fit_min=300;	
+		fit_max=700;	
+	}
+	//double fit_min=peak_min+30;
+	//double fit_max=peak_max+80;
 	
 	TF1 *gaus_fun = new TF1("fun_gaus","expo(0)+gaus(2)",fit_min,fit_max);
-  	gaus_fun->SetParameters(5,-0.01,fPeak->GetMaximum(),peak_max,20);
+  	if(fPeakID== "511Sum" && material.Contains("LYSO"))gaus_fun->SetParameters(5,-0.01,fPeak->GetMaximum(),600,20);
+  	else gaus_fun->SetParameters(5,-0.01,fPeak->GetMaximum(),peak_max,20);
+
   	gaus_fun->SetParLimits(0,0,10);
   	gaus_fun->SetParLimits(1,0,-0.2);
   	gaus_fun->SetParLimits(2,0,fPeak->GetMaximum()*1.5);
-  	gaus_fun->SetParLimits(3,peak_max-50,peak_max+170);
+  	if(fPeakID=="511Sum" && !(material.Contains("LuAG"))) gaus_fun->SetParLimits(3,450,700);
+  	else  gaus_fun->SetParLimits(3,peak_max-50,peak_max+170);
+
   	gaus_fun->SetParLimits(4,10,50);
 	fPeak->Fit(gaus_fun,opt);
 	//fPeak->Fit(gaus_fun,"R+");

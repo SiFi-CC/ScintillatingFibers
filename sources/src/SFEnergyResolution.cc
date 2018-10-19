@@ -146,7 +146,7 @@ void SFEnergyResolution::CalculateERAve(){
   for (int i=0;i<fData->GetNpoints();i++){
     	dist0=positions[i];
     	dist1=100-positions[i];
-	fSpectraCorCh0.push_back(fData->GetCustomHistogram(Form("AttLength ch_0.fPE/exp(%f/%f)",-dist0,fAttLen[0]),"ch_0.fPE>0 && ch_0.fT0<590",positions[i]));
+	//fSpectraCorCh0.push_back(fData->GetCustomHistogram(Form("AttLength ch_0.fPE/exp(%f/%f)",-dist0,fAttLen[0]),"ch_0.fPE>0 && ch_0.fT0<590",positions[i]));
 	fSpectraCorCh1.push_back(fData->GetCustomHistogram(Form("AttLength ch_1.fPE/exp(%f/%f)",-dist1,fAttLen[0]),"ch_1.fPE>0 && ch_1.fT0<590",positions[i]));
  	fSpectraAve.push_back(fData->GetCustomHistogram(Form("AttLength ch_1.fPE/exp(%f/%f)+ch_1.fPE/exp(%f/%f)",-dist1,fAttLen[0],-dist0,fAttLen[0]),"ch_0.fPE>0 && ch_0.fT0<590 && ch_1.fPE>0 && ch_1.fT0<590 ",positions[i]));
 
@@ -154,6 +154,7 @@ void SFEnergyResolution::CalculateERAve(){
  
   for (int i=0;i<fData->GetNpoints();i++){
 	tempPF.push_back(new SFPeakFinder(fSpectraAve[i],"511Sum",false));
+	fSpectraCorCh0.push_back(tempPF.at(i)->GetPeak());
   }
   TString gname = Form("ER_s%i_ave",fSeriesNo);
   

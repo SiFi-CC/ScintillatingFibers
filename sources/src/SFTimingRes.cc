@@ -166,10 +166,10 @@ bool SFTimingRes::AnalyzeNoECut(void){
     
     mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
     sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
-    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
-    fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     
     if(fType.Contains("Lead")){
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
+      fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
       fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-100,100));
       fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
       fun[i]->SetParameter(1,fT0Diff[i]->GetMean());
@@ -183,6 +183,8 @@ bool SFTimingRes::AnalyzeNoECut(void){
       fT0Diff[i]->Fit(fun[i],"QR");
     }
     else if(fType.Contains("Electric")){
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-3*sigma, mean+3*sigma);
+      fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
       fT0Diff.back()->Rebin(2);
       fun.push_back(new TF1("fun","gaus",-50,50));
       fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
@@ -243,7 +245,8 @@ bool SFTimingRes::AnalyzeWithECut(void){
     delta_ch1  = (xmax_ch1-xmin_ch1)/6.;		//
     mean_ratio = fRatios[i]->GetFunction("fun")->GetParameter(1);
     sigma_ratio = fRatios[i]->GetFunction("fun")->GetParameter(2);
-    cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0,center_ch0+delta_ch0,center_ch1-delta_ch1,center_ch1+delta_ch1,mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);	//changed here for smaller cut
+    if(fType.Contains("Lead")) 	cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0,center_ch0+delta_ch0,center_ch1-delta_ch1,center_ch1+delta_ch1,mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);	//changed here for smaller cut
+    else if(fType.Contains("Electric"))	cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-3*delta_ch0,center_ch0+3*delta_ch0,center_ch1-3*delta_ch1,center_ch1+3*delta_ch1,mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);	//changed here for smaller cut
     fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
     mean = fT0Diff[i]->GetMean();
     sigma = fT0Diff[i]->GetRMS();
