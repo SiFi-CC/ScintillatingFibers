@@ -126,17 +126,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 Private Member Functions</h2></td></tr>
 <tr class="memitem:a3be278d0260989013b4bf3427b900e0f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a3be278d0260989013b4bf3427b900e0f">AnalyzeNoECut</a> (void)</td></tr>
 <tr class="separator:a3be278d0260989013b4bf3427b900e0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84f5dd7c66eea93167e2f50f0e736d54"><td class="memItemLeft" align="right" valign="top"><a id="a84f5dd7c66eea93167e2f50f0e736d54"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a84f5dd7c66eea93167e2f50f0e736d54">AnalyzeWithECut</a> (void)</td></tr>
-<tr class="memdesc:a84f5dd7c66eea93167e2f50f0e736d54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method for timing resolution determination with an energy cut on 511 keV peak. <br /></td></tr>
+<tr class="memitem:a84f5dd7c66eea93167e2f50f0e736d54"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a84f5dd7c66eea93167e2f50f0e736d54">AnalyzeWithECut</a> (void)</td></tr>
 <tr class="separator:a84f5dd7c66eea93167e2f50f0e736d54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0dcaf183c70894c589b2ed61c821fee"><td class="memItemLeft" align="right" valign="top"><a id="ab0dcaf183c70894c589b2ed61c821fee"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ab0dcaf183c70894c589b2ed61c821fee">GetIndex</a> (double position)</td></tr>
 <tr class="memdesc:ab0dcaf183c70894c589b2ed61c821fee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private method to get index of requested measurement based on source position. <br /></td></tr>
 <tr class="separator:ab0dcaf183c70894c589b2ed61c821fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad08dc7d501e242c106b6f36f2027dfe9"><td class="memItemLeft" align="right" valign="top"><a id="ad08dc7d501e242c106b6f36f2027dfe9"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ad08dc7d501e242c106b6f36f2027dfe9">LoadRatios</a> (void)</td></tr>
-<tr class="memdesc:ad08dc7d501e242c106b6f36f2027dfe9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Private method to get ratio histograms necesarry to impose cuts. <br /></td></tr>
+<tr class="memitem:ad08dc7d501e242c106b6f36f2027dfe9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ad08dc7d501e242c106b6f36f2027dfe9">LoadRatios</a> (void)</td></tr>
 <tr class="separator:ad08dc7d501e242c106b6f36f2027dfe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
@@ -185,9 +181,13 @@ vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a cla
 vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#ab65b63befd83c27f8a56b02542546b2e">fTimeResErr</a></td></tr>
 <tr class="memdesc:ab65b63befd83c27f8a56b02542546b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing errors on timing resolutions for whole series. <br /></td></tr>
 <tr class="separator:ab65b63befd83c27f8a56b02542546b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e24ef859a35034eb7305542169ee995"><td class="memItemLeft" align="right" valign="top"><a id="a2e24ef859a35034eb7305542169ee995"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFTimingRes.html#a2e24ef859a35034eb7305542169ee995">fType</a></td></tr>
+<tr class="memdesc:a2e24ef859a35034eb7305542169ee995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates the measurement type. <br /></td></tr>
+<tr class="separator:a2e24ef859a35034eb7305542169ee995"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p class="">Class to determine timing resolution. Two methods available: "no cut" - cut imposed only on scattered events, "with cut" - cut imposed on scattered events and additional energy cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. </p>
+<div class="textblock"><p class="">Class to determine timing resolution. Two methods available: "no cut" - cut imposed only on scattered events, "with cut" - cut imposed on scattered events and additional energy cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. IMPORTANT: timing resolution is determined as FWHM of lorentzian and gaussian functions fitted to the ch_0.fT0-ch_1.fT0 distributions. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a087aede0d43c4592c793fe3d87ccd386"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a087aede0d43c4592c793fe3d87ccd386">&#9670;&nbsp;</a></span>SFTimingRes()</h2>
@@ -255,7 +255,34 @@ vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a cla
   </tr>
 </table>
 </div><div class="memdoc">
-<p class="">Method for simple timing resolution determination. Timing resolution spectrum is build as difference between channel 0 and 1 signals with additional cut on scattered events. Timing resolution and its uncertainty is determined as histogram's mean and RMS. </p>
+<p class="">Method for simple timing resolution determination. Timing resolution spectrum is build as difference between channel 0 and 1 signals with additional cut on scattered events. Timing resolution and its uncertainty is determined based on Gaussian function as its sigma. If measurement was taken with lead collimator - double Gauss fitted. If measurement was taken with electronic collimatir - single Gaussian. </p>
+
+</div>
+</div>
+<a id="a84f5dd7c66eea93167e2f50f0e736d54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84f5dd7c66eea93167e2f50f0e736d54">&#9670;&nbsp;</a></span>AnalyzeWithECut()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SFTimingRes::AnalyzeWithECut </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Method for timing resolution determination with an energy cut on 511 keV peak. Timing resolution based on the Gaussian fit to the histogram - sigma of the fitted function. Regardless the measurement type - always sigle Gauss fitted. </p>
 
 </div>
 </div>
@@ -375,6 +402,33 @@ vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a cla
       </table>
 </div><div class="memdoc">
 <p class="">Returns vector containing timing resolutions for all measurements in the series </p>
+
+</div>
+</div>
+<a id="ad08dc7d501e242c106b6f36f2027dfe9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad08dc7d501e242c106b6f36f2027dfe9">&#9670;&nbsp;</a></span>LoadRatios()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SFTimingRes::LoadRatios </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Private method to get ratio histograms necesarry to impose cuts. Depending on measurement type single or double gaussian function is fitted to the histograms. </p>
 
 </div>
 </div>
