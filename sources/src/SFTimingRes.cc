@@ -193,10 +193,17 @@ bool SFTimingRes::AnalyzeNoECut(void){
       fT0Diff[i]->Fit(fun[i],"QR");
     }
 
-    fTimeRes.push_back(fabs(fun[i]->GetParameter(2)));
-    fTimeResErr.push_back(fun[i]->GetParError(2));
-    fT0Graph->SetPoint(i,positions[i],fun[i]->GetParameter(1));
-    fT0Graph->SetPointError(i,2,fabs(fun[i]->GetParameter(2)));	//position uncertainty 2mm
+    int parNum=0;
+    
+    if(fun[i]->GetParameter(2)<fun[i]->GetParameter(5))
+      parNum=2;
+    else 
+      parNum=5;
+    
+    fTimeRes.push_back(fun[i]->GetParameter(parNum));
+    fTimeResErr.push_back(fun[i]->GetParError(parNum));
+    fT0Graph->SetPoint(i,positions[i],fun[i]->GetParameter(parNum-1));
+    fT0Graph->SetPointError(i,2,fun[i]->GetParameter(parNum));	//position uncertainty 2mm
   }
 
   return true;

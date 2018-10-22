@@ -108,6 +108,15 @@ bool JPET2018(void){
   gLOS14->SetLineColor(kGreen+3);
   gLOS14->GetYaxis()->SetTitle("");
   
+  const int n = 9;
+  
+  for(int i=0; i<n; i++){
+   gLOS3->SetPointError(i,2,gLOS3->GetErrorY(i));
+   gLOS4->SetPointError(i,2,gLOS4->GetErrorY(i));
+   gLOS5->SetPointError(i,2,gLOS5->GetErrorY(i));
+   gLOS14->SetPointError(i,2,gLOS14->GetErrorY(i));
+  }
+  
   TLegend *legLO = new TLegend(0.59,0.52,0.89,0.67);
   legLO->AddEntry(gLOS3,"LuAG:Ce (1) ","PE");
   legLO->AddEntry(gLOS4,"LuAG:Ce (2)", "PE");
@@ -143,6 +152,10 @@ bool JPET2018(void){
   gTRS3->SetLineColor(kRed);
   gTRS3->SetTitle("LuAG:Ce (1)");
   gTRS3->GetYaxis()->SetRangeUser(-5.2,6.2);
+  gTRS3->GetXaxis()->SetTitleSize(0.045);
+  gTRS3->GetYaxis()->SetTitleSize(0.045);
+  gTRS3->GetXaxis()->SetLabelSize(0.04);
+  gTRS3->GetYaxis()->SetLabelSize(0.04);
   
   gTRS4->SetMarkerStyle(21);
   gTRS4->SetMarkerSize(1);
@@ -150,6 +163,10 @@ bool JPET2018(void){
   gTRS4->SetLineColor(kBlue);
   gTRS4->SetTitle("LuAG:Ce (2)");
   gTRS4->GetYaxis()->SetRangeUser(-5.2,6.2);
+  gTRS4->GetXaxis()->SetTitleSize(0.045);
+  gTRS4->GetYaxis()->SetTitleSize(0.045);
+  gTRS4->GetXaxis()->SetLabelSize(0.04);
+  gTRS4->GetYaxis()->SetLabelSize(0.04);
   
   gTRS5->SetMarkerStyle(22);
   gTRS5->SetMarkerSize(1.2);
@@ -157,6 +174,10 @@ bool JPET2018(void){
   gTRS5->SetLineColor(kMagenta);
   gTRS5->SetTitle("LuAG:Ce (1 + coating)");
   gTRS5->GetYaxis()->SetRangeUser(-5.2,6.2);
+  gTRS5->GetXaxis()->SetTitleSize(0.045);
+  gTRS5->GetYaxis()->SetTitleSize(0.045);
+  gTRS5->GetXaxis()->SetLabelSize(0.04);
+  gTRS5->GetYaxis()->SetLabelSize(0.04);
   
   gTRS14->SetMarkerStyle(23);
   gTRS14->SetMarkerSize(1.2);
@@ -164,6 +185,10 @@ bool JPET2018(void){
   gTRS14->SetLineColor(kGreen+3);
   gTRS14->SetTitle("LYSO:Ce");
   gTRS14->GetYaxis()->SetRangeUser(-5.2,6.6);
+  gTRS14->GetXaxis()->SetTitleSize(0.045);
+  gTRS14->GetYaxis()->SetTitleSize(0.045);
+  gTRS14->GetXaxis()->SetLabelSize(0.04);
+  gTRS14->GetYaxis()->SetLabelSize(0.04);
   
   double sumS3 = 0;
   double sumS5 = 0;
@@ -232,7 +257,7 @@ bool JPET2018(void){
   
   TCanvas *canTR = new TCanvas("canTR","canTR",1400,1000);
   canTR->Divide(2,2);
-  text.SetTextSize(0.045);
+  text.SetTextSize(0.055);
   
   canTR->cd(1);
   gPad->SetGrid(1,1);
