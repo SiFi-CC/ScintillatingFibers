@@ -1,9 +1,11 @@
 var searchData=
 [
+  ['setamp',['SetAmp',['../classSFFitResults.html#ab2ca65807310e88e29ba15758056ca55',1,'SFFitResults']]],
   ['setampfast',['SetAmpFast',['../classSFFitResults.html#aa4f4d18a270aa8ccedfc5cd1b7b2d74c',1,'SFFitResults']]],
   ['setampslow',['SetAmpSlow',['../classSFFitResults.html#a587f96ae5d6990e13154ecf3c74b3539',1,'SFFitResults']]],
   ['setchi2',['SetChi2',['../classSFFitResults.html#a61ae25677c8e846fe57210da3db184b1',1,'SFFitResults']]],
   ['setconst',['SetConst',['../classSFFitResults.html#a312edfabad357f4c9e1c75bbd9b58718',1,'SFFitResults']]],
+  ['setdectime',['SetDecTime',['../classSFFitResults.html#a7b9d1315e58c2740a9bbbe40735f74bc',1,'SFFitResults']]],
   ['setdetails',['SetDetails',['../classSFData.html#a5a0391f6c96e47526434525127e66a86',1,'SFData::SetDetails()'],['../classSFMC.html#ab215de199580a1242e933b450a28d9cd',1,'SFMC::SetDetails()'],['../classSFTimeConst.html#a0cb93fca22509484c016d65e500a1092',1,'SFTimeConst::SetDetails()'],['../classTFit.html#a9cfe4d48d35849f0a1241199c79cd1e9',1,'TFit::SetDetails()']]],
   ['setfastdectime',['SetFastDecTime',['../classSFFitResults.html#a43881d0e3edbe34d99f3724431976610',1,'SFFitResults']]],
   ['setfitrange',['SetFitRange',['../classSFFitResults.html#a91990746740aa33d2eb624717de48891',1,'SFFitResults']]],
@@ -24,7 +26,9 @@ var searchData=
   ['setverblevel',['SetVerbLevel',['../classSFPeakFinder.html#ad0c81f5145caaaa15810aeb592229056',1,'SFPeakFinder']]],
   ['sfattenuation',['SFAttenuation',['../classSFAttenuation.html#ab7628c4eb556547f597784980c3f274a',1,'SFAttenuation::SFAttenuation()'],['../classSFAttenuation.html#aca020a42f6bc091f29562de49c8fa0bc',1,'SFAttenuation::SFAttenuation(int seriesNo)']]],
   ['sfdata',['SFData',['../classSFData.html#a3041bb4688a8ce3a72f86bdcc7fbab53',1,'SFData::SFData()'],['../classSFData.html#a3cd1ee43593533cb8ec86909842b1007',1,'SFData::SFData(int seriesNo)'],['../classSFData.html#aff33d2a9966641ad89c6dac4be0b597a',1,'SFData::SFData(int seriesNo, TString threshold)']]],
+  ['sfenergyresolution',['SFEnergyResolution',['../classSFEnergyResolution.html#a7be1d1e08ba6bde6563291a5d51e81e9',1,'SFEnergyResolution::SFEnergyResolution()'],['../classSFEnergyResolution.html#a573652b7e192a985353807670bd3534b',1,'SFEnergyResolution::SFEnergyResolution(int seriesNo)']]],
   ['sffitresults',['SFFitResults',['../classSFFitResults.html#acf8a9a79480401442f9a1c45fbfc6312',1,'SFFitResults::SFFitResults()'],['../classSFFitResults.html#a974563f7810727533d7108425df75234',1,'SFFitResults::SFFitResults(TString name)'],['../classSFFitResults.html#a73d39ac52ce2858f8889f8392f407c18',1,'SFFitResults::SFFitResults(TString name, TF1 *fun)']]],
+  ['sflightoutput',['SFLightOutput',['../classSFLightOutput.html#a316a5a75a4d2a6b9b931ee30f1403f62',1,'SFLightOutput::SFLightOutput()'],['../classSFLightOutput.html#a422bb1c348191aa39b2ec48a5c133e89',1,'SFLightOutput::SFLightOutput(int seriesNo)']]],
   ['sfmc',['SFMC',['../classSFMC.html#aa57a65bb8e35c0e6e360396c46fcbe95',1,'SFMC::SFMC()'],['../classSFMC.html#a16f0effa6439a54823a0d85725746aff',1,'SFMC::SFMC(int seriesNo)']]],
   ['sfpeakfinder',['SFPeakFinder',['../classSFPeakFinder.html#a8b536f66bf7487665df9a41558d4096e',1,'SFPeakFinder::SFPeakFinder()'],['../classSFPeakFinder.html#af2aad1471fa5b2354ba22a92bed486cc',1,'SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID, bool verbose)'],['../classSFPeakFinder.html#acc7e62c692dfd849f4253a8faf5f8708',1,'SFPeakFinder::SFPeakFinder(TH1D *spectrum, TString peakID)']]],
   ['sftimeconst',['SFTimeConst',['../classSFTimeConst.html#a5e6bbb3dc22922d5497791fcaf88be82',1,'SFTimeConst::SFTimeConst()'],['../classSFTimeConst.html#a0395bf9634a783555ac20e58b2154b74',1,'SFTimeConst::SFTimeConst(int seriesNo, double PE, bool verb)']]],

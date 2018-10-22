@@ -103,6 +103,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#a2134bbf124e4903c01d2753a6bd2be87">FindPeakRange</a> (double &amp;min, double &amp;max)</td></tr>
 <tr class="memdesc:a2134bbf124e4903c01d2753a6bd2be87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds ranges of the analyzed peak. Ranges are returned by reference. <br /></td></tr>
 <tr class="separator:a2134bbf124e4903c01d2753a6bd2be87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a751af5e4f8491b9c036c515e38bb4cc9"><td class="memItemLeft" align="right" valign="top"><a id="a751af5e4f8491b9c036c515e38bb4cc9"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#a751af5e4f8491b9c036c515e38bb4cc9">GetChi2ndf</a> (void)</td></tr>
+<tr class="memdesc:a751af5e4f8491b9c036c515e38bb4cc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the chi2 od the peak fit. <br /></td></tr>
+<tr class="separator:a751af5e4f8491b9c036c515e38bb4cc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebe81ef5f0965b35e451ab439aa5e625"><td class="memItemLeft" align="right" valign="top">vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#aebe81ef5f0965b35e451ab439aa5e625">GetParameter</a> (void)</td></tr>
 <tr class="separator:aebe81ef5f0965b35e451ab439aa5e625"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8cc37a100d0a355245e7016e0e28f3cd"><td class="memItemLeft" align="right" valign="top"><a id="a8cc37a100d0a355245e7016e0e28f3cd"></a>
@@ -140,9 +144,17 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 Private Member Functions</h2></td></tr>
 <tr class="memitem:adc42a0852af5dd52f667c189b83fbbef"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#adc42a0852af5dd52f667c189b83fbbef">Fit</a> (void)</td></tr>
 <tr class="separator:adc42a0852af5dd52f667c189b83fbbef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50be6ae114e24ba14bcac877cbba95b4"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#a50be6ae114e24ba14bcac877cbba95b4">GetFiberMaterial</a> (void)</td></tr>
+<tr class="separator:a50be6ae114e24ba14bcac877cbba95b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acae43937c747e35c2a5ee79c9023aa5b"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#acae43937c747e35c2a5ee79c9023aa5b">GetMeasureType</a> (void)</td></tr>
+<tr class="separator:acae43937c747e35c2a5ee79c9023aa5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
+<tr class="memitem:ada00082a21e691ce0c3e2f2320b85daf"><td class="memItemLeft" align="right" valign="top"><a id="ada00082a21e691ce0c3e2f2320b85daf"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#ada00082a21e691ce0c3e2f2320b85daf">fChi2ndf</a></td></tr>
+<tr class="memdesc:ada00082a21e691ce0c3e2f2320b85daf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Chi2 /ndf of the fit at the peak itself. <br /></td></tr>
+<tr class="separator:ada00082a21e691ce0c3e2f2320b85daf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc7adf35bdb2c40af7c4fbe51d36c800"><td class="memItemLeft" align="right" valign="top"><a id="acc7adf35bdb2c40af7c4fbe51d36c800"></a>
 TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFPeakFinder.html#acc7adf35bdb2c40af7c4fbe51d36c800">fPeak</a></td></tr>
 <tr class="memdesc:acc7adf35bdb2c40af7c4fbe51d36c800"><td class="mdescLeft">&#160;</td><td class="mdescRight">Histogram with the chosen peak after background subtraction. <br /></td></tr>
@@ -281,6 +293,60 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table>
 </div><div class="memdoc">
 <p class="">Fits background to the analyzed spectrum and performs background subtraction. Inside this function peak position and sigma along with their errors are found. Additionally histogram fPeak is created and filled. </p>
+
+</div>
+</div>
+<a id="a50be6ae114e24ba14bcac877cbba95b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50be6ae114e24ba14bcac877cbba95b4">&#9670;&nbsp;</a></span>GetFiberMaterial()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TString SFPeakFinder::GetFiberMaterial </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Extracts series number from the name of the analyzed spectrum. Once series number is known, checks what was the fiber used in this measurement. </p>
+
+</div>
+</div>
+<a id="acae43937c747e35c2a5ee79c9023aa5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acae43937c747e35c2a5ee79c9023aa5b">&#9670;&nbsp;</a></span>GetMeasureType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TString SFPeakFinder::GetMeasureType </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Extracts series number from the name of the analyzed spectrum. Once series number is known, checks what was the measurement type for this measurement. </p>
 
 </div>
 </div>
