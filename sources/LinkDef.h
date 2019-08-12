@@ -9,5 +9,6 @@
 #pragma link C++ class SFPeakFinder+;
 #pragma link C++ class SFData+;
 #pragma link C++ class SFAttenuation+;
+#pragma link C++ class SFEnergyResolution+;
 
 #endif

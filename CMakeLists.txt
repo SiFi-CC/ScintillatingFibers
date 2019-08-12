@@ -11,7 +11,7 @@ include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/include)
 include_directories($ENV{DD6PATH}sources/include)
-include_directories($ENV{DD6PATH}sources/include)
+include_directories($ENV{CMDPATH})
 
 add_subdirectory(sources)
 

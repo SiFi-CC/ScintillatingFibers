@@ -69,6 +69,12 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
         case SFSelectionType::T0Correlation:
             selectionName = "T0Correlation";
             break;
+        case SFSelectionType::PEAttCorrected:
+            selectionName = "PEAttCorrected";
+            break;
+        case SFSelectionType::PEAttCorrectedSum:
+            selectionName = "PEAttCorrectedSum";
+            break;
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelectionName()!" << std::endl;
             std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -79,13 +85,13 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
     return selectionName;
 }
 //------------------------------------------------------------------
-/// Returns selection as a TString for ROOT's TTree type object. This
-/// method provides selections for simple histograms: Charge, PE, Amplitude
-/// T0 and TOT.
+/// Returns selection as a TString for ROOT's TTree type object. 
 /// \param selection - selection type
 /// \param unique - unique histogram ID
 /// \param ch - channel number
-TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int ch){
+/// \param customNum - standard vector containing values to be inserted in the selection
+TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int ch,
+                                     std::vector <double> customNum){
     
   TString selectionString = "";
    
@@ -105,6 +111,10 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
       case SFSelectionType::TOT:
           selectionString = Form("ch_%i.fTOT>>htemp%.i(1000,-110,1100)", ch, unique);
           break;
+      case SFSelectionType::PEAttCorrected:
+          selectionString = Form("ch_%i.fPE/exp(%f/%f)>>htemp%i(1300,-150,1600)", ch,
+                            customNum[0], customNum[1], unique);
+          break;
       default:
           std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;
           std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -115,16 +125,15 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
   return selectionString;
 }
 //------------------------------------------------------------------
-/// Returns selection as a TString for ROOT's TTree type object. This 
-/// method provides selections for the following histograms: LogSqrtPERatio,
-/// T0Difference, PEAverage, AmplitudeAverage, PECorrelation, AmplitudeCorrelation,
-/// T0Correlation.
+/// Returns selection as a TString for ROOT's TTree type object. 
 /// \param selection - selection type
 /// \param unique - unique histogram ID
-TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique){
- 
+/// \param customNum - standard vector containing values to be inserted in the selection
+TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
+                                     std::vector <double> customNum){
+    
   TString selectionString = "";
-  
+   
   switch(selection){
       case SFSelectionType::LogSqrtPERatio:
           selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500,-5,5)", unique);
@@ -147,6 +156,11 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique){
       case SFSelectionType::T0Correlation:
           selectionString = Form("ch_0.fT0:ch_1.fT0>>htemp%i(1000,-110,1100,1000,-110,1100", unique);
           break;
+      case SFSelectionType::PEAttCorrectedSum:
+          selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1300,-150,1600)",
+                            customNum[0], customNum[1], customNum[2], customNum[3],
+                            unique);
+          break;
       default:
           std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;
           std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -155,88 +169,6 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique){
     
   CheckSelection(selectionString);
   return selectionString;
-}
-//------------------------------------------------------------------
-/// Returns cut as a TString for ROOT's TTree type object. This method provides 
-/// fixed cuts, where no additional parameters are needed.
-/// \param cut - cut type.
-TString SFDrawCommands::GetCut(SFCutType cut){
-    
-  TString cutString = "";
-   
-  switch(cut){
-      case SFCutType::PEAbove0:
-          cutString = "ch_0.fPE>0 && ch_1.fPE>0";
-          break;
-      case SFCutType::T0Above0:
-          cutString = "ch_0.fT0>0 && ch_1.fT0>0";
-          break;
-      case SFCutType::T0Valid:
-          cutString = "ch_0.fT0>-100 && ch_1.fT0>-100";
-          break;
-      case SFCutType::TOTValid:
-          cutString = "ch_0.fTOT>-100 && ch_1.fTOT>-100";
-          break;
-      case SFCutType::Empty:
-          cutString = "";
-          break;
-      default:
-          std::cerr << "##### Error in SFDrawCommands::GetCut()!" << std::endl;
-          std::cerr << "Unknown cut type! Please check!" << std::endl;
-          break;
-  }
-  
-  return cutString;
-}
-//------------------------------------------------------------------
-/// Returns cut as a TString for ROOT's TTree type object. This method provides 
-/// custom cuts for chosen channel.
-/// \param cut - cut type
-/// \param customNumbers - standard vector containing values to be inserted in the cut
-/// \param ch - channel number.
-TString SFDrawCommands::GetCut(SFCutType cut, std::vector <double> customNumbers, int ch){
-    
-  TString cutString = "";
-    
-  switch(cut){
-      case SFCutType::T0ChBelowMax:
-        cutString = Form("ch_0.fT0<%f", ch, customNumbers[0]);
-        break;
-      case SFCutType::Only511:
-        cutString = Form("ch_%i.fPE>%f && ch_%i.fPE<%f", ch, customNumbers[0], ch, customNumbers[1]);
-        break;
-      default:
-        std::cerr << "##### Error in SFDrawCommands::GetCut()!" << std::endl;
-        std::cerr << "Unknown cut type! Please check!" << std::endl;
-        break;
-  }
-    
-  return cutString;
-}
-//------------------------------------------------------------------
-/// Returns cut as a TString for ROOT's TTree type object. This method provides
-/// custom cut for combination of channels 0 and 1.
-/// \param cut - cut type
-/// \param customNumbers - standard vector containing values to be inserted in the cut.
-TString SFDrawCommands::GetCut(SFCutType cut, std::vector <double> customNumbers){
- 
-  TString cutString = "";
-    
-  switch(cut){
-      case SFCutType::T0BelowMax:
-        cutString = Form("ch_0.fT0<%f && ch_1.fT0<%f", customNumbers[0], customNumbers[1]);
-        break;
-      case SFCutType::ScatteredEvents:
-          cutString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",
-                           customNumbers[0], customNumbers[1]);
-          break;
-      default:
-        std::cerr << "##### Error in SFDrawCommands::GetCut!" << std::endl;
-        std::cerr << "Unknown cut type! Please check!" << std::endl;
-        break;
-  }
-  
-  return cutString;
 }
 //------------------------------------------------------------------
 /// Prints details of the SFDrawCommands class object.

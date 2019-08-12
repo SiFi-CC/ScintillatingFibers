@@ -384,17 +384,19 @@ std::vector <TH1D*> SFData::GetSpectra(int ch, SFSelectionType sel_type, TString
 /// \param cut - cut for drawn events. Also TTree-style syntax
 /// \param position - position of source in mm. If position is not unique a 
 /// number of measurement should be entered.
-TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, double position){
+TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, double position, 
+                                std::vector <double> customNumbers){
   
   int index = SFTools::GetIndex(fPositions, position);
   TString fname = std::string(gPath) + fNames[index] + "/results.root";
   TFile *file = new TFile(fname, "READ");
-  TString tname = std::string("tree_ft");
+  TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
   fHist = new TH1D();
   
   gUnique+=1;
-  TString selection = SFDrawCommands::GetSelection(sel_type, gUnique);
+  TString selection; 
+  selection = SFDrawCommands::GetSelection(sel_type, gUnique, customNumbers);
   tree->Draw(selection, cut);
   fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_", fSeriesNo, position) + SFDrawCommands::GetSelectionName(sel_type);
@@ -421,6 +423,33 @@ std::vector <TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TStrin
   }
   
   return fHists;
+}
+//------------------------------------------------------------------
+TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, double position, 
+                                 std::vector <double> customNumbers){
+    
+  int index = SFTools::GetIndex(fPositions, position);
+  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TFile *file = new TFile(fname, "READ");
+  TString tname = "tree_ft";
+  TTree *tree = (TTree*)file->Get(tname);
+  fHist = new TH1D();
+  
+  gUnique+=1;
+  TString selection;
+  if(customNumbers.empty())
+    selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
+  else 
+    selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch, customNumbers);
+  tree->Draw(selection, cut);
+  fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TString hname = Form("S%i_pos%.1f_", fSeriesNo, position)+ SFDrawCommands::GetSelectionName(sel_type);
+  TString htitle = hname + " " + cut;
+  fHist->SetName(hname);
+  fHist->SetTitle(htitle);
+  
+  return fHist;
+    
 }
 //------------------------------------------------------------------
 /// Returns single requested correlation 2D histogram.

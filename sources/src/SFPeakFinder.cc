@@ -109,15 +109,21 @@ bool SFPeakFinder::FindPeakSpectrum(void){
 
   // Setting fitting option based on verbose level
   TString opt;
-  if(fVerbose) opt = "0R";
-  else opt = "Q0R";  
+  if(fVerbose) opt = "0RS";
+  else opt = "Q0RS";  
 
   // Fitting Gaussian function to get peak position and sigma
   TF1 *fun = new TF1("fun", "gaus", peak-50, peak+50);
   TFitResultPtr fitRes = fSpectrum->Fit("fun" , opt);
+  int counter = 0;
   
-  while(fitRes!=0){
+  while(fitRes!=0 && counter<20){
    fitRes = fSpectrum->Fit("fun", opt);
+   counter++;
+  }
+  
+  if(fVerbose){
+    std::cout << "Fit counter: " << counter << std::endl;
   }
   
   fun = fSpectrum->GetFunction("fun");
@@ -197,8 +203,8 @@ bool SFPeakFinder::FindPeakFit(void){
 
   // setting fitting option based on verbose level
   TString opt;
-  if(fVerbose) opt = "SR+";
-  else opt = "SQR+";
+  if(fVerbose) opt = "S+";
+  else opt = "SQ+";
   
   // setting fit parameters and fitting 
   double mean, sigma;
@@ -212,28 +218,59 @@ bool SFPeakFinder::FindPeakFit(void){
     return false;   
   }
   
-  double fit_min = mean - 3.5*sigma;
-  double fit_max = mean + 5*sigma;
+  double fit_min = 0;
+  double fit_max = 0;
+  TString name = fSpectrum->GetName();
   
-  TF1 *fun_expo = new TF1("fun_expo", "expo", mean-3*sigma, mean-2*sigma);
-  fSpectrum->Fit("fun_expo", opt);
+  if(name.Contains("Sum")){
+    fit_min = mean - 5*sigma;
+    fit_max = mean - 4*sigma;
+  }
+  else{
+    fit_min = mean - 3*sigma;
+    fit_max = mean - 2*sigma;
+  }
+
+  TF1 *fun_expo = new TF1("fun_expo", "expo", 0, 100);
+  fSpectrum->Fit("fun_expo", opt, "", fit_min, fit_max);
   
-  TF1 *fun_pol0 = new TF1("fun_pol0", "pol0", mean+3*sigma, mean+4*sigma);
-  fSpectrum->Fit("fun_pol0", opt);
+  TF1 *fun_pol0 = new TF1("fun_pol0", "pol0", 0, 100);
+  fSpectrum->Fit("fun_pol0", opt, "", mean+3*sigma, mean+4*sigma);
   
-  TF1 *fun_bg = new TF1("fun_bg", "expo(0)+pol0(2)+gaus(3)", fit_min, fit_max);
-  fun_bg->SetParameter(0,fun_expo->GetParameter(0));
-  fun_bg->SetParameter(1,fun_expo->GetParameter(1));
-  fun_bg->SetParameter(2,fun_pol0->GetParameter(0));
-  fun_bg->SetParameter(3,fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
-  fun_bg->SetParameter(4,mean);
+  TF1 *fun_bg = new TF1("fun_bg", "expo(0)+pol0(2)+gaus(3)", 0, 100);
+  fun_bg->SetParameter(0, fun_expo->GetParameter(0));
+  fun_bg->SetParameter(1, fun_expo->GetParameter(1));
+  fun_bg->SetParameter(2, fun_pol0->GetParameter(0));
+  fun_bg->SetParameter(3, fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
+  fun_bg->SetParameter(4, mean);
   fun_bg->SetParLimits(4, mean-2*sigma, mean+2*sigma);
-  fun_bg->SetParameter(5,sigma);
-  fun_bg->SetParLimits(5,0,100);
+  fun_bg->SetParameter(5, sigma);
+  fun_bg->SetParLimits(5, 0, 100);
   
-  TFitResultPtr fitRes = fSpectrum->Fit("fun_bg", opt);
-  while(fitRes!=0){
-   fitRes = fSpectrum->Fit("fun_bg", opt);
+  fit_min = mean - 3.5*sigma;
+  fit_max = mean + 5*sigma;
+  int counter = 0;
+  
+  TFitResultPtr fitRes = fSpectrum->Fit("fun_bg", opt, "", fit_min, fit_max);
+  
+  while(fitRes!=0 && counter<20){
+    fit_min = mean - 5*sigma;
+    fun_bg->SetParameter(0, fun_expo->GetParameter(0));
+    fun_bg->SetParameter(1, fun_expo->GetParameter(1));
+    fun_bg->SetParameter(2, fun_pol0->GetParameter(0));
+    fun_bg->SetParameter(3, fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
+    fun_bg->SetParameter(4, mean);
+    fun_bg->SetParLimits(4, mean-2*sigma, mean+2*sigma);
+    fun_bg->SetParameter(5, sigma);
+    fun_bg->SetParLimits(5, 0, 200);  
+    fitRes = fSpectrum->Fit("fun_bg", opt, "", fit_min, fit_max );
+    if(fVerbose) 
+      std::cout << "FitStatus: " << fitRes <<  std::endl;
+    counter++;
+  }
+  
+  if(fVerbose){
+      std::cout << "Fit counter: " << counter << std::endl;
   }
   
   fun_bg = fSpectrum->GetFunction("fun_bg");
@@ -325,11 +362,23 @@ bool SFPeakFinder::FindPeakNoBackground(void){
   
   double peak_min = mean-4*sigma;
   double peak_max = mean+4*sigma;
+  double fit_min = 0;
+  double fit_max = 0;
+  TString name = fSpectrum->GetName();
+  
+  if(name.Contains("Sum")){
+    fit_min = mean - 5*sigma;
+    fit_max = mean - 4*sigma;
+  }
+  else{
+    fit_min = mean - 4*sigma;
+    fit_max = mean - 3*sigma;
+  }
   
   TF1 *fun_pol0 = new TF1("fun_pol0", "pol0", mean+3*sigma, mean+5*sigma);
   fSpectrum->Fit("fun_pol0", opt);
   
-  TF1 *fun_expo = new TF1("fun_expo", "pol0(0)+expo(1)", mean-4*sigma, mean-3*sigma);
+  TF1 *fun_expo = new TF1("fun_expo", "pol0(0)+expo(1)", fit_min, fit_max);
   fun_expo->FixParameter(0, fun_pol0->GetParameter(0));
   fSpectrum->Fit("fun_expo", opt);
   

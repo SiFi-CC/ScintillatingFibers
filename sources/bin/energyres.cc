@@ -1,10 +1,9 @@
-
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *             lightout.cc               *
-// *             Jonas Kasper		   *
-// * 	 kasper@physik.rwth-aachen.de 	   *
+// *             energyres.cc              *
+// *             Jonas Kasper              *
+// *     kasper@physik.rwth-aachen.de      *
 // *          Created in 2018              *
 // *                                       *
 // *****************************************
@@ -13,127 +12,208 @@
 #include "SFEnergyResolution.hh"
 #include "TCanvas.h"
 #include "TLatex.h"
+#include "CmdLineConfig.hh"
+#include "CmdLineOption.hh"
 
 int main(int argc, char **argv){
-	if(argc!=2){
-		cout << "to run type: ./energyres seriesNo" << endl;
-		return 0;
-	}
 
-	int seriesNo = atoi(argv[1]);
+  if(argc!=2){
+    std::cout << "to run type: ./energyres seriesNo";
+    std::cout << "-out path/to/output -db database" << std::endl;
+    return 0;
+  }
 
-	SFData *data; 
-	try{
-		data = new SFData(seriesNo);
-	}
-	catch(const char* message){
-		cout << message << endl;
-		cout << "##### Exception in energyres.cc!" << endl;
-		return 0;
-	}
+  int seriesNo = atoi(argv[1]);
 
-	data->Print();
+  SFData *data; 
+  try {
+    data = new SFData(seriesNo);
+ }
+   catch(const char* message){
+    std::cerr << message << std::endl;
+    std::cout << "##### Exception in energyres.cc!" << std::endl;
+    return 0;
+  }
 
-	SFEnergyResolution* enres;
-	try{
-		enres= new SFEnergyResolution(seriesNo);
-	}
-	catch(const char* message){
-		cout << message << endl;
-		cout << "##### Exception in energyres.cc!" << endl;
-		return 0;
-	}
-	int npoints = data->GetNpoints();
-	TGraphErrors* enresGraphAve= enres->GetEnergyResolutionGraph(); 
-	TGraphErrors* enresGraphCh0= enres->GetEnergyResolutionGraph(0); 
-	TGraphErrors* enresGraphCh1= enres->GetEnergyResolutionGraph(1); 
-	vector<double> EnergyResAve= enres->GetEnergyResolution(); 
-	vector<double> EnergyResCh0= enres->GetEnergyResolution(0); 
-	vector<double> EnergyResCh1 = enres->GetEnergyResolution(1); 
-	vector<TH1D*> SpecAve = enres->GetAveSpectra();
-	vector<TH1D*> Spec_Ch0= enres->GetSpectra(0);
-	vector<TH1D*> Spec_CorCh0= enres->GetAveSpectra(0);
-	vector<TH1D*> Spec_Ch1= enres->GetSpectra(1);
-	vector<TH1D*> Spec_CorCh1= enres->GetAveSpectra(1);
+  data->Print();
+  int npoints = data->GetNpoints();
+  TString collimator = data->GetCollimator();
+  std::vector <double> positions = data->GetPositions();
 
+  SFEnergyResolution* enres;
+  try{
+    enres= new SFEnergyResolution(seriesNo);
+  }
+  catch(const char* message){
+    std::cerr << message << std::endl;
+    std::cerr << "##### Exception in energyres.cc!" << std::endl;
+    return 0;
+  }
+    
+  enres->CalculateEnergyRes(0);
+  enres->CalculateEnergyRes(1);
+  enres->CalculateEnergyRes();
+    
+  TGraphErrors* gEnResSum = enres->GetEnergyResolutionGraph(); 
+  TGraphErrors* gEnResCh0 = enres->GetEnergyResolutionGraph(0); 
+  TGraphErrors* gEnResCh1 = enres->GetEnergyResolutionGraph(1); 
+  std::vector <double> enResSum = enres->GetEnergyResolution(); 
+  std::vector <double> enResCh0 = enres->GetEnergyResolution(0); 
+  std::vector <double> enResCh1 = enres->GetEnergyResolution(1); 
+  std::vector <TH1D*> specSum   = enres->GetSpectraSum();
+  std::vector <TH1D*> specCh0   = enres->GetSpectra(0);
+  std::vector <TH1D*> specCh1   = enres->GetSpectra(1);
+  std::vector <TH1D*> specCorrCh0 = enres->GetSpectraCorrected(0);
+  std::vector <TH1D*> specCorrCh1 = enres->GetSpectraCorrected(1);
+  std::vector <TH1D*> peaksSum;
+  std::vector <TH1D*> peaksCh0;
+  std::vector <TH1D*> peaksCh1;
+  
+  if(collimator=="Lead"){
+    peaksSum = enres->GetPeaks();
+    peaksCh0 = enres->GetPeaks(0);
+    peaksCh1 = enres->GetPeaks(1);
+  }
 
-	//-----drawing channels
-	TLatex text;
-	text.SetNDC(true);
-	// ----------- ave 
-	TCanvas *can_ave = new TCanvas("can_ave","can_ave",700,500);
-	can_ave->cd();
-	gPad->SetGrid(1,1);
-	enresGraphAve->SetTitle("");
-	enresGraphAve->Draw();
-	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("ER = (%.2f +/- %.2f) ",EnergyResAve[0],EnergyResAve[1]));
-	// ----------- ch 0 
-	TCanvas *can_ch_0 = new TCanvas("can_ch_0","can_ch_0",700,500);
-	can_ch_0->cd();
-	gPad->SetGrid(1,1);
-	enresGraphCh0->SetTitle("");
-	enresGraphCh0->Draw();
-	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("ER = (%.2f +/- %.2f) ",EnergyResCh0[0],EnergyResCh0[1]));
+  //----- drawing channels
+  TLatex text;
+  text.SetNDC(true);
+  text.SetTextSize(0.04);
+    
+  //----- summed channels 
+  TCanvas *can_sum = new TCanvas("can_sum", "can_sum", 700, 500);
+  can_sum->cd();
+  gPad->SetGrid(1,1);
+  gEnResSum->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f)", enResSum[0], enResSum[1]));
+    
+  //----- Ch0 
+  TCanvas *can_ch0 = new TCanvas("can_ch0", "can_ch0", 700, 500);
+  can_ch0->cd();
+  gPad->SetGrid(1,1);
+  gEnResCh0->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", enResCh0[0], enResCh0[1]));
 
-	// ----------- ch 1 
-	TCanvas *can_ch_1 = new TCanvas("can_ch_1","can_ch_1",700,500);
-	can_ch_1->cd();
-	gPad->SetGrid(1,1);
-	enresGraphCh1->SetTitle("");
-	enresGraphCh1->Draw();
-	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("ER = (%.2f +/- %.2f) ",EnergyResCh1[0],EnergyResCh1[1]));
-	
-	// ----------- spectra 
-  	TCanvas *can_spec_ave = new TCanvas("can_spec_ave","can_spec_ave",1200,1200);
-  	can_spec_ave->Divide(3,3);
-	for(int i=0;i< npoints;i++){
-		can_spec_ave->cd(i+1);
-		SpecAve[i]->Draw();
-	}
-  	TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0","can_spec_Ch0",1200,1200);
-  	can_spec_ch0->Divide(3,3);
-	for(int i=0;i< npoints;i++){
-		can_spec_ch0->cd(i+1);
-		Spec_Ch0[i]->Draw();
-	}
-  	TCanvas *can_spec_cor_ch0 = new TCanvas("can_spec_cor_ch0","can_spec_cor_Ch0",1200,1200);
-  	can_spec_cor_ch0->Divide(3,3);
-	for(int i=0;i< npoints;i++){
-		can_spec_cor_ch0->cd(i+1);
-		Spec_CorCh0[i]->Draw();
-	}
-	
-  	TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1","can_spec_Ch1",1200,1200);
-  	can_spec_ch1->Divide(3,3);
-	for(int i=0;i< npoints;i++){
-		can_spec_ch1->cd(i+1);
-		Spec_Ch1[i]->Draw();
-	}
-  	
-	TCanvas *can_spec_cor_ch1 = new TCanvas("can_spec_cor_ch1","can_spec_cor_Ch1",1200,1200);
-  	can_spec_cor_ch1->Divide(3,3);
-	for(int i=0;i< npoints;i++){
-		can_spec_cor_ch1->cd(i+1);
-		Spec_CorCh1[i]->Draw();
-	}
-	//----- saving
-	TString fname = Form("../results/energyres_series_%i.root",seriesNo);
-	TFile *file = new TFile(fname,"RECREATE");
-	can_ave->Write();
-	can_ch_0->Write();
-	can_ch_1->Write();
-	can_spec_ave->Write();
-	can_spec_ch0->Write();
-	can_spec_ch1->Write();
-	can_spec_cor_ch0->Write();
-	can_spec_cor_ch1->Write();
-    	file->Close();
+  //----- Ch1 
+  TCanvas *can_ch1 = new TCanvas("can_ch1", "can_ch1", 700, 500);
+  can_ch1->cd();
+  gPad->SetGrid(1,1);
+  gEnResCh1->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", enResCh1[0], enResCh1[1]));
 
+  //----- Spectra 
+  TCanvas *can_spec_sum = new TCanvas("can_spec_sum", "can_spec_sum" ,1200, 1200);
+  can_spec_sum->DivideSquare(npoints);
+  
+  TCanvas *can_spec_corr_ch0 = new TCanvas("can_spec_corr_ch0", "can_spec_corr_ch0", 1200, 1200);
+  can_spec_corr_ch0->DivideSquare(npoints);
+  
+  TCanvas *can_spec_corr_ch1 = new TCanvas("can_spec_corr_ch1", "can_spec_corr_ch1", 1200, 1200);
+  can_spec_corr_ch1->DivideSquare(npoints);
+  
+  TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
+  can_spec_ch0->DivideSquare(npoints);
 
-	delete data;
-	delete enres;
-	return 1;
+  TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1", "can_spec_ch1", 1200, 1200);
+  can_spec_ch1->DivideSquare(npoints);
+  
+  
+  for(int i=0; i<npoints; i++){
+    
+    can_spec_sum->cd(i+1);
+    gPad->SetGrid(1,1);
+    specSum[i]->SetStats(false);
+    specSum[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specSum[i]->GetYaxis()->SetTitle("counts");
+    specSum[i]->SetTitle(Form("Summed PE spectrum, position %.2f mm", positions[i]));
+    specSum[i]->Draw();
+    if(collimator=="Lead"){
+      peaksSum[i]->SetLineColor(kGreen+3);
+      peaksSum[i]->Draw("same");    
+    }
+
+    can_spec_corr_ch0->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCorrCh0[i]->SetStats(false); 
+    specCorrCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCorrCh0[i]->GetYaxis()->SetTitle("counts");
+    specCorrCh0[i]->SetTitle(Form("Corrected Ch0 PE spectrum, position %.2f mm", positions[i]));
+    specCorrCh0[i]->Draw();
+
+    can_spec_corr_ch1->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCorrCh1[i]->SetStats(false);
+    specCorrCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCorrCh1[i]->GetYaxis()->SetTitle("counts");
+    specCorrCh1[i]->SetTitle(Form("Corrected Ch1 PE spectrum, position %.2f mm", positions[i]));
+    specCorrCh1[i]->Draw();
+    
+    can_spec_ch0->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCh0[i]->SetStats(false);
+    specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCh0[i]->GetYaxis()->SetTitle("counts");
+    specCh0[i]->SetTitle(Form("Ch0 PE spectrum, position %.2f mm", positions[i]));
+    specCh0[i]->Draw();
+    if(collimator=="Lead"){
+      peaksCh0[i]->SetLineColor(kGreen+3);
+      peaksCh0[i]->Draw("same");
+    }
+    
+    can_spec_ch1->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCh1[i]->SetStats(false);
+    specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCh1[i]->GetYaxis()->SetTitle("counts");
+    specCh1[i]->SetTitle(Form("Ch1 PE spectrum, position %.2f mm", positions[i]));
+    specCh1[i]->Draw();
+    if(collimator=="Lead"){
+      peaksCh1[i]->SetLineColor(kGreen+3);
+      peaksCh1[i]->Draw("same");
+    }
+  }
+  
+  //----- saving
+  TString path = std::string(getenv("SFPATH"));
+  TString fname = Form("enres_series%i.root", seriesNo);
+  
+  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results", path+"results");
+  
+  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
+  
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+  
+  TString outdir = CmdLineOption::GetStringValue("Output directory");
+  TString dbase = CmdLineOption::GetStringValue("Data base");
+  
+  TString fname_full = outdir + "/" + fname;
+  TString dbname_full = outdir + "/" + dbase;
+  
+  TFile *file = new TFile(fname_full, "RECREATE");
+  
+  if(!file->IsOpen()){
+    std::cerr << "##### Error in energyres.cc!" << std::endl;
+    std::cerr << "Couldn't open file: " << fname_full << std::endl;
+    return 0;
+  }
+
+  can_sum->Write();
+  can_ch0->Write();
+  can_ch1->Write();
+  can_spec_sum->Write();
+  can_spec_corr_ch0->Write();
+  can_spec_corr_ch1->Write();
+  can_spec_ch0->Write();
+  can_spec_ch1->Write();
+  file->Close();
+
+  //----- writing results to the data base
+  TString table = "ENERGY_RESOLUTION";
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ENRES_SUM, ENRES_SUM_ERR, ENRES_CH0, ENRES_CH0_ERR, ENRES_CH1, ENRES_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), enResSum[0], enResSum[1], enResCh0[0], enResCh0[1], enResCh1[0], enResCh1[1]);
+  SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
+
+  delete data;
+  delete enres;
+  
+  return 1;
 } 

@@ -13,13 +13,14 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TPaveStats.h"
-
-void CheckDBStatus(int status, sqlite3 *database);
+#include "CmdLineConfig.hh"
+#include "CmdLineOption.hh"
 
 int main(int argc, char **argv){
  
   if(argc!=2){
-    std::cout << "to run type: ./data seriesNo" << std::endl;
+    std::cout << "to run type: ./data seriesNo ";
+    std::cout << "-out path/to/output -db database" << std::endl;
     return 0;
   }
   
@@ -49,24 +50,24 @@ int main(int argc, char **argv){
   data->Print(); 
   
   //----- accessing spectra
-  std::vector <TH1D*> hAmpCh0 = data->GetSpectra(0, SFSelectionType::Amplitude, SFDrawCommands::GetCut(SFCutType::Empty));
-  std::vector <TH1D*> hAmpCh1 = data->GetSpectra(1, SFSelectionType::Amplitude, SFDrawCommands::GetCut(SFCutType::Empty));
+  std::vector <TH1D*> hAmpCh0 = data->GetSpectra(0, SFSelectionType::Amplitude, "");
+  std::vector <TH1D*> hAmpCh1 = data->GetSpectra(1, SFSelectionType::Amplitude, "");
   
   std::vector <TH1D*> hChargeCh0 = data->GetSpectra(0, SFSelectionType::PE, "ch_0.fPE>0");
   std::vector <TH1D*> hChargeCh1 = data->GetSpectra(1, SFSelectionType::PE, "ch_1.fPE>0");
    
-  std::vector <TH1D*> hT0Ch0 = data->GetSpectra(0, SFSelectionType::T0, "ch_0.fT0>-100");
-  std::vector <TH1D*> hT0Ch1 = data->GetSpectra(1, SFSelectionType::T0, "ch_1.fT0>-100");
+  std::vector <TH1D*> hT0Ch0 = data->GetSpectra(0, SFSelectionType::T0, "ch_0.fT0>0");
+  std::vector <TH1D*> hT0Ch1 = data->GetSpectra(1, SFSelectionType::T0, "ch_1.fT0>0");
   
-  std::vector <TH1D*> hTOTCh0 = data->GetSpectra(0, SFSelectionType::TOT, "ch_0.fTOT>-100");
-  std::vector <TH1D*> hTOTCh1 = data->GetSpectra(1, SFSelectionType::TOT, "ch_1.fTOT>-100");
+  std::vector <TH1D*> hTOTCh0 = data->GetSpectra(0, SFSelectionType::TOT, "ch_0.fTOT>0");
+  std::vector <TH1D*> hTOTCh1 = data->GetSpectra(1, SFSelectionType::TOT, "ch_1.fTOT>0");
   
-  std::vector <TH2D*> hCorrAmp = data->GetCorrHistograms(SFSelectionType::AmplitudeCorrelation, SFDrawCommands::GetCut(SFCutType::Empty));
-  std::vector <TH2D*> hCorrPE  = data->GetCorrHistograms(SFSelectionType::PECorrelation, SFDrawCommands::GetCut(SFCutType::PEAbove0));
-  std::vector <TH2D*> hCorrT0  = data->GetCorrHistograms(SFSelectionType::T0Correlation, SFDrawCommands::GetCut(SFCutType::T0Valid));
+  std::vector <TH2D*> hCorrAmp = data->GetCorrHistograms(SFSelectionType::AmplitudeCorrelation, "");
+  std::vector <TH2D*> hCorrPE  = data->GetCorrHistograms(SFSelectionType::PECorrelation, "ch_0.fPE>0 && ch_1.fPE>0");
+  std::vector <TH2D*> hCorrT0  = data->GetCorrHistograms(SFSelectionType::T0Correlation, "ch_0.fT0>0 && ch_1.fT0>0");
   
   //----- accessing signals
-  int nsig = 6;
+  const int nsig = 6;
   int number = 0;
   std::vector <TH1D*> hSigCh0(nsig);
   std::vector <TH1D*> hSigCh1(nsig);
@@ -79,7 +80,7 @@ int main(int argc, char **argv){
     hSigCh1[i+(nsig/2)] = data->GetSignal(1, 90, "", number, true);
   }
   
-  int nsigav = 3;
+  const int nsigav = 3;
   std::vector <TProfile*> hSigAvCh0(nsigav);
   std::vector <TProfile*> hSigAvCh1(nsigav);
   
@@ -132,9 +133,6 @@ int main(int argc, char **argv){
   text.SetTextFont(42);
   text.SetNDC(true);
   
-  double maxCh0, maxCh1; 
-  double maxYaxis = 0;
-  
   std::vector <TPaveStats*> paves;
   
   for(int i=0; i<npoints; i++){
@@ -142,9 +140,9 @@ int main(int argc, char **argv){
     gPad->SetGrid(1,1);
     stringCh0 = hAmpCh0[i]->GetTitle();
     stringCh1 = hAmpCh1[i]->GetTitle();
-    maxCh0 = hAmpCh0[i]->GetBinContent(hAmpCh0[i]->GetMaximumBin());
-    maxCh1 = hAmpCh1[i]->GetBinContent(hAmpCh1[i]->GetMaximumBin());
-    maxYaxis = std::max(maxCh0 ,maxCh1);
+    double maxCh0 = hAmpCh0[i]->GetBinContent(hAmpCh0[i]->GetMaximumBin());
+    double maxCh1 = hAmpCh1[i]->GetBinContent(hAmpCh1[i]->GetMaximumBin());
+    double maxYaxis = std::max(maxCh0 ,maxCh1);
     maxYaxis += maxYaxis*0.1;
     hAmpCh0[i]->GetYaxis()->SetRangeUser(0, maxYaxis);
     hAmpCh0[i]->SetTitle(Form("Amplitude spectrum, source position %.2f mm", positions[i]));
@@ -268,9 +266,9 @@ int main(int argc, char **argv){
   for(int i=0; i<nsig; i++){
     can_sig->cd(i+1);
     gPad->SetGrid(1,1);
-    maxCh0 = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMaximumBin());
-    maxCh1 = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMaximumBin());
-    maxYaxis = std::max(maxCh0,maxCh1) + 10.;
+    double maxCh0 = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMaximumBin());
+    double maxCh1 = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMaximumBin());
+    double maxYaxis = std::max(maxCh0,maxCh1) + 10.;
     stringCh0 = hSigCh0[i]->GetTitle();
     stringCh1 = hSigCh1[i]->GetTitle();
     hSigCh0[i]->SetLineColor(kBlue);
@@ -302,7 +300,7 @@ int main(int argc, char **argv){
     hSigAvCh0[i]->SetTitle(" ");
     hSigAvCh0[i]->GetXaxis()->SetTitle("time [ns]");
     hSigAvCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
-    maxYaxis = hSigAvCh0[i]->GetBinContent(hSigAvCh0[i]->GetMaximumBin());
+    double maxYaxis = hSigAvCh0[i]->GetBinContent(hSigAvCh0[i]->GetMaximumBin());
     maxYaxis = maxYaxis+0.2*maxYaxis;
     hSigAvCh0[i]->GetYaxis()->SetRangeUser(-10,maxYaxis);
     hSigAvCh0[i]->SetStats(false);
@@ -326,9 +324,27 @@ int main(int argc, char **argv){
   //----- saving
   TString path = std::string(getenv("SFPATH"));
   TString fname = Form("data_series%i.root", seriesNo);
-  TString fullname = path + "../ScintillatingFibers_Results/" + fname;
   
-  TFile *file = new TFile(fullname, "RECREATE");
+  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results" , path+"results");
+  
+  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
+  
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+  
+  TString outdir = CmdLineOption::GetStringValue("Output directory");
+  TString dbase = CmdLineOption::GetStringValue("Data base");
+  
+  TString fname_full = outdir + "/" + fname;
+  TString dbname_full = outdir + "/" + dbase;
+  
+  TFile *file = new TFile(fname_full, "RECREATE");
+
+  if(!file->IsOpen()){
+    std::cerr << "##### Error in data.cc!" << std::endl;
+    std::cerr << "Couldn't open file: " << fname_full << std::endl;
+    return 0;
+  }
+  
   can_ampl->Write();
   can_charge->Write();
   can_t0->Write();
@@ -341,36 +357,11 @@ int main(int argc, char **argv){
   file->Close();
   
   //----- writing results to the data base
-  sqlite3 *resultsDB;
-  int status = -1;
-  TString query = "";
-  sqlite3_stmt *statement;
-  time_t now = time(nullptr);
-  ctime(&now);
-  
-  TString db_name = "../ScintillatingFibers_Results/ScintFibRes.db";
-  status = sqlite3_open(path + db_name, &resultsDB);
-  CheckDBStatus(status, resultsDB);
-  query = Form("INSERT OR REPLACE INTO DATA (SERIES_ID, RESULTS_FILE, DATE) VALUES (%i, ",seriesNo) 
-          + std::string("'") + fname + std::string("'") + Form(", %lld)", (long long) now);
-  status = sqlite3_prepare_v2(resultsDB, query, -1, &statement, NULL);
-  CheckDBStatus(status, resultsDB);
-  status = sqlite3_step(statement);
-  CheckDBStatus(status, resultsDB);
-  status = sqlite3_close_v2(resultsDB);
-  CheckDBStatus(status, resultsDB);
+  TString table = "DATA";
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE) VALUES (%i, '%s')", table.Data(), seriesNo, fname_full.Data());
+  SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;
   
   return 1;
 }
-
-void CheckDBStatus(int status, sqlite3 *database){
- 
-  if(!((status==SQLITE_OK) || (status==SQLITE_DONE))){
-      std::cerr << "##### SQL Error in data.cc: " << sqlite3_errmsg(database) << std::endl;  
-      std::abort();
-    }
-    
-  return;
-} 

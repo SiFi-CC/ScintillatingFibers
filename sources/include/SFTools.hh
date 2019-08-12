@@ -13,6 +13,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include <iostream>
+#include <sqlite3.h>
 
 class SFTools : public TObject{
     
@@ -25,6 +26,9 @@ public:
     static int    GetIndex(std::vector <double> positions, double position);
     static int    GetSeriesNo(TString hname_tstr);
     static double GetPosError(TString collimator, TString testBench);
+    static void   CheckDBStatus(int status, sqlite3 *database); 
+    static bool   SaveResultsDB(TString database, TString table, 
+                                TString query, int seriesNo);
     
     ClassDef(SFTools,1)
 };

@@ -76,7 +76,10 @@ public:
   bool                OpenDataBase(TString name);
   bool                SetDetails(int seriesNo);
   TH1D*               GetSpectrum(int ch, SFSelectionType sel_type, TString cut, double position);
-  TH1D*               GetCustomHistogram(SFSelectionType sel_type, TString cut, double position);
+  TH1D*               GetCustomHistogram(SFSelectionType sel_type, TString cut, double position, 
+                                         std::vector <double> customNum={});
+  TH1D*               GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
+                                         double position, std::vector <double> customNum);
   TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, double position);
   std::vector <TH1D*> GetSpectra(int ch, SFSelectionType sel_type, TString cut);
   std::vector <TH1D*> GetCustomHistograms(SFSelectionType sel_type, TString cut);

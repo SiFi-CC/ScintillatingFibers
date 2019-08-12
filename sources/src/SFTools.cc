@@ -94,3 +94,49 @@ double SFTools::GetPosError(TString collimator, TString testBench){
   return err;
 }
 //------------------------------------------------------------------
+void SFTools::CheckDBStatus(int status, sqlite3 *database){
+  
+  if(!((status==SQLITE_OK) || (status==SQLITE_DONE))){
+      std::cerr << "##### SQL Error in SFTools::CheckDBStatus: " << sqlite3_errmsg(database) << std::endl;  
+      std::abort();
+    }
+    
+  return;
+}
+//------------------------------------------------------------------
+bool SFTools::SaveResultsDB(TString database, TString table, 
+                            TString query, int seriesNo){
+ 
+  std::cout << "----- Saving results in the databse: " << database << std::endl;
+  std::cout << "----- Accessing table: " << table << std::endl;
+  
+  sqlite3 *resultsDB;
+  int status = -1;
+  sqlite3_stmt *statement;
+  time_t now = time(nullptr);
+  ctime(&now);
+  
+  //--- opening data base
+  status = sqlite3_open(database, &resultsDB);
+  CheckDBStatus(status, resultsDB);
+  
+  //--- executing given query
+  status = sqlite3_prepare_v2(resultsDB, query, -1, &statement, nullptr);
+  CheckDBStatus(status, resultsDB);
+  status = sqlite3_step(statement);
+  CheckDBStatus(status, resultsDB);
+  
+  //--- adding time
+  TString time_query = Form("UPDATE %s SET DATE = %lld WHERE SERIES_ID = %i", table.Data(), (long long) now, seriesNo);
+  status = sqlite3_prepare_v2(resultsDB, time_query, -1, &statement, nullptr);
+  CheckDBStatus(status, resultsDB);
+  status = sqlite3_step(statement);
+  CheckDBStatus(status, resultsDB);
+  
+  //--- closing data base
+  status = sqlite3_close_v2(resultsDB);
+  CheckDBStatus(status, resultsDB);
+  
+  return true;
+}
+//------------------------------------------------------------------
