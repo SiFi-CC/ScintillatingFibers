@@ -27,6 +27,7 @@ SFData::SFData(): fSeriesNo(-1),
                   fCollimator("dummy"),
                   fDesc("dummy"),
                   fTestBench("dummy"),
+                  fSiPM("dummy"),
                   fSpectrum(nullptr),
                   fHist(nullptr),
                   fHist2D(nullptr),
@@ -46,6 +47,7 @@ SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fCollimator("dummy"),
                               fDesc("dummy"),
                               fTestBench("dummy"),
+                              fSiPM("dummy"),
                               fSpectrum(nullptr),
                               fHist(nullptr),
                               fHist2D(nullptr),
@@ -101,19 +103,15 @@ bool SFData::SetDetails(int seriesNo){
   //-----Checking if series number is valid
   int maxSeries;
   query = "SELECT COUNT(*) FROM SERIES";
-  status = sqlite3_prepare_v2(fDB, query, -1, &statement, NULL);
+  status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
-  if(status!=SQLITE_OK){
-    std::cerr << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << std::endl;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   while((status=sqlite3_step(statement)) == SQLITE_ROW){
     maxSeries = sqlite3_column_int(statement, 0);
   }
   
-  if(status!=SQLITE_DONE){
-    std::cerr << "##### SQL Error: " << sqlite3_errmsg(fDB) << std::endl;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   sqlite3_finalize(statement);
 
@@ -130,32 +128,28 @@ bool SFData::SetDetails(int seriesNo){
   ///- collimator type 
   ///- number of measurements in the series
   ///- description of the series
-  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLIMATOR, NO_MEASUREMENTS, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
-  status = sqlite3_prepare_v2(fDB, query, -1, &statement, NULL);
+  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, NO_MEASUREMENTS, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
-  if(status!=SQLITE_OK){
-    std::cerr << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << std::endl;
-    return false;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   while((status=sqlite3_step(statement)) == SQLITE_ROW){
     const unsigned char *fiber = sqlite3_column_text(statement, 0);
     const unsigned char *source = sqlite3_column_text(statement, 1);
     const unsigned char *test_bench = sqlite3_column_text(statement, 2);
     const unsigned char *collimator = sqlite3_column_text(statement, 3);
-    const unsigned char *description = sqlite3_column_text(statement, 5);
-    fNpoints = sqlite3_column_int(statement, 4);
+    const unsigned char *sipm = sqlite3_column_text(statement, 4);
+    const unsigned char *description = sqlite3_column_text(statement, 6);
+    fNpoints = sqlite3_column_int(statement, 5);
     fFiber = std::string(reinterpret_cast<const char*>(fiber));
     fSource = std::string(reinterpret_cast<const char*>(source));
     fDesc = std::string(reinterpret_cast<const char*>(description));
     fCollimator = std::string(reinterpret_cast<const char*>(collimator));
     fTestBench = std::string(reinterpret_cast<const char*>(test_bench));
+    fSiPM = std::string(reinterpret_cast<const char*>(sipm));
   }
   
-  if(status!=SQLITE_DONE){
-    std::cerr << "##### SQL Error: " << sqlite3_errmsg(fDB) << std::endl;
-    return false;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   sqlite3_finalize(statement);
   //-----
@@ -167,12 +161,9 @@ bool SFData::SetDetails(int seriesNo){
   ///- list of measurements starting times
   ///- list of measurements stopping times
   query = Form("SELECT MEASUREMENT_NAME, DURATION_TIME, SOURCE_POSITION, START_TIME, STOP_TIME FROM MEASUREMENT WHERE SERIES_ID = %i", fSeriesNo);
-  status = sqlite3_prepare_v2(fDB, query, -1, &statement, NULL);
+  status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
-  if(status!=SQLITE_OK){
-    std::cerr << "##### SQL Error: " <<  sqlite3_errmsg(fDB) << std::endl;
-    return false;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   while((status=sqlite3_step(statement)) == SQLITE_ROW){
     const unsigned char *name = sqlite3_column_text(statement, 0);
@@ -183,10 +174,7 @@ bool SFData::SetDetails(int seriesNo){
     fStop.push_back(sqlite3_column_int(statement, 4));
   }
   
-  if(status!=SQLITE_DONE){
-    std::cerr << "##### SQL Error: " << sqlite3_errmsg(fDB) << std::endl;
-    return false;
-  }
+  SFTools::CheckDBStatus(status, fDB);
   
   sqlite3_finalize(statement);
    

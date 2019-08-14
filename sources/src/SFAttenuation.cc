@@ -122,7 +122,7 @@ bool SFAttenuation::AttAveragedCh(void){
   fAttnLen = fabs(1./fpol1->GetParameter(1));
   fAttnErr = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
   
-  std::cout << "\n\tAttenuation lenght is: " << fAttnLen << " +/- " << fAttnErr << " mm\n" << std::endl;
+  std::cout << "Attenuation lenght is: " << fAttnLen << " +/- " << fAttnErr << " mm\n" << std::endl;
   
   return true;
 }
@@ -142,7 +142,7 @@ bool SFAttenuation::AttSeparateCh(int ch){
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
-  TString cut = Form("ch_%i.fT0>0 && ch_%i.fT0<590 && ch_%i.fPE>0", ch, ch, ch); //FIXME
+  TString cut = Form("ch_%i.fT0>0 && ch_%i.fT0<590 && ch_%i.fPE>0", ch, ch, ch);
   std::vector <TH1D*> spectra = fData->GetSpectra(ch, SFSelectionType::PE, cut);
   
   TString gname = Form("att_s%i_ch%i", fSeriesNo, ch);

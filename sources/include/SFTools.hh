@@ -29,6 +29,7 @@ public:
     static void   CheckDBStatus(int status, sqlite3 *database); 
     static bool   SaveResultsDB(TString database, TString table, 
                                 TString query, int seriesNo);
+    static bool   CreateTable(TString database, TString table);
     
     ClassDef(SFTools,1)
 };

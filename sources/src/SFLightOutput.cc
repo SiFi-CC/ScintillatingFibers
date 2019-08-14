@@ -1,317 +1,362 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *           SFLightOutput.cc            *
-// *             Jonas Kasper		   *
-// *     kasper@physik.rwth-aachen.de      * 
+// *            SFLightOutput.cc           *
+// *             Jonas Kasper              *
+// *      kasper@physik.rwth-aachen.de     *
+// *         Katarzyna Rusiecka            *
+// * katarzyna.rusiecka@doctoral.uj.edu.pl *
 // *          Created in 2018              *
 // *                                       *
-// ***************************************** 
+// *****************************************
 
 #include "SFLightOutput.hh"
 
 ClassImp(SFLightOutput);
 
 //------------------------------------------------------------------
-///Default constructor.
-SFLightOutput::SFLightOutput(){
-  cout << "#### Warning in SFLightOutput constructor!" << endl;
-  cout << "You are using default constructor!" << endl;
-  fSeriesNo = -1;
-  fData = NULL;
-  fAtt = NULL;
-  Reset();
+/// Default constructor.
+SFLightOutput::SFLightOutput(): fSeriesNo(-1),
+                                fPDE(-1), 
+                                fCrossTalk(-1),
+                                fLightOut(-1),
+                                fLightOutErr(-1),
+                                fLightOutCh0(-1),
+                                fLightOutCh0Err(-1),
+                                fLightOutCh1(-1),
+                                fLightOutCh1Err(-1),
+                                fLightOutGraph(nullptr),
+                                fLightOutCh0Graph(nullptr),
+                                fLightOutCh1Graph(nullptr),
+                                fData(nullptr),
+                                fAtt(nullptr) {
+                                    
+  std::cout << "##### Warning in SFLightOutput constructor!" << std::endl;
+  std::cout << "You are using default constructor!" << std::endl;
 }
 //------------------------------------------------------------------
-///Standard constructor (recommended)
-///\param seriesNo is number of experimental series to be analyzed. 
-SFLightOutput::SFLightOutput(int seriesNo){
-  Reset();
-  fSeriesNo = seriesNo;
+SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
+                                            fPDE(-1), 
+                                            fCrossTalk(-1),
+                                            fLightOut(-1),
+                                            fLightOutErr(-1),
+                                            fLightOutCh0(-1),
+                                            fLightOutCh0Err(-1),
+                                            fLightOutCh1(-1),
+                                            fLightOutCh1Err(-1),
+                                            fLightOutGraph(nullptr),
+                                            fLightOutCh0Graph(nullptr),
+                                            fLightOutCh1Graph(nullptr),
+                                            fData(nullptr),
+                                            fAtt(nullptr) {
+                                                
   try{
     fData = new SFData(fSeriesNo);
   }
   catch(const char *message){
-    cout << message << endl;
+    std::cout << message << std::endl;
     throw "##### Exception in SFLightOutput constructor!";
   }
-  TString desc = fData->GetDescription();
-  if(!desc.Contains("Regular series")){
-    cout << "##### Warning in SFLightOutput constructor!";
-    cout << "Calculating lightouput length with non-regular series!" << endl;
+  
+  TString description = fData->GetDescription();
+  TString SiPM = fData->GetSiPM();
+  
+  if(!description.Contains("Regular series")){
+    std::cout << "##### Warning in SFLightOutput constructor!" << std::endl;
+    std::cout << "Calculating light output for non-regular series!" << std::endl;
   }
-  TString type = fData->GetMeasureType();
-  if(!type.Contains("Lead")){
-	fPDE=0.31; 
-	fCrossTalk=0.07; 
+  
+  TString cutCh0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
+  TString cutCh1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
+  fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
+  fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
+  
+  if(SiPM=="Hamamatsu"){
+    fPDE       = 0.31; 
+    fCrossTalk = 0.07; 
   }
-  else{
-	fPDE=0.4;
-	fCrossTalk=0.03;
+  else if(SiPM=="SensL"){
+    fPDE       = 0.4;
+    fCrossTalk = 0.03;
   }
+  
   try{
     fAtt = new SFAttenuation(fSeriesNo);
   }
   catch(const char *message){
-    cout << message << endl;
+    std::cout << message << std::endl;
     throw "##### Exception in SFLightOutput constructor!";
   }
-  
-  //----- averaged channels method
   fAtt->AttAveragedCh();
-  fAttLen   = fAtt->GetAttenuation();
-  //----- separate channels method
-  fAtt->AttSeparateCh(0);
-  fSpectraCh0  = fAtt->GetSpectra(0);
-  fAttLenCh0   = fAtt->GetAttenuation(0);
-  
-  fAtt->AttSeparateCh(1);
-  fSpectraCh1 = fAtt->GetSpectra(1);
-  fAttLenCh1   = fAtt->GetAttenuation(1);
-  for (int i=0;i<fData->GetNpoints();i++){
-	fPFCh0.push_back(new SFPeakFinder(fSpectraCh0[i],"511",false));
-	fPFCh1.push_back(new SFPeakFinder(fSpectraCh1[i],"511",false));
-  }
-  CalculateLO(0,0);
-  CalculateLO(0,1);
-  CalculateSLO(0);
-  CalculateLO(1,0);
-  CalculateLO(1,1);
-  CalculateSLO(1);
 }
 //------------------------------------------------------------------
-///Default destructor.
+/// Default destructor.
 SFLightOutput::~SFLightOutput(){
-  if(fData!=NULL) delete fData;
-  if(fAtt!=NULL) delete fAtt;
+ 
+  if(fData != nullptr)
+    delete fData;
+  
+  if(fAtt != nullptr)
+    delete fAtt;
 }
-
 //------------------------------------------------------------------
-///Calculates the Ligthoutput for the single channels with the averaged attenuation length 
-void SFLightOutput::CalculateLO(bool mode,int ch){
-
-  cout << "\n----- Inside SFLightOutput::SeparateCh() for series " << fSeriesNo << endl;
-  cout << "----- Analyzing channel " << ch << endl;
+bool SFLightOutput::CalculateLightOut(void){
+    
+  std::cout << "\n----- Inside SFLightOutput::CalculateLightOut()" << std::endl;
+  std::cout << "----- Series: " << fSeriesNo << std::endl;
+  
+  if(fLightOutCh0Graph==nullptr || 
+     fLightOutCh1Graph==nullptr){
+    std::cerr << "##### Error in SFLightOutput::CalculateLightOut()" << std::endl;
+    std::cerr << "fLightOutCh0Graph and fLightOutCh1Graph don't exist!" << std::endl;
+    std::cerr << "Run analysis for channels 0 and 1 first!" << std::endl;
+    return false;
+  }
   
   int npoints = fData->GetNpoints();
-  vector <double> positions = fData->GetPositions();
-  vector <TH1D*> spectra;
-  vector <SFPeakFinder*> tempPF;
-  if(ch==0){
-	spectra =fSpectraCh0;
-	tempPF = fPFCh0;
-  }
-  else if(ch==1){
-	spectra =fSpectraCh1;
-	tempPF = fPFCh1;
-  }
-  TString gname;
-  if(mode==0)gname = Form("LOAve_s%i_ch%i",fSeriesNo,ch);
-  if(mode==1)gname = Form("LOSep_s%i_ch%i",fSeriesNo,ch);
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
+  std::vector <double> positions = fData->GetPositions();
+  
+  TString gname = Form("LightOutSum_S%i", fSeriesNo);
   
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("light output [Ph./MeV]");
+  graph->GetYaxis()->SetTitle("light output [ph/MeV]");
+  graph->SetName(gname);
+  graph->SetTitle(gname);
+  graph->SetMarkerStyle(4);
+  
+  double lightOut, lightOutErr;
+  double lightOutAv, lightOutAvErr;
+  double x, yCh0, yCh1;
+  
+  for(int i=0; i<npoints; i++){
+    fLightOutCh0Graph->GetPoint(i, x, yCh0);
+    fLightOutCh1Graph->GetPoint(i, x, yCh1);
+    lightOut = yCh0+yCh1;
+    lightOutErr = sqrt((pow(fLightOutCh0Graph->GetErrorY(i), 2)) + 
+                       (pow(fLightOutCh1Graph->GetErrorY(i), 2)));
+    graph->SetPoint(i, positions[i], lightOut);
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
+    lightOutAv += lightOut*(1./pow(lightOutErr, 2));
+    lightOutAvErr += 1./pow(lightOutErr, 2);
+  }
+  
+  fLightOut = lightOutAv/lightOutAvErr;
+  fLightOutErr = sqrt(1./lightOutAvErr);
+  fLightOutGraph = graph;
+  
+  std::cout << "Averaged and summed light output: " << fLightOut 
+            <<" +/- " << fLightOutErr << " ph/MeV" << std::endl;
+
+  return true;  
+}
+//------------------------------------------------------------------
+bool SFLightOutput::CalculateLightOut(int ch){
+    
+  std::cout << "\n----- Inside SFLightOutput::CalculateLightOut()" << std::endl;
+  std::cout << "----- Series: " << fSeriesNo << "\t Channel: " << ch << std::endl; 
+  
+  int npoints = fData->GetNpoints();
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
+  std::vector <double> positions = fData->GetPositions();
+  std::vector <double> attenuation = fAtt->GetAttenuation();
+  std::vector <SFPeakFinder*> peakFin;
+  std::vector <TH1D*> peaks;
+  
+  for(int i=0; i<npoints; i++){
+    if(ch==0)
+      peakFin.push_back(new SFPeakFinder(fSpectraCh0[i], 0));
+    else if(ch==1)
+      peakFin.push_back(new SFPeakFinder(fSpectraCh1[i], 0));
+    else{
+      std::cerr << "##### Error in SFLightOutput::CalculateLightOut!" << std::endl;
+      std::cerr << "Incorrect channel number" << std::endl;
+      return false;
+    }
+  }
+  
+  TString gname = Form("LightOut_S%i_Ch%i", fSeriesNo, ch);
+
+  TGraphErrors *graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("light output [ph/MeV]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  vector<double> peak_par;
-  double correctedLO=0;
-  double correctedLOE=0;
-  double dist=0;
-
-  double lightout=0;
-  double lightouterr=0;
-
-  vector <double> temp_fat; 
-
-  if(mode==0) temp_fat=fAttLen;
-  if(mode==1){
-	if(ch==0) temp_fat=fAttLenCh0;
-	else if(ch==1) temp_fat=fAttLenCh1;
-  }
-  for(int i=0; i<npoints; i++){
-    peak_par=tempPF[i]->GetParameter();
-    if(ch==0) dist=positions[i];
-    else if(ch==1) dist=100-positions[i];
-    correctedLO= peak_par[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-dist/temp_fat[0]);
-    correctedLOE= TMath::Sqrt((correctedLO*correctedLO/peak_par[0]/peak_par[0]*peak_par[1]*peak_par[1])+(correctedLO*correctedLO/temp_fat[0]/temp_fat[0]/temp_fat[0]/temp_fat[0]*temp_fat[1]*temp_fat[1]));
-    graph->SetPoint(i,positions[i],correctedLO);
-    graph->SetPointError(i,0,correctedLOE);
-    lightout+=correctedLO*(1/correctedLOE/correctedLOE);
-    lightouterr+=(1/correctedLOE/correctedLOE);
-  }
-   
-  lightout=lightout/lightouterr;
-  lightouterr=TMath::Sqrt(1/lightouterr);
-  if(mode==0){
-	if(ch==0){
-		fLightOutAveGraphCh0=graph;
-		fLightOutAveCh0=lightout;
-		fLightOutAveErrCh0=lightouterr;
-	}
-	else if(ch==1){
-		fLightOutAveGraphCh1=graph;
-		fLightOutAveCh1=lightout;
-		fLightOutAveErrCh1=lightouterr;
-	}
-  }
-  else if(mode==1){
-	if(ch==0){
-		fLightOutSepGraphCh0=graph;
-		fLightOutSepCh0=lightout;
-		fLightOutSepErrCh0=lightouterr;
-	}
-	else if(ch==1){
-		fLightOutSepGraphCh1=graph;
-		fLightOutSepCh1=lightout;
-		fLightOutSepErrCh1=lightouterr;
-	}
-  }
-  cout << "\n      For channel " << ch << " is the Lightoutput: " << lightout << " +/- " << lightouterr << "P.E./MeV" << endl;
-}
-
-//------------------------------------------------------------------
-///Calculates the Summed Lightouput
-void SFLightOutput::CalculateSLO(bool mode){
-  cout << "\n----- Inside SFLightOutput::Summed() for series " << fSeriesNo << endl;
+  std::vector <double> parameters;
+  double lightOut = 0;
+  double lightOutErr = 0;
+  double lightOutAv = 0;
+  double lightOutAvErr = 0;
+  double distance = 0;
   
-   int npoints = fData->GetNpoints();
-   vector <double> positions = fData->GetPositions();
-   
-   TString gname; 
-   if(mode==0) gname = Form("LOAve_s%i",fSeriesNo);
-   else if(mode==1) gname = Form("LOAve_s%i",fSeriesNo);
-   TGraphErrors* graph = new TGraphErrors(npoints);
-   graph->GetXaxis()->SetTitle("source position [mm]");
-   graph->GetYaxis()->SetTitle("LightOutput [P.E./MeV]");
-   graph->SetTitle(gname);
-   graph->SetName(gname);
-   graph->SetMarkerStyle(4);
-   double x=0;
-   double y=0;
-   double SumLO=0;
-   double SumLOE=0;
-   double lightout=0;
-   double lightouterr=0;
-
-   for(int i=0; i<npoints; i++){
-	   if(mode==0)fLightOutAveGraphCh0->GetPoint(i,x,y);
-	   if(mode==1)fLightOutSepGraphCh0->GetPoint(i,x,y);
-	   SumLO=y;
-	   if(mode==0)fLightOutAveGraphCh1->GetPoint(i,x,y);
-	   if(mode==1)fLightOutSepGraphCh1->GetPoint(i,x,y);
-	   SumLO+=y;
-	   if(mode==0)SumLOE=TMath::Sqrt((fLightOutAveGraphCh0->GetErrorY(i)*fLightOutAveGraphCh0->GetErrorY(i))+(fLightOutAveGraphCh1->GetErrorY(i)*fLightOutAveGraphCh1->GetErrorY(i)));
-	   else if(mode==1)SumLOE=TMath::Sqrt((fLightOutSepGraphCh0->GetErrorY(i)*fLightOutSepGraphCh0->GetErrorY(i))+(fLightOutSepGraphCh1->GetErrorY(i)*fLightOutSepGraphCh1->GetErrorY(i)));
-	   graph->SetPoint(i,positions[i],SumLO);
-	   graph->SetPointError(i,0,SumLOE);
-
-	   lightout+=SumLO*(1/SumLOE/SumLOE);
-	   lightouterr+=(1/SumLOE/SumLOE);
-   }
-   lightout=lightout/lightouterr;
-   lightouterr=TMath::Sqrt(1/lightouterr);
-
-   if(mode==0){
-	fLightOutAve=lightout;
-	fLightOutAveErr=lightouterr;
-	fLightOutAveGraph=graph;
-   }
-   if(mode==1){
-	fLightOutSep=lightout;
-	fLightOutSepErr=lightouterr;
-	fLightOutSepGraph=graph;
-   }
-  cout << " \n      The summed Lightoutput is:" << lightout << " +/- " << lightouterr << "P.E./MeV" << endl;
+  for(int i=0; i<npoints; i++){
+    
+    if(collimator=="Lead"){
+      peakFin[i]->FindPeakNoBackground();
+      peaks.push_back(peakFin[i]->GetPeak());
+    }
+    else if(collimator=="Electronic")
+      peakFin[i]->FindPeakFit();
+    
+    if(ch==0) distance = positions[i];
+    if(ch==1) distance = 100.-positions[i];
+    parameters = peakFin[i]->GetParameters();
+    
+    lightOut = parameters[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/attenuation[0]);
+    lightOutErr = sqrt((pow(lightOut, 2)*pow(parameters[1], 2)/pow(parameters[0], 2)) + 
+                       (pow(lightOut, 2)*pow(attenuation[1],2)/pow(attenuation[0], 4)));
+    graph->SetPoint(i, positions[i], lightOut);
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
+    lightOutAv += lightOut * (1./pow(lightOutErr, 2));
+    lightOutAvErr += (1./pow(lightOutErr, 2));
+  }
+  
+  lightOutAv = lightOutAv/lightOutAvErr;
+  lightOutAvErr = sqrt(1./lightOutAvErr);
+  
+  if(ch==0){
+    fLightOutCh0 = lightOutAv;
+    fLightOutCh0Err = lightOutAvErr;
+    fLightOutCh0Graph = graph;
+    fPeaksCh0 = peaks;
+  }
+  else if(ch==1){
+    fLightOutCh1 = lightOutAv;
+    fLightOutCh1Err = lightOutAvErr;
+    fLightOutCh1Graph = graph;
+    fPeaksCh1 = peaks;
+  }
+  
+  std::cout << "Average light output for channel " << ch << ": " << lightOutAv 
+            << " +/- " << lightOutAvErr << " ph/MeV \n" << std::endl;
+  
+  return true;  
 }
 //------------------------------------------------------------------
-///Resets values of private members of the class to their default values.
-void SFLightOutput::Reset(void){
- fLightOutAve= 0;
- fLightOutAveErr      = 0;
- fLightOutAveCh0= 0;
- fLightOutAveErrCh0      = 0;
- fLightOutAveCh1= 0;
- fLightOutAveErrCh1      = 0;
- fLightOutAveGraph    = NULL;
- fLightOutAveGraphCh0 = NULL;
- fLightOutAveGraphCh1 = NULL;
- fLightOutSep= 0;
- fLightOutSepErr      = 0;
- fLightOutSepCh0= 0;
- fLightOutSepErrCh0      = 0;
- fLightOutSepCh1= 0;
- fLightOutSepErrCh1      = 0;
- fLightOutSepGraph    = NULL;
- fLightOutSepGraphCh0 = NULL;
- fLightOutSepGraphCh1 = NULL;
- if(!fSpectraCh0.empty()) fSpectraCh0.clear();
- if(!fSpectraCh1.empty()) fSpectraCh1.clear();
- if(!fAttLen.empty()) fAttLen.clear();
- if(!fAttLenCh0.empty()) fAttLenCh1.clear();
- if(!fAttLenCh1.empty()) fAttLenCh0.clear();
+std::vector <double> SFLightOutput::GetLightOutput(void){
+    
+  std::vector <double> temp;
+  temp.push_back(fLightOut);
+  temp.push_back(fLightOutErr);
+  
+  if(temp[0]==-1 || temp[1]==-1){
+    std::cerr << "##### Error in SFLightOutout::GetLightOutput()" << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
+    std::abort();
+  }
+  
+  return temp;
 }
 //------------------------------------------------------------------
-///Prints details of SFAttenuation class object.
+std::vector <double> SFLightOutput::GetLightOutput(int ch){
+
+  std::vector <double> temp;
+  
+  if(ch==0){
+    temp.push_back(fLightOutCh0);
+    temp.push_back(fLightOutCh0Err);
+  }
+  else if(ch==1){
+    temp.push_back(fLightOutCh1);
+    temp.push_back(fLightOutCh1Err);
+  }
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetLightOutput() for ch " << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+    
+  if(temp[0]==-1 || temp[1]==-1){
+    std::cerr << "##### Error in SFLightOutput::GetLightOutput() for ch " << ch << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
+    std::abort();
+  }
+  
+  return temp;  
+}
+//------------------------------------------------------------------
+std::vector <TH1D*> SFLightOutput::GetSpectra(int ch){
+    
+  if((ch==0 && fSpectraCh0.empty()) ||
+     (ch==1 && fSpectraCh1.empty())) {
+      std::cerr << "##### Error in SFLightOutput::GetSpectra() fo ch" << ch << std::endl; 
+      std::cerr << "No spectra available!" << std::endl; 
+      std::abort();
+  }
+
+  if(ch==0)
+    return fSpectraCh0;
+  else if(ch==1)
+    return fSpectraCh1;
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetSpectra for ch" << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+}
+//------------------------------------------------------------------
+std::vector <TH1D*> SFLightOutput::GetPeaks(int ch){
+    
+  if((ch==0 && fPeaksCh0.empty()) ||
+     (ch==1 && fPeaksCh1.empty())) {
+      std::cerr << "##### Error in SFLightOutput::GetPeaks() for ch" 
+                << ch << std::endl; 
+      std::cerr << "No spectra available!" << std::endl; 
+      std::abort();
+  }
+
+  if(ch==0)
+    return fPeaksCh0;
+  else if(ch==1)
+    return fPeaksCh1;
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetPeaks() for ch" 
+              << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+}
+//------------------------------------------------------------------
+TGraphErrors* SFLightOutput::GetLightOutputGraph(void){
+    
+  if(fLightOutGraph==nullptr){
+    std::cerr << "##### Error in SFLightOut::GetLightOutputGraph()" << std::endl;
+    std::cerr << "Requested graph doesn't exist!" << std::endl;
+    std::abort();
+  }
+  
+  return fLightOutGraph;
+}
+//------------------------------------------------------------------
+TGraphErrors* SFLightOutput::GetLightOutputGraph(int ch){
+  
+  if((ch==0 && fLightOutCh0Graph==nullptr) ||
+     (ch==1 && fLightOutCh1Graph==nullptr)){
+    std::cerr << "##### Error in SFLightOutput::GetLightOutputGraph() for ch " << ch << std::endl;
+    std::cerr << "Requested graph doesn't exist!" << std::endl;
+  }
+    
+  if(ch==0)
+    return fLightOutCh0Graph;
+  else if(ch==1)
+    return fLightOutCh1Graph;
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetLightOutputGraph() for ch " << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+}
+//------------------------------------------------------------------
+/// Prints details of the SFLightOutput class object.
 void SFLightOutput::Print(void){
- cout << "\n-------------------------------------------" << endl;
- cout << "This is print out of SFLightOutput class object" << endl;
- cout << "Experimental series number " << fSeriesNo << endl;
- cout << "-------------------------------------------\n" << endl;
+ std::cout << "\n-------------------------------------------" << std::endl;
+ std::cout << "This is print out of SFLightOutput class object" << std::endl;
+ std::cout << "Experimental series number " << fSeriesNo << std::endl;
+ std::cout << "-------------------------------------------\n" << std::endl;
 }
 //------------------------------------------------------------------
-TGraphErrors* SFLightOutput::GetLightOutputGraph(TString mode){
-  if(mode.Contains("Averaged") | mode.Contains("Ave"))  return fLightOutAveGraph;
-  else if(mode.Contains("Seperate") | mode.Contains("Sep"))  return fLightOutSepGraph;
-}
-//------------------------------------------------------------------
-TGraphErrors* SFLightOutput::GetLightOutputGraph(TString mode, int ch){
-  if(mode.Contains("Averaged") | mode.Contains("Ave")){ 
-	if (ch==0)return fLightOutAveGraphCh0;
-  	else if (ch==1)return fLightOutAveGraphCh1;
-  }
-  else if(mode.Contains("Seperate") | mode.Contains("Sep")){ 
-	if (ch==0)return fLightOutSepGraphCh0;
-  	else if (ch==1)return fLightOutSepGraphCh1;
-  }
-}
-//------------------------------------------------------------------
-vector<double> SFLightOutput::GetLightOutput(TString mode){
-  vector<double> flo_return;
-  if(mode.Contains("Averaged") | mode.Contains("Ave")){
-	flo_return.push_back(fLightOutAve);
-  	flo_return.push_back(fLightOutAveErr);
-  }
-  else if(mode.Contains("Seperate") | mode.Contains("Sep")){
-	flo_return.push_back(fLightOutSep);
-  	flo_return.push_back(fLightOutSepErr);
-  }
-  return flo_return;
-}
-//------------------------------------------------------------------
-vector<double> SFLightOutput::GetLightOutput(TString mode,int ch){
-  vector<double> flo_return;
-  if(mode.Contains("Averaged") | mode.Contains("Ave")){
- 	 if(ch==0){
- 	       flo_return.push_back(fLightOutAveCh0);
- 	 	flo_return.push_back(fLightOutAveErrCh0);
- 	 }
- 	 else if(ch==1){
- 	       flo_return.push_back(fLightOutAveCh1);
- 	 	flo_return.push_back(fLightOutAveErrCh1);
- 	 }
-  }
-  else if(mode.Contains("Seperate") | mode.Contains("Sep")){
- 	 if(ch==0){
- 	       flo_return.push_back(fLightOutSepCh0);
- 	 	flo_return.push_back(fLightOutSepErrCh0);
- 	 }
- 	 else if(ch==1){
- 	       flo_return.push_back(fLightOutSepCh1);
- 	 	flo_return.push_back(fLightOutSepErrCh1);
- 	 }
-  }
-  return flo_return;
-}

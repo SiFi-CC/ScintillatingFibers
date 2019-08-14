@@ -114,7 +114,7 @@ bool SFPeakFinder::FindPeakSpectrum(void){
 
   // Fitting Gaussian function to get peak position and sigma
   TF1 *fun = new TF1("fun", "gaus", peak-50, peak+50);
-  TFitResultPtr fitRes = fSpectrum->Fit("fun" , opt);
+  TFitResultPtr fitRes = fSpectrum->Fit("fun", opt);
   int counter = 0;
   
   while(fitRes!=0 && counter<20){

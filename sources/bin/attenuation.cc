@@ -14,10 +14,12 @@
 #include "TLatex.h"
 #include "CmdLineConfig.hh"
 #include "CmdLineOption.hh"
+#include <sys/stat.h> 
+#include <sys/types.h> 
 
 int main(int argc, char **argv){
   
-  if(argc!=2){
+  if(argc<2 || argc>6){
     std::cout << "to run type: ./attenuation seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 0;
@@ -191,6 +193,16 @@ int main(int argc, char **argv){
   TString outdir = CmdLineOption::GetStringValue("Output directory");
   TString dbase = CmdLineOption::GetStringValue("Data base");
   
+  if(!gSystem->ChangeDirectory(outdir)){
+    std::cout << "Creating new directory... " << std::endl;
+    std::cout << outdir << std::endl;
+    int stat = mkdir(outdir, 0777);
+    if(stat==-1){
+      std::cerr << "##### Error in attenuation.cc! Unable to create new direcotry!" << std::endl;
+      return 0;
+    }
+  }
+  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -211,7 +223,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "ATTENUATION_LENGTH";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATTENUATION_CH0, ATTENUATION_CH0_ERR, ATTENUATION_CH1, ATTENUATION_CH1_ERR, ATTENUATION_COMB, ATTENUATION_COMB_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), attlenCh0[0], attlenCh0[1], attlenCh1[0], attlenCh1[1], attlen[0], attlen[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), attlenCh0[0], attlenCh0[1], attlenCh1[0], attlenCh1[1], attlen[0], attlen[1]);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

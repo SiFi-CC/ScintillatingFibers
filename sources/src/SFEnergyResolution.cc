@@ -78,7 +78,7 @@ SFEnergyResolution::~SFEnergyResolution(){
 //------------------------------------------------------------------
 bool SFEnergyResolution::CalculateEnergyRes(int ch){
     
-  std::cout << "----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
+  std::cout << "\n----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
   std::cout << "----- Analyzing series: " << fSeriesNo << std::endl;
   std::cout << "----- Analyzing channel: " << ch << std::endl; 
   
@@ -98,6 +98,7 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
       std::cerr << "##### Error in SFEnergyResolution::CalculateEnergyRes() for ch"
                 <<  ch << std::endl;
       std::cerr << "Incorrect channel number!" << std::endl;
+      return false;
     }
   }
   
@@ -110,8 +111,10 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
   graph->SetMarkerStyle(4);
   
   std::vector <double> parameters;
-  double enRes, enResErr;
-  double enResAve, enResAveErr;
+  double enRes = 0;
+  double enResErr = 0;
+  double enResAve = 0;
+  double enResAveErr = 0;
   
   for(int i=0; i<npoints; i++){
     if(collimator=="Lead"){
@@ -136,7 +139,7 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
   enResAveErr = sqrt(1./enResAveErr);
   
   std::cout << "Average energy resolution for channel " << ch 
-            << ": " << enResAve << "% +/- " << enResAveErr << "%" << std::endl; 
+            << ": " << enResAve << " +/- " << enResAveErr << " % \n" << std::endl; 
  
   if(ch==0){
       fEnergyResGraphCh0 = graph;
@@ -156,7 +159,7 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
 //------------------------------------------------------------------
 bool SFEnergyResolution::CalculateEnergyRes(void){
     
-  std::cout << "----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
+  std::cout << "\n----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
   std::cout << "----- Analyzing series: " << fSeriesNo << std::endl;
   
   int npoints = fData->GetNpoints();
@@ -223,7 +226,7 @@ bool SFEnergyResolution::CalculateEnergyRes(void){
                                                         cut_ch1, positions[i], customNumCh1));
     fSpectraSum.push_back(fData->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
                                                     cut, positions[i], customNumSum));
-    peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 1));
+    peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 0));
     
     if(collimator=="Lead"){
       peakFin[i]->FindPeakNoBackground();
@@ -250,14 +253,14 @@ bool SFEnergyResolution::CalculateEnergyRes(void){
   fEnergyResGraphSum = graph;
   
   if(std::isnan(fEnergyResSum) || fEnergyResSum<0 || fEnergyResSum>100){
-    std::cout << "Warning in SFEnergyResolution class!" << std::endl;
+    std::cout << "##### Warning in SFEnergyResolution class!" << std::endl;
     std::cout << "Incorrect energy resolution value: " << fEnergyResSum  
               << " +/- " << fEnergyResSumErr << std::endl;
     fEnergyResSum=0;
     fEnergyResSumErr=0;
   }
   
-  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fEnergyResSum << "% +/- " << fEnergyResSumErr << "%\n\n" << std::endl;
+  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fEnergyResSum << " +/- " << fEnergyResSumErr << " % \n" << std::endl;
   
   return true;
 }
@@ -281,7 +284,7 @@ std::vector <double> SFEnergyResolution::GetEnergyResolution(int ch){
   
   if(temp[0]==-1 || temp[1]==-1){
     std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution() for ch" << ch << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << "%\t" << temp[1] << "%\n\n" << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
     std::abort();
   }
   
@@ -296,7 +299,7 @@ std::vector <double> SFEnergyResolution::GetEnergyResolution(void){
   
   if(temp[0]==-1 || temp[1]==-1){
     std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution()" << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << "%\t" << temp[1] << "%" << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
     std::abort();
   }
   

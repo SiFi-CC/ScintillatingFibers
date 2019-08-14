@@ -2,317 +2,195 @@
 // *                                       *
 // *          ScintillatingFibers          *
 // *             lightout.cc               *
-// *             Jonas Kasper		   *
-// * 	 kasper@physik.rwth-aachen.de 	   *
+// *             Jonas Kasper              *
+// *     kasper@physik.rwth-aachen.de      *
+// *         Katarzyna Rusiecka            *
+// * katarzyna.rusiecka@doctoral.uj.edu.pl *
 // *          Created in 2018              *
 // *                                       *
 // *****************************************
 
 #include "SFData.hh"
 #include "SFLightOutput.hh"
+#include "SFTools.hh"
+#include "CmdLineConfig.hh"
+#include "CmdLineOption.hh"
+#include "TSystem.h"
 #include "TCanvas.h"
 #include "TLatex.h"
+#include <sys/stat.h> 
+#include <sys/types.h> 
 
 int main(int argc, char **argv){
-  bool all=false;
-  if(argc!=2){
-    cout << "to run type: ./lightout seriesNo" << endl;
+    
+  if(argc<2 || argc>6){
+    std::cout << "to run type: ./lightout seriesNo";
+    std::cout << "-out path/to/output -db database" << std::endl;
     return 0;
   }
  
   int seriesNo = atoi(argv[1]);
-  if (seriesNo==0) all=true;
- 
-  if(!all){
-	SFData *data; 
-	try{
-	        data = new SFData(seriesNo);
-	}
-	catch(const char* message){
-	        cout << message << endl;
-	        cout << "##### Exception in lightout.cc!" << endl;
-	        return 0;
-	}
-
-	data->Print();
-
-	SFLightOutput* lout;
-	try{
-	        lout= new SFLightOutput(seriesNo);
-	}
-	catch(const char* message){
-	        cout << message << endl;
-	        cout << "##### Exception in lightout.cc!" << endl;
-	        return 0;
-	}
-
-	TGraphErrors* loutGraph_ave= lout->GetLightOutputGraph("Ave"); 
-	TGraphErrors* loutGraphCh0_ave= lout->GetLightOutputGraph("Ave",0); 
-	TGraphErrors* loutGraphCh1_ave= lout->GetLightOutputGraph("Ave",1); 
-	vector<double> lightout_ave = lout->GetLightOutput("Ave"); 
-	vector<double> lightoutCh0_ave = lout->GetLightOutput("Ave",0); 
-	vector<double> lightoutCh1_ave = lout->GetLightOutput("Ave",1); 
-
-	TGraphErrors* loutGraph_sep= lout->GetLightOutputGraph("Sep"); 
-	TGraphErrors* loutGraphCh0_sep= lout->GetLightOutputGraph("Sep",0); 
-	TGraphErrors* loutGraphCh1_sep= lout->GetLightOutputGraph("Sep",1); 
-	vector<double> lightout_sep = lout->GetLightOutput("Sep"); 
-	vector<double> lightoutCh0_sep = lout->GetLightOutput("Sep",0); 
-	vector<double> lightoutCh1_sep = lout->GetLightOutput("Sep",1); 
-	//-----drawing averaged channels
-	TLatex text;
-	text.SetNDC(true);
-	// ----------- averaged attenutation length
-	TCanvas *can_averaged_ch_ave = new TCanvas("can_averaged_ch_ave","can_averaged_ch_ave",700,500);
-	can_averaged_ch_ave->cd();
-	gPad->SetGrid(1,1);
-	//loutGraph_ave->SetTitle(Form("Series %i, Ave, lightoutput curve",seriesNo));
-	loutGraph_ave->SetTitle("");
-	loutGraph_ave->Draw();
-	text.SetTextSize(0.04);
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) PH./MeV",lightout_ave[0],lightout_ave[1]));
-
-	TCanvas *can_single_ch0_ave= new TCanvas("can_single_ch0_ave","can_single_ch0_ave",700,500);
-	can_single_ch0_ave->cd();
-	gPad->SetGrid(1,1);
-	//loutGraphCh0_ave->SetTitle(Form("Series %i Ch0, Ave, lightoutput curve",seriesNo));
-	loutGraphCh0_ave->SetTitle("");
-	loutGraphCh0_ave->Draw();
-	text.SetTextSize(0.04);
-	//text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_ave[0],lightoutCh0_ave[1]));
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_ave[0],lightoutCh0_ave[1]));
-
-	TCanvas *can_single_ch1_ave= new TCanvas("can_single_ch1_ave","can_single_ch1_ave",700,500);
-	can_single_ch1_ave->cd();
-	gPad->SetGrid(1,1);
-	//loutGraphCh1_ave->SetTitle(Form("Series %i Ch1, Ave, lightoutput curve",seriesNo));
-	loutGraphCh1_ave->SetTitle("");
-	loutGraphCh1_ave->Draw();
-	text.SetTextSize(0.04);
-	//text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave[0],lightoutCh1_ave[1]));
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh1_ave[0],lightoutCh1_ave[1]));
-	//----------seperate attenuation length
-	TCanvas *can_averaged_ch_sep = new TCanvas("can_averaged_ch_sep","can_averaged_ch_sep",700,500);
-	can_averaged_ch_sep->cd();
-	gPad->SetGrid(1,1);
-	//loutGraph_sep->SetTitle(Form("Series %i, Sep, lightoutput curve",seriesNo));
-	loutGraph_sep->SetTitle("");
-	loutGraph_sep->Draw();
-	text.SetTextSize(0.04);
-	//text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) mm",lightout_sep[0],lightout_sep[1]));
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightout_sep[0],lightout_sep[1]));
-
-	TCanvas *can_single_ch0_sep= new TCanvas("can_single_ch0_sep","can_single_ch0_sep",700,500);
-	can_single_ch0_sep->cd();
-	gPad->SetGrid(1,1);
-	//loutGraphCh0_sep->SetTitle(Form("Series %i Ch0, Sep, lightoutput curve",seriesNo));
-	loutGraphCh0_sep->SetTitle("");
-	loutGraphCh0_sep->Draw();
-	text.SetTextSize(0.04);
-	//text.DrawLatex(0.2,0.8,Form("LO_Ch0 = (%.2f +/- %.2f) mm",lightoutCh0_sep[0],lightoutCh0_sep[1]));
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_sep[0],lightoutCh0_sep[1]));
-
-	TCanvas *can_single_ch1_sep= new TCanvas("can_single_ch1_sep","can_single_ch1_sep",700,500);
-	can_single_ch1_sep->cd();
-	gPad->SetGrid(1,1);
-	//loutGraphCh1_sep->SetTitle(Form("Series %i Ch1, Sep, lightoutput curve",seriesNo));
-	loutGraphCh1_sep->SetTitle("");
-	loutGraphCh1_sep->Draw();
-	text.SetTextSize(0.04);
-	//text.DrawLatex(0.2,0.8,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_sep[0],lightoutCh1_sep[1]));
-	text.DrawLatex(0.2,0.8,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh1_sep[0],lightoutCh1_sep[1]));
-	//----- saving
-	TString fname = Form("../results/lighoutput_series_%i.root",seriesNo);
-	TFile *file = new TFile(fname,"RECREATE");
-	can_averaged_ch_ave->Write();
-	can_single_ch0_ave->Write();
-	can_single_ch1_ave->Write();
-	can_averaged_ch_sep->Write();
-	can_single_ch0_sep->Write();
-	can_single_ch1_sep->Write();
-	file->Close();
-
-
-	delete data;
-	delete lout;
+  
+  SFData *data; 
+  
+  try{
+    data = new SFData(seriesNo);
   }
-  else {
-	vector<SFData*> data; 
-	try{
-		for(int i=1;i<5;i++){
-	      		data.push_back(new SFData(i));
-	      	}
-	}
-	catch(const char* message){
-	        cout << message << endl;
-	        cout << "##### Exception in lightout.cc!" << endl;
-	        return 0;
-	}
+  catch(const char *message){
+    std::cerr << message << std::endl;
+    std::cerr << "##### Exception in lightout.cc!" << std::endl;
+    return 0;
+  }
 
-	for(int i=0;i<4;i++){
-		data.at(i)->Print();
-	}
-	vector<SFLightOutput*> lout;
-	try{
-		for(int i=1;i<5;i++){
-	      		lout.push_back(new SFLightOutput(i));
-		}
-	}
-	catch(const char* message){
-	        cout << message << endl;
-	        cout << "##### Exception in lightout.cc!" << endl;
-	        return 0;
-	}
+  TString desc = data->GetDescription();
+  if(!desc.Contains("Regular series")){
+    std::cerr << "##### Error in lightout.cc! This is not regular series!" << std::endl;
+    std::cerr << "Series number: " << seriesNo << std::endl;
+    std::cerr << "Description: " << desc << std::endl;
+    return 0;    
+  }
+  
+  int npoints = data->GetNpoints();
+  TString collimator = data->GetCollimator();
+  std::vector <double> positions = data->GetPositions();
+  data->Print();
 
-	vector<TGraphErrors*> loutGraph_ave;
-	vector<TGraphErrors*> loutGraphCh0_ave;
-	vector<TGraphErrors*> loutGraphCh1_ave;
-	vector<vector<double>> lightout_ave ;
-	vector<vector<double>> lightoutCh0_ave;
-	vector<vector<double>> lightoutCh1_ave;
+  SFLightOutput* lout;
+  try{
+    lout = new SFLightOutput(seriesNo);
+  }
+  catch(const char *message){
+    std:: cerr << message << std::endl;
+    std:: cerr << "##### Exception in lightout.cc!" << std::endl;
+    return 0;
+  }
 
-	vector<TGraphErrors*> loutGraph_sep;
-	vector<TGraphErrors*> loutGraphCh0_sep;
-	vector<TGraphErrors*> loutGraphCh1_sep;
-	vector<vector<double>> lightout_sep; 
-	vector<vector<double>> lightoutCh0_sep;
-	vector<vector<double>> lightoutCh1_sep;
+  lout->CalculateLightOut(0);
+  lout->CalculateLightOut(1);
+  lout->CalculateLightOut();
+  
+  TGraphErrors *gLightOutCh0 = lout->GetLightOutputGraph(0);
+  TGraphErrors *gLightOutCh1 = lout->GetLightOutputGraph(1);
+  TGraphErrors *gLightOut    = lout->GetLightOutputGraph();
+  std::vector <double> lightOutCh0 = lout->GetLightOutput(0);
+  std::vector <double> lightOutCh1 = lout->GetLightOutput(1);
+  std::vector <double> lightOut    = lout->GetLightOutput();
+  std::vector <TH1D*>  specCh0     = lout->GetSpectra(0);
+  std::vector <TH1D*>  specCh1     = lout->GetSpectra(1);
+  std::vector <TH1D*>  peaksCh0;
+  std::vector <TH1D*>  peaksCh1;
+  
+  if(collimator=="Lead"){
+    peaksCh0 = lout->GetPeaks(0);
+    peaksCh1 = lout->GetPeaks(1);
+  }
+  
+  //----- drawing
+  TLatex text;
+  text.SetNDC(true);
+  text.SetTextSize(0.04);
+  
+  //----- channels 0 and 1
+  TCanvas *can_lout_ch = new TCanvas("can_lout_ch", "can_lout_ch", 1200, 600);
+  can_lout_ch->Divide(2,1);
+  
+  can_lout_ch->cd(1);
+  gPad->SetGrid(1,1);
+  gLightOutCh0->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOutCh0[0], lightOutCh0[1]));
+  
+  can_lout_ch->cd(2);
+  gPad->SetGrid(1,1);
+  gLightOutCh1->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOutCh1[0], lightOutCh1[1]));
+  
+  //----- summed
+  TCanvas *can_lout = new TCanvas("can_lout","can_lout", 700, 500);
+  can_lout->cd();
+  gPad->SetGrid(1,1);
+  gLightOut->Draw("AP");
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOut[0], lightOut[1]));
 
-	for(int i=0;i<4;i++){
-		loutGraph_ave.push_back(lout.at(i)->GetLightOutputGraph("Ave")); 
-		loutGraphCh0_ave.push_back(lout.at(i)->GetLightOutputGraph("Ave",0));
-		loutGraphCh1_ave.push_back(lout.at(i)->GetLightOutputGraph("Ave",1));
-		lightout_ave.push_back(lout.at(i)->GetLightOutput("Ave")); 
-		lightoutCh0_ave.push_back(lout.at(i)->GetLightOutput("Ave",0)); 
-		lightoutCh1_ave.push_back(lout.at(i)->GetLightOutput("Ave",1)); 
+  //----- spectra
+  TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
+  can_spec_ch0->DivideSquare(npoints);
+  
+  TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1", "can_spec_ch1", 1200, 1200);
+  can_spec_ch1->DivideSquare(npoints);
+  
+  for(int i=0; i<npoints; i++){
+    can_spec_ch0->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCh0[i]->SetStats(false);
+    specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCh0[i]->GetYaxis()->SetTitle("counts");
+    specCh0[i]->SetTitle(Form("Cherge spectrum Ch0, position %.2f mm", positions[i]));
+    specCh0[i]->Draw();
+    if(collimator=="lead"){
+      peaksCh0[i]->SetLineColor(kGreen+3);
+      peaksCh0[i]->Draw("same");
+    }
+    
+    can_spec_ch1->cd(i+1);
+    gPad->SetGrid(1,1);
+    specCh1[i]->SetStats(false);
+    specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
+    specCh1[i]->GetYaxis()->SetTitle("counts");
+    specCh1[i]->SetTitle(Form("Cherge spectrum Ch1, position %.2f mm", positions[i]));
+    specCh1[i]->Draw();
+    if(collimator=="lead"){
+      peaksCh1[i]->SetLineColor(kGreen+3);
+      peaksCh1[i]->Draw("same");
+    }
+  }
+  
+  //----- saving
+  TString path = std::string(getenv("SFPATH"));
+  TString fname = Form("lightout_series%i.root", seriesNo);
+  
+  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results", path+"results");
+  
+  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
+  
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+  
+  TString outdir = CmdLineOption::GetStringValue("Output directory");
+  TString dbase = CmdLineOption::GetStringValue("Data base");
+  
+  if(!gSystem->ChangeDirectory(outdir)){
+    std::cout << "Creating new directory... " << std::endl;
+    std::cout << outdir << std::endl;
+    int stat = mkdir(outdir, 0777);
+    if(stat==-1){
+      std::cerr << "##### Error in lightout.cc! Unable to create new direcotry!" << std::endl;
+      return 0;
+    }
+  }
 
-		loutGraph_sep.push_back(lout.at(i)->GetLightOutputGraph("Sep")); 
-		loutGraphCh0_sep.push_back(lout.at(i)->GetLightOutputGraph("Sep",0));
-		loutGraphCh1_sep.push_back(lout.at(i)->GetLightOutputGraph("Sep",1));
-		lightout_sep.push_back(lout.at(i)->GetLightOutput("Sep")); 
-		lightoutCh0_sep.push_back(lout.at(i)->GetLightOutput("Sep",0)); 
-		lightoutCh1_sep.push_back(lout.at(i)->GetLightOutput("Sep",1));
-	}
-	 
-	TLatex text;
-	text.SetNDC(true);
-	// ----------- averaged attenutation length
-	TCanvas *can_averaged_ch_ave = new TCanvas("can_averaged_ch_ave","can_averaged_ch_ave",700,500);
-	can_averaged_ch_ave->cd();
-	gPad->SetGrid(1,1);
+  TString fname_full = outdir + "/" + fname;
+  TString dbname_full = outdir + "/" + dbase;
+  
+  TFile *file = new TFile(fname_full, "RECREATE");
+  
+  if(!file->IsOpen()){
+    std::cerr << "##### Error in lightout.cc!" << std::endl;
+    std::cerr << "Couldn't open file: " << fname_full << std::endl;
+    return 0;
+  }
+  
+  can_lout_ch->Write();
+  can_lout->Write();
+  can_spec_ch0->Write();
+  can_spec_ch1->Write();
+  file->Close();
+  
+  //----- writing results to the data base
+  TString table = "LIGHT_OUTPUT";
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, LOUT, LOUT_ERR, LOUT_CH0, LOUT_CH0_ERR, LOUT_CH1, LOUT_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), lightOut[0], lightOut[1], lightOutCh0[0], lightOutCh0[1], lightOutCh1[0], lightOutCh1[1]);
+  SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
+  
+  delete data;
+  delete lout;
 
-	TCanvas *can_single_ch0_ave= new TCanvas("can_single_ch0_ave","can_single_ch0_ave",700,500);
-	can_single_ch0_ave->cd();
-	gPad->SetGrid(1,1);
-
-	TCanvas *can_single_ch1_ave= new TCanvas("can_single_ch1_ave","can_single_ch1_ave",700,500);
-	can_single_ch1_ave->cd();
-	gPad->SetGrid(1,1);
-
-	for(int i=0;i<4;i++){	
-		can_averaged_ch_ave->cd();
-		loutGraph_ave.at(i)->SetTitle("");
-		//loutGraph_ave.at(i)->SetTitle("Averaged, lightoutput curve");
-		loutGraph_ave.at(i)->SetMarkerStyle(20+i);
-		loutGraph_ave.at(i)->SetMarkerColor(i+1);
-		loutGraph_ave.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraph_ave.at(i)->Draw("AP");
-		else loutGraph_ave.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO%i = (%.2f +/- %.2f) Ph./MeV",i,lightout_ave.at(i)[0],lightout_ave.at(i)[1]));
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightout_ave.at(i)[0],lightout_ave.at(i)[1]));
-
-		can_single_ch0_ave->cd();
-		loutGraphCh0_ave.at(i)->SetTitle("");
-		//loutGraphCh0_ave.at(i)->SetTitle("Ch0, Averaged, lightoutput curve");
-		loutGraphCh0_ave.at(i)->SetMarkerStyle(20+i);
-		loutGraphCh0_ave.at(i)->SetMarkerColor(i+1);
-		loutGraphCh0_ave.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraphCh0_ave.at(i)->Draw("AP");
-		else loutGraphCh0_ave.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) Ph./MeV",lightoutCh0_ave.at(i)[0],lightoutCh0_ave.at(i)[1]));
-		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i_Ch0 = (%.2f +/- %.2f) Ph./MeV",i,lightoutCh0_ave.at(i)[0],lightoutCh0_ave.at(i)[1]));
-
-		can_single_ch1_ave->cd();
-		//loutGraphCh1_ave.at(i)->SetTitle("Ch1, Averaged, lightoutput curve");
-		loutGraphCh1_ave.at(i)->SetTitle("");
-		loutGraphCh1_ave.at(i)->SetMarkerStyle(20+i);
-		loutGraphCh1_ave.at(i)->SetMarkerColor(i+1);
-		loutGraphCh1_ave.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraphCh1_ave.at(i)->Draw("AP");
-		else loutGraphCh1_ave.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		//text.DrawLatex(0.2,0.85-i*0.05,Form("LO_Ch1 = (%.2f +/- %.2f) mm",lightoutCh1_ave.at(i)[0],lightoutCh1_ave.at(i)[1]));
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO = (%.2f +/- %.2f) ",lightoutCh1_ave.at(i)[0],lightoutCh1_ave.at(i)[1]));
-	}
-	//----------seperate attenuation length
-	TCanvas *can_averaged_ch_sep = new TCanvas("can_averaged_ch_sep","can_averaged_ch_sep",700,500);
-	can_averaged_ch_sep->cd();
-	gPad->SetGrid(1,1);
-	
-	TCanvas *can_single_ch0_sep= new TCanvas("can_single_ch0_sep","can_single_ch0_sep",700,500);
-	can_single_ch0_sep->cd();
-	gPad->SetGrid(1,1);
-	
-	TCanvas *can_single_ch1_sep= new TCanvas("can_single_ch1_sep","can_single_ch1_sep",700,500);
-	can_single_ch1_sep->cd();
-	gPad->SetGrid(1,1);
-
-	for(int i=0;i<4;i++){	
-		can_averaged_ch_sep->cd();
-		//loutGraph_sep.at(i)->SetTitle("Seperate, lightoutput curve");
-		loutGraph_sep.at(i)->SetTitle("");
-		loutGraph_sep.at(i)->SetMarkerStyle(20+i);
-		loutGraph_sep.at(i)->SetMarkerColor(i+1);
-		loutGraph_sep.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraph_sep.at(i)->Draw("AP");
-		else loutGraph_sep.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i = (%.2f +/- %.2f) mm",i,lightout_sep.at(i)[0],lightout_sep.at(i)[1]));
-
-		can_single_ch0_sep->cd();
-		loutGraphCh0_sep.at(i)->SetTitle("Ch0, Seperate, lightoutput curve");
-		loutGraphCh0_sep.at(i)->SetMarkerStyle(20+i);
-		loutGraphCh0_sep.at(i)->SetMarkerColor(i+1);
-		loutGraphCh0_sep.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraphCh0_sep.at(i)->Draw("AP");
-		else loutGraphCh0_sep.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i_Ch0 = (%.2f +/- %.2f) mm",i,lightoutCh0_sep.at(i)[0],lightoutCh0_sep.at(i)[1]));
-
-		can_single_ch1_sep->cd();
-		loutGraphCh1_sep.at(i)->SetTitle("Ch1, Seperate, lightoutput curve");
-		loutGraphCh1_sep.at(i)->SetMarkerStyle(20+i);
-		loutGraphCh1_sep.at(i)->SetMarkerColor(i+1);
-		loutGraphCh1_sep.at(i)->SetLineColor(i+1);
-		if(i==0)loutGraphCh1_sep.at(i)->Draw("AP");
-		else loutGraphCh1_sep.at(i)->Draw("P SAME");
-		text.SetTextSize(0.04);
-		text.SetTextColor(i+1);
-		text.DrawLatex(0.2,0.85-i*0.05,Form("LO_S%i_Ch1 = (%.2f +/- %.2f) mm",i,lightoutCh1_sep.at(i)[0],lightoutCh1_sep.at(i)[1]));
-	}
-	
-	TString fname ="../results/lighoutput_all.root";
-	TFile *file = new TFile(fname,"RECREATE");
-	can_averaged_ch_ave->Write();
-	can_single_ch0_ave->Write();
-	can_single_ch1_ave->Write();
-	can_averaged_ch_sep->Write();
-	can_single_ch0_sep->Write();
-	can_single_ch1_sep->Write();
-	file->Close();
-
-	for(int i=3;i>-1;i--){
-		delete data[i];
-		delete lout[i];
-	}
-
-  }	
   return 1;
 } 

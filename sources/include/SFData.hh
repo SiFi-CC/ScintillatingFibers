@@ -45,6 +45,7 @@ private:
   TString          fCollimator;      ///< Type of the used collimator: Lead or Electronic
   TString          fDesc;            ///< Description of the measurement series
   TString          fTestBench;       ///< Type of test bench: Krakow/Aachen/Simulation
+  TString          fSiPM;            ///< SiPM type: Hamamatsu or SensL
   TH1D             *fSpectrum;       ///< Single requested spectrum
   TH1D             *fHist;           ///< Custom histogram of requested type
   TH2D             *fHist2D;         ///< 2D correlation histogram of requested type 
@@ -100,6 +101,8 @@ public:
   TString  GetSource(void){ return fSource; };
   /// Returns test bench type
   TString GetTestBench(void){ return fTestBench; };
+  /// Returns SiPM type
+  TString GetSiPM(void){ return fSiPM; };
   /// Returns a vector containing names of all measurements in this series
   std::vector <TString> GetNames(void){ return fNames; };
   /// Returns a vector containing source positions for all measurements in this series

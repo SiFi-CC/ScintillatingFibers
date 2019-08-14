@@ -15,10 +15,12 @@
 #include "TPaveStats.h"
 #include "CmdLineConfig.hh"
 #include "CmdLineOption.hh"
+#include <sys/stat.h> 
+#include <sys/types.h> 
 
 int main(int argc, char **argv){
  
-  if(argc!=2){
+  if(argc<2 || argc>6){
     std::cout << "to run type: ./data seriesNo ";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 0;
@@ -333,6 +335,16 @@ int main(int argc, char **argv){
   
   TString outdir = CmdLineOption::GetStringValue("Output directory");
   TString dbase = CmdLineOption::GetStringValue("Data base");
+  
+  if(!gSystem->ChangeDirectory(outdir)){
+    std::cout << "Creating new directory... " << std::endl;
+    std::cout << outdir << std::endl;
+    int stat = mkdir(outdir, 0777);
+    if(stat==-1){
+      std::cerr << "##### Error in data.cc! Unable to create new direcotry!" << std::endl;
+      return 0;
+    }
+  }
   
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;

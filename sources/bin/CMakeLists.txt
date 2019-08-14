@@ -6,3 +6,6 @@ target_link_libraries(attenuation ScintillatingFibers)
 
 add_executable(energyres energyres.cc)
 target_link_libraries(energyres ScintillatingFibers)
+
+add_executable(lightout lightout.cc)
+target_link_libraries(lightout ScintillatingFibers)
