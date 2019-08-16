@@ -14,43 +14,41 @@
 #include "TF1.h"
 #include "TPaveText.h"
 
-using namespace std;
-
 /// This class stores results of the fit and the fitted function itself.
 /// This is assistant class for SFTimeConst.
 
 class SFFitResults : public TObject{
   
 private:
-  int     fComponents;		///< Number of decay components fitted
-  int     fStat;		///< Fit status. 0 if fit is succesfull, -1 if it failed
-  int     fNpar;		///< Number of parameters
-  double  fDecTime;		///< Decay time [ns] (single decay mode)
-  double  fDecTimeErr;		///< Uncertainty of the decay time [ns] (single decay mode)
-  double  fFastDecTime;		///< Fast decay time [ns] (double decay mode)
-  double  fFastDecTimeErr;	///< Uncertainty of the fast decay time [ns] (double decay mode)
-  double  fSlowDecTime;		///< Slow decay time [ns] (double decay mode)
-  double  fSlowDecTimeErr;	///< Uncertainty of the slow decay time [ns] (double decay mode)
-  double  fAmp;			///< Amplitude (single decay mode)
-  double  fAmpErr;		/// Uncertainty of the amplitude (single decay mode)
-  double  fAmpFast;		///< Amplitude of the fast decay component (double decay mode)
-  double  fAmpFastErr;		///< Uncertainty of the fast component amplitude (double decay mode)
-  double  fAmpSlow;		///< Amplitude of the slow decay component (double decay mode)
-  double  fAmpSlowErr;		///< Uncertainty of the slow component amplitude (double decay mode)
-  double  fT0;			///< Time offset
-  double  fT0Err;		///< Uncertainty of the time offset
-  double  fConst;		///< Constant i.e. base line
-  double  fIslow;		///< Intensity of the slow component [%] (double decay mode)
-  double  fIfast;		///< Intensity of the fast component [%] (double decay mode)
-  double  fChi2;		///< Chi square
-  double  fNDF;			///< Number of degrees of freedom
-  double  fFitXmin;		///< Minimum of the fitting range
-  double  fFitXmax;		///< Maximum of the fitting range
-  TString fFormula;		///< Formula of the fitted function
-  TString fName;		///< Name of the SFFitResults object
-  TF1     *fFunction;		///< Fitted function
-  vector <double> fParameters;	///< Vector containing all parameters
-  vector <double> fParErrors;	///< Vector containing errors of all parameters
+  int     fComponents;     ///< Number of decay components fitted
+  int     fStat;           ///< Fit status. 0 if fit is succesfull, -1 if it failed
+  int     fNpar;           ///< Number of parameters
+  double  fDecTime;        ///< Decay time [ns] (single decay mode)
+  double  fDecTimeErr;     ///< Uncertainty of the decay time [ns] (single decay mode)
+  double  fFastDecTime;    ///< Fast decay time [ns] (double decay mode)
+  double  fFastDecTimeErr; ///< Uncertainty of the fast decay time [ns] (double decay mode)
+  double  fSlowDecTime;    ///< Slow decay time [ns] (double decay mode)
+  double  fSlowDecTimeErr; ///< Uncertainty of the slow decay time [ns] (double decay mode)
+  double  fAmp;            ///< Amplitude (single decay mode)
+  double  fAmpErr;         /// Uncertainty of the amplitude (single decay mode)
+  double  fAmpFast;        ///< Amplitude of the fast decay component (double decay mode)
+  double  fAmpFastErr;     ///< Uncertainty of the fast component amplitude (double decay mode)
+  double  fAmpSlow;        ///< Amplitude of the slow decay component (double decay mode)
+  double  fAmpSlowErr;     ///< Uncertainty of the slow component amplitude (double decay mode)
+  double  fT0;             ///< Time offset
+  double  fT0Err;          ///< Uncertainty of the time offset
+  double  fConst;          ///< Constant i.e. base line
+  double  fIslow;          ///< Intensity of the slow component [%] (double decay mode)
+  double  fIfast;          ///< Intensity of the fast component [%] (double decay mode)
+  double  fChi2;           ///< Chi square
+  double  fNDF;	           ///< Number of degrees of freedom
+  double  fFitXmin;        ///< Minimum of the fitting range
+  double  fFitXmax;        ///< Maximum of the fitting range
+  TString fFormula;        ///< Formula of the fitted function
+  TString fName;           ///< Name of the SFFitResults object
+  TF1     *fFunction;      ///< Fitted function
+  std::vector <double> fParameters; ///< Vector containing all parameters
+  std::vector <double> fParErrors;  ///< Vector containing errors of all parameters
   
 public:
   SFFitResults();
@@ -58,7 +56,6 @@ public:
   SFFitResults(TString name, TF1 *fun);
   ~SFFitResults();
   
-  void Reset(void);
   void Print(void);
   
   bool SetFromFunction(TF1 *fun);
@@ -71,8 +68,8 @@ public:
   void SetT0(double t0, double err);
   void SetIntensities(double iSlow, double iFast);
   void SetFitRange(double xmin, double xmax);
-  bool SetParameters(vector <double> par);
-  bool SetParErrors(vector <double> parErr);
+  bool SetParameters(std::vector <double> par);
+  bool SetParErrors(std::vector <double> parErr);
   ///Sets fitting status. Fit status can be 0 
   ///if it was successfull or -1 if it failed
   void SetStat(int stat)           { fStat = stat; };
@@ -89,17 +86,21 @@ public:
   ///Sets name of the SFFitResults class object.
   void SetName(TString name)       { fName = name; };
   
-  bool            GetDecTime(double &t, double &err);
-  bool            GetFastDecTime(double &t, double &err);
-  bool            GetSlowDecTime(double &t, double &err);
-  bool            GetAmp(double &amp, double &ampErr);
-  bool            GetAmpFast(double &ampFast, double &ampFastErr);
-  bool            GetAmpSlow(double &ampSlow, double &ampSlowErr);
-  bool            GetT0(double &t0, double &t0Err);
-  bool            GetIntensities(double &iSlow, double &iFast);
-  bool            GetFitRange(double &xmin, double &xmax);
-  vector <TF1*>   GetCompFunctions(void);
-  TPaveText*      GetResultsPave(void);
+  bool       GetDecTime(double &t, double &err);
+  bool       GetFastDecTime(double &t, double &err);
+  bool       GetSlowDecTime(double &t, double &err);
+  bool       GetAmp(double &amp, double &ampErr);
+  bool       GetAmpFast(double &ampFast, double &ampFastErr);
+  bool       GetAmpSlow(double &ampSlow, double &ampSlowErr);
+  bool       GetT0(double &t0, double &t0Err);
+  bool       GetIntensities(double &iSlow, double &iFast);
+  bool       GetFitRange(double &xmin, double &xmax);
+  TPaveText* GetResultsPave(void);
+  std::vector <TF1*>   GetCompFunctions(void);
+  ///Returns vector containing fitted parameters.
+  std::vector <double> GetParameters(void)  { return fParameters; };
+  ///Returns vector containing errors of parameters.
+  std::vector <double> GetParErrors(void)   { return fParErrors; };
   ///Returns fit status. If 0 is returned - fit was succesfull,
   ///if -1 was returned - fit failed.
   int             GetStat(void)        { return fStat; };
@@ -119,10 +120,6 @@ public:
   TString         GetName(void)        { return fName; };
   ///Returns pointer to the fitted function.
   TF1*            GetFunction(void)    { return fFunction; };
-  ///Returns vector containing fitted parameters.
-  vector <double> GetParameters(void)  { return fParameters; };
-  ///Returns vector containing errors of parameters.
-  vector <double> GetParErrors(void)   { return fParErrors; };
   
   ClassDef(SFFitResults,1)
 };

@@ -13,79 +13,130 @@
 ClassImp(SFFitResults);
 
 //------------------------------------------------------------------
-///Default constructor.
-SFFitResults::SFFitResults(){
-  cout << "##### Warning in SFFitResults constructor! You are using default constructor!" << endl;
-  Reset();
+/// Default constructor.
+SFFitResults::SFFitResults(): fComponents(-1),
+                              fStat(100),
+                              fNpar(-1),
+                              fDecTime(-1),
+                              fDecTimeErr(-1),
+                              fFastDecTime(-1),
+                              fFastDecTimeErr(-1),
+                              fSlowDecTime(-1),
+                              fSlowDecTimeErr(-1),
+                              fAmp(-1),
+                              fAmpErr(-1),
+                              fAmpFast(-1),
+                              fAmpFastErr(-1),
+                              fAmpSlow(-1),
+                              fAmpSlowErr(-1),
+                              fT0(-1),
+                              fT0Err(-1),
+                              fConst(-1),
+                              fIslow(-1),
+                              fIfast(-1),
+                              fChi2(-1),
+                              fNDF(-1),
+                              fFitXmin(-1),
+                              fFitXmax(-1),
+                              fFormula("dummy"),
+                              fName("dummy"),
+                              fFunction(nullptr) {
+                                  
+  std::cout << "##### Warning in SFFitResults constructor!" << std::endl;
+  std::cout << "You are using default constructor!" << std::endl;
 }
 //------------------------------------------------------------------
-///Standard constructor (recommended).
-SFFitResults::SFFitResults(TString name){
-  Reset();
-  fName = name;
+/// Standard constructor (recommended).
+SFFitResults::SFFitResults(TString name): fComponents(-1),
+                                          fStat(100),
+                                          fNpar(-1),
+                                          fDecTime(-1),
+                                          fDecTimeErr(-1),
+                                          fFastDecTime(-1),
+                                          fFastDecTimeErr(-1),
+                                          fSlowDecTime(-1),
+                                          fSlowDecTimeErr(-1),
+                                          fAmp(-1),
+                                          fAmpErr(-1),
+                                          fAmpFast(-1),
+                                          fAmpFastErr(-1),
+                                          fAmpSlow(-1),
+                                          fAmpSlowErr(-1),
+                                          fT0(-1),
+                                          fT0Err(-1),
+                                          fConst(-1),
+                                          fIslow(-1),
+                                          fIfast(-1),
+                                          fChi2(-1),
+                                          fNDF(-1),
+                                          fFitXmin(-1),
+                                          fFitXmax(-1),
+                                          fFormula("dummy"),
+                                          fName(name),
+                                          fFunction(nullptr) {
+
 }
 //------------------------------------------------------------------
-///Standard constructor (recommended).
-SFFitResults::SFFitResults(TString name, TF1 *fun){
-  fName = name;
-  SetFromFunction(fun);
+/// Standard constructor (recommended).
+SFFitResults::SFFitResults(TString name, TF1 *fun): fComponents(-1),
+                                                    fStat(100),
+                                                    fNpar(-1),
+                                                    fDecTime(-1),
+                                                    fDecTimeErr(-1),
+                                                    fFastDecTime(-1),
+                                                    fFastDecTimeErr(-1),
+                                                    fSlowDecTime(-1),
+                                                    fSlowDecTimeErr(-1),
+                                                    fAmp(-1),
+                                                    fAmpErr(-1),
+                                                    fAmpFast(-1),
+                                                    fAmpFastErr(-1),
+                                                    fAmpSlow(-1),
+                                                    fAmpSlowErr(-1),
+                                                    fT0(-1),
+                                                    fT0Err(-1),
+                                                    fConst(-1),
+                                                    fIslow(-1),
+                                                    fIfast(-1),
+                                                    fChi2(-1),
+                                                    fNDF(-1),
+                                                    fFitXmin(-1),
+                                                    fFitXmax(-1),
+                                                    fFormula("dummy"),
+                                                    fName(name),
+                                                    fFunction(fun) {
+
+  int stat = SetFromFunction(fun);
+  
+  if(!stat){
+      throw "##### Exception in SFFitResults constructor!";
+  }
 }
 //------------------------------------------------------------------
-///Default destructor.
+/// Default destructor.
 SFFitResults::~SFFitResults(){
 }
 //------------------------------------------------------------------
-///Resets private members of the class to their default values.
-void SFFitResults::Reset(void){
-  fComponents     = -1;
-  fStat           = -1;
-  fNpar           = -1;
-  fDecTime        = -1;
-  fDecTimeErr     = -1;
-  fFastDecTime    = -1;
-  fFastDecTimeErr = -1;
-  fSlowDecTime    = -1;
-  fSlowDecTimeErr = -1;
-  fAmp            = -1;
-  fAmpErr         = -1;
-  fAmpFast        = -1;
-  fAmpFastErr     = -1;
-  fAmpSlow        = -1;
-  fAmpSlowErr     = -1;
-  fT0             = -1;
-  fT0Err          = -1;
-  fConst          = -1;
-  fIslow          = -1;
-  fIfast          = -1;
-  fChi2           = -1;
-  fNDF            = -1;
-  fFitXmin        = -1;
-  fFitXmax        = -1;
-  fFormula        = "dummy";
-  fName           = "dummy";
-  fFunction       = NULL;
-  if(!fParameters.empty()) fParameters.clear();
-  if(!fParErrors.empty())  fParErrors.clear();
-}
-//------------------------------------------------------------------
-///Sets values of the private members of the class based on the passed
-///pointer to the fitted function. Inside this function fast and slow
-///decay components are recognized, their intensities are calculculated
-///and fit validity is chacked.
-///\param fun - fitted function
+/// Sets values of the private members of the class based on the passed
+/// pointer to the fitted function. Inside this function fast and slow
+/// decay components are recognized, their intensities are calculculated
+/// and fit validity is chacked.
+/// \param fun - fitted function
 bool SFFitResults::SetFromFunction(TF1 *fun){
  
-  if(fun==NULL){
-   cout << "##### Error in SFFitResults::SetFromFunction()! Empty pointer!" << endl;
+  if(fun==nullptr){
+   std::cerr << "##### Error in SFFitResults::SetFromFunction()! Empty pointer!" << std::endl;
    return false;
   }
   
+  if(fFunction==nullptr)
+    fFunction = fun;
+  
   //----- Setting unambiguous parameters 
-  fFunction = fun; 
   fChi2     = fFunction->GetChisquare();
   fNDF      = fFunction->GetNDF();
   fNpar     = fFunction->GetNpar();
-  fFunction->GetRange(fFitXmin,fFitXmax);
+  fFunction->GetRange(fFitXmin, fFitXmax);
   
   if(fNpar==4){
     fComponents = 1;
@@ -96,8 +147,8 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
     fFormula    = "A_fast*exp(-(x-t0)/tau_fast) + A_slow*exp(-(x-t0)/tau_slow) + const";
   }
   else{
-    cout << "##### Error in SFFitResults::SetFromFunction()!" << endl;
-    cout << "Unknown function!" << endl;
+    std::cerr << "##### Error in SFFitResults::SetFromFunction()!" << std::endl;
+    std::cerr << "Unknown function!" << std::endl;
     return false;
   }
   
@@ -106,14 +157,14 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
    fParErrors.push_back(fFunction->GetParError(i));
   }
 
-  SetT0(fParameters[1],fParErrors[1]);
+  SetT0(fParameters[1], fParErrors[1]);
   SetConst(fParameters[fNpar-1]);
   
   //----- Assigning ambiguous parameters
   //----- In double decay: Recognizing fast and slow component
   if(fComponents==1){
-    SetAmp(fParameters[0],fParErrors[0]);
-    SetDecTime(fParameters[2],fParErrors[2]);
+    SetAmp(fParameters[0], fParErrors[0]);
+    SetDecTime(fParameters[2], fParErrors[2]);
   }
   else if(fComponents==2){
     if(fParameters[2]<fParameters[4]){
@@ -138,13 +189,13 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
   //----- Determining fit validity
   if(fComponents==1){
     if(fAmp<0){
-      cout << "##### Warning in SFFitResults::SetFromFunction()!" << endl;
-      cout << "\t Negative amplitude!" << endl;
+      std::cout << "##### Warning in SFFitResults::SetFromFunction()!" << std::endl;
+      std::cout << "\t Negative amplitude!" << std::endl;
       fStat = -1;
     }
     else if(fDecTime<0 || fDecTime>1E2){
-      cout << "##### Warning in SFFitResults::SetFromFunction()!" << endl;
-      cout << "\t Decay time out of range!" << endl;
+      std::cout << "##### Warning in SFFitResults::SetFromFunction()!" << std::endl;
+      std::cout << "\t Decay time out of range!" << std::endl;
       fStat = -1;
     }
     else fStat = 0;
@@ -152,18 +203,18 @@ bool SFFitResults::SetFromFunction(TF1 *fun){
   
   if(fComponents==2){
     if(fAmpFast<0 || fAmpSlow<0){
-      cout << "##### Warning in SFFitResults::SetFromFunction()!" << endl;
-      cout << "\t Negative amplitude!" << endl;
+      std::cout << "##### Warning in SFFitResults::SetFromFunction()!" << std::endl;
+      std::cout << "\t Negative amplitude!" << std::endl;
       fStat = -1;
     }
     else if(fFastDecTime<0 || fFastDecTime>1E3){
-      cout << "##### Warning in SFFitResults::SetFromFunction()!" << endl;
-      cout << "\t Fast decay time out of range!" << endl;
+      std::cout << "##### Warning in SFFitResults::SetFromFunction()!" << std::endl;
+      std::cout << "\t Fast decay time out of range!" << std::endl;
       fStat = -1;
     }
     else if(fSlowDecTime<0 || fSlowDecTime>1E4){
-      cout << "##### Warning in SFFitResults::SetFromFunction()!" << endl;
-      cout << "\t Slow decay time out of range!" << endl;
+      std::cout << "##### Warning in SFFitResults::SetFromFunction()!" << std::endl;
+      std::cout << "\t Slow decay time out of range!" << std::endl;
       fStat = -1;
     }
     else
@@ -258,7 +309,7 @@ void SFFitResults::SetFitRange(double xmin, double xmax){
 //------------------------------------------------------------------
 ///Fills vector fParameters containing fitted parameters. 
 ///\param par - vector of parameters
-bool SFFitResults::SetParameters(vector <double> par){
+bool SFFitResults::SetParameters(std::vector <double> par){
   if(par.empty()) return false;
   int size = par.size();
   for(int i=0; i<size; i++){
@@ -269,7 +320,7 @@ bool SFFitResults::SetParameters(vector <double> par){
 //------------------------------------------------------------------
 ///Fills vector fParErrors containing errors of parameters.
 ///\param parErr - vector of parameters errors
-bool SFFitResults::SetParErrors(vector <double> parErr){
+bool SFFitResults::SetParErrors(std::vector <double> parErr){
   if(parErr.empty()) return false;
   int size = parErr.size();
   for(int i=0; i<size; i++){
@@ -283,7 +334,7 @@ bool SFFitResults::SetParErrors(vector <double> parErr){
 ///\param err - uncertainty
 bool SFFitResults::GetDecTime(double &t, double &err){
   if(fDecTime==-1 || fDecTimeErr==-1){
-    cout << "##### Error in SFFitResults::GetDecTime()!" << endl;
+    std::cerr << "##### Error in SFFitResults::GetDecTime()!" << std::endl;
     return false;
   }
   t   = fDecTime;
@@ -295,7 +346,7 @@ bool SFFitResults::GetDecTime(double &t, double &err){
 ///\param err - uncertainty
 bool SFFitResults::GetFastDecTime(double &t, double &err){
   if(fFastDecTime==-1 || fFastDecTimeErr==-1){
-    cout << "##### Error in SFFitResults::GetFastDecTime()!" << endl;
+    std::cerr << "##### Error in SFFitResults::GetFastDecTime()!" << std::endl;
     return false;
   }
   t   = fFastDecTime; 
@@ -308,7 +359,7 @@ bool SFFitResults::GetFastDecTime(double &t, double &err){
 ///\param err - uncertainty
 bool SFFitResults::GetSlowDecTime(double &t, double &err){
   if(fSlowDecTime==-1 || fSlowDecTimeErr==1){
-  cout << "##### Error in SFFitResults::GetSlowDecTime()!" << endl;
+  std::cerr << "##### Error in SFFitResults::GetSlowDecTime()!" << std::endl;
   return false;
   }
   t   = fSlowDecTime;
@@ -322,7 +373,7 @@ bool SFFitResults::GetSlowDecTime(double &t, double &err){
 ///\param ampErr - uncertainty
 bool SFFitResults::GetAmp(double &amp, double &ampErr){
   if(fAmp==-1 || fAmpErr==-1){
-    cout << "##### Error in SFFitResults::GetAmp()!" << endl;
+    std::cout << "##### Error in SFFitResults::GetAmp()!" << std::endl;
     return false;
   }
   amp    = fAmp;
@@ -334,7 +385,7 @@ bool SFFitResults::GetAmp(double &amp, double &ampErr){
 ///\param ampFastErr - uncertainty
 bool SFFitResults::GetAmpFast(double &ampFast, double &ampFastErr){
   if(fAmpFast==-1 || fAmpFastErr==-1){
-    cout << "##### Error in SFFitResults::GetAmpFast()" << endl;
+    std::cerr << "##### Error in SFFitResults::GetAmpFast()" << std::endl;
     return false;
   }
   ampFast    = fAmpFast;
@@ -347,7 +398,7 @@ bool SFFitResults::GetAmpFast(double &ampFast, double &ampFastErr){
 ///\param ampSlowErr - uncertainty
 bool SFFitResults::GetAmpSlow(double &ampSlow, double &ampSlowErr){
   if(fAmpSlow==-1 || fAmpSlowErr==-1){
-    cout << "##### Error in SFFitResults::GetAmpSlow()" << endl;
+    std::cerr << "##### Error in SFFitResults::GetAmpSlow()" << std::endl;
     return false;
   }
   ampSlow    = fAmpSlow;
@@ -360,7 +411,7 @@ bool SFFitResults::GetAmpSlow(double &ampSlow, double &ampSlowErr){
 ///\param t0Err - uncertainty
 bool SFFitResults::GetT0(double &t0, double &t0Err){
   if(fT0==-1 || fT0Err==-1){
-    cout << "##### Error in SFFitResults::GetT0()" << endl;
+    std::cerr << "##### Error in SFFitResults::GetT0()" << std::endl;
     return false;
   }
   t0    = fT0;
@@ -373,7 +424,7 @@ bool SFFitResults::GetT0(double &t0, double &t0Err){
 ///\param iFast - intensity of fast component [%]
 bool SFFitResults::GetIntensities(double &iSlow, double &iFast){
   if(fIslow==-1 || fIfast==-1){
-    cout << "##### Error in SFFitResults::GetIntensities()" << endl;
+    std::cerr << "##### Error in SFFitResults::GetIntensities()" << std::endl;
     return false;
   }
   iSlow = fIslow;
@@ -386,7 +437,7 @@ bool SFFitResults::GetIntensities(double &iSlow, double &iFast){
 ///\param xmax - upper fitting range
 bool SFFitResults::GetFitRange(double &xmin, double &xmax){
   if(fFitXmin==-1 || fFitXmax==-1){
-    cout << "##### Error in SFFitResults::GetFitRange()" << endl;
+    std::cerr << "##### Error in SFFitResults::GetFitRange()" << std::endl;
     return false;
   }
   xmin = fFitXmin;
@@ -398,9 +449,9 @@ bool SFFitResults::GetFitRange(double &xmin, double &xmax){
 ///of the decay process. Order in the vector (for double decay mode): 
 ///constant, fast decay, slow component or for single decay mode:
 ///constant, decay.
-vector <TF1*> SFFitResults::GetCompFunctions(void){
+std::vector <TF1*> SFFitResults::GetCompFunctions(void){
   
- vector <TF1*> functions;
+ std::vector <TF1*> functions;
 
  TF1 *funBL = new TF1("funBL","pol0",0,1024);
  funBL->FixParameter(0,fConst);
@@ -474,29 +525,29 @@ TPaveText *SFFitResults::GetResultsPave(void){
 //------------------------------------------------------------------
 ///Prints details of the SFFitResults class object.
 void SFFitResults::Print(void){
-  cout << "\n------------------------------------------------------" << endl;
-  cout << "This is Print of SFFitResults class object " << fName << endl;
-  cout << "Fitted function: " << fFormula << endl;
-  cout << "Fit status: " << fStat << endl;
-  cout << "Number of parameters: " << fNpar << endl;
-  cout << "Chi2 = " << fChi2 << endl;
-  cout << "Chi2/NDF = " << fChi2/fNDF << endl;
-  cout << "Fitting range: " << fFitXmin << " - " << fFitXmax << endl;
+  std::cout << "\n------------------------------------------------------" << std::endl;
+  std::cout << "This is Print of SFFitResults class object " << fName << std::endl;
+  std::cout << "Fitted function: " << fFormula << std::endl;
+  std::cout << "Fit status: " << fStat << std::endl;
+  std::cout << "Number of parameters: " << fNpar << std::endl;
+  std::cout << "Chi2 = " << fChi2 << std::endl;
+  std::cout << "Chi2/NDF = " << fChi2/fNDF << std::endl;
+  std::cout << "Fitting range: " << fFitXmin << " - " << fFitXmax << std::endl;
   if(fComponents==1){
-    cout << "Decay time: " << fDecTime << " +/- " << fDecTimeErr << " ns" << endl;
+    std::cout << "Decay time: " << fDecTime << " +/- " << fDecTimeErr << " ns" << std::endl;
   }
   else if(fComponents==2){
-    cout << "Fast decay time: " << fFastDecTime << " +/- " << fFastDecTimeErr << " ns" << endl;
-    cout << "Slow decay time: " << fSlowDecTime << " +/- " << fSlowDecTimeErr << " ns" << endl;
-    cout << "Fast component intensity: " << fIfast << " %" << endl;
-    cout << "Slow component intensity: " << fIslow << " %" << endl;
+   std::cout << "Fast decay time: " << fFastDecTime << " +/- " << fFastDecTimeErr << " ns" << std::endl;
+   std::cout << "Slow decay time: " << fSlowDecTime << " +/- " << fSlowDecTimeErr << " ns" << std::endl;
+   std::cout << "Fast component intensity: " << fIfast << " %" << std::endl;
+   std::cout << "Slow component intensity: " << fIslow << " %" << std::endl;
   }
-  cout << "\nAll parameters: " << endl;
+  std::cout << "\nAll parameters: " << std::endl;
   for(int i=0; i<fNpar; i++){
-   cout << setw(20);
-   cout << "\t" << fParameters[i] << " +/- " << fParErrors[i] << endl;
+   std::cout << std::setw(20);
+   std::cout << "\t" << fParameters[i] << " +/- " << fParErrors[i] << std::endl;
   }
-  cout << "------------------------------------------------------\n" << endl; 
+  std::cout << "------------------------------------------------------\n" << std::endl; 
   return;
 }
 //------------------------------------------------------------------
