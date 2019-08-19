@@ -8,8 +8,7 @@
 // *                                       *
 // *****************************************
 
-#include "SFData.hh"
-#include "SFEnergyResolution.hh"
+#include "SFEnergyRes.hh"
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TSystem.h"
@@ -43,9 +42,9 @@ int main(int argc, char **argv){
   TString collimator = data->GetCollimator();
   std::vector <double> positions = data->GetPositions();
 
-  SFEnergyResolution* enres;
+  SFEnergyRes* enres;
   try{
-    enres= new SFEnergyResolution(seriesNo);
+    enres= new SFEnergyRes(seriesNo);
   }
   catch(const char* message){
     std::cerr << message << std::endl;

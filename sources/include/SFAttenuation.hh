@@ -45,7 +45,6 @@ private:
   std::vector <TH1D*> fPeaksCh1;    ///< Vector containing 511 keV peaks, channel 1
   
   public:
-  SFAttenuation();
   SFAttenuation(int seriesNo);
   ~SFAttenuation();
   

@@ -1,7 +1,7 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *         SFEnergyResolution.cc         *
+// *           SFEnergyRes.cc              *
 // *            Jonas Kasper               *
 // *      kasper@physik.rwth-aachen.de     *
 // *         Katarzyna Rusiecka            *
@@ -10,54 +10,37 @@
 // *                                       *
 // *****************************************
 
-#include "SFEnergyResolution.hh"
+#include "SFEnergyRes.hh"
 #include <cmath>
 
-ClassImp(SFEnergyResolution);
+ClassImp(SFEnergyRes);
 
-//-----------------------------------------------------------------
-/// Default constructor.
-SFEnergyResolution::SFEnergyResolution(): fSeriesNo(-1),
-                                          fData(nullptr),
-                                          fEnergyResCh0(-1),
-                                          fEnergyResCh0Err(-1),
-                                          fEnergyResCh1(-1),
-                                          fEnergyResCh1Err(-1),
-                                          fEnergyResSum(-1),
-                                          fEnergyResSumErr(-1),
-                                          fEnergyResGraphCh0(nullptr),
-                                          fEnergyResGraphCh1(nullptr),
-                                          fEnergyResGraphSum(nullptr) {
-                                              
-  std::cout << "#### Warning in SFEnergyResolution constructor!" << std::endl;
-  std::cout << "You are using default constructor!" << std::endl;
-}
 //------------------------------------------------------------------
 /// Standard constructor (recommended)
 /// \param seriesNo is number of experimental series to be analyzed. 
-SFEnergyResolution::SFEnergyResolution(int seriesNo): fSeriesNo(seriesNo),
-                                                      fData(nullptr),
-                                                      fEnergyResCh0(-1),
-                                                      fEnergyResCh0Err(-1),
-                                                      fEnergyResCh1(-1),
-                                                      fEnergyResCh1Err(-1),
-                                                      fEnergyResSum(-1),
-                                                      fEnergyResSumErr(-1),
-                                                      fEnergyResGraphCh0(nullptr),
-                                                      fEnergyResGraphCh1(nullptr),
-                                                      fEnergyResGraphSum(nullptr) {
+SFEnergyRes::SFEnergyRes(int seriesNo): fSeriesNo(seriesNo),
+                                        fData(nullptr),
+                                        fEnergyResCh0(-1),
+                                        fEnergyResCh0Err(-1),
+                                        fEnergyResCh1(-1),
+                                        fEnergyResCh1Err(-1),
+                                        fEnergyResSum(-1),
+                                        fEnergyResSumErr(-1),
+                                        fEnergyResGraphCh0(nullptr),
+                                        fEnergyResGraphCh1(nullptr),
+                                        fEnergyResGraphSum(nullptr) {
 
   try{
     fData = new SFData(fSeriesNo);
   }
   catch(const char *message){
     std::cerr << message << std::endl;
-    throw "##### Exception in SFEnergyResolution constructor!";
+    throw "##### Exception in SFEnergyRes constructor!";
   }
   
   TString desc = fData->GetDescription();
   if(!desc.Contains("Regular series")){
-    std::cout << "##### Warning in SFEnergyResolution constructor!" << std::endl;
+    std::cout << "##### Warning in SFEnergyRes constructor!" << std::endl;
     std::cout << "Calculating energy resolution with non-regular series!" << std::endl;
   }
   
@@ -70,15 +53,15 @@ SFEnergyResolution::SFEnergyResolution(int seriesNo): fSeriesNo(seriesNo),
 }
 //------------------------------------------------------------------
 /// Default destructor.
-SFEnergyResolution::~SFEnergyResolution(){
+SFEnergyRes::~SFEnergyRes(){
   
   if(fData!=nullptr)
     delete fData;
 }
 //------------------------------------------------------------------
-bool SFEnergyResolution::CalculateEnergyRes(int ch){
+bool SFEnergyRes::CalculateEnergyRes(int ch){
     
-  std::cout << "\n----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
+  std::cout << "\n----- Inside SFEnergyRes::CalculateEnergyRes()" << std::endl;
   std::cout << "----- Analyzing series: " << fSeriesNo << std::endl;
   std::cout << "----- Analyzing channel: " << ch << std::endl; 
   
@@ -95,7 +78,7 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
     else if(ch==1)
       peakFin.push_back(new SFPeakFinder(fSpectraCh1[i], 0));
     else{
-      std::cerr << "##### Error in SFEnergyResolution::CalculateEnergyRes() for ch"
+      std::cerr << "##### Error in SFEnergyRes::CalculateEnergyRes() for ch"
                 <<  ch << std::endl;
       std::cerr << "Incorrect channel number!" << std::endl;
       return false;
@@ -157,9 +140,9 @@ bool SFEnergyResolution::CalculateEnergyRes(int ch){
   return true;
 }
 //------------------------------------------------------------------
-bool SFEnergyResolution::CalculateEnergyRes(void){
+bool SFEnergyRes::CalculateEnergyRes(void){
     
-  std::cout << "\n----- Inside SFEnergyResolution::CalculateEnergyRes()" << std::endl;
+  std::cout << "\n----- Inside SFEnergyRes::CalculateEnergyRes()" << std::endl;
   std::cout << "----- Analyzing series: " << fSeriesNo << std::endl;
   
   int npoints = fData->GetNpoints();
@@ -175,7 +158,7 @@ bool SFEnergyResolution::CalculateEnergyRes(void){
   }
   catch(const char *message){
     std::cerr << message << std::endl;
-    std::cerr << "##### Exception in SFEnergyResolution::CalculateEergyRes()" << std::endl;
+    std::cerr << "##### Exception in SFEnergyRes::CalculateEergyRes()" << std::endl;
     std::cerr << "Couldn't access attenuation length data!" << std::endl;
     std::abort();
   }
@@ -253,7 +236,7 @@ bool SFEnergyResolution::CalculateEnergyRes(void){
   fEnergyResGraphSum = graph;
   
   if(std::isnan(fEnergyResSum) || fEnergyResSum<0 || fEnergyResSum>100){
-    std::cout << "##### Warning in SFEnergyResolution class!" << std::endl;
+    std::cout << "##### Warning in SFEnergyRes class!" << std::endl;
     std::cout << "Incorrect energy resolution value: " << fEnergyResSum  
               << " +/- " << fEnergyResSumErr << std::endl;
     fEnergyResSum=0;
@@ -265,7 +248,7 @@ bool SFEnergyResolution::CalculateEnergyRes(void){
   return true;
 }
 //------------------------------------------------------------------
-std::vector <double> SFEnergyResolution::GetEnergyResolution(int ch){
+std::vector <double> SFEnergyRes::GetEnergyResolution(int ch){
     
   std::vector <double> temp;
   if(ch==0){
@@ -277,13 +260,13 @@ std::vector <double> SFEnergyResolution::GetEnergyResolution(int ch){
     temp.push_back(fEnergyResCh1Err);
   }
   else{
-    std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution() for ch" << ch << std::endl;
+    std::cerr << "##### Error in SFEnergyRes:GetEnergyResolution() for ch" << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
   
   if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution() for ch" << ch << std::endl;
+    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution() for ch" << ch << std::endl;
     std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
     std::abort();
   }
@@ -291,14 +274,14 @@ std::vector <double> SFEnergyResolution::GetEnergyResolution(int ch){
   return temp;
 }
 //------------------------------------------------------------------
-std::vector <double> SFEnergyResolution::GetEnergyResolution(void){
+std::vector <double> SFEnergyRes::GetEnergyResolution(void){
   
   std::vector <double> temp;
   temp.push_back(fEnergyResSum);
   temp.push_back(fEnergyResSumErr);
   
   if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution()" << std::endl;
+    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution()" << std::endl;
     std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
     std::abort();
   }
@@ -306,11 +289,11 @@ std::vector <double> SFEnergyResolution::GetEnergyResolution(void){
   return temp;
 }
 //------------------------------------------------------------------
-TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(int ch){
+TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(int ch){
     
   if((ch==0 && fEnergyResGraphCh0==nullptr) || 
      (ch==1 && fEnergyResGraphCh1==nullptr)) {
-      std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolutionGraph() for ch" 
+      std::cerr << "##### Error in SFEnergyRes::GetEnergyResolutionGraph() for ch" 
                 << ch << std::endl;
       std::cerr << "Requested graph doesnt exist!" << std::endl;
       std::abort();
@@ -321,17 +304,17 @@ TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(int ch){
   else if(ch==1) 
     return fEnergyResGraphCh1;
   else{
-    std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolutionGraph() for ch" 
+    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolutionGraph() for ch" 
               << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
 }
 //------------------------------------------------------------------
-TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(void){
+TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(void){
  
   if(fEnergyResGraphSum==nullptr){
-    std::cerr << "##### Error in SFEnergyResolution::GetEnergyResolution()" << std::endl;  
+    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution()" << std::endl;  
     std::cerr << "Requested graph doesn't exist!" << std::endl;
     std::abort();
   }
@@ -339,11 +322,11 @@ TGraphErrors* SFEnergyResolution::GetEnergyResolutionGraph(void){
   return fEnergyResGraphSum;
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyResolution::GetSpectra(int ch){
+std::vector <TH1D*> SFEnergyRes::GetSpectra(int ch){
     
   if((ch==0 && fSpectraCh0.empty()) ||
      (ch==1 && fSpectraCh1.empty())) {
-      std::cerr << "##### Error in SFEnergyResolution::GetSpectra() fo ch" << ch << std::endl; 
+      std::cerr << "##### Error in SFEnergyRes::GetSpectra() fo ch" << ch << std::endl; 
       std::cerr << "No spectra available!" << std::endl; 
       std::abort();
   }
@@ -353,17 +336,17 @@ std::vector <TH1D*> SFEnergyResolution::GetSpectra(int ch){
   else if(ch==1)
     return fSpectraCh1;
   else{
-    std::cerr << "##### Error in SFEnergyResolution::GetSpectra for ch" << ch << std::endl;
+    std::cerr << "##### Error in SFEnergyRes::GetSpectra for ch" << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyResolution::GetSpectraCorrected(int ch){
+std::vector <TH1D*> SFEnergyRes::GetSpectraCorrected(int ch){
     
   if((ch==0 && fSpectraCorrCh0.empty()) ||
      (ch==1 && fSpectraCorrCh1.empty())) {
-      std::cerr << "##### Error in SFEnergyResolution::GetSpectraCorrected() for ch" 
+      std::cerr << "##### Error in SFEnergyRes::GetSpectraCorrected() for ch" 
                 << ch << std::endl; 
       std::cerr << "No spectra available!" << std::endl; 
       std::abort();
@@ -374,17 +357,17 @@ std::vector <TH1D*> SFEnergyResolution::GetSpectraCorrected(int ch){
   else if(ch==1)
     return fSpectraCorrCh1;
   else{
-    std::cerr << "##### Error in SFEnergyResolution::GetSpectraCorrected() for ch" 
+    std::cerr << "##### Error in SFEnergyRes::GetSpectraCorrected() for ch" 
               << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyResolution::GetSpectraSum(void){
+std::vector <TH1D*> SFEnergyRes::GetSpectraSum(void){
   
   if(fSpectraSum.empty()){
-    std::cerr << "##### Error in SFEnergyResolution::GetSpectraSum()" << std::endl;
+    std::cerr << "##### Error in SFEnergyRes::GetSpectraSum()" << std::endl;
     std::cerr << "No spectra available!" << std::endl;
     std::abort();
   }
@@ -392,10 +375,10 @@ std::vector <TH1D*> SFEnergyResolution::GetSpectraSum(void){
   return fSpectraSum;
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyResolution::GetPeaks(void){
+std::vector <TH1D*> SFEnergyRes::GetPeaks(void){
   
   if(fPeaksSum.empty()){
-    std::cerr << "##### Error in SFEnergyResolution::GetPeaks()" << std::endl;
+    std::cerr << "##### Error in SFEnergyRes::GetPeaks()" << std::endl;
     std::cerr << "No spectra available!" << std::endl;
     std::abort();
   }
@@ -403,11 +386,11 @@ std::vector <TH1D*> SFEnergyResolution::GetPeaks(void){
   return fPeaksSum;
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyResolution::GetPeaks(int ch){
+std::vector <TH1D*> SFEnergyRes::GetPeaks(int ch){
     
   if((ch==0 && fPeaksCh0.empty()) ||
      (ch==1 && fPeaksCh1.empty())) {
-      std::cerr << "##### Error in SFEnergyResolution::GetPeaks() for ch" 
+      std::cerr << "##### Error in SFEnergyRes::GetPeaks() for ch" 
                 << ch << std::endl; 
       std::cerr << "No spectra available!" << std::endl; 
       std::abort();
@@ -418,7 +401,7 @@ std::vector <TH1D*> SFEnergyResolution::GetPeaks(int ch){
   else if(ch==1)
     return fPeaksCh1;
   else{
-    std::cerr << "##### Error in SFEnergyResolution::GetPeaks() for ch" 
+    std::cerr << "##### Error in SFEnergyRes::GetPeaks() for ch" 
               << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
@@ -426,9 +409,9 @@ std::vector <TH1D*> SFEnergyResolution::GetPeaks(int ch){
 }
 //------------------------------------------------------------------
 /// Prints details of the SFEnergyResolution class object.
-void SFEnergyResolution::Print(void){
+void SFEnergyRes::Print(void){
   std::cout << "\n-------------------------------------------" << std::endl;
-  std::cout << "This is print out of SFEnergyResolution class object" << std::endl;
+  std::cout << "This is print out of SFEnergyRes class object" << std::endl;
   std::cout << "Experimental series number " << fSeriesNo << std::endl;
   std::cout << "-------------------------------------------\n" << std::endl;
 }

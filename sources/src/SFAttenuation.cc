@@ -13,23 +13,6 @@
 ClassImp(SFAttenuation);
 
 //------------------------------------------------------------------
-/// Default constructor.
-SFAttenuation::SFAttenuation(): fSeriesNo(-1),
-                                fData(nullptr),
-                                fAttnLen(-1),
-                                fAttnErr(-1),
-                                fAttnGraph(nullptr),
-                                fAttnLenCh0(-1),
-                                fAttnLenCh1(-1),
-                                fAttnErrCh0(-1),
-                                fAttnErrCh1(-1),
-                                fAttnGraphCh0(nullptr),
-                                fAttnGraphCh1(nullptr) {
-    
-  std::cout << "#### Warning in SFAttenuation constructor!" << std::endl;
-  std::cout << "You are using default constructor!" << std::endl;
-}
-//------------------------------------------------------------------
 /// Standard constructor (recommended)
 /// \param seriesNo is number of experimental series to be analyzed. 
 SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),

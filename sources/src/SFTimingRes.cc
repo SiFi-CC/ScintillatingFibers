@@ -13,81 +13,31 @@
 ClassImp(SFTimingRes);
 
 //------------------------------------------------------------------
-/// Default constructor.
-SFTimingRes::SFTimingRes(){
-  cout << "##### Warning in SFTimingRes constructor!" << endl;
-  cout << "You are using default constructor!" <<endl;
-  Reset();
-}
-//------------------------------------------------------------------
-/// Standard constructor (recommended)
+/// Standard constructor
 /// \param seriesNo is number of experimental series to be analyzed.
-/// \param threshold identifies which tree should be opened. Possible
-/// options are: ft - fixed threshold and cf - constant fraction.
-/// \param method is a flag to choose type of analysis. Possible options are:
-/// with cut - for analysis with energy cut on 511 keV, no cut - cutting only
-/// scattered events.
-SFTimingRes::SFTimingRes(int seriesNo, TString threshold, TString method){
-  
-  Reset();
-  
-  if(!(threshold=="ft" || threshold=="cf")){
-    throw "##### Error in SFTimingRes constructor! Incorrect threshold type!\nPossible options are: ft, cf";
-  }
-  
-  if(!(method=="with cut" || method=="no cut")){
-    throw "##### Error in SFTimingRes constructor! Incorrect method!\nPossible options are: with cut, no cut";
-  }
-  
-  fSeriesNo = seriesNo;
-  fThreshold = threshold;
-  fMethod = method;
+SFTimingRes::SFTimingRes(int seriesNo): fSeriesNo(seriesNo),
+                                        fData(nullptr), 
+                                        fTResGraph(nullptr),
+                                        fTResECutGraph(nullptr),
+                                        fTimeRes(-1),
+                                        fTimeResErr(-1),
+                                        fTimeResECut(-1),
+                                        fTimeResECutErr(-1) {
   
   try{
-    fData = new SFData(fSeriesNo,threshold);
+    fData = new SFData(fSeriesNo);
   }
   catch(const char *message){
-    cout << message << endl;
+    std::cerr << message << std::endl;
     throw "##### Exception in SFTimingRes constructor!";
   }
-  fType = fData->GetMeasureType();
-
-  
-  if(fMethod=="no cut")        AnalyzeNoECut();
-  else if(fMethod=="with cut") AnalyzeWithECut();
 }
 //------------------------------------------------------------------
 /// Default destructor.
 SFTimingRes::~SFTimingRes(){
- if(fData!=NULL) delete fData; 
-}
-//------------------------------------------------------------------
-///Private method to get index of requested measurement based on source position.
-int SFTimingRes::GetIndex(double position){
-  
-  int index = -1;
-  vector <double> positions = fData->GetPositions();
-  int npoints = fData->GetNpoints();
-  TString desc = fData->GetDescription();
-  
-  if(!desc.Contains("Regular series")){
-    index = position-1;
-    return index;
-  }
-  
-  for(int i=0; i<npoints; i++){
-    if(fabs(positions[i]-position)<1){
-      index = i;
-      break;
-    }
-  }
-  
-  if(index==-1){
-   cout << "##### Error in SFTimingRes::GetIndex()! Incorrecct position!" << endl;
-   return index;
-  }
-  
-  return index;
+ 
+  if(fData!=nullptr) 
+    delete fData; 
 }
 //------------------------------------------------------------------
 ///Private method to get ratio histograms necesarry to impose cuts. 
@@ -96,33 +46,33 @@ int SFTimingRes::GetIndex(double position){
 bool SFTimingRes::LoadRatios(void){
   
   int npoints = fData->GetNpoints();
+  TString collimator = fData->GetCollimator();
   
-  TString selection = "log(sqrt(ch_1.fPE/ch_0.fPE))";
-  TString cut = "ch_0.fT0<590 && ch_0.fPE>0 && ch_0.fT0>0 && ch_1.fT0<590 && ch_1.fT0>0 && ch_1.fPE>0"; 
-  fRatios = fData->GetCustomHistograms(selection,cut);
+  TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0"; 
+  fRatios = fData->GetCustomHistograms(SFSelectionType::LogSqrtPERatio, cut);
   
-  vector <TF1*> fun;
+  std::vector <TF1*> fun;
   double min, max;
   
   for(int i=0; i<npoints; i++){
-    if(fType.Contains("Lead")){
-      fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-1,1));
-      fun[i]->SetParameter(0,fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));		//thin gauss
-      fun[i]->SetParameter(1,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2,6E-2);
-      fun[i]->SetParameter(3,0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
+    if(collimator.Contains("Lead")){
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -1, 1));
+      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));   //thin gauss
+      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2, 6E-2);
+      fun[i]->SetParameter(3, 0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));   //thick gauss
       if(i<npoints/2)
-        fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
+        fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
       else
-	fun[i]->SetParameter(4,fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
-      fun[i]->SetParameter(5,2E-1);
-      fRatios[i]->Fit(fun[i],"QR");
+	fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
+      fun[i]->SetParameter(5, 2E-1);
+      fRatios[i]->Fit(fun[i], "QR");
     }
-    else if(fType.Contains("Electric")){
+    else if(collimator.Contains("Electronic")){
       min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
       max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
-      fun.push_back(new TF1("fun","gaus",min,max));		//single gauss
-      fRatios[i]->Fit(fun[i],"QR");
+      fun.push_back(new TF1("fun", "gaus", min, max));   //single gauss
+      fRatios[i]->Fit(fun[i], "QR");
     }
   }
 
@@ -143,69 +93,92 @@ double LorentzianFun(double *x, double *par){
 ///on scattered events. Timing resolution and its uncertainty is determined 
 ///based on Gaussian function as its sigma.
 ///If measurement was taken with lead collimator - double Gauss fitted.
-///If measurement was taken with electronic collimatir - single Gaussian.
+///If measurement was taken with electronic collimator - single Gaussian.
 bool SFTimingRes::AnalyzeNoECut(void){
   
+  std::cout << "----- Inside SFTimingRes::AnalyzeNoECut()" << std::endl;
+  std::cout << "----- Series number: " << fSeriesNo << std::endl;  
+    
   int npoints = fData->GetNpoints();
-  vector <double> positions = fData->GetPositions();
+  std::vector <double> positions = fData->GetPositions();
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
   
-  TString selection = "ch_0.fT0-ch_1.fT0";
   TString cut;
   double mean, sigma;
+  double tResAv = 0;
+  double tResAvErr = 0;
   
   if(fRatios.empty()) LoadRatios();
-  vector <TF1*> fun;
+  std::vector <TF1*> fun;
 
-  fT0Graph = new TGraphErrors(npoints);
-  fT0Graph->GetXaxis()->SetTitle("source position [mm]");
-  fT0Graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
-  fT0Graph->SetTitle("");
-  fT0Graph->SetMarkerStyle(8);
+  TString gname = Form("timeDiff_S%i", fSeriesNo);
+  TGraphErrors *graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("T_{D} [ns]");
+  graph->SetTitle(gname);
+  graph->SetName(gname);
+  graph->SetMarkerStyle(4);
   
   for(int i=0; i<npoints; i++){
     
     mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
     sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
     
-    if(fType.Contains("Lead")){
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-0.5*sigma, mean+0.5*sigma);
-      fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
-      fun.push_back(new TF1("fun","gaus(0)+gaus(3)",-100,100));
-      fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
-      fun[i]->SetParameter(1,fT0Diff[i]->GetMean());
-      fun[i]->SetParameter(2,fT0Diff[i]->GetRMS());
-      fun[i]->SetParameter(3,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/4);
+    if(collimator.Contains("Lead")){
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
+      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -100, 100));
+      fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
+      fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/4);
       if(i<npoints/2)
-	fun[i]->SetParameter(4,fT0Diff[i]->GetMean()-5);
+        fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-5);
       else
-	fun[i]->SetParameter(4,fT0Diff[i]->GetMean()+5);
+        fun[i]->SetParameter(4,fT0Diff[i]->GetMean()+5);
       fun[i]->SetParameter(5,fT0Diff[i]->GetRMS()*2);
       fT0Diff[i]->Fit(fun[i],"QR");
     }
-    else if(fType.Contains("Electric")){
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",mean-3*sigma, mean+3*sigma);
-      fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
+    else if(collimator.Contains("Electronic")){
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
+      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
       fT0Diff.back()->Rebin(2);
-      fun.push_back(new TF1("fun","gaus",-50,50));
-      fun[i]->SetParameter(0,fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
-      fun[i]->SetParameter(1,fT0Diff[i]->GetMean());
-      fun[i]->SetParameter(2,fT0Diff[i]->GetRMS());
-      fT0Diff[i]->Fit(fun[i],"QR");
+      fun.push_back(new TF1("fun", "gaus", -50, 50));
+      fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
+      fT0Diff[i]->Fit(fun[i], "QR");
     }
 
     int parNum=0;
     
-    if(fun[i]->GetParameter(2)<fun[i]->GetParameter(5))
-      parNum=2;
+    if(collimator=="Lead"){
+      if(fun[i]->GetParameter(2)<fun[i]->GetParameter(5))
+        parNum=2;
+      else 
+        parNum=5;
+    }
     else 
-      parNum=5;
+      parNum=2;
     
-    fTimeRes.push_back(fun[i]->GetParameter(parNum));
-    fTimeResErr.push_back(fun[i]->GetParError(parNum));
-    fT0Graph->SetPoint(i,positions[i],fun[i]->GetParameter(parNum-1));
-    fT0Graph->SetPointError(i,2,fun[i]->GetParameter(parNum));	//position uncertainty 2mm
+    fTimeResAll.push_back(fun[i]->GetParameter(parNum));
+    fTimeResAllErr.push_back(fun[i]->GetParError(parNum));
+    
+    graph->SetPoint(i, positions[i], fun[i]->GetParameter(parNum-1));
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun[i]->GetParameter(parNum));
+    
+    tResAv += fTimeResAll[i]*(1./pow(fTimeResAllErr[i], 2));
+    tResAvErr += 1./pow(fTimeResAllErr[i], 2);
   }
 
+  
+  fTResGraph  = graph;
+  fTimeRes    = tResAv/tResAvErr;
+  fTimeResErr = sqrt(1./tResAvErr);
+  
+  std::cout << "Average timing resolution: " << fTimeRes << " +/- " << fTimeResErr << " ns" << std::endl;
+  
   return true;
 }
 //------------------------------------------------------------------
@@ -214,169 +187,215 @@ bool SFTimingRes::AnalyzeNoECut(void){
 ///function. Regardless the measurement type - always sigle Gauss fitted.
 bool SFTimingRes::AnalyzeWithECut(void){
   
+  std::cout << "----- Inside SFTimingRes::AnalyzeWithECut()" << std::endl;  
+  std::cout << "----- Series number " << fSeriesNo << std::endl;
+    
   int npoints = fData->GetNpoints();
-  vector <double> positions = fData->GetPositions();
+  std::vector <double> positions = fData->GetPositions();
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
   
   if(fRatios.empty()) LoadRatios();
   
-  fPEch0 = fData->GetSpectra(0,"fPE","ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
-  fPEch1 = fData->GetSpectra(1,"fPE","ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
-  vector <SFPeakFinder*> peakFin_ch0;
-  vector <SFPeakFinder*> peakFin_ch1;
-  TF1* fun = new TF1("fun","gaus",-200,200);
+  fSpecCh0 = fData->GetSpectra(0, SFSelectionType::PE, "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
+  fSpecCh1 = fData->GetSpectra(1, SFSelectionType::PE, "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
+  std::vector <SFPeakFinder*> peakFin_ch0;
+  std::vector <SFPeakFinder*> peakFin_ch1;
+  TF1* fun = new TF1("fun", "gaus", -200, 200);
   double xmin_ch0, xmax_ch0;
   double xmin_ch1, xmax_ch1;
   double mean_ratio, sigma_ratio;
   double mean, sigma;
-  //double f = 2*sqrt(2*log(2));		//to recalculate sigma into FWHM
-  TString selection = "ch_0.fT0-ch_1.fT0";
+  //double f = 2*sqrt(2*log(2));   //to recalculate sigma into FWHM
   TString cut;
   
-  double center_ch0, delta_ch0;		//changed here for smaller cut
-  double center_ch1, delta_ch1;		//
+  double center_ch0, delta_ch0;  //changed here for smaller cut
+  double center_ch1, delta_ch1;  //
   
-  fT0Graph = new TGraphErrors(npoints);
-  fT0Graph->GetXaxis()->SetTitle("source position [mm]");
-  fT0Graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
-  fT0Graph->SetTitle("");
-  fT0Graph->SetMarkerStyle(8);
+  double tResAv = 0;
+  double tResAvErr = 0;
+  
+  TString gname = Form("timeDiffECut_S%i", fSeriesNo);
+  TGraphErrors *graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("mean of time difference distribution [ns]");
+  graph->SetTitle(gname);
+  graph->SetName(gname);
+  graph->SetMarkerStyle(4);
   
   for(int i=0; i<npoints; i++){
-    peakFin_ch0.push_back(new SFPeakFinder(fPEch0[i],"511",false));
-    peakFin_ch1.push_back(new SFPeakFinder(fPEch1[i],"511",false));
-    peakFin_ch0[i]->FindPeakRange(xmin_ch0,xmax_ch0);
-    peakFin_ch1[i]->FindPeakRange(xmin_ch1,xmax_ch1);
-    center_ch0 = xmin_ch0+(xmax_ch0-xmin_ch0)/2.;	//changed here for smaller cut
-    delta_ch0  = (xmax_ch0-xmin_ch0)/6.;		//
-    center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;	//
-    delta_ch1  = (xmax_ch1-xmin_ch1)/6.;		//
+    peakFin_ch0.push_back(new SFPeakFinder(fSpecCh0[i],false));
+    peakFin_ch1.push_back(new SFPeakFinder(fSpecCh1[i],false));
+    peakFin_ch0[i]->FindPeakRange(xmin_ch0, xmax_ch0);
+    peakFin_ch1[i]->FindPeakRange(xmin_ch1, xmax_ch1);
+    
+    center_ch0 = xmin_ch0+(xmax_ch0-xmin_ch0)/2.;   //changed here for smaller cut
+    delta_ch0  = (xmax_ch0-xmin_ch0)/6.;            //
+    center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;   //
+    delta_ch1  = (xmax_ch1-xmin_ch1)/6.;            //
     mean_ratio = fRatios[i]->GetFunction("fun")->GetParameter(1);
     sigma_ratio = fRatios[i]->GetFunction("fun")->GetParameter(2);
-    if(fType.Contains("Lead")) 	cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0,center_ch0+delta_ch0,center_ch1-delta_ch1,center_ch1+delta_ch1,mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);	//changed here for smaller cut
-    else if(fType.Contains("Electric"))	cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-3*delta_ch0,center_ch0+3*delta_ch0,center_ch1-3*delta_ch1,center_ch1+3*delta_ch1,mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);	//changed here for smaller cut
-    fT0Diff.push_back(fData->GetCustomHistogram(selection,cut,positions[i]));
-    mean = fT0Diff[i]->GetMean();
-    sigma = fT0Diff[i]->GetRMS();
-    fT0Diff[i]->Fit(fun,"Q","",mean-5*sigma,mean+5*sigma);
-    fTimeRes.push_back(fun->GetParameter(2));	//Timing resolution as sigma, if FWHM needed multiply by f
-    fTimeResErr.push_back(fun->GetParError(2));		//FWHM - multiply by f
-    fT0Graph->SetPoint(i,positions[i],fun->GetParameter(1));
-    fT0Graph->SetPointError(i,2,fun->GetParameter(2));	//position uncertainy 2 mm
-							//FWHM - multiply by f
+    
+    if(collimator.Contains("Lead"))
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);   //changed here for smaller cut
+    else if(collimator.Contains("Electronic"))
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
+      
+    fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
+    mean = fT0DiffECut[i]->GetMean();
+    sigma = fT0DiffECut[i]->GetRMS();
+    fT0DiffECut[i]->Fit(fun, "Q", "", mean-5*sigma, mean+5*sigma);
+    fTimeResECutAll.push_back(fun->GetParameter(2));	//Timing resolution as sigma, if FWHM needed multiply by f
+    fTimeResECutAllErr.push_back(fun->GetParError(2));		//FWHM - multiply by f
+    
+    graph->SetPoint(i, positions[i], fun->GetParameter(1));
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun->GetParameter(2));   //FWHM - multiply by f
+    
+    tResAv += fTimeResECutAll[i]*(1./pow(fTimeResECutAllErr[i], 2));
+    tResAvErr += 1./pow(fTimeResECutAllErr[i], 2);
   }
+  
+  fTResECutGraph  = graph;
+  fTimeResECut    = tResAv/tResAvErr;
+  fTimeResECutErr = sqrt(1./tResAvErr);
+  
+  std::cout << "Average timing resolution: " << fTimeResECut << " +/- " << fTimeResECutErr << " ns" << std::endl; 
   
   return true;
 }
 //------------------------------------------------------------------
-///Returns vector of histograms, which contains timing resolution spectra
-///for whole series.
-vector <TH1D*> SFTimingRes::GetT0Diff(void){
-  if(fT0Diff.empty()){
-   cout << "##### Error in SFTimingRes::GetT0Diff()! Empty vector!" << endl; 
-  }
-  return fT0Diff;
-}
-//------------------------------------------------------------------
-///Returns single timing resolution spectrum for requested measurement.
-///Measurement is identified by source position. If source position is not unique
-///number of measurement in the series should be given.
-TH1D* SFTimingRes::GetT0Diff(double position){
-  int index = GetIndex(position);
-  if(index>fT0Diff.size()){
-    cout << "##### Error in SFTimingRes::GetT0Diff(position)! Incorrect position!" << endl;
-    return NULL;
-  }
-  return fT0Diff[index];
-}
-//------------------------------------------------------------------
-///Returns graph ch_0.T0-ch_1.T0 vs. source position.
-TGraphErrors* SFTimingRes::GetT0Graph(void){
-  if(fT0Graph==NULL){
-    cout << "##### Error in SFTimingRes::GetT0Graph()! Graph was not created!" << endl;
-    return NULL;
-  }
-  return fT0Graph;
-}
-//------------------------------------------------------------------
-///Returns timing resolution value and its uncertainty for requested measurement.
-///Measurement is identified like in GetT0Diff() function. Order in the returned vector:
-///timing resolution, uncertainty.
-vector <double> SFTimingRes::GetTimingResolution(double position){
+/// Returns vector of histograms, which contains timing resolution 
+/// spectra for whole series.
+/// \param type - type of analysis (1 - with cut, 0 - no cut)
+std::vector <TH1D*> SFTimingRes::GetT0Diff(bool type){
   
-  vector <double> temp;
-  int index = GetIndex(position);
-  
-  if(index<fTimeRes.size()){
-    cout << "##### Error in SFTimingRes::GetTimingResolution(position)! Incorrect position!" << endl;
+  if((type==0 && fT0Diff.empty()) || 
+     (type==1 && fT0DiffECut.empty())){
+    std::cerr << "##### Error in SFTimingRes::GetT0Diff()!" << std::endl;
+    std::cerr << "No spectra available!" << std::endl;
   }
   
-  temp.push_back(fTimeRes[index]);
-  temp.push_back(fTimeResErr[index]);
+  if(type==0)
+    return fT0Diff;
+  else if(type==1)
+    return fT0DiffECut;
+}
+//------------------------------------------------------------------
+/// Returns graph ch_0.T0-ch_1.T0 vs. source position.
+/// \param type - type of analysis (0 - no cut, 1 - with cut)
+TGraphErrors* SFTimingRes::GetTimingResGraph(bool type){
   
-  return temp;
+  if((type==0 && fTResGraph==nullptr) ||
+     (type==1 && fTResECutGraph==nullptr)){
+    std::cerr << "##### Error in SFTimingRes::GetTimingResGraph()!" << std::endl;
+  std::cerr << "No graph available!" << std::endl;
+  std::abort();
+  }
+  
+  if(type==0)
+    return fTResGraph;
+  else if(type==1)
+    return fTResECutGraph;
 }
 //------------------------------------------------------------------
-///Returns vector containing timing resolutions for all measurements 
-///in the series
-vector <double> SFTimingRes::GetTimingResolutions(void){
-  if(fTimeRes.empty()){
-    cout << "##### Error in SFTimingRes::GetTimingResolutions()! Empty vector!" << endl;
+/// Returns vector containing average timing resolution for the 
+/// series along with the uncertainty.
+/// \param type - type of analysis (0 - no cut, 1 - with cut)
+std::vector <double> SFTimingRes::GetTimingResolution(bool type){
+    
+  std::vector <double> tmp;
+  
+  if(type==0){
+    tmp.push_back(fTimeRes);
+    tmp.push_back(fTimeResErr);
   }
-  return fTimeRes;
+  else if(type==1){
+    tmp.push_back(fTimeResECut);
+    tmp.push_back(fTimeResECutErr);
+  }
+
+  if(tmp[0]==-1 || tmp[1]==-1){
+    std::cerr << "##### Error in SFTimingRes::GetTimingResolution()!" << std::endl;
+    std::cerr << "Incorrect values: " << tmp[0] << " +/- " << tmp[1] << " ns" << std::endl;
+    std::abort();
+  }
+
+  return tmp;
 }
 //------------------------------------------------------------------
-///Returns vector containing uncertainties of timing resolutions for 
-///all measurements in the series.
-vector <double> SFTimingRes::GetTimingResErrors(void){
-  if(fTimeResErr.empty()){
-    cout << "##### Error in SFTimingRes::GetTimingResErrors()! Empty vector!" << endl;
+/// Returns vector containing timing resolution values for 
+/// all measurements in the series.
+/// \param type - type of analysis (0 - no cut, 1 - with cut)
+std::vector <double> SFTimingRes::GetTimingResolutionAll(bool type){
+
+  if((type==0 && fTimeResAll.empty()) || 
+     (type==1 && fTimeResECutAll.empty())){
+    std::cerr << "##### Error in SFTimingRes::GetTimingResolutionAll()!" << std::endl;
+    std::cerr << "No results available!" << std::endl;
+    std::abort();
   }
-  return fTimeResErr;
+  
+  if(type==0)
+    return fTimeResAll;
+  else if(type==1)
+    return fTimeResECutAll;
+}
+//------------------------------------------------------------------
+/// Returns vector containing uncertainties of timing resolutions for 
+/// all measurements in the series.
+/// \param type - type of analysis (0 - no cut, 1 - with cut)
+std::vector <double> SFTimingRes::GetTimingResolutionAllErr(bool type){
+  
+  if((type==0 && fTimeResAllErr.empty()) || 
+     (type==1 && fTimeResECutAllErr.empty())){
+    std::cerr << "##### Error in SFTimingRes::GetTimingResolutionAllErr()!" << std::endl;
+    std::cerr << "No results available!" << std::endl;
+    std::abort();
+  }
+  
+  if(type==0)
+    return fTimeResAllErr;
+  else if(type==1)
+    return fTimeResECutAllErr;   
 }
 //------------------------------------------------------------------
 /// Returns vector of ratio histograms used for cut on scattered events.
-vector <TH1D*> SFTimingRes::GetRatios(void){
- if(fRatios.empty()){
-   cout << "##### Error in SFTimingRes::GetRatios()! Empty vector!" << endl;
- }
- return fRatios; 
+std::vector <TH1D*> SFTimingRes::GetRatios(void){
+    
+  if(fRatios.empty()){
+    std::cout << "##### Error in SFTimingRes::GetRatios()! Empty vector!" << std::endl;
+    std::abort();
+  }
+  return fRatios; 
 }
 //------------------------------------------------------------------
 /// Returns vector of PE spectra used for 511 keV energy cut. 
 /// \param ch - channel number (0 or 1).
-vector <TH1D*> SFTimingRes::GetSpectra(int ch){
- if(fMethod=="no cut"){
-   cout << "##### Error in SFTimingRes::GetSpectra()! Incorrect method!" << endl;
- }
- if((ch==0 && fPEch0.empty()) || (ch==1 && fPEch1.empty())){
-   cout << "##### Error in SFTimingRes::GetSpectra()! Empty vector!" << endl;
- }
- if(ch==0)       return fPEch0; 
- else if (ch==1) return fPEch1;
-}
-//------------------------------------------------------------------
-///Resets private members of the class to their default values.
-void SFTimingRes::Reset(void){
-  fSeriesNo  = -1;
-  fThreshold = "dummy";
-  fMethod    = "dummy";
-  fData      = NULL;
-  fT0Graph   = NULL;
-  if(!fRatios.empty())      fRatios.clear();
-  if(!fPEch0.empty())       fPEch0.clear();
-  if(!fPEch1.empty())       fPEch1.clear();
-  if(!fT0Diff.empty())      fT0Diff.clear();
-  if(!fTimeRes.empty())     fTimeRes.clear();
-  if(!fTimeResErr.empty())  fTimeResErr.clear();
+std::vector <TH1D*> SFTimingRes::GetSpectra(int ch){
+ 
+  if((ch==0 && fSpecCh0.empty()) || 
+     (ch==1 && fSpecCh1.empty())){
+    std::cerr << "##### Error in SFTimingRes::GetSpectra()!" << std::endl; 
+    std::cerr << "No spectra available!" << std::endl;
+    std::abort();
+  }
+
+  if(ch==0)       
+    return fSpecCh0; 
+  else if(ch==1) 
+    return fSpecCh1;
+  else{
+    std::cerr << "##### Error in SFTimingRes::GetSpectra()" << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
 }
 //------------------------------------------------------------------
 /// Prints details of SFTimingRes class object.
 void SFTimingRes::Print(void){
-  cout << "\n--------------------------------------------" << endl;
-  cout << "This is print out of SFTimingRes class object" << endl;
-  cout << "Experimental series number " << fSeriesNo << endl;
-  cout << "Threshold type: " << fThreshold << endl;
-  cout << "Analysis method: " << fMethod << endl;
-  cout << "--------------------------------------------\n" << endl;
+  std::cout << "\n--------------------------------------------" << std::endl;
+  std::cout << "This is print out of SFTimingRes class object" << std::endl;
+  std::cout << "Experimental series number " << fSeriesNo << std::endl;
+  std::cout << "--------------------------------------------\n" << std::endl;
 }
 //------------------------------------------------------------------

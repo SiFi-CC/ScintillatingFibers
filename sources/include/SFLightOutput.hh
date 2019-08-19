@@ -46,7 +46,6 @@ private:
     SFAttenuation *fAtt;
     
 public:
-  SFLightOutput();
   SFLightOutput(int seriesNo);
   ~SFLightOutput();
   

@@ -15,26 +15,6 @@
 ClassImp(SFLightOutput);
 
 //------------------------------------------------------------------
-/// Default constructor.
-SFLightOutput::SFLightOutput(): fSeriesNo(-1),
-                                fPDE(-1), 
-                                fCrossTalk(-1),
-                                fLightOut(-1),
-                                fLightOutErr(-1),
-                                fLightOutCh0(-1),
-                                fLightOutCh0Err(-1),
-                                fLightOutCh1(-1),
-                                fLightOutCh1Err(-1),
-                                fLightOutGraph(nullptr),
-                                fLightOutCh0Graph(nullptr),
-                                fLightOutCh1Graph(nullptr),
-                                fData(nullptr),
-                                fAtt(nullptr) {
-                                    
-  std::cout << "##### Warning in SFLightOutput constructor!" << std::endl;
-  std::cout << "You are using default constructor!" << std::endl;
-}
-//------------------------------------------------------------------
 SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
                                             fPDE(-1), 
                                             fCrossTalk(-1),

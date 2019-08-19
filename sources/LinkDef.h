@@ -10,7 +10,8 @@
 #pragma link C++ class SFFitResults+;
 #pragma link C++ class SFData+;
 #pragma link C++ class SFAttenuation+;
-#pragma link C++ class SFEnergyResolution+;
+#pragma link C++ class SFTimingRes+;
+#pragma link C++ class SFEnergyRes+;
 #pragma link C++ class SFLightOutput+;
 
 #endif

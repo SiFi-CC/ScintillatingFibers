@@ -9,3 +9,6 @@ target_link_libraries(energyres ScintillatingFibers)
 
 add_executable(lightout lightout.cc)
 target_link_libraries(lightout ScintillatingFibers)
+
+add_executable(timeres timeres.cc)
+target_link_libraries(timeres ScintillatingFibers)

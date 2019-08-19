@@ -1,7 +1,7 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *         SFEnergyResolution.hh         *
+// *           SFEnergyRes.hh              *
 // *            Jonas Kasper               *
 // *      kasper@physik.rwth-aachen.de     *
 // *         Katarzyna Rusiecka            *
@@ -9,8 +9,8 @@
 // *          Created in 2018              *
 // *                                       *
 // *****************************************
-#ifndef __SFEnergyResolution_H_
-#define __SFEnergyResolution_H_ 1
+#ifndef __SFEnergyRes_H_
+#define __SFEnergyRes_H_ 1
 #include "TObject.h"
 #include "TF1.h"
 #include "TGraphErrors.h"
@@ -19,7 +19,7 @@
 #include "SFAttenuation.hh"
 #include <iostream>
 
-class SFEnergyResolution: public TObject{
+class SFEnergyRes: public TObject{
  
 private:
   int     fSeriesNo;         ///< Number of experimental series to be analyzed
@@ -50,9 +50,8 @@ private:
   std::vector <TH1D*> fPeaksSum;
   
 public:
-  SFEnergyResolution();
-  SFEnergyResolution(int seriesNo);
-  ~SFEnergyResolution();
+  SFEnergyRes(int seriesNo);
+  ~SFEnergyRes();
     
   bool CalculateEnergyRes(int ch);
   bool CalculateEnergyRes(void);
@@ -69,7 +68,7 @@ public:
   
   void Print(void);
   
-  ClassDef(SFEnergyResolution,1)
+  ClassDef(SFEnergyRes,1)
 };
 
 #endif

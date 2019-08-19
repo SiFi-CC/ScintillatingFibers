@@ -8,16 +8,21 @@
 // *                                       *
 // *****************************************  
 
-
 #include "SFTimingRes.hh"
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TLine.h"
+#include "TSystem.h"
+#include "CmdLineConfig.hh"
+#include "CmdLineOption.hh"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 int main(int argc, char **argv){
  
-  if(argc!=2){
-    cout << "to run type: ./timeres seriesNo" << endl;
+  if(argc<2 || argc>6){
+    std::cout << "to run type: ./timeres seriesNo";
+    std::cout << "-out path/to/output -db database" << std::endl;
     return 0;
   }
   
@@ -28,93 +33,71 @@ int main(int argc, char **argv){
     data = new SFData(seriesNo);
   }
   catch(const char *message){
-    cout << message << endl;
-    cout << "##### Exception in timeres.cc!" << endl;
+    std::cerr << message << std::endl;
+    std::cout << "##### Exception in timeres.cc!" << std::endl;
     return 0;
   }
+  
   TString desc = data->GetDescription();
   if(!desc.Contains("Regular series")){
-    cout << "##### Error in timeres.cc! This is not regular series!" << endl;
-    cout << "Series number: " << seriesNo << endl;
-    cout << "GetDescription: " << desc << endl;
+    std::cerr << "##### Error in timeres.cc! This is not regular series!" << std::endl;
+    std::cerr << "Series number: " << seriesNo << std::endl;
+    std::cerr << "Description: " << desc << std::endl;
     return 0;
   }
   
   int npoints = data->GetNpoints();
-  TString type = data->GetMeasureType(); 
-  vector <double> positions = data->GetPositions();
+  TString collimator = data->GetCollimator(); 
+  std::vector <double> positions = data->GetPositions();
   data->Print();
  
-  SFTimingRes *tim_ft;
-  SFTimingRes *tim_ft_cut;
-  SFTimingRes *tim_cf;
-  SFTimingRes *tim_cf_cut;
+  SFTimingRes *timeres;
   
   try{
-    tim_ft = new SFTimingRes(seriesNo,"ft","no cut");
-    tim_ft->Print();
-    tim_ft_cut = new SFTimingRes(seriesNo,"ft","with cut");
-    tim_ft_cut->Print();
-    if((type=="Lead")){
-	    tim_cf = new SFTimingRes(seriesNo,"cf","no cut");
-	    tim_cf->Print();
-	    tim_cf_cut = new SFTimingRes(seriesNo,"cf","with cut");
-	    tim_cf_cut->Print();
-    }
+    timeres = new SFTimingRes(seriesNo);
   }
   catch(const char* message){
-    cout << message << endl;
-    cout << "##### Exception in timeres.cc!" << endl;
+    std::cerr << message << std::endl;
+    std::cerr << "##### Exception in timeres.cc!" << std::endl;
     return 0;
   }
   
-  //----- timing resolution FT, no enery cut
-  vector <TH1D*>  T0diff_ft  = tim_ft->GetT0Diff();
-  vector <double> tres_ft    = tim_ft->GetTimingResolutions();
-  vector <double> treserr_ft = tim_ft->GetTimingResErrors();
-  vector <TH1D*>  ratio_ft   = tim_ft->GetRatios();
-  TGraphErrors    *gr_ft     = tim_ft->GetT0Graph();
-  gr_ft->SetName("gr_ft");
+  timeres->Print();
+  timeres->AnalyzeNoECut();
+  timeres->AnalyzeWithECut();
   
-  //----- timing resolution FT, with energy cut
-  vector <TH1D*>  T0diff_ft_cut  = tim_ft_cut->GetT0Diff();
-  vector <double> tres_ft_cut    = tim_ft_cut->GetTimingResolutions();
-  vector <double> treserr_ft_cut = tim_ft_cut->GetTimingResErrors();
-  vector <TH1D*>  spec_ft_cut_0  = tim_ft_cut->GetSpectra(0);
-  vector <TH1D*>  spec_ft_cut_1  = tim_ft_cut->GetSpectra(1);
-  TGraphErrors    *gr_ft_cut     = tim_ft_cut->GetT0Graph();
-  gr_ft_cut->SetName("gr_ft_cut");
+  //----- timing resolution, no enery cut
+  std::vector <TH1D*>  T0diff  = timeres->GetT0Diff(0);
+  std::vector <double> timeRes = timeres->GetTimingResolution(0);
+  std::vector <TH1D*>  ratio   = timeres->GetRatios();
+  TGraphErrors *gTimeRes       = timeres->GetTimingResGraph(0);
+  std::vector <double> timeResAll    = timeres->GetTimingResolutionAll(0);
+  std::vector <double> timeResAllErr = timeres->GetTimingResolutionAllErr(0);
+  
+  //----- timing resolution, with energy cut
+  std::vector <TH1D*>  T0diffECut  = timeres->GetT0Diff(1);
+  std::vector <double> timeResECut = timeres->GetTimingResolution(1);
+  std::vector <TH1D*>  specCh0  = timeres->GetSpectra(0);
+  std::vector <TH1D*>  specCh1  = timeres->GetSpectra(1);
+  TGraphErrors *gTimeResECut    = timeres->GetTimingResGraph(1);
+  std::vector <double> timeResECutAll = timeres->GetTimingResolutionAll(1);
+  std::vector <double> timeResECutAllErr = timeres->GetTimingResolutionAllErr(1);
   
   //----- drawing
-  TCanvas *can_ft = new TCanvas("can_ft","can_ft",1200,1200);
-  can_ft->Divide(3,3);
+  TCanvas *canTDiff = new TCanvas("canTDiff", "canTDiff", 1200, 1200);
+  canTDiff->DivideSquare(npoints);
   
-  TCanvas *can_ft_cut = new TCanvas("can_ft_cut","cut_ft_cut",1200,1200);
-  can_ft_cut->Divide(3,3);
+  TCanvas *canTDiffECut = new TCanvas("canTDiffECut", "canTDiffECut", 1200, 1200);
+  canTDiffECut->DivideSquare(npoints);
   
-  TCanvas *can_ft_ratio = new TCanvas("can_ft_ratio","can_ft_ratio",1200,1200);
-  can_ft_ratio->Divide(3,3);
+  TCanvas *canRatio = new TCanvas("canRatio", "canRatio", 1200, 1200);
+  canRatio->DivideSquare(npoints);
   
-  TCanvas *can_ft_spec_0 = new TCanvas("can_ft_spec_0","can_ft_spec_0",1200,1200);
-  can_ft_spec_0->Divide(3,3);
+  TCanvas *canSpecCh0 = new TCanvas("canSpecCh0", "canSpecCh0", 1200, 1200);
+  canSpecCh0->DivideSquare(npoints);
   
-  TCanvas *can_ft_spec_1 = new TCanvas("can_ft_spec_1","can_ft_spec_1",1200,1200);
-  can_ft_spec_1->Divide(3,3);
-  
-  TCanvas *can_cf = new TCanvas("can_cf","can_cf",1200,1200);
-  can_cf->Divide(3,3);
-  
-  TCanvas *can_cf_cut = new TCanvas("can_cf_cut","can_cf_cut",1200,1200);
-  can_cf_cut->Divide(3,3);
-  
-  TCanvas *can_cf_ratio = new TCanvas("can_cf_ratio","can_cf_ratio",1200,1200);
-  can_cf_ratio->Divide(3,3);
-
-  TCanvas *can_cf_spec_0 = new TCanvas("can_cf_spec_0","can_cf_spec_0",1200,1200);
-  can_cf_spec_0->Divide(3,3);
-
-  TCanvas *can_cf_spec_1 = new TCanvas("can_cf_spec_1","can_cf_spec_1",1200,1200);
-  can_cf_spec_1->Divide(3,3);
+  TCanvas *canSpecCh1 = new TCanvas("canSpecCh1", "canSpecCh1", 1200, 1200);
+  canSpecCh1->DivideSquare(npoints);
   
   TLatex  text;
   TString string;
@@ -131,277 +114,168 @@ int main(int argc, char **argv){
   double mean, sigma;
   double max;
   double xmin, xmax;
-  double center, delta;		//changed here for smaller cut
+  double center, delta;   //changed here for smaller cut
   
-  double sum_ft = 0;
-  double sum_ft_cut = 0;
+  TF1* fT0thin = new TF1("fT0thin", "gaus", -50, 50);
+  TF1* fT0thick = new TF1("fT0thick", "gaus", -50, 50);
+  fT0thin->SetLineColor(kMagenta);
+  fT0thick->SetLineColor(kMagenta-10);
   
-  TF1* T0thin = new TF1("T0thin","gaus",-50,50);
-  TF1* T0thick = new TF1("T0thick","gaus",-50,50);
-  T0thin->SetLineColor(kMagenta);
-  T0thick->SetLineColor(kMagenta-10);
-  
-  TF1* Rthin = new TF1("Rthin","gaus",-1,1);
-  TF1* Rthick = new TF1("Rthick","gaus",-1,1);
-  Rthin->SetLineColor(kMagenta);
-  Rthick->SetLineColor(kMagenta-10);
+  TF1* fRthin = new TF1("fRthin", "gaus", -1, 1);
+  TF1* fRthick = new TF1("fRthick", "gaus", -1, 1);
+  fRthin->SetLineColor(kMagenta);
+  fRthick->SetLineColor(kMagenta-10);
   
   for(int i=0; i<npoints; i++){
-    title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm",seriesNo,positions[i]);
+    title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm", seriesNo, positions[i]);
     
-    can_ft->cd(i+1);
+    canTDiff->cd(i+1);
     gPad->SetGrid(1,1);
-    string = Form("%.2f +/- %.2f ns",tres_ft[i],treserr_ft[i]);
-    T0diff_ft[i]->SetTitle(title);
-    T0diff_ft[i]->GetXaxis()->SetTitle("time difference [ns]");
-    T0diff_ft[i]->Draw();
-    text.DrawLatex(0.15,0.8,string);
-    sum_ft += tres_ft[i];
-    if(type=="Lead"){
-      T0thin->FixParameter(0,T0diff_ft[i]->GetFunction("fun")->GetParameter(0));
-      T0thin->FixParameter(1,T0diff_ft[i]->GetFunction("fun")->GetParameter(1));
-      T0thin->FixParameter(2,T0diff_ft[i]->GetFunction("fun")->GetParameter(2));
-      T0thick->FixParameter(0,T0diff_ft[i]->GetFunction("fun")->GetParameter(3));
-      T0thick->FixParameter(1,T0diff_ft[i]->GetFunction("fun")->GetParameter(4));
-      T0thick->FixParameter(2,T0diff_ft[i]->GetFunction("fun")->GetParameter(5));
-      T0thin->DrawClone("same");
-      T0thick->DrawClone("same");
+    string = Form("%.3f +/- %.3f ns", timeResAll[i], timeResAllErr[i]);
+    T0diff[i]->SetTitle(title);
+    T0diff[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
+    T0diff[i]->Draw();
+    text.DrawLatex(0.15, 0.8, string);
+    if(collimator=="Lead"){
+      fT0thin->FixParameter(0, T0diff[i]->GetFunction("fun")->GetParameter(0));
+      fT0thin->FixParameter(1, T0diff[i]->GetFunction("fun")->GetParameter(1));
+      fT0thin->FixParameter(2, T0diff[i]->GetFunction("fun")->GetParameter(2));
+      fT0thick->FixParameter(0, T0diff[i]->GetFunction("fun")->GetParameter(3));
+      fT0thick->FixParameter(1, T0diff[i]->GetFunction("fun")->GetParameter(4));
+      fT0thick->FixParameter(2, T0diff[i]->GetFunction("fun")->GetParameter(5));
+      fT0thin->DrawClone("same");
+      fT0thick->DrawClone("same");
     }
-    T0diff_ft[i]->GetXaxis()->SetRangeUser(-50,50);
+    T0diff[i]->GetXaxis()->SetRangeUser(-50,50);
     
-    can_ft_ratio->cd(i+1);
+    canTDiffECut->cd(i+1);
     gPad->SetGrid(1,1);
-    ratio_ft[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
-    ratio_ft[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
-    max = ratio_ft[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
-    mean = ratio_ft[i]->GetFunction("fun")->GetParameter(1);
-    sigma = ratio_ft[i]->GetFunction("fun")->GetParameter(2);
-    ratio_ft[i]->Draw();
-    line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
-    line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
-    if(type=="Lead"){
-      Rthin->FixParameter(0,ratio_ft[i]->GetFunction("fun")->GetParameter(0));
-      Rthin->FixParameter(1,ratio_ft[i]->GetFunction("fun")->GetParameter(1));
-      Rthin->FixParameter(2,ratio_ft[i]->GetFunction("fun")->GetParameter(2));
-      Rthick->FixParameter(0,ratio_ft[i]->GetFunction("fun")->GetParameter(3));
-      Rthick->FixParameter(1,ratio_ft[i]->GetFunction("fun")->GetParameter(4));
-      Rthick->FixParameter(2,ratio_ft[i]->GetFunction("fun")->GetParameter(5));
-      Rthin->DrawClone("same");
-      Rthick->DrawClone("same");
+    string = Form("%.3f +/- %.3f ns", timeResECutAll[i], timeResECutAllErr[i]);
+    T0diffECut[i]->SetTitle(title);
+    T0diffECut[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
+    T0diffECut[i]->GetXaxis()->SetRangeUser(-20, 20);
+    T0diffECut[i]->Draw();
+    text.DrawLatex(0.15, 0.8, string);
+    
+    canRatio->cd(i+1);
+    gPad->SetGrid(1,1);
+    ratio[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
+    ratio[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
+    max = ratio[i]->GetBinContent(ratio[i]->GetMaximumBin());
+    mean = ratio[i]->GetFunction("fun")->GetParameter(1);
+    sigma = ratio[i]->GetFunction("fun")->GetParameter(2);
+    ratio[i]->Draw();
+    line.DrawLine(mean-0.5*sigma, 0 ,mean-0.5*sigma, max);
+    line.DrawLine(mean+0.5*sigma, 0, mean+0.5*sigma, max);
+    if(collimator=="Lead"){
+      fRthin->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(0));
+      fRthin->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(1));
+      fRthin->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(2));
+      fRthick->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(3));
+      fRthick->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(4));
+      fRthick->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(5));
+      fRthin->DrawClone("same");
+      fRthick->DrawClone("same");
     }
-    ratio_ft[i]->GetXaxis()->SetRangeUser(-1,1);
+    ratio[i]->GetXaxis()->SetRangeUser(-1,1);
     
-    can_ft_cut->cd(i+1);
+    canSpecCh0->cd(i+1);
     gPad->SetGrid(1,1);
-    string = Form("%.2f +/- %.2f ns",tres_ft_cut[i],treserr_ft_cut[i]);
-    T0diff_ft_cut[i]->SetTitle(title);
-    T0diff_ft_cut[i]->GetXaxis()->SetTitle("time difference [ns]");
-    T0diff_ft_cut[i]->GetXaxis()->SetRangeUser(-20,20);
-    T0diff_ft_cut[i]->Draw();
-    text.DrawLatex(0.15,0.8,string);
-    sum_ft_cut += tres_ft_cut[i]; 
+    specCh0[i]->GetXaxis()->SetTitle("charge P.E.");
+    specCh0[i]->GetYaxis()->SetTitle("counts");
+    specCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm", seriesNo, positions[i]));
+    specCh0[i]->SetStats(false);
+    specCh0[i]->GetYaxis()->SetMaxDigits(2);
+    peakfin->SetSpectrum(specCh0[i]);
+    peakfin->FindPeakRange(xmin, xmax);
+    center = xmin+(xmax-xmin)/2.;  //changed here for smaller cut
+    delta  = (xmax-xmin)/6;        //
+    max = specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin());
+    specCh0[i]->Draw();
+    line.DrawLine(center-delta, 0, center-delta, max);  //changed here for smaller cut
+    line.DrawLine(center+delta, 0, center+delta, max);  //
+    specCh0[i]->GetXaxis()->SetRangeUser(0, 700);
     
-    can_ft_spec_0->cd(i+1);
+    canSpecCh1->cd(i+1);
     gPad->SetGrid(1,1);
-    spec_ft_cut_0[i]->GetXaxis()->SetTitle("charge P.E.");
-    spec_ft_cut_0[i]->GetYaxis()->SetTitle("counts");
-    spec_ft_cut_0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
-    spec_ft_cut_0[i]->SetStats(false);
-    spec_ft_cut_0[i]->GetYaxis()->SetMaxDigits(2);
-    peakfin->SetSpectrum(spec_ft_cut_0[i],"511");
+    specCh1[i]->GetXaxis()->SetTitle("charge P.E.");
+    specCh1[i]->GetYaxis()->SetTitle("counts");
+    specCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm", seriesNo, positions[i]));
+    specCh1[i]->SetStats(false);
+    specCh1[i]->GetYaxis()->SetMaxDigits(2);
+    peakfin->SetSpectrum(specCh1[i]);
     peakfin->FindPeakRange(xmin,xmax);
-    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
-    delta  = (xmax-xmin)/6; 		//
-    max = spec_ft_cut_0[i]->GetBinContent(spec_ft_cut_0[i]->GetMaximumBin());
-    spec_ft_cut_0[i]->Draw();
-    line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
-    line.DrawLine(center+delta,0,center+delta,max);	//
-    spec_ft_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
-    
-    can_ft_spec_1->cd(i+1);
-    gPad->SetGrid(1,1);
-    spec_ft_cut_1[i]->GetXaxis()->SetTitle("charge P.E.");
-    spec_ft_cut_1[i]->GetYaxis()->SetTitle("counts");
-    spec_ft_cut_1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
-    spec_ft_cut_1[i]->SetStats(false);
-    spec_ft_cut_1[i]->GetYaxis()->SetMaxDigits(2);
-    peakfin->SetSpectrum(spec_ft_cut_1[i],"511");
-    peakfin->FindPeakRange(xmin,xmax);
-    center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
-    delta  = (xmax-xmin)/6; 		//
-    max = spec_ft_cut_1[i]->GetBinContent(spec_ft_cut_1[i]->GetMaximumBin());
-    spec_ft_cut_1[i]->Draw();
-    line.DrawLine(center-delta,0,center-delta,max);		//changed here for smaller cut
-    line.DrawLine(center+delta,0,center+delta,max);		//
-    spec_ft_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
+    center = xmin+(xmax-xmin)/2.; //changed here for smaller cut
+    delta  = (xmax-xmin)/6;       //
+    max = specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin());
+    specCh1[i]->Draw();
+    line.DrawLine(center-delta, 0, center-delta, max);  //changed here for smaller cut
+    line.DrawLine(center+delta, 0, center+delta, max);  //
+    specCh1[i]->GetXaxis()->SetRangeUser(0, 700);
   }
   
-  TCanvas *can_gr_ft = new TCanvas("can_gr_ft","can_gr_ft",1000,500);
-  can_gr_ft->Divide(2,1);
-  can_gr_ft->cd(1);
-  gPad->SetGrid(1,1);
-  gr_ft->SetTitle(Form("Series %i, fixed threshold, cut on scattered events",seriesNo));
-  gr_ft->Draw("AP");
-  can_gr_ft->cd(2);
-  gPad->SetGrid(1,1);
-  gr_ft_cut->SetTitle(Form("Series %i, fixed threshold, cut on 511 keV peak",seriesNo));
-  gr_ft_cut->Draw("AP");
+  TCanvas *canTimingRes = new TCanvas("canTimingRes", "canTimingRes", 1000, 700);
+  canTimingRes->Divide(2,1);
   
-  //-----printing
-  cout << "\n\n-------------------------------" << endl;
-  cout << "Average timing resolution time for:" << endl;
-  cout << "\t Fixed threshold, scattered events rejected: " << sum_ft/npoints << " ns +/- "
-       << TMath::StdDev(&tres_ft[0],&tres_ft[npoints-1])/sqrt(npoints) << " ns" << endl;
-  cout << "\t Fixed threshold, cut on 511 keV peak: " << sum_ft_cut/npoints << " ns +/- " 
-       << TMath::StdDev(&tres_ft_cut[0],&tres_ft_cut[npoints-1])/sqrt(npoints) << " ns" << endl;
+  canTimingRes->cd(1);
+  gPad->SetGrid(1,1);
+  gTimeRes->Draw("AP");
+  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", timeRes[0], timeRes[1]));
+  
+  canTimingRes->cd(2);
+  gPad->SetGrid(1,1);
+  gTimeResECut->Draw("AP");
+  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", timeResECut[0], timeResECut[1]));
        
   //----- saving
-  TString fname = Form("../results/timingres_series%i.root",seriesNo);
-  TFile *file = new TFile(fname,"RECREATE");
-  can_ft->Write();
-  can_ft_ratio->Write();
-  can_ft_cut->Write();
-  can_ft_spec_0->Write();
-  can_ft_spec_1->Write();
-  can_gr_ft->Write();
- 
-  if((type=="Lead")){
-  	//----- timing resolution CF, no energy cut
-	vector <TH1D*>  T0diff_cf  = tim_cf->GetT0Diff();
-	vector <double> tres_cf    = tim_cf->GetTimingResolutions();
-	vector <double> treserr_cf = tim_cf->GetTimingResErrors();
-	vector <TH1D*>  ratio_cf   = tim_cf->GetRatios();
-	TGraphErrors    *gr_cf     = tim_cf->GetT0Graph();
-	gr_cf->SetName("gr_cf");
-
-	//----- timing resolution, CF with energy cut
-	vector <TH1D*>  T0diff_cf_cut  = tim_cf_cut->GetT0Diff();
-	vector <double> tres_cf_cut    = tim_cf_cut->GetTimingResolutions();
-	vector <double> treserr_cf_cut = tim_cf_cut->GetTimingResErrors();
-	vector <TH1D*>  spec_cf_cut_0  = tim_cf_cut->GetSpectra(0);
-	vector <TH1D*>  spec_cf_cut_1  = tim_cf_cut->GetSpectra(1);
-	TGraphErrors    *gr_cf_cut     = tim_cf_cut->GetT0Graph(); 
-	gr_cf_cut->SetName("gr_cf_cut");
-
-  	double sum_cf = 0;
-  	double sum_cf_cut = 0;
-	
-  	for(int i=0; i<npoints; i++){
-		title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm",seriesNo,positions[i]);
-		can_cf->cd(i+1);
-		gPad->SetGrid(1,1);
-		string = Form("%.2f +/- %.2f ns",tres_cf[i],treserr_cf[i]);
-		T0diff_cf[i]->SetTitle(title);
-		T0diff_cf[i]->GetXaxis()->SetTitle("time difference [ns]");
-		T0diff_cf[i]->Draw();
-		text.DrawLatex(0.15,0.8,string);
-		sum_cf += tres_cf[i];
-		T0thin->FixParameter(0,T0diff_cf[i]->GetFunction("fun")->GetParameter(0));
-		T0thin->FixParameter(1,T0diff_cf[i]->GetFunction("fun")->GetParameter(1));
-		T0thin->FixParameter(2,T0diff_cf[i]->GetFunction("fun")->GetParameter(2));
-		T0thick->FixParameter(0,T0diff_cf[i]->GetFunction("fun")->GetParameter(3));
-		T0thick->FixParameter(1,T0diff_cf[i]->GetFunction("fun")->GetParameter(4));
-		T0thick->FixParameter(2,T0diff_cf[i]->GetFunction("fun")->GetParameter(5));
-		T0thin->DrawClone("same");
-		T0thick->DrawClone("same");
-		T0diff_cf[i]->GetXaxis()->SetRangeUser(-50,50);
-
-		can_cf_ratio->cd(i+1);
-		gPad->SetGrid(1,1);
-		ratio_cf[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
-		ratio_cf[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
-		max = ratio_cf[i]->GetBinContent(ratio_ft[i]->GetMaximumBin());
-		mean = ratio_cf[i]->GetFunction("fun")->GetParameter(1);
-		sigma = ratio_cf[i]->GetFunction("fun")->GetParameter(2);
-		ratio_cf[i]->Draw();
-		line.DrawLine(mean-0.5*sigma,0,mean-0.5*sigma,max);
-		line.DrawLine(mean+0.5*sigma,0,mean+0.5*sigma,max);
-		Rthin->FixParameter(0,ratio_cf[i]->GetFunction("fun")->GetParameter(0));
-		Rthin->FixParameter(1,ratio_cf[i]->GetFunction("fun")->GetParameter(1));
-		Rthin->FixParameter(2,ratio_cf[i]->GetFunction("fun")->GetParameter(2));
-		Rthick->FixParameter(0,ratio_cf[i]->GetFunction("fun")->GetParameter(3));
-		Rthick->FixParameter(1,ratio_cf[i]->GetFunction("fun")->GetParameter(4));
-		Rthick->FixParameter(2,ratio_cf[i]->GetFunction("fun")->GetParameter(5));
-		Rthin->DrawClone("same");
-		Rthick->DrawClone("same");
-		ratio_cf[i]->GetXaxis()->SetRangeUser(-1,1);
-
-		can_cf_cut->cd(i+1);
-		gPad->SetGrid(1,1);
-		string = Form("%.2f +/- %.2f ns",tres_cf_cut[i],treserr_cf_cut[i]);
-		T0diff_cf_cut[i]->SetTitle(title);
-		T0diff_cf_cut[i]->GetXaxis()->SetTitle("time difference [ns]");
-		T0diff_cf_cut[i]->GetXaxis()->SetRangeUser(-20,20);
-		T0diff_cf_cut[i]->Draw();
-		text.DrawLatex(0.2,0.8,string);
-		sum_cf_cut += tres_cf_cut[i];
-
-		can_cf_spec_0->cd(i+1);
-		gPad->SetGrid(1,1);
-		spec_cf_cut_0[i]->GetXaxis()->SetTitle("charge P.E.");
-		spec_cf_cut_0[i]->GetYaxis()->SetTitle("counts");
-		spec_cf_cut_0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",seriesNo,positions[i]));
-		spec_cf_cut_0[i]->SetStats(false);
-		spec_cf_cut_0[i]->GetYaxis()->SetMaxDigits(2);
-		peakfin->SetSpectrum(spec_cf_cut_0[i],"511");
-		peakfin->FindPeakRange(xmin,xmax);
-		center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
-		delta  = (xmax-xmin)/6; 		//
-		max = spec_cf_cut_0[i]->GetBinContent(spec_cf_cut_0[i]->GetMaximumBin());
-		spec_cf_cut_0[i]->Draw();
-		line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
-		line.DrawLine(center+delta,0,center+delta,max);	//
-		spec_cf_cut_0[i]->GetXaxis()->SetRangeUser(0,600);
-
-		can_cf_spec_1->cd(i+1);
-		gPad->SetGrid(1,1);
-		spec_cf_cut_1[i]->GetXaxis()->SetTitle("charge P.E.");
-		spec_cf_cut_1[i]->GetYaxis()->SetTitle("counts");
-		spec_cf_cut_1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",seriesNo,positions[i]));
-		spec_cf_cut_1[i]->SetStats(false);
-		spec_cf_cut_1[i]->GetYaxis()->SetMaxDigits(2);
-		peakfin->SetSpectrum(spec_cf_cut_1[i],"511");
-		peakfin->FindPeakRange(xmin,xmax);
-		center = xmin+(xmax-xmin)/2.;	//changed here for smaller cut
-		delta  = (xmax-xmin)/6; 		//
-		max = spec_cf_cut_1[i]->GetBinContent(spec_cf_cut_1[i]->GetMaximumBin());
-		spec_cf_cut_1[i]->Draw();
-		line.DrawLine(center-delta,0,center-delta,max);	//changed here for smaller cut
-		line.DrawLine(center+delta,0,center+delta,max);	//
-		spec_cf_cut_1[i]->GetXaxis()->SetRangeUser(0,600);
-        }
-
-	TCanvas *can_gr_cf = new TCanvas("can_gr_cf","can_gr_cf",1000,500);
-	can_gr_cf->Divide(2,1);
-	can_gr_cf->cd(1);
-	gPad->SetGrid(1,1);
-	gr_cf->SetTitle(Form("Series %i, constant fraction, cut on scattered events",seriesNo));
-	gr_cf->Draw("AP");
-	can_gr_cf->cd(2);
-	gPad->SetGrid(1,1);
-	gr_cf_cut->SetTitle(Form("Series %i, constant fraction, cut on 511 keV peak",seriesNo));
-	gr_cf_cut->Draw("AP");
-  	
-     	cout << "\t Constant fraction, scattered events rejected: " << sum_cf/npoints << " ns +/- "
-  	     << TMath::StdDev(&tres_cf[0],&tres_cf[npoints-1])/sqrt(npoints) << " ns" << endl; 
-  	cout << "\t Constant fraction, cut on 511 keV peak: " << sum_cf_cut/npoints << " ns +/- " 
-  	     << TMath::StdDev(&tres_cf_cut[0],&tres_cf_cut[npoints-1])/sqrt(npoints) << " ns" << endl;
-  	cout << "\n\n" << endl;
-	can_cf->Write();
-	can_cf_ratio->Write();
-	can_cf_cut->Write();
-	can_cf_spec_0->Write();
-	can_cf_spec_1->Write();
-	can_gr_cf->Write();
+  TString path = std::string(getenv("SFPATH"));
+  TString fname = Form("timeres_series%i.root", seriesNo);
+  
+  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results", path+"results");
+  
+  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
+  
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+  
+  TString outdir = CmdLineOption::GetStringValue("Output directory");
+  TString dbase = CmdLineOption::GetStringValue("Data base");
+  
+  if(!gSystem->ChangeDirectory(outdir)){
+    std::cout << "Creating new directory... " << std::endl;
+    std::cout << outdir << std::endl;
+    int stat = mkdir(outdir, 0777);
+    if(stat==-1){
+      std::cerr << "##### Error in timeres.cc! Unable to create new direcotry!" << std::endl;
+      return 0;
+    }
   }
   
+  TString fname_full = outdir + "/" + fname;
+  TString dbname_full = outdir + "/" + dbase;
+  
+  TFile *file = new TFile(fname_full, "RECREATE");
+  
+  if(!file->IsOpen()){
+    std::cerr << "##### Error in lightout.cc!" << std::endl;
+    std::cerr << "Couldn't open file: " << fname_full << std::endl;
+    return 0;
+  }
+  
+  canTDiff->Write();
+  canTDiffECut->Write();
+  canRatio->Write();
+  canSpecCh0->Write();
+  canSpecCh1->Write();
+  canTimingRes->Write();
   file->Close();
   
-  delete tim_ft;
-  delete tim_ft_cut;
-  if((type=="Lead")){ 
-  	delete tim_cf;
-  	delete tim_cf_cut;
-  } 
+   //----- writing results to the data base
+  TString table = "TIMING_RESOLUTION";
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, TIMERES, TIMERES_ERR, TIMERES_ECUT, TIMERES_ECUT_ERR) VALUES(%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), timeRes[0], timeRes[1], timeResECut[0], timeResECut[1]);
+  SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
+  
+  delete timeres;
+  delete data;
+ 
   return 1;
 }
