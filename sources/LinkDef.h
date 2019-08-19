@@ -13,5 +13,6 @@
 #pragma link C++ class SFTimingRes+;
 #pragma link C++ class SFEnergyRes+;
 #pragma link C++ class SFLightOutput+;
+#pragma link C++ class SFTimeConst+;
 
 #endif
