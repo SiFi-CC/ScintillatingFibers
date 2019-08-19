@@ -206,10 +206,10 @@ int main(int argc, char **argv){
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
-  TFile *file = new TFile(fname_full,"RECREATE");
+  TFile *file = new TFile(fname_full, "RECREATE");
   
   if(!file->IsOpen()){
-    std::cerr << "##### Error in energyres.cc!" << std::endl;
+    std::cerr << "##### Error in attenuation.cc!" << std::endl;
     std::cerr << "Couldn't open file: " << fname_full << std::endl;
     return 0;
   }

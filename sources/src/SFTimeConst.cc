@@ -18,7 +18,13 @@ ClassImp(SFTimeConst);
 SFTimeConst::SFTimeConst(): fSeriesNo(-1),
                             fData(nullptr),
                             fPE(-1),
-                            fVerb(false) {
+                            fVerb(false),
+                            fFastDecAv(-1),
+                            fFastDecAvErr(-1),
+                            fSlowDecAv(-1),
+                            fSlowDecAvErr(-1),
+                            fIfastAv(-1),
+                            fIslowAv(-1) {
                                 
   std::cout << "##### Warning in SFTimeConst constructor! You are using default constructor!" << std::endl;
   std::cout << "Set object attributes via SetDetails()" << std::endl;
@@ -30,7 +36,13 @@ SFTimeConst::SFTimeConst(): fSeriesNo(-1),
 /// \param verb - verbose level
 SFTimeConst::SFTimeConst(int seriesNo, double PE, bool verb): fSeriesNo(seriesNo),
                                                               fPE(PE),
-                                                              fVerb(verb) {
+                                                              fVerb(verb),
+                                                              fFastDecAv(-1),
+                                                              fFastDecAvErr(-1),
+                                                              fSlowDecAv(-1),
+                                                              fSlowDecAvErr(-1), 
+                                                              fIfastAv(-1),
+                                                              fIslowAv(-1) {
                                                                   
   bool stat = SetDetails(seriesNo, PE, verb);
   if(stat==false){
@@ -336,26 +348,26 @@ bool SFTimeConst::FitAllSignals(void){
       }
     }
   
-    double fastDecAve = fastDecSum/fastDecSumErr;
-    double slowDecAve = slowDecSum/slowDecSumErr;
-    double fastDecAveErr = sqrt(1./fastDecSumErr);
-    double slowDecAveErr = sqrt(1./slowDecSumErr);
+    fFastDecAv = fastDecSum/fastDecSumErr;
+    fSlowDecAv = slowDecSum/slowDecSumErr;
+    fFastDecAvErr = sqrt(1./fastDecSumErr);
+    fSlowDecAvErr = sqrt(1./slowDecSumErr);
   
     double fastAmpAve = fastAmpSum/fastAmpSumErr;
     double slowAmpAve = slowAmpSum/slowAmpSumErr;
     double fastAmpAveErr = sqrt(1./fastAmpSumErr);
     double slowAmpAveErr = sqrt(1./slowAmpSumErr);
   
-    double denom = fastAmpAve*fastDecAve + slowAmpAve*slowDecAve;
-    double Ifast = ((fastAmpAve*fastDecAve)/denom) * 100;
-    double Islow = ((slowAmpAve*slowDecAve)/denom) * 100;
+    double denom = fastAmpAve*fFastDecAv + slowAmpAve*fSlowDecAv;
+    fIfastAv = ((fastAmpAve*fFastDecAv)/denom) * 100;
+    fIslowAv = ((slowAmpAve*fSlowDecAv)/denom) * 100;
   
     std::cout << "\n\n----------------------------------" << std::endl;
     std::cout << "Average decay constants for whole series:" << std::endl;
-    std::cout << "Fast decay: " << fastDecAve << " +/- " << fastDecAveErr << " ns" << std::endl;
-    std::cout << "Fast component intensity: " << Ifast << " %" << std::endl; 
-    std::cout << "Slow decay: " << slowDecAve << " +/- " << slowDecAveErr << " ns" << std::endl;
-    std::cout << "Slow component intensity: " << Islow << " %" << std::endl; 
+    std::cout << "Fast decay: " << fFastDecAv << " +/- " << fFastDecAvErr << " ns" << std::endl;
+    std::cout << "Fast component intensity: " << fIfastAv << " %" << std::endl; 
+    std::cout << "Slow decay: " << fSlowDecAv << " +/- " << fSlowDecAvErr << " ns" << std::endl;
+    std::cout << "Slow component intensity: " << fIslowAv << " %" << std::endl; 
     std::cout << "Counter: " << counter << std::endl;
     std::cout << "----------------------------------" << std::endl;
   }
@@ -386,12 +398,16 @@ bool SFTimeConst::FitAllSignals(void){
       }
     }
     
-    double decAve    = decSum/decSumErr;
-    double decAveErr = sqrt(1./decSumErr);
+    fFastDecAv    = decSum/decSumErr;
+    fFastDecAvErr = sqrt(1./decSumErr);
+    fSlowDecAv    = 0;
+    fSlowDecAvErr = 0;
+    fIfastAv      = 100;
+    fIslowAv      = 0;
     
     std::cout << "\n\n----------------------------------" << std::endl;
     std::cout << "Average decay constant for the whole series:" << std::endl;
-    std::cout << "Decay constant: " << decAve << " +/- " << decAveErr << " ns" << std::endl;
+    std::cout << "Decay constant: " << fFastDecAv << " +/- " << fFastDecAvErr << " ns" << std::endl;
     std::cout << "Counter: " << counter << std::endl;
     std::cout << "----------------------------------" << std::endl;
     
@@ -483,6 +499,38 @@ std::vector <SFFitResults*> SFTimeConst::GetResults(int ch){
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
+}
+//------------------------------------------------------------------
+std::vector <double> SFTimeConst::GetAverageDecayConst(void){
+
+  TString fiber = fData->GetFiber();
+
+  if(fiber.Contains("LYSO") && fVerb){
+    std::cout <<"##### Warning in SFTimeConst::GetAverageDecayConst()!" << std::endl;
+    std::cout << "This is LYSO fiber - only one decay component!" << std::endl;
+  }
+    
+  std::vector <double> tmp;
+  tmp.push_back(fFastDecAv);
+  tmp.push_back(fFastDecAvErr);
+  tmp.push_back(fSlowDecAv);
+  tmp.push_back(fSlowDecAvErr);
+  return tmp;
+}
+//------------------------------------------------------------------
+std::vector <double> SFTimeConst::GetAverageIntensities(void){
+
+  TString fiber = fData->GetFiber();
+  
+  if(fiber.Contains("LYSO") && fVerb){
+    std::cout << "##### Warning in SFTimeConst::GetAverageIntensities()!" << std::endl;
+    std::cout << "This is LYSO fiber - only one decay component!" << std::endl;
+  }
+  
+  std::vector <double> tmp;
+  tmp.push_back(fIfastAv);
+  tmp.push_back(fIslowAv);
+  return tmp;
 }
 //------------------------------------------------------------------
 /// Prints details of the SFTimeConst class ojbect.

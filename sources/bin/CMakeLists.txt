@@ -12,3 +12,6 @@ target_link_libraries(lightout ScintillatingFibers)
 
 add_executable(timeres timeres.cc)
 target_link_libraries(timeres ScintillatingFibers)
+
+add_executable(tconst tconst.cc)
+target_link_libraries(tconst ScintillatingFibers)

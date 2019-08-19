@@ -42,6 +42,12 @@ private:
   SFData  *fData;     ///< Data of the measurement series  
   double  fPE;        ///< Value of signals PE
   bool    fVerb;      ///< Verbose level: false - quiet, true - verbose
+  double  fFastDecAv;
+  double  fFastDecAvErr;
+  double  fSlowDecAv;
+  double  fSlowDecAvErr;   
+  double  fIfastAv;
+  double  fIslowAv;
   
   std::vector <TProfile*>     fSignalsCh0;   ///< Vector containing all signals from channel 0
   std::vector <TProfile*>     fSignalsCh1;   ///< Vector containing all signals from channel 1 
@@ -61,6 +67,8 @@ public:
   void          Print(void);
   std::vector   <TProfile*>     GetSignals(int ch);
   std::vector   <SFFitResults*> GetResults(int ch);
+  std::vector   <double>        GetAverageDecayConst(void);
+  std::vector   <double>        GetAverageIntensities(void);
   
   ClassDef(SFTimeConst,1)
   
