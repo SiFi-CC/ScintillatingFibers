@@ -179,7 +179,7 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   
   if(type=="Lead"){
     min = pos - sigma;
-    max = pos + sigma;
+    max = pos + 1.5*sigma;
   }
   else if(type=="Electronic"){
     min = pos - 2*sigma;
@@ -222,6 +222,18 @@ bool SFPeakFinder::FindPeakFit(void){
   double fit_max = 0;
   TString name = fSpectrum->GetName();
   
+  int seriesNo = SFTools::GetSeriesNo(name);
+  SFData *data;
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char *message){
+    std::cerr << "##### Error in SFPeakFinder::FindPeakFit()!" << std::endl;
+    std::cerr << message << std::endl;
+    return false;
+  }
+  TString collimator = data->GetCollimator();
+  
   if(name.Contains("Sum")){
     fit_min = mean - 5*sigma;
     fit_max = mean - 4*sigma;
@@ -231,43 +243,50 @@ bool SFPeakFinder::FindPeakFit(void){
     fit_max = mean - 2*sigma;
   }
 
-  TF1 *fun_expo = new TF1("fun_expo", "expo", 0, 100);
+  TF1 *fun_expo = new TF1("fun_expo", "[0]*TMath::Exp((x-[1])*[2])", 0, 100);
   fSpectrum->Fit("fun_expo", opt, "", fit_min, fit_max);
   
-  TF1 *fun_pol0 = new TF1("fun_pol0", "pol0", 0, 100);
+  TF1 *fun_pol0 = new TF1("fun_pol0", "pol1", 0, 100);
   fSpectrum->Fit("fun_pol0", opt, "", mean+3*sigma, mean+4*sigma);
   
-  TF1 *fun_bg = new TF1("fun_bg", "expo(0)+pol0(2)+gaus(3)", 0, 100);
-  fun_bg->SetParameter(0, fun_expo->GetParameter(0));
-  fun_bg->SetParameter(1, fun_expo->GetParameter(1));
-  fun_bg->SetParameter(2, fun_pol0->GetParameter(0));
-  fun_bg->SetParameter(3, fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
-  fun_bg->SetParameter(4, mean);
-  fun_bg->SetParLimits(4, mean-2*sigma, mean+2*sigma);
-  fun_bg->SetParameter(5, sigma);
-  fun_bg->SetParLimits(5, 0, 100);
+  if(name.Contains("Sum")){
+    fit_min = mean - 3.5*sigma;
+    fit_max = mean + 5*sigma;
+  }
+  else{
+    fit_min = mean - 2.5*sigma;
+    fit_max = mean + 4*sigma;
+  }
   
-  fit_min = mean - 3.5*sigma;
-  fit_max = mean + 5*sigma;
-  int counter = 0;
-  
-  TFitResultPtr fitRes = fSpectrum->Fit("fun_bg", opt, "", fit_min, fit_max);
-  
-  while(fitRes!=0 && counter<20){
+  TF1 *fun_bg = new TF1("fun_bg", "[0]*TMath::Exp((x-[1])*[2])+pol1(3)+gaus(5)", 0, 100);
+  int counter = 20;
+
+  TFitResultPtr fitRes;
+  float parlim = 100;
+
+  printf("%f  %f  %f\n", fSpectrum->GetBinContent(fSpectrum->FindBin(mean)), mean, sigma);
+  while (true) {
     fit_min = mean - 5*sigma;
     fun_bg->SetParameter(0, fun_expo->GetParameter(0));
     fun_bg->SetParameter(1, fun_expo->GetParameter(1));
-    fun_bg->SetParameter(2, fun_pol0->GetParameter(0));
-    fun_bg->SetParameter(3, fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
-    fun_bg->SetParameter(4, mean);
-    fun_bg->SetParLimits(4, mean-2*sigma, mean+2*sigma);
-    fun_bg->SetParameter(5, sigma);
-    fun_bg->SetParLimits(5, 0, 200);  
+    fun_bg->SetParameter(2, fun_expo->GetParameter(2));
+    fun_bg->SetParameter(3, fun_pol0->GetParameter(0));
+    fun_bg->SetParameter(4, fun_pol0->GetParameter(1));
+    fun_bg->SetParameter(5, fSpectrum->GetBinContent(fSpectrum->FindBin(mean)));
+    fun_bg->SetParameter(6, mean);
+    fun_bg->SetParLimits(6, mean-2*sigma, mean+2*sigma);
+    fun_bg->SetParameter(7, sigma);
+    fun_bg->SetParLimits(7, 0, parlim);
     fitRes = fSpectrum->Fit("fun_bg", opt, "", fit_min, fit_max );
+
+    if (fitRes == 0 or counter == 0) break;
+
     if(fVerbose) 
       std::cout << "FitStatus: " << fitRes <<  std::endl;
-    counter++;
-  }
+    --counter;
+    parlim = 200;
+  };
+  std::cout << "Fit converged in " << (20 - counter + 1) << " passes." << std::endl;
   
   if(fVerbose){
       std::cout << "Fit counter: " << counter << std::endl;
@@ -276,17 +295,17 @@ bool SFPeakFinder::FindPeakFit(void){
   fun_bg = fSpectrum->GetFunction("fun_bg");
   
   // getting peak parameters
-  fPosition = fun_bg->GetParameter(4);
-  fPosErr   = fun_bg->GetParError(4);
-  fSigma    = fun_bg->GetParameter(5);
-  fSigErr   = fun_bg->GetParError(5);
+  fPosition = fun_bg->GetParameter(6);
+  fPosErr   = fun_bg->GetParError(6);
+  fSigma    = fun_bg->GetParameter(7);
+  fSigErr   = fun_bg->GetParError(7);
   fChi2NDF  = fitRes->Chi2()/fitRes->Ndf(); 
   
   // for tests
   if(fTests){
     opt = opt+"B";
   
-    TF1 *fun_expo_clone = new TF1("fun_expo_clone","expo",fit_min,fit_max);
+    TF1 *fun_expo_clone = new TF1("fun_expo_clone","expo",fit_min,fit_max); // FIXME [0]*TMath::Exp((x-[1])*[2])
     fun_expo_clone->SetLineColor(kGreen+3);
     std::cout << fun_expo_clone->GetParameter(0) << "\t" << fun_expo_clone->GetParameter(1) << std::endl;
     fun_expo_clone->FixParameter(0,fun_bg->GetParameter(0));
@@ -335,6 +354,8 @@ bool SFPeakFinder::FindPeakFit(void){
 /// Subsequently Gaussian function is fitted in order to describe peak shape.
 /// Results are accessible via SFPeakFinder::GetParameters() and other 
 /// definded getter functions.
+/// IMPORTANT - if you want to use this function, all the parameters of 
+/// the fits need to be adjusted!
 bool SFPeakFinder::FindPeakNoBackground(void){
  
   // setting background-subtracted histogram

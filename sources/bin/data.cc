@@ -49,6 +49,7 @@ int main(int argc, char **argv){
   
   int npoints  = data->GetNpoints();
   std::vector <double> positions = data->GetPositions();
+  TString collimator = data->GetCollimator();
   data->Print(); 
   
   //----- accessing spectra
@@ -68,6 +69,10 @@ int main(int argc, char **argv){
   std::vector <TH2D*> hCorrPE  = data->GetCorrHistograms(SFSelectionType::PECorrelation, "ch_0.fPE>0 && ch_1.fPE>0");
   std::vector <TH2D*> hCorrT0  = data->GetCorrHistograms(SFSelectionType::T0Correlation, "ch_0.fT0>0 && ch_1.fT0>0");
   
+  std::vector <TH1D*> hChargeCh2;
+  if(collimator.Contains("Electronic"))
+    hChargeCh2 = data->GetSpectra(2, SFSelectionType::Charge, "ch_2.fCharge>0"); 
+  
   //----- accessing signals
   const int nsig = 6;
   int number = 0;
@@ -76,23 +81,41 @@ int main(int argc, char **argv){
   
   for(int i=0; i<nsig/2; i++){
     number = 100*(i+1);
-    hSigCh0[i]          = data->GetSignal(0, 30, "", number, true);
-    hSigCh0[i+(nsig/2)] = data->GetSignal(0, 90, "", number, true);
-    hSigCh1[i]          = data->GetSignal(1, 30, "", number, true);
-    hSigCh1[i+(nsig/2)] = data->GetSignal(1, 90, "", number, true);
+    hSigCh0[i]          = data->GetSignal(0, positions[2], "", number, true);
+    hSigCh0[i+(nsig/2)] = data->GetSignal(0, positions[npoints-1], "", number, true);
+    hSigCh1[i]          = data->GetSignal(1, positions[2], "", number, true);
+    hSigCh1[i+(nsig/2)] = data->GetSignal(1, positions[npoints-1], "", number, true);
   }
   
   const int nsigav = 3;
   std::vector <TProfile*> hSigAvCh0(nsigav);
   std::vector <TProfile*> hSigAvCh1(nsigav);
   
-  hSigAvCh0[0] = data->GetSignalAverage(0, 50, "ch_0.fPE>59.5 && ch_0.fPE<60.5", 20, true);
-  hSigAvCh0[1] = data->GetSignalAverage(0, 50, "ch_0.fPE>199.5 && ch_0.fPE<200.5", 20, true);
-  hSigAvCh0[2] = data->GetSignalAverage(0, 50, "ch_0.fPE>399.5 && ch_0.fPE<400.5", 20, true); 
+  double PE[3];
+  if(collimator.Contains("Electronic")){
+    PE[0] = 200.;
+    PE[1] = 400.;
+    PE[2] = 600.;
+  }
+  else if(collimator.Contains("Lead")){
+    PE[0] = 60.;
+    PE[1] = 20.;
+    PE[2] = 400.;
+  }
   
-  hSigAvCh1[0] = data->GetSignalAverage(1, 50, "ch_1.fPE>59.5 && ch_1.fPE<60.5", 20, true);
-  hSigAvCh1[1] = data->GetSignalAverage(1, 50, "ch_1.fPE>199.5 && ch_1.fPE<200.5", 20, true);
-  hSigAvCh1[2] = data->GetSignalAverage(1, 50, "ch_1.fPE>399.5 && ch_1.fPE<400.5", 20, true);
+  hSigAvCh0[0] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+                                        PE[0]-0.5, PE[0]+0.5), 20, true);
+  hSigAvCh0[1] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+                                        PE[1]-0.5, PE[1]+0.5), 20, true);
+  hSigAvCh0[2] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+                                        PE[2]-0.5, PE[2]+0.5), 20, true); 
+  
+  hSigAvCh1[0] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+                                        PE[0]-0.5, PE[0]+0.5), 20, true);
+  hSigAvCh1[1] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+                                        PE[1]-0.5, PE[1]+0.5), 20, true);
+  hSigAvCh1[2] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+                                        PE[2]-0.5, PE[2]+0.5), 20, true);
   
   //----- drawing spectra
   TCanvas *can_ampl = new TCanvas("can_ampl", "can_ampl", 1500, 1200);
@@ -115,6 +138,12 @@ int main(int argc, char **argv){
   
   TCanvas *can_t0_corr = new TCanvas("can_t0_corr", "can_t0_corr", 1500, 1200);
   can_t0_corr->DivideSquare(npoints);
+  
+  TCanvas *can_ref;
+  if(collimator.Contains("Electronic")){ 
+    can_ref = new TCanvas("can_ref", "can_ref", 1500, 1200);
+    can_ref->DivideSquare(npoints);
+  }
   
   TString stringCh0;
   TString stringCh1;
@@ -182,6 +211,18 @@ int main(int argc, char **argv){
     hChargeCh1[i]->Draw("same");
     textCh0.DrawLatex(0.3, 0.8, stringCh0);
     textCh1.DrawLatex(0.3, 0.75, stringCh1);
+  
+    if(collimator.Contains("Electronic")){
+      can_ref->cd(i+1);
+      gPad->SetGrid(1,1);
+      hChargeCh2[i]->SetStats(false);
+      string = hChargeCh2[i]->GetTitle();
+      hChargeCh2[i]->GetXaxis()->SetTitle("charge [a.u.]");
+      hChargeCh2[i]->GetYaxis()->SetTitle("counts");
+      hChargeCh2[i]->SetTitle(Form("Charge spectrum, reference detector, position %.2f mm", positions[i]));
+      hChargeCh2[i]->Draw();
+      text.DrawLatex(0.3, 0.8, string);
+    }
     
     can_t0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -270,24 +311,24 @@ int main(int argc, char **argv){
     gPad->SetGrid(1,1);
     double maxCh0 = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMaximumBin());
     double maxCh1 = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMaximumBin());
-    double maxYaxis = std::max(maxCh0,maxCh1) + 10.;
+    double maxYaxis = std::max(maxCh0, maxCh1) + 10.;
     stringCh0 = hSigCh0[i]->GetTitle();
     stringCh1 = hSigCh1[i]->GetTitle();
     hSigCh0[i]->SetLineColor(kBlue);
     hSigCh0[i]->SetTitle(" ");
     hSigCh0[i]->GetXaxis()->SetTitle("time [ns]");
     hSigCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
-    hSigCh0[i]->GetYaxis()->SetRangeUser(-2,maxYaxis);
+    hSigCh0[i]->GetYaxis()->SetRangeUser(-2, maxYaxis);
     hSigCh0[i]->SetStats(false);
     hSigCh1[i]->SetLineColor(kRed);
     hSigCh1[i]->SetStats(false);
     hSigCh0[i]->Draw();
     hSigCh1[i]->Draw("same");
-    textCh0.DrawLatex(0.4,0.8,stringCh0);
-    textCh1.DrawLatex(0.4,0.75,stringCh1);
+    textCh0.DrawLatex(0.4, 0.8, stringCh0);
+    textCh1.DrawLatex(0.4, 0.75, stringCh1);
   }
   
-  TCanvas *can_sigav = new TCanvas("can_sigav","can_sigav",1200,800);
+  TCanvas *can_sigav = new TCanvas("can_sigav", "can_sigav", 1200, 800);
   can_sigav->Divide(3,2);
   
   textCh0.SetTextColor(kGray+2);
@@ -304,10 +345,10 @@ int main(int argc, char **argv){
     hSigAvCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
     double maxYaxis = hSigAvCh0[i]->GetBinContent(hSigAvCh0[i]->GetMaximumBin());
     maxYaxis = maxYaxis+0.2*maxYaxis;
-    hSigAvCh0[i]->GetYaxis()->SetRangeUser(-10,maxYaxis);
+    hSigAvCh0[i]->GetYaxis()->SetRangeUser(-10, maxYaxis);
     hSigAvCh0[i]->SetStats(false);
     hSigAvCh0[i]->Draw();
-    textCh0.DrawLatex(0.15,0.85,stringCh0);
+    textCh0.DrawLatex(0.15, 0.85, stringCh0);
     
     can_sigav->cd(i+1+nsigav);
     gPad->SetGrid(1,1);
@@ -317,10 +358,10 @@ int main(int argc, char **argv){
     hSigAvCh1[i]->GetYaxis()->SetTitle("amplitude [mV]");
     maxYaxis = hSigAvCh1[i]->GetBinContent(hSigAvCh1[i]->GetMaximumBin());
     maxYaxis = maxYaxis+0.2*maxYaxis;
-    hSigAvCh1[i]->GetYaxis()->SetRangeUser(-10,maxYaxis);
+    hSigAvCh1[i]->GetYaxis()->SetRangeUser(-10, maxYaxis);
     hSigAvCh1[i]->SetStats(false);
     hSigAvCh1[i]->Draw();
-    textCh1.DrawLatex(0.15,0.85,stringCh1);
+    textCh1.DrawLatex(0.15, 0.85, stringCh1);
   }
   
   //----- saving
@@ -366,6 +407,8 @@ int main(int argc, char **argv){
   can_t0_corr->Write();
   can_sig->Write();
   can_sigav->Write();
+  if(collimator.Contains("Electronic"))
+    can_ref->Write();
   file->Close();
   
   //----- writing results to the data base

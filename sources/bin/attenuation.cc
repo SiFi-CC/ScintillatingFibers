@@ -72,19 +72,12 @@ int main(int argc, char **argv){
   att->AttSeparateCh(0);
   TGraphErrors *attGraphCh0       = att->GetAttGraph(0);
   std::vector <TH1D*> spectraCh0  = att->GetSpectra(0);
-  std::vector <double> attlenCh0  = att->GetAttenuation(0);
-  std::vector <TH1D*> peaksCh0;   
+  std::vector <double> attlenCh0  = att->GetAttenuation(0); 
   
   att->AttSeparateCh(1);
   TGraphErrors *attGraphCh1      = att->GetAttGraph(1);
   std::vector <TH1D*> spectraCh1 = att->GetSpectra(1);
   std::vector <double> attlenCh1 = att->GetAttenuation(1);  
-  std::vector <TH1D*> peaksCh1;  
-  
-  if(collimator=="Lead"){
-      peaksCh0 = att->GetPeaks(0);
-      peaksCh1 = att->GetPeaks(1);
-  }
   
   //-----drawing averaged channels
   TLatex text;
@@ -145,6 +138,7 @@ int main(int argc, char **argv){
   attGraphCh1->SetMarkerColor(kGreen+3);
   attGraphCh1->SetLineColor(kGreen+3);
   attGraphCh1->Draw("P");
+  attGraphCh1->GetFunction("fexp")->SetLineColor(kGreen+3);
   text.SetTextColor(kGreen+3);
   text.DrawLatex(0.3, 0.7, Form("L_{att Ch1} = (%.2f +/- %.2f) mm", attlenCh1[0], attlenCh1[1]));
   
@@ -163,9 +157,7 @@ int main(int argc, char **argv){
    spectraCh0[i]->GetYaxis()->SetTitle("counts");
    spectraCh0[i]->GetYaxis()->SetMaxDigits(2);
    spectraCh0[i]->Draw();
-   if(collimator=="Lead"){
-       peaksCh0[i]->Draw("same");
-   }
+   
    can_spectra_ch1->cd(i+1);
    gPad->SetGrid(1,1);
    spectraCh1[i]->SetStats(false);
@@ -175,9 +167,6 @@ int main(int argc, char **argv){
    spectraCh1[i]->GetYaxis()->SetTitle("counts");
    spectraCh1[i]->GetYaxis()->SetMaxDigits(2);
    spectraCh1[i]->Draw();
-   if(collimator=="Lead"){
-     peaksCh1[i]->Draw("same");
-   }
   }
   
   //----- saving

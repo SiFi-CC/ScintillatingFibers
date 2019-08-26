@@ -144,7 +144,6 @@ bool SFLightOutput::CalculateLightOut(int ch){
   std::vector <double> positions = fData->GetPositions();
   std::vector <double> attenuation = fAtt->GetAttenuation();
   std::vector <SFPeakFinder*> peakFin;
-  std::vector <TH1D*> peaks;
   
   for(int i=0; i<npoints; i++){
     if(ch==0)
@@ -176,13 +175,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   
   for(int i=0; i<npoints; i++){
     
-    if(collimator=="Lead"){
-      peakFin[i]->FindPeakNoBackground();
-      peaks.push_back(peakFin[i]->GetPeak());
-    }
-    else if(collimator=="Electronic")
-      peakFin[i]->FindPeakFit();
-    
+    peakFin[i]->FindPeakFit();
     if(ch==0) distance = positions[i];
     if(ch==1) distance = 100.-positions[i];
     parameters = peakFin[i]->GetParameters();
@@ -203,13 +196,11 @@ bool SFLightOutput::CalculateLightOut(int ch){
     fLightOutCh0 = lightOutAv;
     fLightOutCh0Err = lightOutAvErr;
     fLightOutCh0Graph = graph;
-    fPeaksCh0 = peaks;
   }
   else if(ch==1){
     fLightOutCh1 = lightOutAv;
     fLightOutCh1Err = lightOutAvErr;
     fLightOutCh1Graph = graph;
-    fPeaksCh1 = peaks;
   }
   
   std::cout << "Average light output for channel " << ch << ": " << lightOutAv 

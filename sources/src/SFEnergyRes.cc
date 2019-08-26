@@ -70,7 +70,6 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
   std::vector <SFPeakFinder*> peakFin;
-  std::vector <TH1D*> peaks;
   
   for(int i=0; i<npoints; i++){
     if(ch==0)
@@ -100,12 +99,7 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   double enResAveErr = 0;
   
   for(int i=0; i<npoints; i++){
-    if(collimator=="Lead"){
-      peakFin[i]->FindPeakNoBackground();
-      peaks.push_back(peakFin[i]->GetPeak());
-    }
-    else if(collimator=="Electronic")
-      peakFin[i]->FindPeakFit();
+    peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
     enRes = parameters[1]/parameters[0];
     enResErr = enRes * sqrt(pow(parameters[2], 2)/pow(parameters[0], 2) +
@@ -128,13 +122,11 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
       fEnergyResGraphCh0 = graph;
       fEnergyResCh0 = enResAve;
       fEnergyResCh0Err = enResAveErr;
-      fPeaksCh0 = peaks;
   }
   else if(ch==1){
       fEnergyResGraphCh1 = graph;
       fEnergyResCh1 = enResAve;
       fEnergyResCh1Err = enResAveErr;
-      fPeaksCh1 = peaks;
   }
             
   return true;
@@ -210,14 +202,8 @@ bool SFEnergyRes::CalculateEnergyRes(void){
     fSpectraSum.push_back(fData->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
                                                     cut, positions[i], customNumSum));
     peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 0));
-    
-    if(collimator=="Lead"){
-      peakFin[i]->FindPeakNoBackground();
-      fPeaksSum.push_back(peakFin[i]->GetPeak());
-    }
-    else if(collimator=="Electronic")
-      peakFin[i]->FindPeakFit();
-    
+
+    peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
     
     enRes = parameters[1]/parameters[0];

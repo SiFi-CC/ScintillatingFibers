@@ -67,15 +67,6 @@ int main(int argc, char **argv){
   std::vector <TH1D*> specCh1   = enres->GetSpectra(1);
   std::vector <TH1D*> specCorrCh0 = enres->GetSpectraCorrected(0);
   std::vector <TH1D*> specCorrCh1 = enres->GetSpectraCorrected(1);
-  std::vector <TH1D*> peaksSum;
-  std::vector <TH1D*> peaksCh0;
-  std::vector <TH1D*> peaksCh1;
-  
-  if(collimator=="Lead"){
-    peaksSum = enres->GetPeaks();
-    peaksCh0 = enres->GetPeaks(0);
-    peaksCh1 = enres->GetPeaks(1);
-  }
 
   //----- drawing channels
   TLatex text;
@@ -129,10 +120,6 @@ int main(int argc, char **argv){
     specSum[i]->GetYaxis()->SetTitle("counts");
     specSum[i]->SetTitle(Form("Summed PE spectrum, position %.2f mm", positions[i]));
     specSum[i]->Draw();
-    if(collimator=="Lead"){
-      peaksSum[i]->SetLineColor(kGreen+3);
-      peaksSum[i]->Draw("same");    
-    }
 
     can_spec_corr_ch0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -157,10 +144,6 @@ int main(int argc, char **argv){
     specCh0[i]->GetYaxis()->SetTitle("counts");
     specCh0[i]->SetTitle(Form("Ch0 PE spectrum, position %.2f mm", positions[i]));
     specCh0[i]->Draw();
-    if(collimator=="Lead"){
-      peaksCh0[i]->SetLineColor(kGreen+3);
-      peaksCh0[i]->Draw("same");
-    }
     
     can_spec_ch1->cd(i+1);
     gPad->SetGrid(1,1);
@@ -169,10 +152,6 @@ int main(int argc, char **argv){
     specCh1[i]->GetYaxis()->SetTitle("counts");
     specCh1[i]->SetTitle(Form("Ch1 PE spectrum, position %.2f mm", positions[i]));
     specCh1[i]->Draw();
-    if(collimator=="Lead"){
-      peaksCh1[i]->SetLineColor(kGreen+3);
-      peaksCh1[i]->Draw("same");
-    }
   }
   
   //----- saving

@@ -77,13 +77,6 @@ int main(int argc, char **argv){
   std::vector <double> lightOut    = lout->GetLightOutput();
   std::vector <TH1D*>  specCh0     = lout->GetSpectra(0);
   std::vector <TH1D*>  specCh1     = lout->GetSpectra(1);
-  std::vector <TH1D*>  peaksCh0;
-  std::vector <TH1D*>  peaksCh1;
-  
-  if(collimator=="Lead"){
-    peaksCh0 = lout->GetPeaks(0);
-    peaksCh1 = lout->GetPeaks(1);
-  }
   
   //----- drawing
   TLatex text;
@@ -126,10 +119,6 @@ int main(int argc, char **argv){
     specCh0[i]->GetYaxis()->SetTitle("counts");
     specCh0[i]->SetTitle(Form("Cherge spectrum Ch0, position %.2f mm", positions[i]));
     specCh0[i]->Draw();
-    if(collimator=="lead"){
-      peaksCh0[i]->SetLineColor(kGreen+3);
-      peaksCh0[i]->Draw("same");
-    }
     
     can_spec_ch1->cd(i+1);
     gPad->SetGrid(1,1);
@@ -138,10 +127,6 @@ int main(int argc, char **argv){
     specCh1[i]->GetYaxis()->SetTitle("counts");
     specCh1[i]->SetTitle(Form("Cherge spectrum Ch1, position %.2f mm", positions[i]));
     specCh1[i]->Draw();
-    if(collimator=="lead"){
-      peaksCh1[i]->SetLineColor(kGreen+3);
-      peaksCh1[i]->Draw("same");
-    }
   }
   
   //----- saving

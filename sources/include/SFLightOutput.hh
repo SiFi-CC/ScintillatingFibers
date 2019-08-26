@@ -39,8 +39,8 @@ private:
     TGraphErrors *fLightOutCh1Graph;
     std::vector <TH1D*> fSpectraCh0;
     std::vector <TH1D*> fSpectraCh1;
-    std::vector <TH1D*> fPeaksCh0;
-    std::vector <TH1D*> fPeaksCh1;
+    std::vector <TH1D*> fPeaksCh0;   ///< [not used]
+    std::vector <TH1D*> fPeaksCh1;   ///< [not used]
     
     SFData        *fData;
     SFAttenuation *fAtt;

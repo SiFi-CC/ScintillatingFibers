@@ -80,9 +80,9 @@ double SFTools::GetPosError(TString collimator, TString testBench){
   
   if(collimator.Contains("Lead"))
     err = 2.0;   // mm
-  else if(collimator.Contains("Electronic") && testBench.Contains("Aachen"))
+  else if(collimator.Contains("Electronic") && testBench.Contains("DE"))
     err = 1.5;   // mm
-  else if(collimator.Contains("Electronic") && testBench.Contains("Krakow"))
+  else if(collimator.Contains("Electronic") && testBench.Contains("PL"))
     err = 1.0;   // mm
 
   if(fabs(err+1)<1E-10){

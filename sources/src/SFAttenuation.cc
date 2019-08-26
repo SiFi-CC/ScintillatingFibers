@@ -137,18 +137,11 @@ bool SFAttenuation::AttSeparateCh(int ch){
   graph->SetMarkerStyle(4);
   
   std::vector <SFPeakFinder*> peakfin;
-  std::vector <TH1D*> peaks;
   std::vector <double> parameter;
   
   for(int i=0; i<npoints; i++){
     peakfin.push_back(new SFPeakFinder(spectra[i], false));
-    if(collimator=="Lead"){
-        peakfin[i]->FindPeakNoBackground();
-        peaks.push_back(peakfin[i]->GetPeak());
-    }
-    else if(collimator=="Electronic"){
-        peakfin[i]->FindPeakFit();
-    }
+    peakfin[i]->FindPeakFit();
     parameter = peakfin[i]->GetParameters();
     graph->SetPoint(i, positions[i], parameter[0]);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), parameter[2]);
@@ -165,14 +158,12 @@ bool SFAttenuation::AttSeparateCh(int ch){
     fAttnLenCh0 = attenuation;
     fAttnErrCh0 = att_error;
     fSpectraCh0 = spectra;
-    fPeaksCh0 = peaks;
     fAttnGraphCh0 = graph;
   }
   else if(ch==1){
     fAttnLenCh1 = attenuation;
     fAttnErrCh1 = att_error;
     fSpectraCh1 = spectra;
-    fPeaksCh1 = peaks;
     fAttnGraphCh1 = graph;
   }
   

@@ -44,7 +44,7 @@ private:
   TString          fSource;          ///< Type of the radioactive source
   TString          fCollimator;      ///< Type of the used collimator: Lead or Electronic
   TString          fDesc;            ///< Description of the measurement series
-  TString          fTestBench;       ///< Type of test bench: Krakow/Aachen/Simulation
+  TString          fTestBench;       ///< Type of test bench: PL/DE/Simulation
   TString          fSiPM;            ///< SiPM type: Hamamatsu or SensL
   TH1D             *fSpectrum;       ///< Single requested spectrum
   TH1D             *fHist;           ///< Custom histogram of requested type

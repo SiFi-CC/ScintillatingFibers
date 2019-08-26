@@ -41,8 +41,8 @@ private:
   TGraphErrors *fAttnGraphCh1;      ///< Attenuation graph for channel 1
   std::vector <TH1D*> fSpectraCh0;  ///< Vector containing charge spectra from channel 0
   std::vector <TH1D*> fSpectraCh1;  ///< Vector containing charche spectra from channel 1
-  std::vector <TH1D*> fPeaksCh0;    ///< Vector containing 511 keV peaks, channel 0
-  std::vector <TH1D*> fPeaksCh1;    ///< Vector containing 511 keV peaks, channel 1
+  std::vector <TH1D*> fPeaksCh0;    ///< Vector containing 511 keV peaks, channel 0 [not used at the moment]
+  std::vector <TH1D*> fPeaksCh1;    ///< Vector containing 511 keV peaks, channel 1 [not used at the moment]
   
   public:
   SFAttenuation(int seriesNo);

@@ -498,10 +498,10 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
 
   TProfile *sig = nullptr;
   
-  if(fTestBench=="Krakow"){
+  if(fTestBench=="PL"){
     sig = GetSignalAverageKrakow(ch, position, cut, number, bl);
   }
-  else if(fTestBench=="Aachen"){
+  else if(fTestBench=="DE"){
     sig = GetSignalAverageAachen(ch, position, cut, number);    
   }
   else{
@@ -641,10 +641,10 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
  
   TH1D *sig = nullptr;
   
-  if(fTestBench=="Krakow"){
+  if(fTestBench=="PL"){
     sig = GetSignalKrakow(ch, position, cut, number, bl);   
   }
-  else if(fTestBench=="Aachen"){
+  else if(fTestBench=="DE"){
     sig = GetSignalAachen(ch, position, cut, number);
   }
   else{

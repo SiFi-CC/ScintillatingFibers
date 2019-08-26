@@ -45,7 +45,7 @@ private:
                                         ///< for attenuation length
   std::vector <TH1D*> fPeaksCh0;        ///< Vector containing spectra after background subtraction;
                                         ///< this vector is filled only if series measured with lead
-                                        ///< collimator is analyzed
+                                        ///< collimator is analyzed [not used]
   std::vector <TH1D*> fPeaksCh1;
   std::vector <TH1D*> fPeaksSum;
   
