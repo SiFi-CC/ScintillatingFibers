@@ -14,7 +14,7 @@ ClassImp(SFData);
 
 //------------------------------------------------------------------
 // constants
-static const char  *gPath = getenv("SFDATA");  // path to the experimental data
+static const char  *gPath = getenv("SFDATA");  // path to the experimental data and database
 static const int    gBaselineMax = 50;         // number of samples for base line determination
 static const double gmV          = 4.096;      // coefficient to calibrate ADC channels to mV
 //------------------------------------------------------------------
@@ -28,6 +28,8 @@ SFData::SFData(): fSeriesNo(-1),
                   fDesc("dummy"),
                   fTestBench("dummy"),
                   fSiPM("dummy"),
+                  fCoupling("dummy"),
+                  fTempFile("dummy"),
                   fSpectrum(nullptr),
                   fHist(nullptr),
                   fHist2D(nullptr),
@@ -48,6 +50,8 @@ SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fDesc("dummy"),
                               fTestBench("dummy"),
                               fSiPM("dummy"),
+                              fCoupling("dummy"),
+                              fTempFile("dummy"),
                               fSpectrum(nullptr),
                               fHist(nullptr),
                               fHist2D(nullptr),
@@ -128,7 +132,7 @@ bool SFData::SetDetails(int seriesNo){
   ///- collimator type 
   ///- number of measurements in the series
   ///- description of the series
-  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, NO_MEASUREMENTS, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
@@ -139,14 +143,18 @@ bool SFData::SetDetails(int seriesNo){
     const unsigned char *test_bench = sqlite3_column_text(statement, 2);
     const unsigned char *collimator = sqlite3_column_text(statement, 3);
     const unsigned char *sipm = sqlite3_column_text(statement, 4);
-    const unsigned char *description = sqlite3_column_text(statement, 6);
-    fNpoints = sqlite3_column_int(statement, 5);
+    const unsigned char *coupling = sqlite3_column_text(statement, 5);
+    const unsigned char *tempfile = sqlite3_column_text(statement, 7);
+    const unsigned char *description = sqlite3_column_text(statement, 8);
+    fNpoints = sqlite3_column_int(statement, 6);
     fFiber = std::string(reinterpret_cast<const char*>(fiber));
     fSource = std::string(reinterpret_cast<const char*>(source));
     fDesc = std::string(reinterpret_cast<const char*>(description));
     fCollimator = std::string(reinterpret_cast<const char*>(collimator));
     fTestBench = std::string(reinterpret_cast<const char*>(test_bench));
     fSiPM = std::string(reinterpret_cast<const char*>(sipm));
+    fCoupling = std::string(reinterpret_cast<const char*>(coupling));
+    fTempFile = std::string(reinterpret_cast<const char*>(tempfile));
   }
   
   SFTools::CheckDBStatus(status, fDB);
@@ -329,7 +337,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
 TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, double position){
 
   int index = SFTools::GetIndex(fPositions, position);
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
@@ -376,7 +384,7 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, double p
                                 std::vector <double> customNumbers){
   
   int index = SFTools::GetIndex(fPositions, position);
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
@@ -417,7 +425,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
                                  std::vector <double> customNumbers){
     
   int index = SFTools::GetIndex(fPositions, position);
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
@@ -448,7 +456,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
 TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, double position){
   
   int index = SFTools::GetIndex(fPositions, position);
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
@@ -519,7 +527,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, double position, TString cut, i
   const int ipoints = 1024;
   float x;
     
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
@@ -587,7 +595,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, double position, TString cut, i
   const int ipoints = 1024;
   float x;
   
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
@@ -662,7 +670,7 @@ TH1D* SFData::GetSignalKrakow(int ch, double position, TString cut, int number, 
   const int ipoints = 1024;
   float x; 
   
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
@@ -726,7 +734,7 @@ TH1D* SFData::GetSignalAachen(int ch, double position, TString cut, int number){
   const int ipoints = 1024;
   float x;
   
-  TString fname = std::string(gPath) + fNames[index] + "/results.root";
+  TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname, "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();

@@ -157,7 +157,7 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
           selectionString = Form("ch_0.fT0:ch_1.fT0>>htemp%i(1000,-110,1100,1000,-110,1100", unique);
           break;
       case SFSelectionType::PEAttCorrectedSum:
-          selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1300,-150,1600)",
+          selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1500,-150,2000)",
                             customNum[0], customNum[1], customNum[2], customNum[3],
                             unique);
           break;

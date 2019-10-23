@@ -172,7 +172,7 @@ bool SFTools::CreateTable(TString database, TString table){
     query = "CREATE TABLE 'DATA' ('SERIES_ID' INTEGER PLRIMARY_KEY, 'RESULTS_FILE' TEXT, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "ATTENUATION_LENGTH"){
-    query = "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESUTS_FILE' TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+    query = "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "ENERGY_RESOLUTION"){
     query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ENRES_SUM' NUMERIC, 'ENRES_SUM_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, 'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
@@ -185,6 +185,12 @@ bool SFTools::CreateTable(TString database, TString table){
   }
   else if(table == "TIME_CONSTANTS"){
     query = "CREATE TABLE 'TIME_CONSTANTS' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'FAST_DEC' NUMERIC, 'FAST_DEC_ERR' NUMERIC, 'SLOW_DEC' NUMERIC, 'SLOW_DEC_ERR' NUMERIC, 'IFAST' NUMERIC, 'ISLOW' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+  }
+  else if(table == "TEMPERATURE"){
+    query = "CREATE TABLE 'TEMPERATURE' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'TEMP_446D45' NUMERIC, 'TEMP_ERR_446D45' NUMERIC, 'TEMP_044F45' NUMERIC, 'TEMP_ERR_044F45' NUMERIC, 'TEMP_2BAD44' NUMERIC, 'TEMP_ERR_2BAD44' NUMERIC, 'TEMP_8F1F46' NUMERIC, 'TEMP_ERR_8F1F46' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+  }
+  else if(table == "POSITION_RESOLUTION"){
+    query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))"; 
   }
   else{
     std::cerr << "##### Error in SFTools::CreateTable()!" << std::endl;
@@ -208,5 +214,58 @@ bool SFTools::CreateTable(TString database, TString table){
   CheckDBStatus(status, resultsDB);
   
   return true;
+}
+//------------------------------------------------------------------
+double SFTools::GetMean(std::vector <double> vec){
+  
+  int size = vec.size();
+  double sum = 0;
+  
+  for(int i=0; i<size; i++){
+    sum += vec[i];   
+  }
+  
+  double mean = sum/size;
+  
+  return mean;
+}
+//------------------------------------------------------------------
+double SFTools::GetStandardErr(std::vector <double> vec){
+  
+  int size = vec.size();
+  double mean = GetMean(vec);  
+  
+  double sumSquares = 0;
+    
+  for(int i=0; i<size; i++){
+    sumSquares += pow((vec[i]-mean),2);  
+  }
+  
+  double stdDev = sqrt(sumSquares/size);
+  double stdErr = stdDev/sqrt(size);  
+    
+  return stdErr;
+}
+//------------------------------------------------------------------
+TString SFTools::FindData(TString directory){
+
+  TString path_1 = std::string(getenv("SFDATA")) + directory + "/results.root";
+  TFile *file_1 = new TFile(path_1, "READ");
+  
+  if(file_1->IsOpen()){
+    file_1->Close();
+    return path_1;
+  }
+  
+  TString path_2 = "/scratch/gccb/kasia/data/" + directory + "/results.root";
+  TFile *file_2 = new TFile(path_2, "READ");
+    
+  if(file_2->IsOpen()){
+    file_2->Close();
+    return path_2;
+  }
+  
+  std::cerr << "##### Error in SFTools::FindData()! Requested file doesn't exist!" << std::endl;
+  std::abort();
 }
 //------------------------------------------------------------------

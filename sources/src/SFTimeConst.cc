@@ -237,6 +237,7 @@ bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, double position){
   fun_all->SetParameter(3, fun_slow->GetParameter(0));
   fun_all->SetParameter(4, fun_slow->GetParameter(2));
   fun_all->FixParameter(5, fun_BL->GetParameter(0));
+  fun_all->FixParameter(1, xmin-20);
   int fitStat = signal->Fit(fun_all, opt);
   
   if(fitStat!=0){

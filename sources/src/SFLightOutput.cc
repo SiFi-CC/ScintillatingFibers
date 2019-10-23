@@ -50,13 +50,13 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
   TString cutCh1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
   fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
   fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
-  
+
   if(SiPM=="Hamamatsu"){
-    fPDE       = 0.31; 
-    fCrossTalk = 0.07; 
+    fPDE       = 0.4; 
+    fCrossTalk = 0.03; 
   }
   else if(SiPM=="SensL"){
-    fPDE       = 0.4;
+    fPDE       = 0.24;
     fCrossTalk = 0.03;
   }
   

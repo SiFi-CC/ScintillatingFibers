@@ -46,6 +46,8 @@ private:
   TString          fDesc;            ///< Description of the measurement series
   TString          fTestBench;       ///< Type of test bench: PL/DE/Simulation
   TString          fSiPM;            ///< SiPM type: Hamamatsu or SensL
+  TString          fCoupling;        ///< Coupling type: silicone gel/silicone pads
+  TString          fTempFile;        ///< Temperature log file
   TH1D             *fSpectrum;       ///< Single requested spectrum
   TH1D             *fHist;           ///< Custom histogram of requested type
   TH2D             *fHist2D;         ///< 2D correlation histogram of requested type 
@@ -103,6 +105,10 @@ public:
   TString GetTestBench(void){ return fTestBench; };
   /// Returns SiPM type
   TString GetSiPM(void){ return fSiPM; };
+  /// Returns coupling type
+  TString GetCoupling(void){ return fCoupling; };
+  /// Returns name of temperature log file.
+  TString GetTempFile(void){ return fTempFile; };
   /// Returns a vector containing names of all measurements in this series
   std::vector <TString> GetNames(void){ return fNames; };
   /// Returns a vector containing source positions for all measurements in this series

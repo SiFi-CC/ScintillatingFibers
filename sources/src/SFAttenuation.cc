@@ -19,6 +19,8 @@ SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
                                             fData(nullptr),
                                             fAttnLen(-1),
                                             fAttnErr(-1),
+                                            fA0(-1),
+                                            fA0Err(-1),
                                             fAttnGraph(nullptr),
                                             fAttnLenCh0(-1),
                                             fAttnLenCh1(-1),
@@ -104,6 +106,8 @@ bool SFAttenuation::AttAveragedCh(void){
   fAttnGraph->Fit(fpol1, "QR");
   fAttnLen = fabs(1./fpol1->GetParameter(1));
   fAttnErr = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
+  fA0 = fpol1->GetParameter(0);
+  fA0Err = fpol1->GetParError(0);
   
   std::cout << "Attenuation lenght is: " << fAttnLen << " +/- " << fAttnErr << " mm\n" << std::endl;
   
@@ -225,6 +229,21 @@ std::vector <double> SFAttenuation::GetAttenuation(void){
   temp.push_back(fAttnLen);
   temp.push_back(fAttnErr);
   return temp;
+}
+//------------------------------------------------------------------
+std::vector <double> SFAttenuation::GetA0(void){
+   
+  std::vector <double> tmp;
+  tmp.push_back(fA0); 
+  tmp.push_back(fA0Err);
+  
+  if(tmp[0]==-1 || tmp[1]==-1){
+    std::cerr << "##### Error in SFAttenuation::GetA0! Incorrect values!" << std::endl;
+    std::cerr << tmp[0] << " +/- " << tmp[1] << std::endl;
+    std::abort();
+  }
+  
+  return tmp;
 }
 //------------------------------------------------------------------
 ///Returns vector containing PE spectra used in determination of attenuation

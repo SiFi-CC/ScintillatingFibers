@@ -201,8 +201,8 @@ bool SFEnergyRes::CalculateEnergyRes(void){
                                                         cut_ch1, positions[i], customNumCh1));
     fSpectraSum.push_back(fData->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
                                                     cut, positions[i], customNumSum));
+    
     peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 0));
-
     peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
     

@@ -30,6 +30,8 @@ private:
   SFData*             fData;        ///< SFData object of the analyzed series
   double              fAttnLen;     ///< Attenuation length determined with averaged channels method [mm]
   double              fAttnErr;     ///< Error on attenuation length fAttnLen [mm]
+  double              fA0;
+  double              fA0Err;
   std::vector <TH1D*> fRatios;      ///< Vector containing histograms of signal ratios from both channels, 
                                     ///< for whole series 
   TGraphErrors* fAttnGraph;         ///< Attenuation graph i.e. ln(M_{FB}) vs. source position
@@ -51,6 +53,7 @@ private:
   bool                 AttAveragedCh(void);
   std::vector <TH1D*>  GetRatios(void);
   std::vector <double> GetAttenuation(void);
+  std::vector <double> GetA0(void);
   TGraphErrors*        GetAttGraph(void);
   double               GetAttLength(void);
   double               GetAttError(void);
@@ -62,6 +65,7 @@ private:
   TGraphErrors*        GetAttGraph(int ch);
   double               GetAttLength(int ch);
   double               GetAttError(int ch);
+  
   
   void Print(void);
   
