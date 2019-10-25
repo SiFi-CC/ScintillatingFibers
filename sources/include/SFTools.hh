@@ -27,6 +27,8 @@ public:
     
     static int     GetIndex(std::vector <double> positions, double position);
     static int     GetSeriesNo(TString hname_tstr);
+    static int     GetChannel(TString hname_tstr);
+    static double  GetPosition(TString hname_tstr);
     static double  GetPosError(TString collimator, TString testBench);
     static void    CheckDBStatus(int status, sqlite3 *database); 
     static bool    SaveResultsDB(TString database, TString table, 

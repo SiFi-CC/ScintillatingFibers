@@ -24,9 +24,18 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
                                             fLightOutCh0Err(-1),
                                             fLightOutCh1(-1),
                                             fLightOutCh1Err(-1),
+                                            fLightCol(-1),
+                                            fLightColErr(-1),
+                                            fLightColCh0(-1),
+                                            fLightColCh0Err(-1),
+                                            fLightColCh1(-1),
+                                            fLightColCh1Err(-1),
                                             fLightOutGraph(nullptr),
                                             fLightOutCh0Graph(nullptr),
                                             fLightOutCh1Graph(nullptr),
+                                            fLightColGraph(nullptr),
+                                            fLightColCh0Graph(nullptr),
+                                            fLightColCh1Graph(nullptr),
                                             fData(nullptr),
                                             fAtt(nullptr) {
                                                 
@@ -38,6 +47,7 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
     throw "##### Exception in SFLightOutput constructor!";
   }
   
+  int npoints = fData->GetNpoints();
   TString description = fData->GetDescription();
   TString SiPM = fData->GetSiPM();
   
@@ -51,6 +61,11 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
   fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
   fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
 
+  for(int i=0; i<npoints; i++){
+      fPFCh0.push_back(new SFPeakFinder(fSpectraCh0[i], 0));
+      fPFCh1.push_back(new SFPeakFinder(fSpectraCh1[i], 0));
+  }
+  
   if(SiPM=="Hamamatsu"){
     fPDE       = 0.4; 
     fCrossTalk = 0.03; 
@@ -99,7 +114,6 @@ bool SFLightOutput::CalculateLightOut(void){
   std::vector <double> positions = fData->GetPositions();
   
   TString gname = Form("LightOutSum_S%i", fSeriesNo);
-  
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
   graph->GetYaxis()->SetTitle("light output [ph/MeV]");
@@ -115,8 +129,7 @@ bool SFLightOutput::CalculateLightOut(void){
     fLightOutCh0Graph->GetPoint(i, x, yCh0);
     fLightOutCh1Graph->GetPoint(i, x, yCh1);
     lightOut = yCh0+yCh1;
-    lightOutErr = sqrt((pow(fLightOutCh0Graph->GetErrorY(i), 2)) + 
-                       (pow(fLightOutCh1Graph->GetErrorY(i), 2)));
+    lightOutErr = fLightOutCh0Graph->GetErrorY(i) + fLightOutCh1Graph->GetErrorY(i);
     graph->SetPoint(i, positions[i], lightOut);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
     lightOutAv += lightOut*(1./pow(lightOutErr, 2));
@@ -147,9 +160,9 @@ bool SFLightOutput::CalculateLightOut(int ch){
   
   for(int i=0; i<npoints; i++){
     if(ch==0)
-      peakFin.push_back(new SFPeakFinder(fSpectraCh0[i], 0));
+      peakFin = fPFCh0; 
     else if(ch==1)
-      peakFin.push_back(new SFPeakFinder(fSpectraCh1[i], 0));
+      peakFin = fPFCh1; 
     else{
       std::cerr << "##### Error in SFLightOutput::CalculateLightOut!" << std::endl;
       std::cerr << "Incorrect channel number" << std::endl;
@@ -182,7 +195,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
     
     lightOut = parameters[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/attenuation[0]);
     lightOutErr = sqrt((pow(lightOut, 2)*pow(parameters[1], 2)/pow(parameters[0], 2)) + 
-                       (pow(lightOut, 2)*pow(attenuation[1],2)/pow(attenuation[0], 4)));
+                       (pow(lightOut, 2)*pow(attenuation[1], 2)/pow(attenuation[0], 4)));
     graph->SetPoint(i, positions[i], lightOut);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
     lightOutAv += lightOut * (1./pow(lightOutErr, 2));
@@ -209,6 +222,123 @@ bool SFLightOutput::CalculateLightOut(int ch){
   return true;  
 }
 //------------------------------------------------------------------
+bool SFLightOutput::CalculateLightCol(void){
+  
+  std::cout << "\n----- Inside SFLightOutput::CalculateLCol()" << std::endl;
+  std::cout << "----- Series: " << fSeriesNo << std::endl;
+  
+  if(fLightColCh0Graph==nullptr || 
+     fLightColCh1Graph==nullptr){
+    std::cerr << "##### Error in SFLightOutput::CalculateLightCol()" << std::endl;
+    std::cerr << "fLightColCh0Graph and fLightColCh1Graph don't exist!" << std::endl;
+    std::cerr << "Run analysis for channels 0 and 1 first!" << std::endl;
+    return false;
+  }
+  
+  int npoints = fData->GetNpoints();
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
+  std::vector <double> positions = fData->GetPositions();
+  
+  TString gname = Form("LCol_s%i_sum",fSeriesNo);
+  TGraphErrors* graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("collected light [P.E./MeV]");
+  graph->SetTitle(gname);
+  graph->SetName(gname);
+  graph->SetMarkerStyle(4);
+  
+  double lightCol, lightColErr;
+  double lightColAv, lightColAvErr;
+  double x, yCh0, yCh1;
+  
+  for(int i=0; i<npoints; i++){
+    fLightColCh0Graph->GetPoint(i, x, yCh0);
+    fLightColCh1Graph->GetPoint(i, x, yCh1);
+    lightCol = yCh0+yCh1;
+    lightColErr = fLightColCh0Graph->GetErrorY(i) + fLightColCh1Graph->GetErrorY(i);
+    graph->SetPoint(i, positions[i], lightCol);
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
+    lightColAv += lightCol*(1./pow(lightColErr, 2));
+    lightColAvErr += 1./pow(lightColErr, 2);
+  }
+  
+  fLightCol = lightColAv/lightColAvErr;
+  fLightColErr = sqrt(1./lightColAvErr);
+  fLightColGraph = graph;
+  
+  std::cout << "Average light collection for this series: "
+            << fLightCol << " +/- " << fLightColErr << " ph/MeV" << std::endl;
+ 
+  return true;
+}
+//------------------------------------------------------------------
+bool SFLightOutput::CalculateLightCol(int ch){
+  
+  std::cout << "\n----- Inside SFLightOutput::CalculateLightCol() for series " << fSeriesNo << std::endl;
+  std::cout << "----- Analyzing channel " << ch << std::endl;
+  
+  int npoints = fData->GetNpoints();
+  TString collimator = fData->GetCollimator();
+  TString testBench = fData->GetTestBench();
+  std::vector <double> positions = fData->GetPositions();
+  std::vector <SFPeakFinder*> tempPF;
+  
+  TString gname = Form("LCol_s%i_ch%i",fSeriesNo,ch);
+  TGraphErrors *graph = new TGraphErrors(npoints);
+  graph->GetXaxis()->SetTitle("source position [mm]");
+  graph->GetYaxis()->SetTitle("collected light [P.E./MeV]");
+  graph->SetTitle(gname);
+  graph->SetName(gname);
+  graph->SetMarkerStyle(4);
+  
+  std::vector <double> peak_par;
+  double lightCol = 0;
+  double lightColErr = 0;
+  double lightColAv = 0;
+  double lightColAvErr = 0;
+  
+  for(int i=0; i<npoints; i++){
+    if(ch==0)  
+      tempPF = fPFCh0; 
+    else if(ch==1)
+      tempPF = fPFCh1;
+    else{
+      std::cerr << "##### Error in SFLightOutput::CalculateLightCol()!" << std::endl;
+      std::cerr << "Incorrect channel number! PLease check!" << std::endl;
+      return false;
+    }
+    
+    peak_par = tempPF[i]->GetParameters();
+    lightCol = peak_par[0]/0.511;
+    lightColErr = peak_par[1]/0.511;
+    graph->SetPoint(i, positions[i], lightCol);
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
+    
+    lightColAv += lightCol*(1./pow(lightColErr, 2));
+    lightColAvErr += (1./pow(lightColErr, 2));
+  }
+ 
+  lightColAv = lightColAv/lightColAvErr;
+  lightColAvErr = sqrt(1./lightColAvErr);
+  
+  if(ch==0){
+    fLightColCh0Graph = graph;
+    fLightColCh0 = lightColAv;
+    fLightColCh0Err = lightColAvErr;
+  }
+  else if(ch==1){
+    fLightColCh1Graph = graph;
+    fLightColCh1 = lightColAv;
+    fLightColCh1Err = lightColAvErr;
+  }
+ 
+  std::cout << "Average light collection for this series and channel " << ch 
+            << ": " << lightColAv << " +/- " << lightColAvErr << " ph/MeV" << std::endl;
+ 
+  return true;
+}
+//------------------------------------------------------------------
 std::vector <double> SFLightOutput::GetLightOutput(void){
     
   std::vector <double> temp;
@@ -216,7 +346,7 @@ std::vector <double> SFLightOutput::GetLightOutput(void){
   temp.push_back(fLightOutErr);
   
   if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFLightOutout::GetLightOutput()" << std::endl;
+    std::cerr << "##### Error in SFLightOutput::GetLightOutput()" << std::endl;
     std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
     std::abort();
   }
@@ -251,6 +381,48 @@ std::vector <double> SFLightOutput::GetLightOutput(int ch){
   return temp;  
 }
 //------------------------------------------------------------------
+std::vector <double> SFLightOutput::GetLightCol(void){
+    
+  std::vector <double> temp;
+  temp.push_back(fLightCol);
+  temp.push_back(fLightColErr);  
+  
+  if(temp[0]==-1 || temp[1]==-1){
+    std::cerr << "##### Error in SFLightOutput::GetLightCol()" << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
+    std::abort();
+  }
+  
+  return temp;
+}
+//------------------------------------------------------------------
+std::vector <double> SFLightOutput::GetLightCol(int ch){
+  
+  std::vector <double> temp;
+  
+  if(ch==0){
+    temp.push_back(fLightColCh0);
+    temp.push_back(fLightColCh0Err);
+  }
+  else if(ch==1){
+    temp.push_back(fLightColCh1);
+    temp.push_back(fLightColCh1Err);
+  }
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetLightCol() for ch " << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+    
+  if(temp[0]==-1 || temp[1]==-1){
+    std::cerr << "##### Error in SFLightOutput::GetLightCol() for ch " << ch << std::endl;
+    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
+    std::abort();
+  }
+    
+  return temp;
+}
+//------------------------------------------------------------------
 std::vector <TH1D*> SFLightOutput::GetSpectra(int ch){
     
   if((ch==0 && fSpectraCh0.empty()) ||
@@ -266,28 +438,6 @@ std::vector <TH1D*> SFLightOutput::GetSpectra(int ch){
     return fSpectraCh1;
   else{
     std::cerr << "##### Error in SFLightOutput::GetSpectra for ch" << ch << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-}
-//------------------------------------------------------------------
-std::vector <TH1D*> SFLightOutput::GetPeaks(int ch){
-    
-  if((ch==0 && fPeaksCh0.empty()) ||
-     (ch==1 && fPeaksCh1.empty())) {
-      std::cerr << "##### Error in SFLightOutput::GetPeaks() for ch" 
-                << ch << std::endl; 
-      std::cerr << "No spectra available!" << std::endl; 
-      std::abort();
-  }
-
-  if(ch==0)
-    return fPeaksCh0;
-  else if(ch==1)
-    return fPeaksCh1;
-  else{
-    std::cerr << "##### Error in SFLightOutput::GetPeaks() for ch" 
-              << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }
@@ -318,6 +468,36 @@ TGraphErrors* SFLightOutput::GetLightOutputGraph(int ch){
     return fLightOutCh1Graph;
   else{
     std::cerr << "##### Error in SFLightOutput::GetLightOutputGraph() for ch " << ch << std::endl;
+    std::cerr << "Incorrect channel number!" << std::endl;
+    std::abort();
+  }
+}
+//------------------------------------------------------------------
+TGraphErrors* SFLightOutput::GetLightColGraph(void){
+    
+  if(fLightColGraph==nullptr){
+    std::cerr << "##### Error in SFLightOUtput::GetLightColGraph()" << std::endl;
+    std::cerr << "Requested graph doesn't exist!" << std::endl;
+    std::abort();
+  }
+  
+  return fLightColGraph;
+}
+//------------------------------------------------------------------
+TGraphErrors* SFLightOutput::GetLightColGraph(int ch){
+    
+  if((ch==0 && fLightColCh0Graph==nullptr) ||
+     (ch==1 && fLightColCh1Graph==nullptr)){
+    std::cerr << "##### Error in SFLightOutput::GetLightColGraph() for ch " << ch << std::endl;
+    std::cerr << "Requested graph doesn't exist!" << std::endl;
+  }
+    
+  if(ch==0)
+    return fLightColCh0Graph;
+  else if(ch==1)
+    return fLightColCh1Graph;
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetLightColGraph() for ch " << ch << std::endl;
     std::cerr << "Incorrect channel number!" << std::endl;
     std::abort();
   }

@@ -74,6 +74,60 @@ int SFTools::GetSeriesNo(TString hname_tstr){
     return seriesNo;
 } 
 //------------------------------------------------------------------
+int SFTools::GetChannel(TString hname_tstr){
+    
+    std::string hname = std::string(hname_tstr);
+    int nletters = hname.length();
+    char letters[nletters];
+    strcpy(letters,hname.c_str());
+    
+    int iposition = -1;
+    for(int i=0; i<nletters; i++){
+      if(letters[i]=='h'){
+          iposition = i;
+          break;
+      }
+    }
+    
+    if(iposition==-1){
+      std::cerr << "##### Error in SFTools::GetChannel()!" << std::endl;
+      std::cerr << "Cannot interpret spectrum name!" << std::endl;
+      std::abort();
+    }
+    
+    TString channelName = std::string(&letters[iposition+1], &letters[iposition+2]);
+    int channelNo = atoi(channelName);
+    
+    return channelNo;
+}
+//------------------------------------------------------------------
+double SFTools::GetPosition(TString hname_tstr){
+    
+    std::string hname = std::string(hname_tstr);
+    int nletters = hname.length();
+    char letters[nletters];
+    strcpy(letters,hname.c_str());
+    
+    int iposition = -1;
+    for(int i=0; i<nletters; i++){
+      if(letters[i]=='p'){
+          iposition = i;
+          break;
+      }
+    }
+    
+    if(iposition==-1){
+      std::cerr << "##### Error in SFTools::GetPosition()!" << std::endl;
+      std::cerr << "Cannot interpret spectrum name!" << std::endl;
+      std::abort();
+    }
+    
+    TString posName = std::string(&letters[iposition+4], &letters[iposition+7]);
+    int pos = atof(posName);
+    
+    return pos;
+}
+//------------------------------------------------------------------
 double SFTools::GetPosError(TString collimator, TString testBench){
  
   double err = -1;
@@ -178,7 +232,7 @@ bool SFTools::CreateTable(TString database, TString table){
     query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ENRES_SUM' NUMERIC, 'ENRES_SUM_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, 'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "LIGHT_OUTPUT"){
-    query = "CREATE TABLE 'LIGHT_OUTPUT' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'LOUT' NUMERIC, 'LOUT_ERR' NUMERIC, 'LOUT_CH0' NUMERIC, 'LOUT_CH0_ERR' NUMERIC, 'LOUT_CH1' NUMERIC, 'LOUT_CH1_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+    query = "CREATE TABLE 'LIGHT_OUTPUT' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'LOUT' NUMERIC, 'LOUT_ERR' NUMERIC, 'LOUT_CH0' NUMERIC, 'LOUT_CH0_ERR' NUMERIC, 'LOUT_CH1' NUMERIC, 'LOUT_CH1_ERR' NUMERIC, 'LCOL' NUMERIC, 'LCOL_ERR' NUMERIC, 'LCOL_CH0' NUMERIC, 'LCOL_CH0_ERR' NUMERIC, 'LCOL_CH1' NUMERIC, 'LCOL_CH1_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "TIMING_RESOLUTION"){
     query = "CREATE TABLE 'TIMING_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'TIMERES' NUMERIC, 'TIMERES_ERR' NUMERIC, 'TIMERES_ECUT' NUMERIC, 'TIMERES_ECUT_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
@@ -191,6 +245,9 @@ bool SFTools::CreateTable(TString database, TString table){
   }
   else if(table == "POSITION_RESOLUTION"){
     query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))"; 
+  }
+  else if(table == "PEAK_FINDER"){
+    query = "CREATE TABLE 'PEAK_FINDER' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else{
     std::cerr << "##### Error in SFTools::CreateTable()!" << std::endl;

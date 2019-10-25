@@ -27,6 +27,7 @@ private:
     int     fSeriesNo;
     double  fPDE;
     double  fCrossTalk;
+    
     double  fLightOut;
     double  fLightOutErr;
     double  fLightOutCh0;
@@ -34,13 +35,25 @@ private:
     double  fLightOutCh1;
     double  fLightOutCh1Err;
     
+    double  fLightCol;
+    double  fLightColErr;
+    double  fLightColCh0;
+    double  fLightColCh0Err;
+    double  fLightColCh1;
+    double  fLightColCh1Err;
+    
     TGraphErrors *fLightOutGraph;
     TGraphErrors *fLightOutCh0Graph;
     TGraphErrors *fLightOutCh1Graph;
+    
+    TGraphErrors *fLightColGraph;
+    TGraphErrors *fLightColCh0Graph;
+    TGraphErrors *fLightColCh1Graph;
+    
     std::vector <TH1D*> fSpectraCh0;
     std::vector <TH1D*> fSpectraCh1;
-    std::vector <TH1D*> fPeaksCh0;   ///< [not used]
-    std::vector <TH1D*> fPeaksCh1;   ///< [not used]
+    std::vector <SFPeakFinder*> fPFCh0;
+    std::vector <SFPeakFinder*> fPFCh1;
     
     SFData        *fData;
     SFAttenuation *fAtt;
@@ -52,12 +65,20 @@ public:
   bool CalculateLightOut(void);
   bool CalculateLightOut(int ch);
   
+  bool CalculateLightCol(void);
+  bool CalculateLightCol(int ch);
+  
   std::vector <double> GetLightOutput(void);
   std::vector <double> GetLightOutput(int ch);
-  std::vector <TH1D*>  GetSpectra(int ch);
-  std::vector <TH1D*>  GetPeaks(int ch);
+  std::vector <double> GetLightCol(void);
+  std::vector <double> GetLightCol(int ch);
+  
   TGraphErrors*        GetLightOutputGraph(void);
   TGraphErrors*        GetLightOutputGraph(int ch);
+  TGraphErrors*        GetLightColGraph(void);
+  TGraphErrors*        GetLightColGraph(int ch);
+  
+  std::vector <TH1D*>  GetSpectra(int ch);
   
   void Print(void);
   
