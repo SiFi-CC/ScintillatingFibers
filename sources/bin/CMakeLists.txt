@@ -15,3 +15,12 @@ target_link_libraries(timeres ScintillatingFibers)
 
 add_executable(tconst tconst.cc)
 target_link_libraries(tconst ScintillatingFibers)
+
+add_executable(posres posres.cc)
+target_link_libraries(posres ScintillatingFibers)
+
+add_executable(temp temp.cc)
+target_link_libraries(temp ScintillatingFibers)
+
+add_executable(peakfin peakfin.cc)
+target_link_libraries(peakfin ScintillatingFibers)
