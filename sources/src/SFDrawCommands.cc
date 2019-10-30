@@ -75,6 +75,9 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
         case SFSelectionType::PEAttCorrectedSum:
             selectionName = "PEAttCorrectedSum";
             break;
+        case SFSelectionType::MLRRatioCorrected:
+            selectionName = "MLRRatioCorrected";
+            break;
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelectionName()!" << std::endl;
             std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -160,6 +163,9 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
           selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1500,-150,2000)",
                             customNum[0], customNum[1], customNum[2], customNum[3],
                             unique);
+          break;
+      case SFSelectionType::MLRRatioCorrected:
+          selectionString = Form("(%f*(log(sqrt(ch_1.fPE/ch_0.fPE))-%f))>>htemp%i(1000,-50,150)", customNum[0], customNum[1], unique);
           break;
       default:
           std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;

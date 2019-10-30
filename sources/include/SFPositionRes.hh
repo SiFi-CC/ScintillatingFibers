@@ -23,35 +23,46 @@ class SFPositionRes : public TObject{
     
 private:
     int                  fSeriesNo;
-    double               fPosResSeries;
-    double               fPosResSeriesErr;
+    double               fMLRPosResSeries;
+    double               fMLRPosResSeriesErr;
+    double               fYPosResSeries;
+    double               fYPosResSeriesErr;
+    
     SFData              *fData;
-    TGraphErrors        *fPosVsMean;
-    TGraphErrors        *fPosVsSigmaAtt;
-    TGraphErrors        *fRecoPosition;
-    std::vector <TH1D*>  fQRatios;
-    std::vector <TH1D*>  fSpecCh0;
-    std::vector <TH1D*>  fSpecCh1;
-    std::vector <double> fPosRes;
-    std::vector <double> fPosResErr;
     SFAttenuation       *fAtt;
     
-    bool LoadRatios();
+    TGraphErrors        *fMLRMeanVsPos;
+    TGraphErrors        *fMLRPosResVsPos;
+    TGraphErrors        *fYMeanVsPos;
+    TGraphErrors        *fYPosResVsPos;
+    
+    std::vector <TH1D*>  fQRatios;
+    std::vector <TH1D*>  fQRatiosCorr;
+    std::vector <TH1D*>  fSpecCh0;
+    std::vector <TH1D*>  fSpecCh1;
+    
+    std::vector <double> fMLRPosRes;
+    std::vector <double> fMLRPosResErr;
+    std::vector <double> fYPosRes;
+    std::vector <double> fYPosResErr;
+    
+    bool LoadRatios(void);
     
 public:
     SFPositionRes(int seriesNo);
     ~SFPositionRes();
     
-    bool          AnalyzePositionRes(void); 
-    bool          ReconstructPos(void);
-    TGraphErrors *GetMeanGraph(void);
-    TGraphErrors *GetPositionResGraph(void);
-    TGraphErrors *GetRecoPosGraph(void);
-    std::vector <TH1D*>  GetRatios(void);
+    bool          AnalyzePositionResMLR(void); 
+    bool          AnalyzePositionResY(void);
+    
+    TGraphErrors *GetMeanGraph(TString opt);
+    TGraphErrors *GetPositionResGraph(TString opt);
+    
+    std::vector <TH1D*>  GetRatios(TString opt);
     std::vector <TH1D*>  GetSpectra(int ch);
-    std::vector <double> GetPositionResSeries(void);
-    std::vector <double> GetPositionRes(void);
-    std::vector <double> GetPositionResError(void);
+    std::vector <double> GetPositionResSeries(TString opt);
+    std::vector <double> GetPositionRes(TString opt);
+    std::vector <double> GetPositionResError(TString opt);
     
     void Print();
     

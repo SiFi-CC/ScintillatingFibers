@@ -30,8 +30,9 @@ enum class SFSelectionType{
      AmplitudeCorrelation,  //< shows 2D amiplitude correlation spectrum
      T0Correlation,         //< shows 2D T0 correlation spectrum
      PEAttCorrected,        //< shows PE spectrum corrected for attenuation length
-     PEAttCorrectedSum      //< shows sum of Ch0 and Ch1 PE spectra, both corrected 
+     PEAttCorrectedSum,     //< shows sum of Ch0 and Ch1 PE spectra, both corrected 
                             //< for attenuation length
+     MLRRatioCorrected      
 };
 
 /// Class providing standarized and uniform set of selections for analyzed 
