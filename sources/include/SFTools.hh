@@ -35,6 +35,7 @@ public:
                                  TString query, int seriesNo);
     static bool    CreateTable(TString database, TString table);  
     static double  GetMean(std::vector <double> vec);
+    static double  GetStandardDev(std::vector <double> vec);
     static double  GetStandardErr(std::vector <double> vec);
     static TString FindData(TString directory);
     

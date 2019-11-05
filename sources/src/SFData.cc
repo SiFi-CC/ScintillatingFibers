@@ -28,6 +28,7 @@ SFData::SFData(): fSeriesNo(-1),
                   fDesc("dummy"),
                   fTestBench("dummy"),
                   fSiPM("dummy"),
+                  fOvervoltage(-1),
                   fCoupling("dummy"),
                   fTempFile("dummy"),
                   fSpectrum(nullptr),
@@ -50,6 +51,7 @@ SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fDesc("dummy"),
                               fTestBench("dummy"),
                               fSiPM("dummy"),
+                              fOvervoltage(-1),
                               fCoupling("dummy"),
                               fTempFile("dummy"),
                               fSpectrum(nullptr),
@@ -132,7 +134,7 @@ bool SFData::SetDetails(int seriesNo){
   ///- collimator type 
   ///- number of measurements in the series
   ///- description of the series
-  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
@@ -143,10 +145,11 @@ bool SFData::SetDetails(int seriesNo){
     const unsigned char *test_bench = sqlite3_column_text(statement, 2);
     const unsigned char *collimator = sqlite3_column_text(statement, 3);
     const unsigned char *sipm = sqlite3_column_text(statement, 4);
-    const unsigned char *coupling = sqlite3_column_text(statement, 5);
-    const unsigned char *tempfile = sqlite3_column_text(statement, 7);
-    const unsigned char *description = sqlite3_column_text(statement, 8);
-    fNpoints = sqlite3_column_int(statement, 6);
+    const unsigned char *coupling = sqlite3_column_text(statement, 6);
+    const unsigned char *tempfile = sqlite3_column_text(statement, 8);
+    const unsigned char *description = sqlite3_column_text(statement, 9);
+    fNpoints = sqlite3_column_int(statement, 7);
+    fOvervoltage = sqlite3_column_double(statement, 5);
     fFiber = std::string(reinterpret_cast<const char*>(fiber));
     fSource = std::string(reinterpret_cast<const char*>(source));
     fDesc = std::string(reinterpret_cast<const char*>(description));
@@ -782,7 +785,11 @@ void SFData::Print(void){
  std::cout << "Test bench: " << fTestBench << std::endl;
  std::cout << "Number of measurements in this series: " << fNpoints << std::endl;
  std::cout << "Fiber: " << fFiber << std::endl;
+ std::cout << "Coupling: " << fCoupling << std::endl;
  std::cout << "Radioactive source: " << fSource << std::endl;
+ std::cout << "SiPM: " << fSiPM <<std::endl;
+ std::cout << "Overvoltage: " << fOvervoltage << " V" << std::endl;
+ std::cout << "Temperature logfile: " << fTempFile << std::endl;
  std::cout << "List of measurements in this series:" << std::endl;
  for(int i=0; i<fNpoints; i++){
   std::cout << std::setw(30);

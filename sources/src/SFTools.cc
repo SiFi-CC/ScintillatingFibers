@@ -249,6 +249,9 @@ bool SFTools::CreateTable(TString database, TString table){
   else if(table == "PEAK_FINDER"){
     query = "CREATE TABLE 'PEAK_FINDER' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
+  else if(table == "STABILITY_MON"){
+    query = "CREATE TABLE 'STABILITY_MON' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'CH0_MEAN' NUMERIC, 'CH0_STDDEV' NUMERIC, 'CH1_MEAN' NUMERIC, 'CH1_STDDEV' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+  }
   else{
     std::cerr << "##### Error in SFTools::CreateTable()!" << std::endl;
     std::cerr << "Unknown table!" << std::endl;
@@ -287,7 +290,7 @@ double SFTools::GetMean(std::vector <double> vec){
   return mean;
 }
 //------------------------------------------------------------------
-double SFTools::GetStandardErr(std::vector <double> vec){
+double SFTools::GetStandardDev(std::vector <double> vec){
   
   int size = vec.size();
   double mean = GetMean(vec);  
@@ -299,6 +302,14 @@ double SFTools::GetStandardErr(std::vector <double> vec){
   }
   
   double stdDev = sqrt(sumSquares/size);
+    
+  return stdDev;
+}
+//------------------------------------------------------------------
+double SFTools::GetStandardErr(std::vector <double> vec){
+  
+  int size = vec.size();
+  double stdDev = GetStandardDev(vec);  
   double stdErr = stdDev/sqrt(size);  
     
   return stdErr;

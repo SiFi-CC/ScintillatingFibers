@@ -46,6 +46,7 @@ private:
   TString          fDesc;            ///< Description of the measurement series
   TString          fTestBench;       ///< Type of test bench: PL/DE/Simulation
   TString          fSiPM;            ///< SiPM type: Hamamatsu or SensL
+  double           fOvervoltage;     ///< Overvoltage [V]
   TString          fCoupling;        ///< Coupling type: silicone gel/silicone pads
   TString          fTempFile;        ///< Temperature log file
   TH1D             *fSpectrum;       ///< Single requested spectrum
@@ -105,6 +106,8 @@ public:
   TString GetTestBench(void){ return fTestBench; };
   /// Returns SiPM type
   TString GetSiPM(void){ return fSiPM; };
+  /// Returns overvoltage
+  double  GetOvervoltage(void){ return fOvervoltage; };
   /// Returns coupling type
   TString GetCoupling(void){ return fCoupling; };
   /// Returns name of temperature log file.

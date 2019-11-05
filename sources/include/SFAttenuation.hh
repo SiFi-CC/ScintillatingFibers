@@ -51,6 +51,7 @@ private:
   ~SFAttenuation();
   
   bool                 AttAveragedCh(void);
+  bool                 Fit3rdOrder(void);
   std::vector <TH1D*>  GetRatios(void);
   std::vector <double> GetAttenuation(void);
   std::vector <double> GetA0(void);

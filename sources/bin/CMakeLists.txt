@@ -24,3 +24,6 @@ target_link_libraries(temp ScintillatingFibers)
 
 add_executable(peakfin peakfin.cc)
 target_link_libraries(peakfin ScintillatingFibers)
+
+add_executable(stability stability.cc)
+target_link_libraries(stability ScintillatingFibers)

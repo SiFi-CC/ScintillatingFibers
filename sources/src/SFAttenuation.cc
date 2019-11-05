@@ -33,7 +33,7 @@ SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
     fData = new SFData(fSeriesNo);
   }
   catch(const char *message){
-    std::cout << message << std::endl;
+    std::cerr << message << std::endl;
     throw "##### Exception in SFAttenuation constructor!";
   }
   
@@ -110,6 +110,24 @@ bool SFAttenuation::AttAveragedCh(void){
   fA0Err = fpol1->GetParError(0);
   
   std::cout << "Attenuation lenght is: " << fAttnLen << " +/- " << fAttnErr << " mm\n" << std::endl;
+  
+  return true;
+}
+//------------------------------------------------------------------
+bool SFAttenuation::Fit3rdOrder(void){
+    
+  if(fAttnGraph==nullptr)
+      AttAveragedCh();
+  
+  double npoints = fData->GetNpoints();
+  std::vector <double> positions = fData->GetPositions();
+  
+  TF1 *fpol3 = new TF1("fpol3", "pol3",positions[0],positions[npoints-1]); 
+  fpol3->SetParameter(0, fAttnGraph->GetFunction("fpol1")->GetParameter(0));
+  fpol3->SetParameter(1, fAttnGraph->GetFunction("fpol1")->GetParameter(1));
+  fpol3->SetLineColor(kBlue-7);
+  
+  fAttnGraph->Fit(fpol3, "QR+");
   
   return true;
 }

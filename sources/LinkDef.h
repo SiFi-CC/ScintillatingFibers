@@ -16,5 +16,6 @@
 #pragma link C++ class SFTimeConst+;
 #pragma link C++ class SFPositionRes+;
 #pragma link C++ class SFTemperature+;
+#pragma link C++ class SFStabilityMon+;
 
 #endif
