@@ -12,17 +12,16 @@
 #include "SFAttenuation.hh"
 #include "TCanvas.h"
 #include "TLatex.h"
-#include "CmdLineConfig.hh"
-#include "CmdLineOption.hh"
 #include <sys/stat.h> 
 #include <sys/types.h> 
+#include "common_options.h"
 
 int main(int argc, char **argv){
   
   if(argc<2 || argc>6){
     std::cout << "to run type: ./attenuation seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
-    return 0;
+    return 1;
   }
  
   int seriesNo = atoi(argv[1]);
@@ -34,7 +33,7 @@ int main(int argc, char **argv){
   catch(const char* message){
    std::cerr << message << std::endl;
    std::cerr << "##### Exception in attenuation.cc!" << std::endl;
-   return 0;
+   return 1;
   }
  
   data->Print();
@@ -44,7 +43,7 @@ int main(int argc, char **argv){
     std::cerr << "##### Error in attenuation.cc! This is not regular series!" << std::endl;
     std::cerr << "Series number: " << seriesNo << std::endl;
     std::cout << "Description: " << desc << std::endl;
-    return 0;
+    return 1;
   }
  
   int npoints = data->GetNpoints();
@@ -59,13 +58,15 @@ int main(int argc, char **argv){
   catch(const char* message){
     std::cerr << message << std::endl;
     std::cerr << "##### Exception in attenuation.cc!" << std::endl;
-    return 0;
+    return 1;
   }
   
   //----- averaged channels method
   att->AttAveragedCh();
+  att->Fit3rdOrder();
   std::vector <TH1D*> attRatios = att->GetRatios();
   TGraphErrors *attGraph        = att->GetAttGraph();
+  TGraphErrors *attGraphPol3    = (TGraphErrors*)attGraph->Clone("attGraphPol3");
   std::vector <double> attlen   = att->GetAttenuation();
   
   //----- separate channels method
@@ -83,13 +84,32 @@ int main(int argc, char **argv){
   TLatex text;
   text.SetNDC(true);
   
-  TCanvas *can_averaged_ch = new TCanvas("can_averaged_ch", "can_averaged_ch", 700, 500);
-  can_averaged_ch->cd();
+  TCanvas *can_averaged_ch = new TCanvas("can_averaged_ch", "can_averaged_ch", 1000, 700);
+  can_averaged_ch->Divide(2,1);
+  
+  can_averaged_ch->cd(1);
   gPad->SetGrid(1,1);
   attGraph->SetTitle(Form("Series %i, attenuation curve", seriesNo));
+  attGraph->GetFunction("fpol3")->Delete();
   attGraph->Draw("AP");
   text.SetTextSize(0.04);
   text.DrawLatex(0.2, 0.8, Form("L_{att} = (%.2f +/- %.2f) mm", attlen[0], attlen[1]));
+  
+  can_averaged_ch->cd(2);
+  gPad->SetGrid(1,1);
+  attGraphPol3->SetTitle(Form("Series %i, attenuation curve", seriesNo));
+  attGraphPol3->GetFunction("fpol1")->Delete();
+  attGraphPol3->Draw("AP");
+  TF1 *funPol3 = (TF1*)attGraphPol3->GetFunction("fpol3");
+  text.SetTextSize(0.03);
+  text.DrawLatex(0.2, 0.8, Form("A_{0} = %.4e +/- %.4e", 
+                funPol3->GetParameter(0), funPol3->GetParError(0)));
+  text.DrawLatex(0.2, 0.75, Form("A_{1} = %.4e +/- %.4e",  
+                funPol3->GetParameter(1), funPol3->GetParError(1)));
+  text.DrawLatex(0.2, 0.70, Form("A_{2} = %.4e +/- %.4e",  
+                funPol3->GetParameter(2), funPol3->GetParError(2)));
+  text.DrawLatex(0.2, 0.65, Form("A_{3} = %.4e +/- %.4e",  
+                funPol3->GetParameter(3), funPol3->GetParError(3)));
   
   TCanvas *can_ratios = new TCanvas("can_ratios", "can_ratios", 1200, 1200);
   can_ratios->Divide(3,3);
@@ -170,27 +190,13 @@ int main(int argc, char **argv){
   }
   
   //----- saving
-  TString path = std::string(getenv("SFPATH"));
   TString fname = Form("attenuation_series%i.root", seriesNo);
+  TString outdir;
+  TString dbase;
 
-  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results", path+"results");
-  
-  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
-  
-  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
-  
-  TString outdir = CmdLineOption::GetStringValue("Output directory");
-  TString dbase = CmdLineOption::GetStringValue("Data base");
-  
-  if(!gSystem->ChangeDirectory(outdir)){
-    std::cout << "Creating new directory... " << std::endl;
-    std::cout << outdir << std::endl;
-    int stat = mkdir(outdir, 0777);
-    if(stat==-1){
-      std::cerr << "##### Error in attenuation.cc! Unable to create new direcotry!" << std::endl;
-      return 0;
-    }
-  }
+  int ret = parse_common_options(argc, argv, outdir, dbase);
+  if(ret != 0) 
+    exit(ret);
   
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
@@ -200,7 +206,7 @@ int main(int argc, char **argv){
   if(!file->IsOpen()){
     std::cerr << "##### Error in attenuation.cc!" << std::endl;
     std::cerr << "Couldn't open file: " << fname_full << std::endl;
-    return 0;
+    return 1;
   }
   
   can_averaged_ch->Write();
@@ -218,5 +224,5 @@ int main(int argc, char **argv){
   delete data;
   delete att;
   
-  return 1;
+  return 0;
 }

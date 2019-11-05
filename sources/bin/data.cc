@@ -13,17 +13,16 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TPaveStats.h"
-#include "CmdLineConfig.hh"
-#include "CmdLineOption.hh"
 #include <sys/stat.h> 
 #include <sys/types.h> 
+#include "common_options.h"
 
 int main(int argc, char **argv){
  
   if(argc<2 || argc>6){
     std::cout << "to run type: ./data seriesNo ";
     std::cout << "-out path/to/output -db database" << std::endl;
-    return 0;
+    return 1;
   }
   
   int seriesNo = atoi(argv[1]);
@@ -36,7 +35,7 @@ int main(int argc, char **argv){
   catch(const char *message){
     std::cerr << message << std::endl;
     std::cerr << "##### Exception in data.cc!" << std::endl;
-    return 0;
+    return 1;
   }
   
   TString desc = data->GetDescription();
@@ -44,7 +43,7 @@ int main(int argc, char **argv){
     std::cerr << "##### Error in data.cc! This is not regular series!" << std::endl;
     std::cerr << "Series number: " << seriesNo << std::endl;
     std::cerr << "Description: " << desc << std::endl;
-    return 0;
+    return 1;
   }
   
   int npoints  = data->GetNpoints();
@@ -365,27 +364,13 @@ int main(int argc, char **argv){
   }
   
   //----- saving
-  TString path = std::string(getenv("SFPATH"));
   TString fname = Form("data_series%i.root", seriesNo);
-  
-  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results" , path+"results");
-  
-  CmdLineOption cmd_dbase("Data base", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
-  
-  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
-  
-  TString outdir = CmdLineOption::GetStringValue("Output directory");
-  TString dbase = CmdLineOption::GetStringValue("Data base");
-  
-  if(!gSystem->ChangeDirectory(outdir)){
-    std::cout << "Creating new directory... " << std::endl;
-    std::cout << outdir << std::endl;
-    int stat = mkdir(outdir, 0777);
-    if(stat==-1){
-      std::cerr << "##### Error in data.cc! Unable to create new direcotry!" << std::endl;
-      return 0;
-    }
-  }
+  TString outdir;
+  TString dbase;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase);
+  if(ret != 0) 
+    exit(ret);
   
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
@@ -395,7 +380,7 @@ int main(int argc, char **argv){
   if(!file->IsOpen()){
     std::cerr << "##### Error in data.cc!" << std::endl;
     std::cerr << "Couldn't open file: " << fname_full << std::endl;
-    return 0;
+    return 1;
   }
   
   can_ampl->Write();
@@ -418,5 +403,5 @@ int main(int argc, char **argv){
   
   delete data;
   
-  return 1;
+  return 0;
 }
