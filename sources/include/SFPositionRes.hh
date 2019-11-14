@@ -13,38 +13,37 @@
 #include "TObject.h"
 #include "TGraphErrors.h"
 #include "TH1D.h"
+#include "TTree.h"
+#include "DDSignal.hh"
 #include "SFData.hh"
 #include "SFTools.hh"
 #include "SFPeakFinder.hh"
 #include "SFAttenuation.hh"
 #include <iostream>
+#include "TCanvas.h"
 
 class SFPositionRes : public TObject{
     
 private:
     int                  fSeriesNo;
-    double               fMLRPosResSeries;
-    double               fMLRPosResSeriesErr;
-    double               fYPosResSeries;
-    double               fYPosResSeriesErr;
+    double               fPosResSeries;
+    double               fPosResSeriesErr;
     
     SFData              *fData;
     SFAttenuation       *fAtt;
     
-    TGraphErrors        *fMLRMeanVsPos;
-    TGraphErrors        *fMLRPosResVsPos;
-    TGraphErrors        *fYMeanVsPos;
-    TGraphErrors        *fYPosResVsPos;
+    TGraphErrors        *fPosRecoVsPos;
+    TGraphErrors        *fPosResVsPos;
+    TGraphErrors        *fMLRvsPos;
     
     std::vector <TH1D*>  fQRatios;
-    std::vector <TH1D*>  fQRatiosCorr;
-    std::vector <TH1D*>  fSpecCh0;
-    std::vector <TH1D*>  fSpecCh1;
+    std::vector <TH1D*>  fPosRecoDist;
+    std::vector <TH1D*>  fSpecAv;
     
-    std::vector <double> fMLRPosRes;
-    std::vector <double> fMLRPosResErr;
-    std::vector <double> fYPosRes;
-    std::vector <double> fYPosResErr;
+    std::vector <double> fPosRes;
+    std::vector <double> fPosResErr;
+    std::vector <double> fPosReco;
+    std::vector <double> fPosRecoErr;
     
     bool LoadRatios(void);
     
@@ -52,17 +51,20 @@ public:
     SFPositionRes(int seriesNo);
     ~SFPositionRes();
     
-    bool          AnalyzePositionResMLR(void); 
-    bool          AnalyzePositionResY(void);
+    bool          AnalyzePositionRes(void); 
     
-    TGraphErrors *GetMeanGraph(TString opt);
-    TGraphErrors *GetPositionResGraph(TString opt);
+    TGraphErrors *GetPositionRecoGraph(void);
+    TGraphErrors *GetPositionResGraph(void);
+    TGraphErrors *GetAttenuationCurve(void);
     
-    std::vector <TH1D*>  GetRatios(TString opt);
-    std::vector <TH1D*>  GetSpectra(int ch);
-    std::vector <double> GetPositionResSeries(TString opt);
-    std::vector <double> GetPositionRes(TString opt);
-    std::vector <double> GetPositionResError(TString opt);
+    std::vector <TH1D*>  GetRatios(void);
+    std::vector <TH1D*>  GetPositionRecoDist(void);
+    std::vector <TH1D*>  GetSpectra(void);
+    std::vector <double> GetPositionResSeries(void);
+    std::vector <double> GetPositionRes(void);
+    std::vector <double> GetPositionResError(void);
+    std::vector <double> GetPositionReco(void);
+    std::vector <double> GetPositionRecoError(void);
     
     void Print();
     

@@ -82,7 +82,7 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   
   int     npoints = fData->GetNpoints();
   TString fiber   = fData->GetFiber();
-  std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
   TString selection = Form("ch_0.fPE>%.1f && ch_0.fPE<%.1f", fPE-0.5, fPE+0.5);
   TString results_name;
   
@@ -99,11 +99,11 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   }
   
   for(int i=0; i<npoints; i++){
-   fSignalsCh0.push_back(fData->GetSignalAverage(0, positions[i], selection, nsig, true));
+   fSignalsCh0.push_back(fData->GetSignalAverage(0, measurementsIDs[i], selection, nsig, true));
    results_name = fSignalsCh0[i]->GetName();
    fResultsCh0.push_back(new SFFitResults(results_name));
    
-   fSignalsCh1.push_back(fData->GetSignalAverage(1, positions[i], selection, nsig, true));
+   fSignalsCh1.push_back(fData->GetSignalAverage(1, measurementsIDs[i], selection, nsig, true));
    results_name = fSignalsCh1[i]->GetName();
    fResultsCh1.push_back(new SFFitResults(results_name));
   }
@@ -127,7 +127,7 @@ double funDecaySingle(double *x, double *par){
  return dec + constant;
 }
 //------------------------------------------------------------------
-bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, double position){
+bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, int ID){
     
   TString opt;
   if(fVerb) opt = "R0";
@@ -145,8 +145,8 @@ bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, double position){
     return false;
   }
   
-  std::vector <double> positions = fData->GetPositions();
-  int index = SFTools::GetIndex(positions, position);
+  std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
+  int index = SFTools::GetIndex(measurementsIDs, ID);
   double xmin = signal->GetBinCenter(signal->GetMaximumBin())+20.;
   double xmax = signal->GetBinCenter(signal->GetNbinsX());
   
@@ -191,7 +191,7 @@ bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, double position){
 /// Results of the fit are subsequently written in the SFFitResults 
 /// class object. Function returns true if fitting was successful and
 /// fit results are valid.
-bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, double position){
+bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, int ID){
   
   TString opt;
   if(fVerb) opt = "R0";
@@ -209,8 +209,8 @@ bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, double position){
     return false;
   }
   
-  std::vector <double> positions = fData->GetPositions();
-  int index = SFTools::GetIndex(positions, position);
+  std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
+  int index = SFTools::GetIndex(measurementsIDs, ID);
   double xmin = signal->GetBinCenter(signal->GetMaximumBin())+20;
   double xmax = signal->GetBinCenter(signal->GetNbinsX());
 
@@ -265,19 +265,19 @@ bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, double position){
 bool SFTimeConst::FitAllSignals(void){
  
   int n = fData->GetNpoints();
-  std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
   TString fiber = fData->GetFiber();
   
   if(fiber.Contains("LuAG") || fiber.Contains("GAGG")){
     for(int i=0; i<n; i++){
-     FitDecayTimeDouble(fSignalsCh0[i], positions[i]);
-     FitDecayTimeDouble(fSignalsCh1[i], positions[i]);
+     FitDecayTimeDouble(fSignalsCh0[i], measurementsIDs[i]);
+     FitDecayTimeDouble(fSignalsCh1[i], measurementsIDs[i]);
     }
   }
   else if(fiber.Contains("LYSO")){
     for(int i=0; i<n; i++){
-     FitDecayTimeSingle(fSignalsCh0[i], positions[i]);
-     FitDecayTimeSingle(fSignalsCh1[i], positions[i]);
+     FitDecayTimeSingle(fSignalsCh0[i], measurementsIDs[i]);
+     FitDecayTimeSingle(fSignalsCh1[i], measurementsIDs[i]);
     } 
   }
   else{
@@ -422,7 +422,7 @@ bool SFTimeConst::FitAllSignals(void){
 bool SFTimeConst::FitAllSignals(int ch){
  
   int n = fData->GetNpoints();
-  std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
   TString fiber = fData->GetFiber();
   
   if(ch!=0 || ch!=1){
@@ -434,17 +434,17 @@ bool SFTimeConst::FitAllSignals(int ch){
   if(fiber.Contains("LuAG") || fiber.Contains("GAGG")){
     for(int i=0; i<n; i++){
      if(ch==0)       
-       FitDecayTimeDouble(fSignalsCh0[i], positions[i]);
+       FitDecayTimeDouble(fSignalsCh0[i], measurementsIDs[i]);
      else if(ch==1) 
-       FitDecayTimeDouble(fSignalsCh1[i], positions[i]);
+       FitDecayTimeDouble(fSignalsCh1[i], measurementsIDs[i]);
     }
   }
   else if(fiber.Contains("LYSO")){
     for(int i=0; i<n; i++){
      if(ch==0)       
-       FitDecayTimeSingle(fSignalsCh0[i], positions[i]);
+       FitDecayTimeSingle(fSignalsCh0[i], measurementsIDs[i]);
      else if(ch==1) 
-       FitDecayTimeSingle(fSignalsCh1[i], positions[i]);
+       FitDecayTimeSingle(fSignalsCh1[i], measurementsIDs[i]);
     } 
   }
   else{

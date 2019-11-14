@@ -48,6 +48,7 @@ int main(int argc, char **argv){
   
   int npoints  = data->GetNpoints();
   std::vector <double> positions = data->GetPositions();
+  std::vector <int> measurementsIDs = data->GetMeasurementsIDs();
   TString collimator = data->GetCollimator();
   data->Print(); 
   
@@ -80,10 +81,10 @@ int main(int argc, char **argv){
   
   for(int i=0; i<nsig/2; i++){
     number = 100*(i+1);
-    hSigCh0[i]          = data->GetSignal(0, positions[2], "", number, true);
-    hSigCh0[i+(nsig/2)] = data->GetSignal(0, positions[npoints-1], "", number, true);
-    hSigCh1[i]          = data->GetSignal(1, positions[2], "", number, true);
-    hSigCh1[i+(nsig/2)] = data->GetSignal(1, positions[npoints-1], "", number, true);
+    hSigCh0[i]          = data->GetSignal(0, measurementsIDs[2], "", number, true);
+    hSigCh0[i+(nsig/2)] = data->GetSignal(0, measurementsIDs[npoints-1], "", number, true);
+    hSigCh1[i]          = data->GetSignal(1, measurementsIDs[2], "", number, true);
+    hSigCh1[i+(nsig/2)] = data->GetSignal(1, measurementsIDs[npoints-1], "", number, true);
   }
   
   const int nsigav = 3;
@@ -102,18 +103,20 @@ int main(int argc, char **argv){
     PE[2] = 400.;
   }
   
-  hSigAvCh0[0] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+  int ID = SFTools::GetMeasurementID(seriesNo, 50.0);
+  
+  hSigAvCh0[0] = data->GetSignalAverage(0, ID, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
                                         PE[0]-0.5, PE[0]+0.5), 20, true);
-  hSigAvCh0[1] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+  hSigAvCh0[1] = data->GetSignalAverage(0, ID, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
                                         PE[1]-0.5, PE[1]+0.5), 20, true);
-  hSigAvCh0[2] = data->GetSignalAverage(0, 50, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
+  hSigAvCh0[2] = data->GetSignalAverage(0, ID, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
                                         PE[2]-0.5, PE[2]+0.5), 20, true); 
   
-  hSigAvCh1[0] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+  hSigAvCh1[0] = data->GetSignalAverage(1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
                                         PE[0]-0.5, PE[0]+0.5), 20, true);
-  hSigAvCh1[1] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+  hSigAvCh1[1] = data->GetSignalAverage(1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
                                         PE[1]-0.5, PE[1]+0.5), 20, true);
-  hSigAvCh1[2] = data->GetSignalAverage(1, 50, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
+  hSigAvCh1[2] = data->GetSignalAverage(1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
                                         PE[2]-0.5, PE[2]+0.5), 20, true);
   
   //----- drawing spectra

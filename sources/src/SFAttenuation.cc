@@ -17,10 +17,10 @@ ClassImp(SFAttenuation);
 /// \param seriesNo is number of experimental series to be analyzed. 
 SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
                                             fData(nullptr),
-                                            fAttnLen(-1),
-                                            fAttnErr(-1),
-                                            fA0(-1),
-                                            fA0Err(-1),
+                                            fAttnLenPol1(-1),
+                                            fAttnLenPol1Err(-1),
+                                            fAttnLenPol3(-1),
+                                            fAttnLenPol3Err(-1),
                                             fAttnGraph(nullptr),
                                             fAttnLenCh0(-1),
                                             fAttnLenCh1(-1),
@@ -68,10 +68,11 @@ bool SFAttenuation::AttAveragedCh(void){
   double mean, sigma;
   double fit_min, fit_max;
   std::vector <TF1*> fun;
+  
   TString gname = Form("att_s%i", fSeriesNo);
   fAttnGraph = new TGraphErrors(npoints);
   fAttnGraph->GetXaxis()->SetTitle("source position [mm]");
-  fAttnGraph->GetYaxis()->SetTitle("ln(M_{FB})");
+  fAttnGraph->GetYaxis()->SetTitle("ln(M_{LR})");
   fAttnGraph->SetTitle(gname);
   fAttnGraph->SetName(gname);
   fAttnGraph->SetMarkerStyle(4);
@@ -104,14 +105,20 @@ bool SFAttenuation::AttAveragedCh(void){
   TF1 *fpol1 = new TF1("fpol1", "pol1", positions[0], positions[npoints-1]);
   fpol1->SetParameters(-0.15, 0.005);
   fAttnGraph->Fit(fpol1, "QR");
-  fAttnLen = fabs(1./fpol1->GetParameter(1));
-  fAttnErr = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
-  fA0 = fpol1->GetParameter(0);
-  fA0Err = fpol1->GetParError(0);
-  
-  std::cout << "Attenuation lenght is: " << fAttnLen << " +/- " << fAttnErr << " mm\n" << std::endl;
+  fAttnLenPol1 = fabs(1./fpol1->GetParameter(1));
+  fAttnLenPol1Err = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
+
+  std::cout << "Attenuation lenght from pol1 fit is: " << fAttnLenPol1  
+            << " +/- " << fAttnLenPol1Err << " mm\n" << std::endl;
   
   return true;
+}
+//------------------------------------------------------------------
+double myPol3(double *x, double *par){
+    
+  double xx = (x[0]-par[4]);  
+  double f = par[0] + par[1]*(xx + par[2]*pow(xx,2) + par[3]*pow(xx,3));
+  return f;  
 }
 //------------------------------------------------------------------
 bool SFAttenuation::Fit3rdOrder(void){
@@ -119,15 +126,20 @@ bool SFAttenuation::Fit3rdOrder(void){
   if(fAttnGraph==nullptr)
       AttAveragedCh();
   
-  double npoints = fData->GetNpoints();
-  std::vector <double> positions = fData->GetPositions();
-  
-  TF1 *fpol3 = new TF1("fpol3", "pol3",positions[0],positions[npoints-1]); 
+  TF1 *fpol3 = new TF1("fpol3", myPol3, -50, 150, 5); 
+  double fiberLengthHalf = fData->GetFiberLength()/2;
   fpol3->SetParameter(0, fAttnGraph->GetFunction("fpol1")->GetParameter(0));
   fpol3->SetParameter(1, fAttnGraph->GetFunction("fpol1")->GetParameter(1));
+  fpol3->FixParameter(4, fiberLengthHalf);
   fpol3->SetLineColor(kBlue-7);
   
   fAttnGraph->Fit(fpol3, "QR+");
+  
+  fAttnLenPol3 = fabs(1./fpol3->GetParameter(1));
+  fAttnLenPol3Err =  fpol3->GetParError(1)/pow(fpol3->GetParameter(1), 2);
+  
+  std::cout << "Attenuation lenght from pol3 fit is: " << fAttnLenPol3  
+            << " +/- " << fAttnLenPol3Err << " mm\n" << std::endl;
   
   return true;
 }
@@ -213,50 +225,31 @@ TGraphErrors* SFAttenuation::GetAttGraph(void){
   return fAttnGraph;
 }
 //------------------------------------------------------------------
-///Returns attenuation length determined by averaged channels method i.e. AttAveragedCh().
-double SFAttenuation::GetAttLength(void){
-    
-  if(fAttnLen==-1){
-    std::cerr << "##### Error in SFAttenuation::GetAttLength(). Incorrect value!" << std::endl;
-    std::abort();
-  }
-  return fAttnLen;
-}
-//------------------------------------------------------------------
-///Returns error on attenuation length determined by averaged channels 
-///method i.e. AttAveragedCh().
-double SFAttenuation::GetAttError(void){
-    
-  if(fAttnErr==-1){
-    std::cerr << "##### Error in SFAttenuation::GetAttError(). Incorrect value!" << std::endl;
-    std::abort();
-  }
-  return fAttnErr;
-}
-//------------------------------------------------------------------
 ///Returns attenuation lenght and its error in form of a vector. Order in the vector:
 ///attenuation length, error. Both are in mm.
-std::vector <double> SFAttenuation::GetAttenuation(void){
+std::vector <double> SFAttenuation::GetAttLenPol1(void){
     
-  std::vector <double> temp;
-  if(fAttnLen==-1 || fAttnErr==-1){
-   std::cerr << "##### Error in SFAttenuation::GetAttenuation(). Incorrect attenuation length or error" << std::endl;
-   std::cerr << "\t" << fAttnLen << "\t" << fAttnErr << std::endl;
-   std::abort();
-  }
-  temp.push_back(fAttnLen);
-  temp.push_back(fAttnErr);
-  return temp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFAttenuation::GetA0(void){
-   
   std::vector <double> tmp;
-  tmp.push_back(fA0); 
-  tmp.push_back(fA0Err);
+  tmp.push_back(fAttnLenPol1);
+  tmp.push_back(fAttnLenPol1Err);
   
   if(tmp[0]==-1 || tmp[1]==-1){
-    std::cerr << "##### Error in SFAttenuation::GetA0! Incorrect values!" << std::endl;
+   std::cerr << "##### Error in SFAttenuation::GetAttLenPol1()! Incorrect attenuation length or error" << std::endl;
+   std::cerr << "\t" << fAttnLenPol1 << "\t" << fAttnLenPol1Err << std::endl;
+   std::abort();
+  }
+  
+  return tmp;
+}
+//------------------------------------------------------------------
+std::vector <double> SFAttenuation::GetAttLenPol3(void){
+   
+  std::vector <double> tmp;
+  tmp.push_back(fAttnLenPol3); 
+  tmp.push_back(fAttnLenPol3Err);
+  
+  if(tmp[0]==-1 || tmp[1]==-1){
+    std::cerr << "##### Error in SFAttenuation::GetAttnLenPol3()! Incorrect values!" << std::endl;
     std::cerr << tmp[0] << " +/- " << tmp[1] << std::endl;
     std::abort();
   }
@@ -329,29 +322,6 @@ std::vector <double> SFAttenuation::GetAttenuation(int ch){
     temp.push_back(fAttnErrCh1);
   }
   return temp;
-}
-//------------------------------------------------------------------
-///Returns attenuation length for requested channel determined by separate channels method
-double SFAttenuation::GetAttLength(int ch){
- 
-  if((ch==0 && fAttnLenCh0==-1) || (ch==1 && fAttnLenCh1==-1)){
-    std::cerr << "##### Error in SFAttenuation:GetAttLength(int). Incorrect value!" << std::endl;
-    std::abort();
-  }
-  if(ch==0) return fAttnLenCh0;
-  else if(ch==1) return fAttnLenCh1;
-}
-//------------------------------------------------------------------
-///Returns error on attenuation length for requested channel determined by 
-///separate channels method
-double SFAttenuation::GetAttError(int ch){
-    
-  if((ch==0 && fAttnErrCh0==-1) || (ch==1 && fAttnErrCh1==-1)){
-    std::cerr << "##### Error in SFAttenuation:GetAttError(int). Incorrect value!" << std::endl;
-    std::abort();
-  }
-  if(ch==0) return fAttnErrCh0;
-  else if(ch==1) return fAttnErrCh1;
 }
 //------------------------------------------------------------------
 ///Prints details of SFAttenuation class object.

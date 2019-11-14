@@ -67,7 +67,7 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
   }
   
   if(SiPM=="Hamamatsu"){
-    fPDE       = 0.4; 
+    fPDE       = 0.32; // FIXME
     fCrossTalk = 0.03; 
   }
   else if(SiPM=="SensL"){
@@ -155,7 +155,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
-  std::vector <double> attenuation = fAtt->GetAttenuation();
+  std::vector <double> attenuation = fAtt->GetAttLenPol1();
   std::vector <SFPeakFinder*> peakFin;
   
   for(int i=0; i<npoints; i++){

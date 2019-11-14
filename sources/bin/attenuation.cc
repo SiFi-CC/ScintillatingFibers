@@ -67,7 +67,8 @@ int main(int argc, char **argv){
   std::vector <TH1D*> attRatios = att->GetRatios();
   TGraphErrors *attGraph        = att->GetAttGraph();
   TGraphErrors *attGraphPol3    = (TGraphErrors*)attGraph->Clone("attGraphPol3");
-  std::vector <double> attlen   = att->GetAttenuation();
+  std::vector <double> attlenPol1 = att->GetAttLenPol1();
+  std::vector <double> attlenPol3 = att->GetAttLenPol3(); 
   
   //----- separate channels method
   att->AttSeparateCh(0);
@@ -93,7 +94,7 @@ int main(int argc, char **argv){
   attGraph->GetFunction("fpol3")->Delete();
   attGraph->Draw("AP");
   text.SetTextSize(0.04);
-  text.DrawLatex(0.2, 0.8, Form("L_{att} = (%.2f +/- %.2f) mm", attlen[0], attlen[1]));
+  text.DrawLatex(0.2, 0.8, Form("L_{att} = (%.2f +/- %.2f) mm", attlenPol1[0], attlenPol1[1]));
   
   can_averaged_ch->cd(2);
   gPad->SetGrid(1,1);
@@ -110,6 +111,7 @@ int main(int argc, char **argv){
                 funPol3->GetParameter(2), funPol3->GetParError(2)));
   text.DrawLatex(0.2, 0.65, Form("A_{3} = %.4e +/- %.4e",  
                 funPol3->GetParameter(3), funPol3->GetParError(3)));
+  text.DrawLatex(0.2, 0.50, Form("L_{att} = (%.2f +/- %.2f) mm", attlenPol3[0], attlenPol3[1]));
   
   TCanvas *can_ratios = new TCanvas("can_ratios", "can_ratios", 1200, 1200);
   can_ratios->Divide(3,3);
@@ -218,7 +220,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "ATTENUATION_LENGTH";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), attlenCh0[0], attlenCh0[1], attlenCh1[0], attlenCh1[1], attlen[0], attlen[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), attlenCh0[0], attlenCh0[1], attlenCh1[0], attlenCh1[1], attlenPol1[0], attlenPol1[1], attlenPol3[0], attlenPol3[1]);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

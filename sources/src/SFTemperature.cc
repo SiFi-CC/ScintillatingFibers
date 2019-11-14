@@ -10,7 +10,7 @@
 
 #include "SFTemperature.hh"
 
-ClassImp(SFTools);
+ClassImp(SFTemperature);
 
 //------------------------------------------------------------------
 SFTemperature::SFTemperature(int seriesNo): fSeriesNo(seriesNo),

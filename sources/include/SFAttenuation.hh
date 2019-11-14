@@ -26,13 +26,13 @@
 class SFAttenuation : public TObject{
  
 private:
-  int                 fSeriesNo;    ///< Number of experimental series to be analyzed
-  SFData*             fData;        ///< SFData object of the analyzed series
-  double              fAttnLen;     ///< Attenuation length determined with averaged channels method [mm]
-  double              fAttnErr;     ///< Error on attenuation length fAttnLen [mm]
-  double              fA0;
-  double              fA0Err;
-  std::vector <TH1D*> fRatios;      ///< Vector containing histograms of signal ratios from both channels, 
+  int                 fSeriesNo;       ///< Number of experimental series to be analyzed
+  SFData*             fData;           ///< SFData object of the analyzed series
+  double              fAttnLenPol1;    ///< Attenuation length determined with averaged channels method [mm]
+  double              fAttnLenPol1Err; ///< Error on attenuation length fAttnLen [mm]
+  double              fAttnLenPol3;
+  double              fAttnLenPol3Err;
+  std::vector <TH1D*> fRatios;          ///< Vector containing histograms of signal ratios from both channels, 
                                     ///< for whole series 
   TGraphErrors* fAttnGraph;         ///< Attenuation graph i.e. ln(M_{FB}) vs. source position
   double        fAttnLenCh0;        ///< Attenuation length for channel 0
@@ -53,20 +53,15 @@ private:
   bool                 AttAveragedCh(void);
   bool                 Fit3rdOrder(void);
   std::vector <TH1D*>  GetRatios(void);
-  std::vector <double> GetAttenuation(void);
-  std::vector <double> GetA0(void);
+  std::vector <double> GetAttLenPol1(void);
+  std::vector <double> GetAttLenPol3(void);
   TGraphErrors*        GetAttGraph(void);
-  double               GetAttLength(void);
-  double               GetAttError(void);
   
   bool                 AttSeparateCh(int ch);
   std::vector <TH1D*>  GetSpectra(int ch);
   std::vector <TH1D*>  GetPeaks(int ch);
   std::vector <double> GetAttenuation(int ch);
   TGraphErrors*        GetAttGraph(int ch);
-  double               GetAttLength(int ch);
-  double               GetAttError(int ch);
-  
   
   void Print(void);
   

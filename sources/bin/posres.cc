@@ -60,29 +60,21 @@ int main(int argc, char **argv){
     return 1;
   }
   
-  posres->AnalyzePositionResMLR();
-  TGraphErrors *gMLR_MeanVsPos   = posres->GetMeanGraph("MLR");
-  TGraphErrors *gMLR_PosResVsPos = posres->GetPositionResGraph("MLR");
-  std::vector <TH1D*> MLR_ratios = posres->GetRatios("MLR");
-  std::vector <double> MLR_results   = posres->GetPositionResSeries("MLR");
-  std::vector <double> MLR_posRes    = posres->GetPositionRes("MLR");
-  std::vector <double> MLR_posResErr = posres->GetPositionResError("MLR");
+  posres->AnalyzePositionRes();
+  TGraphErrors *gPosRecoVsPos     = posres->GetPositionRecoGraph();
+  TGraphErrors *gPosResVsPos      = posres->GetPositionResGraph();
+  std::vector <TH1D*> hPosReco    = posres->GetPositionRecoDist();
+  std::vector <double> results    = posres->GetPositionResSeries();
+  std::vector <double> posRes     = posres->GetPositionRes();
+  std::vector <double> posResErr  = posres->GetPositionResError();
+  std::vector <double> posReco    = posres->GetPositionReco();
+  std::vector <double> posRecoErr = posres->GetPositionRecoError();
   
-  posres->AnalyzePositionResY();
-  TGraphErrors *gY_MeanVsPos   = posres->GetMeanGraph("Y");
-  TGraphErrors *gY_PosResVsPos = posres->GetPositionResGraph("Y");
-  std::vector <TH1D*> Y_ratios = posres->GetRatios("Y");
-  std::vector <double> Y_results   = posres->GetPositionResSeries("Y");
-  std::vector <double> Y_posRes    = posres->GetPositionRes("Y");
-  std::vector <double> Y_posResErr = posres->GetPositionResError("Y");
-  
-  std::vector <TH1D*> specCh0 = posres->GetSpectra(0);
-  std::vector <TH1D*> specCh1 = posres->GetSpectra(1);
+  std::vector <TH1D*> spec = posres->GetSpectra();
   
   std::vector <SFPeakFinder*> peakFinCh0;
   std::vector <SFPeakFinder*> peakFinCh1;
-  double xminCh0, xmaxCh0;
-  double xminCh1, xmaxCh1;
+  double xmin, xmax;
   
   TLatex text;
   text.SetNDC(true);
@@ -92,68 +84,40 @@ int main(int argc, char **argv){
   line.SetLineColor(kRed);
   line.SetLineWidth(1);
   
-  TCanvas *can_ratMLR = new TCanvas("can_ratMLR", "can_ratMLR", 1200, 1200);
-  can_ratMLR->DivideSquare(npoints);
+  TCanvas *can_posreco = new TCanvas("can_posreco", "can_posreco", 1200, 1200);
+  can_posreco->DivideSquare(npoints);
   
-  TCanvas *can_ratY = new TCanvas("can_ratY", "can_ratY", 1200, 1200);
-  can_ratY->DivideSquare(npoints);
-  
-  TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
-  can_spec_ch0->DivideSquare(npoints);
-  
-  TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1", "can_spec_ch1", 1200, 1200);
-  can_spec_ch1->DivideSquare(npoints);
+  TCanvas *can_spec = new TCanvas("can_spec", "can_spec", 1200, 1200);
+  can_spec->DivideSquare(npoints);
   
   for(int i=0; i<npoints; i++){
-    can_ratMLR->cd(i+1);
-    gPad->SetGrid(1,1);
-    MLR_ratios[i]->Draw();
-    text.DrawLatex(0.3, 0.8, Form("#sigma = (%.2f +/- %.2f) mm", MLR_posRes[i], MLR_posResErr[i]));
     
-    can_ratY->cd(i+1);
+    can_posreco->cd(i+1);
     gPad->SetGrid(1,1);
-    Y_ratios[i]->Draw();
-    text.DrawLatex(0.3, 0.8, Form("#sigma = (%.2f +/- %.2f) mm", Y_posRes[i], Y_posResErr[i]));
+    hPosReco[i]->Draw();
+    text.DrawLatex(0.3, 0.8, Form("#mu = (%.2f +/- %.2f) mm", posReco[i], posRecoErr[i]));
+    text.DrawLatex(0.3, 0.7, Form("#sigma = (%.2f +/- %.2f) mm", posRes[i], posResErr[i]));
     
-    peakFinCh0.push_back(new SFPeakFinder(specCh0[i], 0));
-    peakFinCh0[i]->FindPeakRange(xminCh0, xmaxCh0);
-    can_spec_ch0->cd(i+1);
+    peakFinCh0.push_back(new SFPeakFinder(spec[i], 0));
+    peakFinCh0[i]->FindPeakRange(xmin, xmax);
+    can_spec->cd(i+1);
     gPad->SetGrid(1,1);
-    specCh0[i]->Draw();
-    line.DrawLine(xminCh0, 0, xminCh0, specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin()));
-    line.DrawLine(xmaxCh0, 0, xmaxCh0, specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin()));
-    
-    peakFinCh1.push_back(new SFPeakFinder(specCh1[i], 0));
-    peakFinCh1[i]->FindPeakRange(xminCh1, xmaxCh1);
-    can_spec_ch1->cd(i+1);
-    gPad->SetGrid(1,1);
-    specCh1[i]->Draw();
-    line.DrawLine(xminCh1, 0, xminCh1, specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin()));
-    line.DrawLine(xmaxCh1, 0, xmaxCh1, specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin()));
+    spec[i]->Draw();
+    line.DrawLine(xmin, 0, xmin, spec[i]->GetBinContent(spec[i]->GetMaximumBin()));
+    line.DrawLine(xmax, 0, xmax, spec[i]->GetBinContent(spec[i]->GetMaximumBin()));
   }
   
-  TCanvas *can_posresMLR = new TCanvas("can_posresMLR", "can_poresMLR", 1000, 800);
-  can_posresMLR->Divide(2,1);
+  TCanvas *can_posres = new TCanvas("can_posres", "can_pores", 1000, 800);
+  can_posres->Divide(2,1);
   
-  can_posresMLR->cd(1);
+  can_posres->cd(1);
   gPad->SetGrid(1,1);
-  gMLR_MeanVsPos->Draw("AP");
+  gPosRecoVsPos->Draw("AP");
   
-  can_posresMLR->cd(2);
+  can_posres->cd(2);
   gPad->SetGrid(1,1);
-  gMLR_PosResVsPos->Draw("AP");
-  text.DrawLatex(0.3, 0.8, Form("PR = (%.2f +/- %.2f) mm", MLR_results[0], MLR_results[1]));
-  
-  TCanvas *can_posresY = new TCanvas("pos_reco", "pos_reco", 1000, 800);
-  can_posresY->Divide(2,1);
-  
-  can_posresY->cd(1);
-  gPad->SetGrid(1,1);
-  gY_MeanVsPos->Draw("AP");
-  
-  can_posresY->cd(2);
-  gPad->SetGrid(1,1);
-  gY_PosResVsPos->Draw("AP");
+  gPosResVsPos->Draw("AP");
+  text.DrawLatex(0.3, 0.8, Form("PR = (%.2f +/- %.2f) mm", results[0], results[1]));
   
   //----- saving
   TString fname = Form("posres_series%i.root", seriesNo);
@@ -175,17 +139,14 @@ int main(int argc, char **argv){
     return 1;
   }
   
-  can_ratMLR->Write();
-  can_ratY->Write();
-  can_spec_ch0->Write();
-  can_spec_ch1->Write();
-  can_posresMLR->Write();
-  can_posresY->Write();
+  can_posreco->Write();
+  can_spec->Write();
+  can_posres->Write();
   file->Close();
   
   //----- writing results to the data base
   TString table = "POSITION_RESOLUTION";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, POSITION_RES_MLR, POSITION_RES_MLR_ERR, POSITION_RES_Y, POSITION_RES_Y_ERR) VALUES(%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), MLR_results[0], MLR_results[1], Y_results[0], Y_results[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, POSITION_RES, POSITION_RES_ERR) VALUES(%i, '%s', %f, %f)", table.Data(), seriesNo, fname_full.Data(), results[0], results[1]);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

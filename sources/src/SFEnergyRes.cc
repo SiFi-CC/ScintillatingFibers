@@ -156,6 +156,7 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   }
   
   att->AttAveragedCh();
+  std::vector <double> attlen = att->GetAttLenPol1();
   
   TString cut_ch0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
   TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
@@ -163,16 +164,16 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   
   std::vector <double> customNumCh0;
   customNumCh0.resize(2);
-  customNumCh0[1] = att->GetAttLength();
+  customNumCh0[1] = attlen[0]; 
   
   std::vector <double> customNumCh1;
   customNumCh1.resize(2);
-  customNumCh1[1] = att->GetAttLength();
+  customNumCh1[1] = attlen[0]; 
   
   std::vector <double> customNumSum;
   customNumSum.resize(4);
-  customNumSum[1] = att->GetAttLength();
-  customNumSum[3] = att->GetAttLength();
+  customNumSum[1] = attlen[0]; 
+  customNumSum[3] = attlen[0];
   
   TString gname = Form("ER_s%i_ave", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
