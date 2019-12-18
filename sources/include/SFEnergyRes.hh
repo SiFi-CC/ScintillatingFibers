@@ -19,17 +19,23 @@
 #include "SFAttenuation.hh"
 #include <iostream>
 
+struct EnergyResResults{
+    
+    double fEnergyResCh0    = -1;
+    double fEnergyResCh0Err = -1;
+    
+    double fEnergyResCh1    = -1;
+    double fEnergyResCh1Err = -1;
+    
+    double fEnergyResSum    = -1;
+    double fEnergyResSumErr = -1;
+};
+
 class SFEnergyRes: public TObject{
  
 private:
   int     fSeriesNo;         ///< Number of experimental series to be analyzed
   SFData *fData;             ///< SFData object of the analyzed series
-  double  fEnergyResCh0;     ///< Energy resolution of Ch0 for all positions [%] 
-  double  fEnergyResCh0Err;  ///< Error on fEnergyResCh0 [%]
-  double  fEnergyResCh1;     ///< Energy resolution of Ch1 for all positions [%] 
-  double  fEnergyResCh1Err;  ///< Error on fEnergyResCh1 [%]
-  double  fEnergyResSum;     ///< Energy resolution of summed spectra for all positions [%] 
-  double  fEnergyResSumErr;  ///< Error on fEnergyResSum [%]
   
   TGraphErrors *fEnergyResGraphCh0;  ///< Energy resolution graph for channel 0
   TGraphErrors *fEnergyResGraphCh1;  ///< Energy resolution graph for channel 1
@@ -49,6 +55,8 @@ private:
   std::vector <TH1D*> fPeaksCh1;
   std::vector <TH1D*> fPeaksSum;
   
+  EnergyResResults fResults;
+  
 public:
   SFEnergyRes(int seriesNo);
   ~SFEnergyRes();
@@ -56,9 +64,8 @@ public:
   bool CalculateEnergyRes(int ch);
   bool CalculateEnergyRes(void);
   
-  std::vector <double> GetEnergyResolution(void);
-  std::vector <double> GetEnergyResolution(int ch);
-  TGraphErrors*        GetEnergyResolutionGraph();
+  EnergyResResults     GetResults(void) { return fResults; };
+  TGraphErrors*        GetEnergyResolutionGraph(void);
   TGraphErrors*        GetEnergyResolutionGraph(int ch);
   std::vector <TH1D*>  GetSpectra(int ch);
   std::vector <TH1D*>  GetSpectraCorrected(int ch);

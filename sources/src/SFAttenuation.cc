@@ -17,18 +17,10 @@ ClassImp(SFAttenuation);
 /// \param seriesNo is number of experimental series to be analyzed. 
 SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
                                             fData(nullptr),
-                                            fAttnLenPol1(-1),
-                                            fAttnLenPol1Err(-1),
-                                            fAttnLenPol3(-1),
-                                            fAttnLenPol3Err(-1),
                                             fAttnGraph(nullptr),
                                             fSigmaGraph(nullptr),
-                                            fAttnLenCh0(-1),
-                                            fAttnLenCh1(-1),
-                                            fAttnErrCh0(-1),
-                                            fAttnErrCh1(-1),
                                             fAttnGraphCh0(nullptr),
-                                            fAttnGraphCh1(nullptr){
+                                            fAttnGraphCh1(nullptr) {
   
   try{
     fData = new SFData(fSeriesNo);
@@ -116,11 +108,12 @@ bool SFAttenuation::AttAveragedCh(void){
   TF1 *fpol1 = new TF1("fpol1", "pol1", positions[0], positions[npoints-1]);
   fpol1->SetParameters(-0.15, 0.005);
   fAttnGraph->Fit(fpol1, "QR");
-  fAttnLenPol1 = fabs(1./fpol1->GetParameter(1));
-  fAttnLenPol1Err = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
+  
+  fResults.fAttCombPol1    = fabs(1./fpol1->GetParameter(1));
+  fResults.fAttCombPol1Err = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
 
-  std::cout << "Attenuation lenght from pol1 fit is: " << fAttnLenPol1  
-            << " +/- " << fAttnLenPol1Err << " mm\n" << std::endl;
+  std::cout << "Attenuation lenght from pol1 fit is: " << fResults.fAttCombPol1  
+            << " +/- " << fResults.fAttCombPol1Err << " mm\n" << std::endl;
   
   return true;
 }
@@ -147,11 +140,11 @@ bool SFAttenuation::Fit3rdOrder(void){
   
   fAttnGraph->Fit(fpol3, "QR+");
   
-  fAttnLenPol3 = fabs(1./fpol3->GetParameter(1));
-  fAttnLenPol3Err =  fpol3->GetParError(1)/pow(fpol3->GetParameter(1), 2);
+  fResults.fAttCombPol3    = fabs(1./fpol3->GetParameter(1));
+  fResults.fAttCombPol3Err = fpol3->GetParError(1)/pow(fpol3->GetParameter(1), 2);
   
-  std::cout << "Attenuation lenght from pol3 fit is: " << fAttnLenPol3  
-            << " +/- " << fAttnLenPol3Err << " mm\n" << std::endl;
+  std::cout << "Attenuation lenght from pol3 fit is: " << fResults.fAttCombPol3  
+            << " +/- " << fResults.fAttCombPol3Err << " mm\n" << std::endl;
   
   return true;
 }
@@ -205,30 +198,19 @@ bool SFAttenuation::AttSeparateCh(int ch){
   std::cout << "\n\tAttenuation for channel "<< ch << ": " << attenuation << " +/- " << att_error << " mm\n" << std::endl;
   
   if(ch==0){
-    fAttnLenCh0 = attenuation;
-    fAttnErrCh0 = att_error;
-    fSpectraCh0 = spectra;
+    fResults.fAttCh0    = attenuation;
+    fResults.fAttCh0Err = att_error;
+    fSpectraCh0   = spectra;
     fAttnGraphCh0 = graph;
   }
   else if(ch==1){
-    fAttnLenCh1 = attenuation;
-    fAttnErrCh1 = att_error;
-    fSpectraCh1 = spectra;
+    fResults.fAttCh1    = attenuation;
+    fResults.fAttCh1Err = att_error;
+    fSpectraCh1   = spectra;
     fAttnGraphCh1 = graph;
   }
   
   return true;
-}
-//------------------------------------------------------------------
-///Returns vector containing histograms with signal ratios from both channels. 
-///Histograms are used during averaged channels analysis i.e. in AttAveragedCh().
-std::vector <TH1D*> SFAttenuation::GetRatios(void){
-    
-  if(fRatios.empty()){
-    std::cerr << "#### Error in SFAttenuation::GetRatios(). Empty vector!" << std::endl;
-    std::abort();
-   }
-   return fRatios;
 }
 //------------------------------------------------------------------
 ///Returns attenuation graph created in averaged channels method i.e. AttAveragedCh().
@@ -239,15 +221,6 @@ TGraphErrors* SFAttenuation::GetAttGraph(void){
     std::abort();
   }
   return fAttnGraph;
-}
-//------------------------------------------------------------------
-TGraphErrors* SFAttenuation::GetSigmaGraph(void){
-    
-  if(fSigmaGraph==nullptr){
-    std::cerr << "##### Error in SFAttenuation::GetSigmaGraph(). Empty pointer!" << std::endl;
-    std::abort();
-  }
-  return fSigmaGraph;
 }
 //------------------------------------------------------------------
 ///Returns attenuation graph for requested channel ch. Graph produced 
@@ -262,36 +235,13 @@ TGraphErrors* SFAttenuation::GetAttGraph(int ch){
    else if(ch==1) return fAttnGraphCh1;
 }
 //------------------------------------------------------------------
-///Returns attenuation lenght and its error in form of a vector. Order in the vector:
-///attenuation length, error. Both are in mm.
-std::vector <double> SFAttenuation::GetAttLenPol1(void){
+TGraphErrors* SFAttenuation::GetSigmaGraph(void){
     
-  std::vector <double> tmp;
-  tmp.push_back(fAttnLenPol1);
-  tmp.push_back(fAttnLenPol1Err);
-  
-  if(tmp[0]==-1 || tmp[1]==-1){
-   std::cerr << "##### Error in SFAttenuation::GetAttLenPol1()! Incorrect attenuation length or error" << std::endl;
-   std::cerr << "\t" << fAttnLenPol1 << "\t" << fAttnLenPol1Err << std::endl;
-   std::abort();
-  }
-  
-  return tmp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFAttenuation::GetAttLenPol3(void){
-   
-  std::vector <double> tmp;
-  tmp.push_back(fAttnLenPol3); 
-  tmp.push_back(fAttnLenPol3Err);
-  
-  if(tmp[0]==-1 || tmp[1]==-1){
-    std::cerr << "##### Error in SFAttenuation::GetAttnLenPol3()! Incorrect values!" << std::endl;
-    std::cerr << tmp[0] << " +/- " << tmp[1] << std::endl;
+  if(fSigmaGraph==nullptr){
+    std::cerr << "##### Error in SFAttenuation::GetSigmaGraph(). Empty pointer!" << std::endl;
     std::abort();
   }
-  
-  return tmp;
+  return fSigmaGraph;
 }
 //------------------------------------------------------------------
 ///Returns vector containing PE spectra used in determination of attenuation
@@ -321,32 +271,15 @@ std::vector <TH1D*> SFAttenuation::GetPeaks(int ch){
   else if(ch==1) return fPeaksCh1;
 }
 //------------------------------------------------------------------
-///Returns determined value of attenuation length and its error in a vector. 
-///Order in a vector: attenuation length, error, both in mm. Values produced in
-///AttSeparateCh().
-///\param ch - channel number.
-std::vector <double> SFAttenuation::GetAttenuation(int ch){
-  
-  std::vector <double> temp; 
-  if(ch==0){
-    if(fAttnLenCh0==-1 || fAttnErrCh0==-1){
-      std::cerr << "##### Error in SFAttenuation::GetAttenuation(int). Incorrect value!" << std::endl;
-      std::cerr << fAttnLenCh0 << "\t" << fAttnErrCh0 << std::endl;
-      std::abort();
-    }
-    temp.push_back(fAttnLenCh0);
-    temp.push_back(fAttnErrCh0);
-  }
-  else if(ch==1){
-    if(fAttnLenCh1==-1 || fAttnErrCh1==-1){
-      std::cerr << "##### Error in SFAttenuation::GetAttenuation(int). Incorrect value!" << std::endl;
-      std::cerr << fAttnLenCh1 << "\t" << fAttnErrCh1 << std::endl;
-      std::abort();
-    }
-    temp.push_back(fAttnLenCh1);
-    temp.push_back(fAttnErrCh1);
-  }
-  return temp;
+///Returns vector containing histograms with signal ratios from both channels. 
+///Histograms are used during averaged channels analysis i.e. in AttAveragedCh().
+std::vector <TH1D*> SFAttenuation::GetRatios(void){
+    
+  if(fRatios.empty()){
+    std::cerr << "#### Error in SFAttenuation::GetRatios(). Empty vector!" << std::endl;
+    std::abort();
+   }
+   return fRatios;
 }
 //------------------------------------------------------------------
 ///Prints details of SFAttenuation class object.

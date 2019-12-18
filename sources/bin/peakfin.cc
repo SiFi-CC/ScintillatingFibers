@@ -65,9 +65,9 @@ int main(int argc, char **argv){
   std::vector <SFPeakFinder*> pfAve;
   
   std::vector <double> customNum(4);
-  std::vector <double> attlen = att->GetAttLenPol1();
-  customNum[1] = attlen[0];
-  customNum[3] = attlen[0];
+  AttenuationResults results = att->GetResults();
+  customNum[1] = results.fAttCombPol1;
+  customNum[3] = results.fAttCombPol1;
   double distCh0, distCh1;
   TString cut = "ch_0.fPE>0 && ch_1.fPE>0 && ch_0.fT0>0 && ch_1.fT0>0";
   

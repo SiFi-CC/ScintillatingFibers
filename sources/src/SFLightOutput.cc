@@ -18,18 +18,6 @@ ClassImp(SFLightOutput);
 SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
                                             fPDE(-1), 
                                             fCrossTalk(-1),
-                                            fLightOut(-1),
-                                            fLightOutErr(-1),
-                                            fLightOutCh0(-1),
-                                            fLightOutCh0Err(-1),
-                                            fLightOutCh1(-1),
-                                            fLightOutCh1Err(-1),
-                                            fLightCol(-1),
-                                            fLightColErr(-1),
-                                            fLightColCh0(-1),
-                                            fLightColCh0Err(-1),
-                                            fLightColCh1(-1),
-                                            fLightColCh1Err(-1),
                                             fLightOutGraph(nullptr),
                                             fLightOutCh0Graph(nullptr),
                                             fLightOutCh1Graph(nullptr),
@@ -67,15 +55,6 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
   
   fCrossTalk = GetCrossTalk();
   fPDE = GetPDE();
-  
-  try{
-    fAtt = new SFAttenuation(fSeriesNo);
-  }
-  catch(const char *message){
-    std::cout << message << std::endl;
-    throw "##### Exception in SFLightOutput constructor!";
-  }
-  fAtt->AttAveragedCh();
 }
 //------------------------------------------------------------------
 double SFLightOutput::GetCrossTalk(void){
@@ -251,12 +230,12 @@ bool SFLightOutput::CalculateLightOut(void){
     lightOutAvErr += 1./pow(lightOutErr, 2);
   }
   
-  fLightOut = lightOutAv/lightOutAvErr;
-  fLightOutErr = sqrt(1./lightOutAvErr);
+  fLightOutResults.fLO    = lightOutAv/lightOutAvErr;
+  fLightOutResults.fLOErr = sqrt(1./lightOutAvErr);
   fLightOutGraph = graph;
   
-  std::cout << "Averaged and summed light output: " << fLightOut 
-            <<" +/- " << fLightOutErr << " ph/MeV" << std::endl;
+  std::cout << "Averaged and summed light output: " << fLightOutResults.fLO
+            <<" +/- " << fLightOutResults.fLOErr << " ph/MeV" << std::endl;
 
   return true;  
 }
@@ -270,8 +249,22 @@ bool SFLightOutput::CalculateLightOut(int ch){
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
-  std::vector <double> attenuation = fAtt->GetAttLenPol1();
   std::vector <SFPeakFinder*> peakFin;
+  
+  SFAttenuation *att;
+  
+  try{
+    att = new SFAttenuation(fSeriesNo);
+  }
+  catch(const char *message){
+    std::cout << message << std::endl;
+    throw "##### Exception in SFLightOutput::CalculateLightOut()!";
+    return false;
+  }
+  
+  att->AttAveragedCh();
+  
+  AttenuationResults results = att->GetResults();
   
   for(int i=0; i<npoints; i++){
     if(ch==0)
@@ -308,9 +301,9 @@ bool SFLightOutput::CalculateLightOut(int ch){
     if(ch==1) distance = 100.-positions[i];
     parameters = peakFin[i]->GetParameters();
     
-    lightOut = parameters[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/attenuation[0]);
+    lightOut = parameters[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/results.fAttCombPol1);
     lightOutErr = sqrt((pow(lightOut, 2)*pow(parameters[1], 2)/pow(parameters[0], 2)) + 
-                       (pow(lightOut, 2)*pow(attenuation[1], 2)/pow(attenuation[0], 4)));
+                       (pow(lightOut, 2)*pow(results.fAttCombPol1Err, 2)/pow(results.fAttCombPol1, 4)));
     graph->SetPoint(i, positions[i], lightOut);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
     lightOutAv += lightOut * (1./pow(lightOutErr, 2));
@@ -321,13 +314,13 @@ bool SFLightOutput::CalculateLightOut(int ch){
   lightOutAvErr = sqrt(1./lightOutAvErr);
   
   if(ch==0){
-    fLightOutCh0 = lightOutAv;
-    fLightOutCh0Err = lightOutAvErr;
+    fLightOutResults.fLOCh0    = lightOutAv;
+    fLightOutResults.fLOCh0Err = lightOutAvErr;
     fLightOutCh0Graph = graph;
   }
   else if(ch==1){
-    fLightOutCh1 = lightOutAv;
-    fLightOutCh1Err = lightOutAvErr;
+    fLightOutResults.fLOCh1    = lightOutAv;
+    fLightOutResults.fLOCh1Err = lightOutAvErr;
     fLightOutCh1Graph = graph;
   }
   
@@ -378,12 +371,12 @@ bool SFLightOutput::CalculateLightCol(void){
     lightColAvErr += 1./pow(lightColErr, 2);
   }
   
-  fLightCol = lightColAv/lightColAvErr;
-  fLightColErr = sqrt(1./lightColAvErr);
+  fLightColResults.fLC    = lightColAv/lightColAvErr;
+  fLightColResults.fLCErr = sqrt(1./lightColAvErr);
   fLightColGraph = graph;
   
-  std::cout << "Average light collection for this series: "
-            << fLightCol << " +/- " << fLightColErr << " ph/MeV" << std::endl;
+  std::cout << "Average light collection for this series: " << fLightColResults.fLC
+            << " +/- " << fLightColResults.fLCErr << " ph/MeV" << std::endl;
  
   return true;
 }
@@ -439,103 +432,19 @@ bool SFLightOutput::CalculateLightCol(int ch){
   
   if(ch==0){
     fLightColCh0Graph = graph;
-    fLightColCh0 = lightColAv;
-    fLightColCh0Err = lightColAvErr;
+    fLightColResults.fLCCh0    = lightColAv;
+    fLightColResults.fLCCh0Err = lightColAvErr;
   }
   else if(ch==1){
     fLightColCh1Graph = graph;
-    fLightColCh1 = lightColAv;
-    fLightColCh1Err = lightColAvErr;
+    fLightColResults.fLCCh1    = lightColAv;
+    fLightColResults.fLCCh1Err = lightColAvErr;
   }
  
   std::cout << "Average light collection for this series and channel " << ch 
             << ": " << lightColAv << " +/- " << lightColAvErr << " ph/MeV" << std::endl;
  
   return true;
-}
-//------------------------------------------------------------------
-std::vector <double> SFLightOutput::GetLightOutput(void){
-    
-  std::vector <double> temp;
-  temp.push_back(fLightOut);
-  temp.push_back(fLightOutErr);
-  
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFLightOutput::GetLightOutput()" << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
-    std::abort();
-  }
-  
-  return temp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFLightOutput::GetLightOutput(int ch){
-
-  std::vector <double> temp;
-  
-  if(ch==0){
-    temp.push_back(fLightOutCh0);
-    temp.push_back(fLightOutCh0Err);
-  }
-  else if(ch==1){
-    temp.push_back(fLightOutCh1);
-    temp.push_back(fLightOutCh1Err);
-  }
-  else{
-    std::cerr << "##### Error in SFLightOutput::GetLightOutput() for ch " << ch << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-    
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFLightOutput::GetLightOutput() for ch " << ch << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
-    std::abort();
-  }
-  
-  return temp;  
-}
-//------------------------------------------------------------------
-std::vector <double> SFLightOutput::GetLightCol(void){
-    
-  std::vector <double> temp;
-  temp.push_back(fLightCol);
-  temp.push_back(fLightColErr);  
-  
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFLightOutput::GetLightCol()" << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
-    std::abort();
-  }
-  
-  return temp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFLightOutput::GetLightCol(int ch){
-  
-  std::vector <double> temp;
-  
-  if(ch==0){
-    temp.push_back(fLightColCh0);
-    temp.push_back(fLightColCh0Err);
-  }
-  else if(ch==1){
-    temp.push_back(fLightColCh1);
-    temp.push_back(fLightColCh1Err);
-  }
-  else{
-    std::cerr << "##### Error in SFLightOutput::GetLightCol() for ch " << ch << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-    
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFLightOutput::GetLightCol() for ch " << ch << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " ph/MeV" << std::endl;
-    std::abort();
-  }
-    
-  return temp;
 }
 //------------------------------------------------------------------
 std::vector <TH1D*> SFLightOutput::GetSpectra(int ch){

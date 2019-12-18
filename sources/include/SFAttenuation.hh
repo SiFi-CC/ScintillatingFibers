@@ -23,47 +23,57 @@
 /// P09019, where combined signal from both channels is analyzed, and AttSeparateCh()
 /// - where attenuation length is calulated for each channel separately.
 
+struct AttenuationResults{
+    
+    double fAttCombPol1    = -1;
+    double fAttCombPol1Err = -1;
+    
+    double fAttCombPol3    = -1;
+    double fAttCombPol3Err = -1;
+    
+    double fAttCh0    = -1;
+    double fAttCh0Err = -1;
+    
+    double fAttCh1    = -1;
+    double fAttCh1Err = -1;
+};
+
 class SFAttenuation : public TObject{
  
 private:
   int                 fSeriesNo;       ///< Number of experimental series to be analyzed
   SFData*             fData;           ///< SFData object of the analyzed series
-  double              fAttnLenPol1;    ///< Attenuation length determined with averaged channels method [mm]
-  double              fAttnLenPol1Err; ///< Error on attenuation length fAttnLen [mm]
-  double              fAttnLenPol3;
-  double              fAttnLenPol3Err;
-  std::vector <TH1D*> fRatios;          ///< Vector containing histograms of signal ratios from both channels,
-                                    ///< for whole series 
-  TGraphErrors* fAttnGraph;         ///< Attenuation graph i.e. ln(M_{FB}) vs. source position
-  TGraphErrors* fSigmaGraph;
-  double        fAttnLenCh0;        ///< Attenuation length for channel 0
-  double        fAttnLenCh1;        ///< Attenuation length for channel 1
-  double        fAttnErrCh0;        ///< Error on attenuation length for channel 0
-  double        fAttnErrCh1;        ///< Error on attenuation length for channel 1
-  TGraphErrors *fAttnGraphCh0;      ///< Attenuation graph for channel 0
-  TGraphErrors *fAttnGraphCh1;      ///< Attenuation graph for channel 1
+  
+  std::vector <TH1D*> fRatios;      ///< Vector containing histograms of ln(M_LR) distributions
   std::vector <TH1D*> fSpectraCh0;  ///< Vector containing charge spectra from channel 0
   std::vector <TH1D*> fSpectraCh1;  ///< Vector containing charche spectra from channel 1
   std::vector <TH1D*> fPeaksCh0;    ///< Vector containing 511 keV peaks, channel 0 [not used at the moment]
   std::vector <TH1D*> fPeaksCh1;    ///< Vector containing 511 keV peaks, channel 1 [not used at the moment]
+  
+  TGraphErrors *fAttnGraph;         ///< Attenuation graph i.e. ln(M_LR) vs. source position
+  TGraphErrors *fSigmaGraph;        ///< Graph sigma of ln(M_LR) vs. source position
+  TGraphErrors *fAttnGraphCh0;      ///< Attenuation graph for channel 0
+  TGraphErrors *fAttnGraphCh1;      ///< Attenuation graph for channel 1
+  
+  AttenuationResults fResults;      ///< Results of attenuation analysis
   
   public:
   SFAttenuation(int seriesNo);
   ~SFAttenuation();
   
   bool                 AttAveragedCh(void);
+  bool                 AttSeparateCh(int ch);
   bool                 Fit3rdOrder(void);
-  std::vector <TH1D*>  GetRatios(void);
-  std::vector <double> GetAttLenPol1(void);
-  std::vector <double> GetAttLenPol3(void);
+  
   TGraphErrors*        GetAttGraph(void);
+  TGraphErrors*        GetAttGraph(int ch);
   TGraphErrors*        GetSigmaGraph(void);
   
-  bool                 AttSeparateCh(int ch);
   std::vector <TH1D*>  GetSpectra(int ch);
   std::vector <TH1D*>  GetPeaks(int ch);
-  std::vector <double> GetAttenuation(int ch);
-  TGraphErrors*        GetAttGraph(int ch);
+  std::vector <TH1D*>  GetRatios(void);
+  
+  AttenuationResults   GetResults(void) { return fResults; };
   
   void Print(void);
   

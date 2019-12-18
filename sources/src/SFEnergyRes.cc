@@ -20,12 +20,6 @@ ClassImp(SFEnergyRes);
 /// \param seriesNo is number of experimental series to be analyzed. 
 SFEnergyRes::SFEnergyRes(int seriesNo): fSeriesNo(seriesNo),
                                         fData(nullptr),
-                                        fEnergyResCh0(-1),
-                                        fEnergyResCh0Err(-1),
-                                        fEnergyResCh1(-1),
-                                        fEnergyResCh1Err(-1),
-                                        fEnergyResSum(-1),
-                                        fEnergyResSumErr(-1),
                                         fEnergyResGraphCh0(nullptr),
                                         fEnergyResGraphCh1(nullptr),
                                         fEnergyResGraphSum(nullptr) {
@@ -120,13 +114,13 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
  
   if(ch==0){
       fEnergyResGraphCh0 = graph;
-      fEnergyResCh0 = enResAve;
-      fEnergyResCh0Err = enResAveErr;
+      fResults.fEnergyResCh0 = enResAve;
+      fResults.fEnergyResCh0Err = enResAveErr;
   }
   else if(ch==1){
       fEnergyResGraphCh1 = graph;
-      fEnergyResCh1 = enResAve;
-      fEnergyResCh1Err = enResAveErr;
+      fResults.fEnergyResCh1 = enResAve;
+      fResults.fEnergyResCh1Err = enResAveErr;
   }
             
   return true;
@@ -157,24 +151,21 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   }
   
   att->AttAveragedCh();
-  std::vector <double> attlen = att->GetAttLenPol1();
+  AttenuationResults results = att->GetResults();
   
   TString cut_ch0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
   TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
   TString cut = cut_ch0 + std::string(" && ") + cut_ch1;
   
-  std::vector <double> customNumCh0;
-  customNumCh0.resize(2);
-  customNumCh0[1] = attlen[0]; 
+  std::vector <double> customNumCh0(2);
+  customNumCh0[1] = results.fAttCombPol1; 
   
-  std::vector <double> customNumCh1;
-  customNumCh1.resize(2);
-  customNumCh1[1] = attlen[0]; 
+  std::vector <double> customNumCh1(2);
+  customNumCh1[1] = results.fAttCombPol1; 
   
-  std::vector <double> customNumSum;
-  customNumSum.resize(4);
-  customNumSum[1] = attlen[0]; 
-  customNumSum[3] = attlen[0];
+  std::vector <double> customNumSum(4);
+  customNumSum[1] = results.fAttCombPol1; 
+  customNumSum[3] = results.fAttCombPol1;
   
   TString gname = Form("ER_s%i_ave", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
@@ -219,62 +210,21 @@ bool SFEnergyRes::CalculateEnergyRes(void){
     enResAveErr += (1./pow(enResErr, 2));
   }
   
-  fEnergyResSum = enResAve/enResAveErr;
-  fEnergyResSumErr = sqrt(1./enResAveErr);
+  fResults.fEnergyResSum = enResAve/enResAveErr;
+  fResults.fEnergyResSumErr = sqrt(1./enResAveErr);
   fEnergyResGraphSum = graph;
   
-  if(std::isnan(fEnergyResSum) || fEnergyResSum<0 || fEnergyResSum>100){
+  if(std::isnan(fResults.fEnergyResSum) || fResults.fEnergyResSum<0 || fResults.fEnergyResSum>100){
     std::cout << "##### Warning in SFEnergyRes class!" << std::endl;
-    std::cout << "Incorrect energy resolution value: " << fEnergyResSum  
-              << " +/- " << fEnergyResSumErr << std::endl;
-    fEnergyResSum=0;
-    fEnergyResSumErr=0;
+    std::cout << "Incorrect energy resolution value: " << fResults.fEnergyResSum  
+              << " +/- " << fResults.fEnergyResSumErr << std::endl;
+    fResults.fEnergyResSum = 0;
+    fResults.fEnergyResSumErr = 0;
   }
   
-  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fEnergyResSum << " +/- " << fEnergyResSumErr << " % \n" << std::endl;
+  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fResults.fEnergyResSum << " +/- " << fResults.fEnergyResSumErr << " % \n" << std::endl;
   
   return true;
-}
-//------------------------------------------------------------------
-std::vector <double> SFEnergyRes::GetEnergyResolution(int ch){
-    
-  std::vector <double> temp;
-  if(ch==0){
-    temp.push_back(fEnergyResCh0);
-    temp.push_back(fEnergyResCh0Err);
-  }
-  else if(ch==1){
-    temp.push_back(fEnergyResCh1);
-    temp.push_back(fEnergyResCh1Err);
-  }
-  else{
-    std::cerr << "##### Error in SFEnergyRes:GetEnergyResolution() for ch" << ch << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-  
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution() for ch" << ch << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
-    std::abort();
-  }
-  
-  return temp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFEnergyRes::GetEnergyResolution(void){
-  
-  std::vector <double> temp;
-  temp.push_back(fEnergyResSum);
-  temp.push_back(fEnergyResSumErr);
-  
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution()" << std::endl;
-    std::cerr << "Incorrect values: " << temp[0] << " +/- " << temp[1] << " %" << std::endl;
-    std::abort();
-  }
-  
-  return temp;
 }
 //------------------------------------------------------------------
 TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(int ch){

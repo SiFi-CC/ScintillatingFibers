@@ -58,15 +58,15 @@ int main(int argc, char **argv){
   TGraphErrors* gEnResSum = enres->GetEnergyResolutionGraph(); 
   TGraphErrors* gEnResCh0 = enres->GetEnergyResolutionGraph(0); 
   TGraphErrors* gEnResCh1 = enres->GetEnergyResolutionGraph(1); 
-  std::vector <double> enResSum = enres->GetEnergyResolution(); 
-  std::vector <double> enResCh0 = enres->GetEnergyResolution(0); 
-  std::vector <double> enResCh1 = enres->GetEnergyResolution(1); 
+
   std::vector <TH1D*> specSum   = enres->GetSpectraSum();
   std::vector <TH1D*> specCh0   = enres->GetSpectra(0);
   std::vector <TH1D*> specCh1   = enres->GetSpectra(1);
   std::vector <TH1D*> specCorrCh0 = enres->GetSpectraCorrected(0);
   std::vector <TH1D*> specCorrCh1 = enres->GetSpectraCorrected(1);
 
+  EnergyResResults results = enres->GetResults();
+  
   //----- drawing channels
   TLatex text;
   text.SetNDC(true);
@@ -77,21 +77,24 @@ int main(int argc, char **argv){
   can_sum->cd();
   gPad->SetGrid(1,1);
   gEnResSum->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f)", enResSum[0], enResSum[1]));
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f)", 
+                 results.fEnergyResSum, results.fEnergyResSumErr));
     
   //----- Ch0 
   TCanvas *can_ch0 = new TCanvas("can_ch0", "can_ch0", 700, 500);
   can_ch0->cd();
   gPad->SetGrid(1,1);
   gEnResCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", enResCh0[0], enResCh0[1]));
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", 
+                 results.fEnergyResCh0, results.fEnergyResCh0Err));
 
   //----- Ch1 
   TCanvas *can_ch1 = new TCanvas("can_ch1", "can_ch1", 700, 500);
   can_ch1->cd();
   gPad->SetGrid(1,1);
   gEnResCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", enResCh1[0], enResCh1[1]));
+  text.DrawLatex(0.2, 0.8, Form("ER = (%.2f +/- %.2f) ", 
+                 results.fEnergyResCh1, results.fEnergyResCh1Err));
 
   //----- Spectra 
   TCanvas *can_spec_sum = new TCanvas("can_spec_sum", "can_spec_sum" ,1200, 1200);
@@ -185,7 +188,7 @@ int main(int argc, char **argv){
 
   //----- writing results to the data base
   TString table = "ENERGY_RESOLUTION";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ENRES_SUM, ENRES_SUM_ERR, ENRES_CH0, ENRES_CH0_ERR, ENRES_CH1, ENRES_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), enResSum[0], enResSum[1], enResCh0[0], enResCh0[1], enResCh1[0], enResCh1[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ENRES_SUM, ENRES_SUM_ERR, ENRES_CH0, ENRES_CH0_ERR, ENRES_CH1, ENRES_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fEnergyResSum, results.fEnergyResSumErr, results.fEnergyResCh0, results.fEnergyResCh0Err, results.fEnergyResCh1, results.fEnergyResCh1Err);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
 
   delete data;

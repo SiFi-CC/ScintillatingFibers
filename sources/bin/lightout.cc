@@ -72,9 +72,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightOutCh0 = lout->GetLightOutputGraph(0);
   TGraphErrors *gLightOutCh1 = lout->GetLightOutputGraph(1);
   TGraphErrors *gLightOut    = lout->GetLightOutputGraph();
-  std::vector <double> lightOutCh0 = lout->GetLightOutput(0);
-  std::vector <double> lightOutCh1 = lout->GetLightOutput(1);
-  std::vector <double> lightOut    = lout->GetLightOutput();
+  LightOutResults LOresults  = lout->GetLOResults();
   std::vector <TH1D*>  specCh0     = lout->GetSpectra(0);
   std::vector <TH1D*>  specCh1     = lout->GetSpectra(1);
   
@@ -86,9 +84,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightColCh0 = lout->GetLightColGraph(0);
   TGraphErrors *gLightColCh1 = lout->GetLightColGraph(1);
   TGraphErrors *gLightCol    = lout->GetLightColGraph();
-  std::vector <double> lightColCh0 = lout->GetLightCol(0);
-  std::vector <double> lightColCh1 = lout->GetLightCol(1);
-  std::vector <double> lightCol    = lout->GetLightCol();
+  LightColResults LCresults  = lout->GetLCResults();
   
   //----- drawing
   TLatex text;
@@ -102,19 +98,19 @@ int main(int argc, char **argv){
   can_lout_ch->cd(1);
   gPad->SetGrid(1,1);
   gLightOutCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOutCh0[0], lightOutCh0[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLOCh0, LOresults.fLOCh0Err));
   
   can_lout_ch->cd(2);
   gPad->SetGrid(1,1);
   gLightOutCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOutCh1[0], lightOutCh1[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLOCh1, LOresults.fLOCh1Err));
   
   //----- light output summed
   TCanvas *can_lout = new TCanvas("can_lout","can_lout", 700, 500);
   can_lout->cd();
   gPad->SetGrid(1,1);
   gLightOut->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightOut[0], lightOut[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLO, LOresults.fLOErr));
 
    //----- light collection channels 0 and 1
   TCanvas *can_lcol_ch = new TCanvas("can_lcol_ch", "can_lcol_ch", 1200, 600);
@@ -123,19 +119,19 @@ int main(int argc, char **argv){
   can_lcol_ch->cd(1);
   gPad->SetGrid(1,1);
   gLightColCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightColCh0[0], lightColCh0[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLCCh0, LCresults.fLCCh0Err));
   
   can_lcol_ch->cd(2);
   gPad->SetGrid(1,1);
   gLightColCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightColCh1[0], lightColCh1[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLCCh1, LCresults.fLCCh1Err));
   
   //----- light output summed
   TCanvas *can_lcol = new TCanvas("can_lcol","can_lcol", 700, 500);
   can_lcol->cd();
   gPad->SetGrid(1,1);
   gLightCol->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", lightCol[0], lightCol[1]));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLC, LCresults.fLCErr));
   
   //----- spectra
   TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
@@ -192,7 +188,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "LIGHT_OUTPUT";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, LOUT, LOUT_ERR, LOUT_CH0, LOUT_CH0_ERR, LOUT_CH1, LOUT_CH1_ERR, LCOL, LCOL_ERR, LCOL_CH0, LCOL_CH0_ERR, LCOL_CH1, LCOL_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), lightOut[0], lightOut[1], lightOutCh0[0], lightOutCh0[1], lightOutCh1[0], lightOutCh1[1], lightCol[0], lightCol[1], lightColCh0[0], lightColCh0[1], lightColCh1[0], lightColCh1[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, LOUT, LOUT_ERR, LOUT_CH0, LOUT_CH0_ERR, LOUT_CH1, LOUT_CH1_ERR, LCOL, LCOL_ERR, LCOL_CH0, LCOL_CH0_ERR, LCOL_CH1, LCOL_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), LOresults.fLO, LOresults.fLOErr, LOresults.fLOCh0, LOresults.fLOCh0Err, LOresults.fLOCh1, LOresults.fLOCh1Err, LCresults.fLC, LCresults.fLCErr, LCresults.fLCCh0, LCresults.fLCCh0Err, LCresults.fLCCh1, LCresults.fLCCh1Err);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

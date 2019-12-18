@@ -50,7 +50,7 @@ int main(int argc, char **argv){
   TString collimator = data->GetCollimator();
   std::vector <double> positions = data->GetPositions();
   data->Print();
- 
+  
   SFAttenuation *att;
   try{
     att = new SFAttenuation(seriesNo);
@@ -68,19 +68,18 @@ int main(int argc, char **argv){
   TGraphErrors *attGraph        = att->GetAttGraph();
   TGraphErrors *attGraphPol3    = (TGraphErrors*)attGraph->Clone("attGraphPol3");
   TGraphErrors *sigGraph        = att->GetSigmaGraph();
-  std::vector <double> attlenPol1 = att->GetAttLenPol1();
-  std::vector <double> attlenPol3 = att->GetAttLenPol3(); 
   
   //----- separate channels method
   att->AttSeparateCh(0);
   TGraphErrors *attGraphCh0       = att->GetAttGraph(0);
   std::vector <TH1D*> spectraCh0  = att->GetSpectra(0);
-  std::vector <double> attlenCh0  = att->GetAttenuation(0); 
   
   att->AttSeparateCh(1);
   TGraphErrors *attGraphCh1      = att->GetAttGraph(1);
   std::vector <TH1D*> spectraCh1 = att->GetSpectra(1);
-  std::vector <double> attlenCh1 = att->GetAttenuation(1);  
+
+  //----- numeric results
+  AttenuationResults results = att->GetResults();
   
   //-----drawing averaged channels
   TLatex text;
@@ -95,7 +94,8 @@ int main(int argc, char **argv){
   attGraph->GetFunction("fpol3")->Delete();
   attGraph->Draw("AP");
   text.SetTextSize(0.04);
-  text.DrawLatex(0.2, 0.8, Form("L_{att} = (%.2f +/- %.2f) mm", attlenPol1[0], attlenPol1[1]));
+  text.DrawLatex(0.2, 0.8, Form("L_{att} = (%.2f +/- %.2f) mm", 
+                 results.fAttCombPol1, results.fAttCombPol1Err));
   
   can_averaged_ch->cd(2);
   gPad->SetGrid(1,1);
@@ -112,8 +112,9 @@ int main(int argc, char **argv){
                 funPol3->GetParameter(2), funPol3->GetParError(2)));
   text.DrawLatex(0.2, 0.65, Form("A_{3} = %.4e +/- %.4e",  
                 funPol3->GetParameter(3), funPol3->GetParError(3)));
-  text.DrawLatex(0.2, 0.50, Form("L_{att} = (%.2f +/- %.2f) mm", attlenPol3[0], attlenPol3[1]));
-  
+  text.DrawLatex(0.2, 0.50, Form("L_{att} = (%.2f +/- %.2f) mm", 
+                 results.fAttCombPol3, results.fAttCombPol3Err));
+
   TCanvas *can_sig = new TCanvas("can_sig", "can_sig", 600, 600);
   gPad->SetGrid(1,1);
   sigGraph->SetTitle(Form("Sigma of M_{LR} distribution S%i", seriesNo));
@@ -161,7 +162,8 @@ int main(int argc, char **argv){
   attGraphCh0->SetLineColor(kRed);
   attGraphCh0->Draw("AP");
   text.SetTextColor(kRed);
-  text.DrawLatex(0.3, 0.8, Form("L_{att Ch0} = (%.2f +/- %.2f) mm", attlenCh0[0], attlenCh0[1]));
+  text.DrawLatex(0.3, 0.8, Form("L_{att Ch0} = (%.2f +/- %.2f) mm", 
+                 results.fAttCh0, results.fAttCh0Err));
   
   attGraphCh1->SetTitle(Form("Series %i channel 1, attenuation curve", seriesNo));
   attGraphCh1->GetYaxis()->SetTitleSize(0.03);
@@ -170,7 +172,8 @@ int main(int argc, char **argv){
   attGraphCh1->Draw("P");
   attGraphCh1->GetFunction("fexp")->SetLineColor(kGreen+3);
   text.SetTextColor(kGreen+3);
-  text.DrawLatex(0.3, 0.7, Form("L_{att Ch1} = (%.2f +/- %.2f) mm", attlenCh1[0], attlenCh1[1]));
+  text.DrawLatex(0.3, 0.7, Form("L_{att Ch1} = (%.2f +/- %.2f) mm", 
+                 results.fAttCh1, results.fAttCh1Err));
   
   double *yCh0 = attGraphCh0->GetY();
   double *yCh1 = attGraphCh1->GetY();
@@ -211,6 +214,7 @@ int main(int argc, char **argv){
   }
   
   //----- saving
+  
   TString fname = Form("attenuation_series%i.root", seriesNo);
   TString outdir;
   TString dbase;
@@ -240,7 +244,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "ATTENUATION_LENGTH";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), attlenCh0[0], attlenCh0[1], attlenCh1[0], attlenCh1[1], attlenPol1[0], attlenPol1[1], attlenPol3[0], attlenPol3[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fAttCh0, results.fAttCh0Err, results.fAttCh1, results.fAttCh1Err, results.fAttCombPol1, results.fAttCombPol1Err, results.fAttCombPol3, results.fAttCombPol3Err);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;
