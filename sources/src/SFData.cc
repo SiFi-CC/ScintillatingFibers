@@ -23,6 +23,7 @@ static const double gmV          = 4.096;      // coefficient to calibrate ADC c
 SFData::SFData(): fSeriesNo(-1),
                   fNpoints(-1),
                   fFiber("dummy"),
+                  fFiberLength(-1),
                   fSource("dummy"),
                   fCollimator("dummy"),
                   fDesc("dummy"),
@@ -46,6 +47,7 @@ SFData::SFData(): fSeriesNo(-1),
 SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fNpoints(-1),
                               fFiber("dummy"),
+                              fFiberLength(-1),
                               fSource("dummy"),
                               fCollimator("dummy"),
                               fDesc("dummy"),
@@ -134,22 +136,23 @@ bool SFData::SetDetails(int seriesNo){
   ///- collimator type 
   ///- number of measurements in the series
   ///- description of the series
-  query = Form("SELECT FIBER, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  query = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
   
   while((status=sqlite3_step(statement)) == SQLITE_ROW){
     const unsigned char *fiber = sqlite3_column_text(statement, 0);
-    const unsigned char *source = sqlite3_column_text(statement, 1);
-    const unsigned char *test_bench = sqlite3_column_text(statement, 2);
-    const unsigned char *collimator = sqlite3_column_text(statement, 3);
-    const unsigned char *sipm = sqlite3_column_text(statement, 4);
-    const unsigned char *coupling = sqlite3_column_text(statement, 6);
-    const unsigned char *tempfile = sqlite3_column_text(statement, 8);
-    const unsigned char *description = sqlite3_column_text(statement, 9);
-    fNpoints = sqlite3_column_int(statement, 7);
-    fOvervoltage = sqlite3_column_double(statement, 5);
+    const unsigned char *source = sqlite3_column_text(statement, 2);
+    const unsigned char *test_bench = sqlite3_column_text(statement, 3);
+    const unsigned char *collimator = sqlite3_column_text(statement, 4);
+    const unsigned char *sipm = sqlite3_column_text(statement, 5);
+    const unsigned char *coupling = sqlite3_column_text(statement, 7);
+    const unsigned char *tempfile = sqlite3_column_text(statement, 9);
+    const unsigned char *description = sqlite3_column_text(statement, 10);
+    fNpoints = sqlite3_column_int(statement, 8);
+    fFiberLength = sqlite3_column_double(statement, 1);
+    fOvervoltage = sqlite3_column_double(statement, 6);
     fFiber = std::string(reinterpret_cast<const char*>(fiber));
     fSource = std::string(reinterpret_cast<const char*>(source));
     fDesc = std::string(reinterpret_cast<const char*>(description));
@@ -171,7 +174,7 @@ bool SFData::SetDetails(int seriesNo){
   ///- list of source positions
   ///- list of measurements starting times
   ///- list of measurements stopping times
-  query = Form("SELECT MEASUREMENT_NAME, DURATION_TIME, SOURCE_POSITION, START_TIME, STOP_TIME FROM MEASUREMENT WHERE SERIES_ID = %i", fSeriesNo);
+  query = Form("SELECT MEASUREMENT_NAME, DURATION_TIME, SOURCE_POSITION, START_TIME, STOP_TIME, MEASUREMENT_ID FROM MEASUREMENT WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
@@ -183,6 +186,7 @@ bool SFData::SetDetails(int seriesNo){
     fPositions.push_back(sqlite3_column_double(statement, 2));
     fStart.push_back(sqlite3_column_int(statement, 3));
     fStop.push_back(sqlite3_column_int(statement, 4));
+    fMeasureID.push_back(sqlite3_column_int(statement, 5));
   }
   
   SFTools::CheckDBStatus(status, fDB);
@@ -328,6 +332,23 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
   return result;
 }
 //------------------------------------------------------------------
+TTree* SFData::GetTree(int ID){
+    
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  TString fname = SFTools::FindData(fNames[index]);
+  TFile *file = new TFile(fname+"/results.root", "READ");
+  TString tname = std::string("tree_ft");
+  TTree *tree = (TTree*)file->Get(tname);
+  
+  if(tree==nullptr){
+    std::cerr << "#### Error in SFData::GetTree!" << std::endl;
+    std::cerr << "Requested tree doesn't exist!" << std::endl;
+    std::abort();
+  }
+  
+  return tree;
+}
+//------------------------------------------------------------------
 /// Returns single spectrum of requested type.
 /// \param ch - chennel number
 /// \param sel_type - type of the spectrum. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT
@@ -337,20 +358,21 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
 ///
 /// It is possible to have spectrum with cut or raw spectrum as recorded. In the latter case pass
 /// empty string as cut.
-TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, double position){
+TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID){
 
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
   fSpectrum = new TH1D();
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
-  int stat = tree->Draw(selection, cut);
+  tree->Draw(selection, cut);
   fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
-  TString hname = Form("S%i_ch%i_pos%.1f_", fSeriesNo, ch, position)+SFDrawCommands::GetSelectionName(sel_type);
+  TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID)+SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   fSpectrum->SetName(hname);
   fSpectrum->SetTitle(htitle);
@@ -369,10 +391,7 @@ std::vector <TH1D*> SFData::GetSpectra(int ch, SFSelectionType sel_type, TString
   bool empty = fSpectra.empty();
   for(int i=0; i<fNpoints; i++){
    if(empty) fSpectra.push_back(new TH1D());
-   if(fDesc.Contains("Regular series"))
-     fSpectra[i] = GetSpectrum(ch, sel_type, cut, fPositions[i]);
-   else  
-     fSpectra[i] = GetSpectrum(ch, sel_type, cut, i+1);
+   fSpectra[i] = GetSpectrum(ch, sel_type, cut, fMeasureID[i]);
   }
   
   return fSpectra;
@@ -383,12 +402,13 @@ std::vector <TH1D*> SFData::GetSpectra(int ch, SFSelectionType sel_type, TString
 /// \param cut - cut for drawn events. Also TTree-style syntax
 /// \param position - position of source in mm. If position is not unique a 
 /// number of measurement should be entered.
-TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, double position, 
+TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID, 
                                 std::vector <double> customNumbers){
   
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
   fHist = new TH1D();
@@ -398,7 +418,7 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, double p
   selection = SFDrawCommands::GetSelection(sel_type, gUnique, customNumbers);
   tree->Draw(selection, cut);
   fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
-  TString hname = Form("S%i_pos%.1f_", fSeriesNo, position) + SFDrawCommands::GetSelectionName(sel_type);
+  TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   fHist->SetName(hname);
   fHist->SetTitle(htitle);
@@ -415,21 +435,19 @@ std::vector <TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TStrin
   bool empty = fHists.empty();
   for(int i=0; i<fNpoints; i++){
     if(empty) fHists.push_back(new TH1D());
-    if(fDesc.Contains("Regular series"))
-      fHists[i] = GetCustomHistogram(sel_type, cut, fPositions[i]);
-    else 
-      fHists[i] = GetCustomHistogram(sel_type, cut, i+1);
+    fHists[i] = GetCustomHistogram(sel_type, cut, fMeasureID[i]);
   }
   
   return fHists;
 }
 //------------------------------------------------------------------
-TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, double position, 
+TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, int ID, 
                                  std::vector <double> customNumbers){
     
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
   fHist = new TH1D();
@@ -442,7 +460,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
     selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch, customNumbers);
   tree->Draw(selection, cut);
   fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
-  TString hname = Form("S%i_pos%.1f_", fSeriesNo, position)+ SFDrawCommands::GetSelectionName(sel_type);
+  TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID)+ SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   fHist->SetName(hname);
   fHist->SetTitle(htitle);
@@ -456,11 +474,12 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
 /// \param cut - cut for drawn events. Also TTree-style syntax
 /// \param position - position of source in mm. If position is not unique a 
 /// number of measurement should be entered.
-TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, double position){
+TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
   
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
   fHist2D = new TH2D();
@@ -469,7 +488,7 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, double pos
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique);
   tree->Draw(selection, cut, "colz");
   fHist2D = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
-  TString hname = Form("S%i_pos%.1f_", fSeriesNo, position) + SFDrawCommands::GetSelectionName(sel_type);
+  TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   fHist2D->SetName(hname);
   fHist2D->SetTitle(htitle);
@@ -487,10 +506,7 @@ std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString 
   bool empty = fHists2D.empty();
   for(int i=0; i<fNpoints; i++){
     if(empty) fHists2D.push_back(new TH2D());
-    if(fDesc.Contains("Regular series"))
-      fHists2D[i] = GetCorrHistogram(sel_type, cut, fPositions[i]);
-    else 
-      fHists2D[i] = GetCorrHistogram(sel_type, cut, i+1);
+    fHists2D[i] = GetCorrHistogram(sel_type, cut, fMeasureID[i]);
   }
   
   return fHists2D;
@@ -505,15 +521,15 @@ std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString 
 /// \param bl - flag for base line subtraction. If true - base line will be subtracted, if false - it won't
 ///
 /// If no cut is required pass an empty string.
-TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int number, bool bl){
+TProfile* SFData::GetSignalAverage(int ch, int ID, TString cut, int number, bool bl){
 
   TProfile *sig = nullptr;
   
   if(fTestBench=="PL"){
-    sig = GetSignalAverageKrakow(ch, position, cut, number, bl);
+    sig = GetSignalAverageKrakow(ch, ID, cut, number, bl);
   }
   else if(fTestBench=="DE"){
-    sig = GetSignalAverageAachen(ch, position, cut, number);    
+    sig = GetSignalAverageAachen(ch, ID, cut, number);    
   }
   else{
     std::cerr << "##### Error in SFData::GetSignalAverage()!" << std::endl;
@@ -524,14 +540,15 @@ TProfile* SFData::GetSignalAverage(int ch, double position, TString cut, int num
   return sig;
 }
 //------------------------------------------------------------------
-TProfile* SFData::GetSignalAverageKrakow(int ch, double position, TString cut, int number, bool bl){
+TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number, bool bl){
  
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   const int ipoints = 1024;
   float x;
     
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
@@ -576,7 +593,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, double position, TString cut, i
     }
   }
   
-  hname = Form("S%i_ch%i_pos_%.1f_sig_num_%i", fSeriesNo, ch, position, counter);
+  hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_num_%i", fSeriesNo, ch, position, ID, counter);
   htitle = hname + " " + cut;
   fSignalProfile->SetName(hname);
   fSignalProfile->SetTitle(htitle);
@@ -592,14 +609,15 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, double position, TString cut, i
   return fSignalProfile;
 }
 //------------------------------------------------------------------
-TProfile* SFData::GetSignalAverageAachen(int ch, double position, TString cut, int number){
+TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number){
   
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
+  double position = fPositions[index];
   const int ipoints = 1024;
   float x;
   
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
@@ -634,7 +652,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, double position, TString cut, i
     }
   }
   
-  hname = Form("S%i_ch%i_pos_%.1f_sig_num_%i", fSeriesNo, ch, position, counter);
+  hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_num_%i", fSeriesNo, ch, position, ID, counter);
   htitle = hname + " " + cut;
   fSignalProfile->SetName(hname);
   fSignalProfile->SetTitle(htitle);
@@ -648,15 +666,15 @@ TProfile* SFData::GetSignalAverageAachen(int ch, double position, TString cut, i
   return fSignalProfile;
 }
 //------------------------------------------------------------------
-TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool bl){
+TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl){
  
   TH1D *sig = nullptr;
   
   if(fTestBench=="PL"){
-    sig = GetSignalKrakow(ch, position, cut, number, bl);   
+    sig = GetSignalKrakow(ch, ID, cut, number, bl);   
   }
   else if(fTestBench=="DE"){
-    sig = GetSignalAachen(ch, position, cut, number);
+    sig = GetSignalAachen(ch, ID, cut, number);
   }
   else{
     std::cerr << "##### Error in SFData::GetSignal()" << std::endl;
@@ -667,14 +685,15 @@ TH1D* SFData::GetSignal(int ch, double position, TString cut, int number, bool b
   return sig;
 }
 //------------------------------------------------------------------
-TH1D* SFData::GetSignalKrakow(int ch, double position, TString cut, int number, bool bl){
+TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
 
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
   const int ipoints = 1024;
   float x; 
   
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  double position = fPositions[index];
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
@@ -682,7 +701,7 @@ TH1D* SFData::GetSignalKrakow(int ch, double position, TString cut, int number, 
   TString iname = std::string(gPath) + fNames[index] + Form("/wave_%i.dat", ch);
   std::ifstream input(iname, std::ios::binary);
   
-  TString hname = Form("S%i_ch%i_pos_%.1f_sig_no%i", fSeriesNo, ch, position, number);
+  TString hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_no%i", fSeriesNo, ch, position, ID, number);
   TString htitle = hname + " " + cut; 
   
   fSignal = new TH1D(hname, htitle, ipoints, 0, ipoints);
@@ -731,14 +750,15 @@ TH1D* SFData::GetSignalKrakow(int ch, double position, TString cut, int number, 
 /// \param bl - flag for base line subtraction. See GetSignalAverage()
 ///
 /// If no cut is needed an empty string should be passed.
-TH1D* SFData::GetSignalAachen(int ch, double position, TString cut, int number){
+TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
  
-  int index = SFTools::GetIndex(fPositions, position);
+  int index = SFTools::GetIndex(fMeasureID, ID);
   const int ipoints = 1024;
   float x;
   
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname, "READ");
+  double position = fPositions[index];
+  TFile *file = new TFile(fname+"/results.root", "READ");
   TTree *tree = (TTree*)file->Get("tree_ft");
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
@@ -750,7 +770,7 @@ TH1D* SFData::GetSignalAachen(int ch, double position, TString cut, int number){
   TString bname = Form("voltages_ch_%i", ch);
   iTree->SetBranchAddress(bname, &iVolt);
   
-  TString hname = Form("S%i_ch%i_pos_%.1f_sig_no%i", fSeriesNo, ch, position, number);
+  TString hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_no%i", fSeriesNo, ch, position, ID, number);
   TString htitle = hname + " " + cut;
   
   fSignal = new TH1D(hname, htitle, ipoints, 0, ipoints);
@@ -785,6 +805,7 @@ void SFData::Print(void){
  std::cout << "Test bench: " << fTestBench << std::endl;
  std::cout << "Number of measurements in this series: " << fNpoints << std::endl;
  std::cout << "Fiber: " << fFiber << std::endl;
+ std::cout << "Fiber length: " << fFiberLength << " mm" << std::endl;
  std::cout << "Coupling: " << fCoupling << std::endl;
  std::cout << "Radioactive source: " << fSource << std::endl;
  std::cout << "SiPM: " << fSiPM <<std::endl;
@@ -795,7 +816,7 @@ void SFData::Print(void){
   std::cout << std::setw(30);
   std::cout << fNames[i] << "\t\t" << Form("%.1f mm", fPositions[i]) 
             << "\t\t" << Form("%i s", fTimes[i]) << "\t\t" << fStart[i]
-            << "\t\t" << fStop[i] << std::endl; 
+            << "\t\t" << fStop[i] << "\t\t" << fMeasureID[i] << std::endl; 
  }
  std::cout << "\n" << std::endl;
 }

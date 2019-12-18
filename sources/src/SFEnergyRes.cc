@@ -141,6 +141,7 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measIDs = fData->GetMeasurementsIDs();
   std::vector <SFPeakFinder*> peakFin;
   
   SFAttenuation *att;
@@ -156,6 +157,7 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   }
   
   att->AttAveragedCh();
+  std::vector <double> attlen = att->GetAttLenPol1();
   
   TString cut_ch0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
   TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
@@ -163,16 +165,16 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   
   std::vector <double> customNumCh0;
   customNumCh0.resize(2);
-  customNumCh0[1] = att->GetAttLength();
+  customNumCh0[1] = attlen[0]; 
   
   std::vector <double> customNumCh1;
   customNumCh1.resize(2);
-  customNumCh1[1] = att->GetAttLength();
+  customNumCh1[1] = attlen[0]; 
   
   std::vector <double> customNumSum;
   customNumSum.resize(4);
-  customNumSum[1] = att->GetAttLength();
-  customNumSum[3] = att->GetAttLength();
+  customNumSum[1] = attlen[0]; 
+  customNumSum[3] = attlen[0];
   
   TString gname = Form("ER_s%i_ave", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
@@ -196,11 +198,11 @@ bool SFEnergyRes::CalculateEnergyRes(void){
     customNumSum[2] = -distCh1;
     
     fSpectraCorrCh0.push_back(fData->GetCustomHistogram(0, SFSelectionType::PEAttCorrected, 
-                                                        cut_ch0, positions[i], customNumCh0));
+                                                        cut_ch0, measIDs[i], customNumCh0));
     fSpectraCorrCh1.push_back(fData->GetCustomHistogram(1, SFSelectionType::PEAttCorrected, 
-                                                        cut_ch1, positions[i], customNumCh1));
+                                                        cut_ch1, measIDs[i], customNumCh1));
     fSpectraSum.push_back(fData->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
-                                                    cut, positions[i], customNumSum));
+                                                    cut, measIDs[i], customNumSum));
     
     peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 0));
     peakFin[i]->FindPeakFit();

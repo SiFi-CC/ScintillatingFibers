@@ -49,7 +49,6 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
   
   int npoints = fData->GetNpoints();
   TString description = fData->GetDescription();
-  TString SiPM = fData->GetSiPM();
   
   if(!description.Contains("Regular series")){
     std::cout << "##### Warning in SFLightOutput constructor!" << std::endl;
@@ -66,14 +65,8 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
       fPFCh1.push_back(new SFPeakFinder(fSpectraCh1[i], 0));
   }
   
-  if(SiPM=="Hamamatsu"){
-    fPDE       = 0.4; 
-    fCrossTalk = 0.03; 
-  }
-  else if(SiPM=="SensL"){
-    fPDE       = 0.24;
-    fCrossTalk = 0.03;
-  }
+  fCrossTalk = GetCrossTalk();
+  fPDE = GetPDE();
   
   try{
     fAtt = new SFAttenuation(fSeriesNo);
@@ -83,6 +76,128 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
     throw "##### Exception in SFLightOutput constructor!";
   }
   fAtt->AttAveragedCh();
+}
+//------------------------------------------------------------------
+double SFLightOutput::GetCrossTalk(void){
+    
+  double crossTalk = -1;
+  TString SiPM = fData->GetSiPM();
+  double overvol = fData->GetOvervoltage();
+  
+  TString fname = std::string(getenv("SFDATA")) + 
+                  "/DB/SiPMs_Data.root";
+  TFile *file = new TFile(fname, "READ");
+  TGraph *gCrossTalk;
+  
+  if(SiPM == "Hamamatsu"){
+    gCrossTalk = (TGraph*)file->Get("gHamamatsu_CT");
+  }
+  else if(SiPM == "SensL"){
+    crossTalk = 0.03;
+    return crossTalk;
+  }
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetCrossTalk()!" << std::endl;
+    std::cerr << "Unknown SiPM type! Please check!" << std::endl; 
+    std::abort();
+  }
+  
+  if(gCrossTalk == nullptr){
+    std::cerr << "##### Error in SFLightOutput::GetCrossTalk()!" << std::endl;
+    std::cerr << "Couldn't get requested cross talk graph!" << std::endl; 
+    std::abort();
+  }
+  
+  crossTalk = gCrossTalk->Eval(overvol)/100.;
+  file->Close();
+  
+  std::cout << "\t----- Cross talk is: " << crossTalk << std::endl;
+  
+  return crossTalk;
+}
+//------------------------------------------------------------------
+double SFLightOutput::GetPDE(void){
+    
+  double PDE = 0;
+  double overvol = fData->GetOvervoltage();
+  TString fiber = fData->GetFiber();
+  TString SiPM = fData->GetSiPM();
+    
+  TString fname = std::string(getenv("SFDATA")) + 
+                  "/DB/SiPMs_Data.root";
+  TFile *file = new TFile(fname, "READ");
+
+  TGraph *gPDEvsVol;
+  TH1F *hPDEvsWavelen;
+  TH1F *hLightOutvsWavelen;
+  
+  if(fiber.Contains("LuAG:Ce")){
+     hLightOutvsWavelen = (TH1F*)file->Get("hLuAG_LOvsWave");
+  }
+  else if(fiber.Contains("LYSO:Ce")){
+    hLightOutvsWavelen = (TH1F*)file->Get("hLYSO_LOvsWave");
+  }
+  else if(fiber.Contains("GAGG:Ce")){
+    hLightOutvsWavelen = (TH1F*)file->Get("hGAGG_LOvsWave");
+  }
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetPDE()!" << std::endl;
+    std::cerr << "Unknown fiber type! Please check!" << std::endl;
+  }
+  
+  if(SiPM == "Hamamatsu"){
+    gPDEvsVol = (TGraph*)file->Get("gHamamatsu_PDEvsVol");
+    hPDEvsWavelen = (TH1F*)file->Get("hHamamatsu_PDEvsWave");
+  }
+  else if(SiPM == "SensL"){
+    gPDEvsVol = (TGraph*)file->Get("gSensL_PDEvsVol");
+    hPDEvsWavelen = (TH1F*)file->Get("hSensL_PDEvsWave");
+  }
+  else{
+    std::cerr << "##### Error in SFLightOutput::GetPDE()!" << std::endl;
+    std::cerr << "Unknown SiPM type! Please check!" << std::endl;
+  }
+  
+  if(gPDEvsVol == nullptr ||
+     hPDEvsWavelen == nullptr ||
+     hLightOutvsWavelen == nullptr){
+    std::cerr << "##### Error in SFLightOutput::GetPDE()!" << std::endl;
+    std::cerr << "Couldn't get one of requested graphs/histograms!" << std::endl;
+    std::abort();
+  }
+  
+  int nbins = hPDEvsWavelen->GetXaxis()->GetNbins();
+  double f = gPDEvsVol->Eval(overvol)/hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin());
+
+  for(int i=1; i<nbins+1; i++){
+    PDE += hLightOutvsWavelen->GetBinContent(i) * hPDEvsWavelen->GetBinContent(i)/100.;
+  }
+  
+  double PDE_final = PDE*f;
+  TLatex text;
+
+  TCanvas *can = new TCanvas("can","can",1800,1800);
+  can->Divide(2,2);
+  can->cd(1);
+  gPDEvsVol->Draw("AP");
+  can->cd(2);
+  hLightOutvsWavelen->Draw("hist");
+  can->cd(3);
+  text.DrawLatex(0.2,0.9,Form("f = %.2f",f));
+  text.DrawLatex(0.2,0.8,Form("fPDE = %.2f",gPDEvsVol->Eval(overvol)));
+  text.DrawLatex(0.2,0.7,Form("fSiPM = %.2f",hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin())));
+  text.DrawLatex(0.2,0.6,Form("Nbins emission = %i",hLightOutvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.2,0.5,Form("Nbins SiPM = %i",hPDEvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.2,0.4,Form("Conv = %.2f",PDE));
+  text.DrawLatex(0.2,0.3,Form("PDE = %.2f",PDE_final));
+  can->cd(4);
+  hPDEvsWavelen->Draw();
+  can->SaveAs(Form("lightout_S%i.root",fSeriesNo));
+  
+  file->Close();
+  std::cout << "\t----- PDE is: " << PDE << std::endl;
+  
+  return PDE_final;
 }
 //------------------------------------------------------------------
 /// Default destructor.
@@ -129,7 +244,7 @@ bool SFLightOutput::CalculateLightOut(void){
     fLightOutCh0Graph->GetPoint(i, x, yCh0);
     fLightOutCh1Graph->GetPoint(i, x, yCh1);
     lightOut = yCh0+yCh1;
-    lightOutErr = fLightOutCh0Graph->GetErrorY(i) + fLightOutCh1Graph->GetErrorY(i);
+    lightOutErr = sqrt(pow(fLightOutCh0Graph->GetErrorY(i),2) + pow(fLightOutCh1Graph->GetErrorY(i),2));
     graph->SetPoint(i, positions[i], lightOut);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
     lightOutAv += lightOut*(1./pow(lightOutErr, 2));
@@ -155,7 +270,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
-  std::vector <double> attenuation = fAtt->GetAttenuation();
+  std::vector <double> attenuation = fAtt->GetAttLenPol1();
   std::vector <SFPeakFinder*> peakFin;
   
   for(int i=0; i<npoints; i++){

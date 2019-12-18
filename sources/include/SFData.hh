@@ -41,6 +41,7 @@ private:
   int              fSeriesNo;        ///< Series number
   int              fNpoints;         ///< Number of measurements in the series
   TString          fFiber;           ///< Scintillating fiber type e.g. LuAG (1)
+  double           fFiberLength;
   TString          fSource;          ///< Type of the radioactive source
   TString          fCollimator;      ///< Type of the used collimator: Lead or Electronic
   TString          fDesc;            ///< Description of the measurement series
@@ -56,6 +57,7 @@ private:
   TH1D             *fSignal;         ///< Histogram of single chosen signal
   std::vector <TString> fNames;      ///< Vector with names of measurements
   std::vector <double>  fPositions;  ///< Vector with positions of radioactive source in mm
+  std::vector <int>     fMeasureID;
   std::vector <int>  fTimes;         ///< Vector with times of measurement in s
   std::vector <int>  fStart;         ///< Vector containing starting times of measurements (in UNIX time)
   std::vector <int>  fStop;          ///< Vector containing stopping times of measurements (in UNIX time)
@@ -67,10 +69,10 @@ private:
   int  gUnique = 0.;                 ///< Unique flag to identify histograms
   
   bool      InterpretCut(DDSignal *sig, TString cut);
-  TProfile* GetSignalAverageKrakow(int ch, double position, TString cut, int number, bool bl);
-  TProfile* GetSignalAverageAachen(int ch, double position, TString cut, int number);
-  TH1D*     GetSignalKrakow(int ch, double position, TString cut, int number, bool bl);
-  TH1D*     GetSignalAachen(int ch, double position, TString cut, int number);
+  TProfile* GetSignalAverageKrakow(int ch, int ID, TString cut, int number, bool bl);
+  TProfile* GetSignalAverageAachen(int ch, int ID, TString cut, int number);
+  TH1D*     GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl);
+  TH1D*     GetSignalAachen(int ch, int ID, TString cut, int number);
   
 public:
   SFData();
@@ -79,23 +81,25 @@ public:
   
   bool                OpenDataBase(TString name);
   bool                SetDetails(int seriesNo);
-  TH1D*               GetSpectrum(int ch, SFSelectionType sel_type, TString cut, double position);
-  TH1D*               GetCustomHistogram(SFSelectionType sel_type, TString cut, double position, 
+  TTree*              GetTree(int ID);
+  TH1D*               GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID);
+  TH1D*               GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID, 
                                          std::vector <double> customNum={});
   TH1D*               GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
-                                         double position, std::vector <double> customNum);
-  TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, double position);
+                                         int ID, std::vector <double> customNum);
+  TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID);
   std::vector <TH1D*> GetSpectra(int ch, SFSelectionType sel_type, TString cut);
   std::vector <TH1D*> GetCustomHistograms(SFSelectionType sel_type, TString cut);
   std::vector <TH2D*> GetCorrHistograms(SFSelectionType sel_type, TString cut);
-  TProfile*           GetSignalAverage(int ch, double position, TString cut, int number, bool bl);
-  TH1D*               GetSignal(int ch, double position, TString cut, int number, bool bl);
+  TProfile*           GetSignalAverage(int ch, int ID, TString cut, int number, bool bl);
+  TH1D*               GetSignal(int ch, int ID, TString cut, int number, bool bl);
   void                Print(void);
   
   /// Returns number of measurements in the series
   int      GetNpoints(void){ return fNpoints; };
   /// Returns fiber type
   TString  GetFiber(void){ return fFiber; };
+  double   GetFiberLength(void){ return fFiberLength; };
   /// Returns description of the series
   TString  GetDescription(void){ return fDesc; };
   /// Returns collimator type
@@ -122,6 +126,7 @@ public:
   std::vector <int> GetStartTimes(void){ return fStart; };
   /// Returns a vector containing stopping times of measurements.
   std::vector <int> GetStopTimes(void){ return fStop; };
+  std::vector <int> GetMeasurementsIDs(void){ return fMeasureID; };
   
   ClassDef(SFData,1)
   

@@ -101,6 +101,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
     
   int npoints = fData->GetNpoints();
   std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measIDs = fData->GetMeasurementsIDs();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   
@@ -127,7 +128,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
     
     if(collimator.Contains("Lead")){
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
-      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
+      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -100, 100));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
@@ -142,7 +143,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
     }
     else if(collimator.Contains("Electronic")){
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
-      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
+      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fT0Diff.back()->Rebin(2);
       fun.push_back(new TF1("fun", "gaus", -50, 50));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
@@ -192,6 +193,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
     
   int npoints = fData->GetNpoints();
   std::vector <double> positions = fData->GetPositions();
+  std::vector <int> measIDs = fData->GetMeasurementsIDs();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   
@@ -241,7 +243,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
     else if(collimator.Contains("Electronic"))
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
       
-    fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, positions[i]));
+    fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
     mean = fT0DiffECut[i]->GetMean();
     sigma = fT0DiffECut[i]->GetRMS();
     fT0DiffECut[i]->Fit(fun, "Q", "", mean-5*sigma, mean+5*sigma);

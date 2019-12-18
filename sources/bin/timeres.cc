@@ -164,9 +164,9 @@ int main(int argc, char **argv){
     mean = ratio[i]->GetFunction("fun")->GetParameter(1);
     sigma = ratio[i]->GetFunction("fun")->GetParameter(2);
     ratio[i]->Draw();
-    line.DrawLine(mean-0.5*sigma, 0 ,mean-0.5*sigma, max);
-    line.DrawLine(mean+0.5*sigma, 0, mean+0.5*sigma, max);
     if(collimator=="Lead"){
+      line.DrawLine(mean-0.5*sigma, 0 ,mean-0.5*sigma, max);
+      line.DrawLine(mean+0.5*sigma, 0, mean+0.5*sigma, max);
       fRthin->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(0));
       fRthin->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(1));
       fRthin->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(2));
@@ -175,6 +175,10 @@ int main(int argc, char **argv){
       fRthick->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(5));
       fRthin->DrawClone("same");
       fRthick->DrawClone("same");
+    }
+    else if(collimator=="Electronic"){
+      line.DrawLine(mean-3*sigma, 0 ,mean-3*sigma, max);
+      line.DrawLine(mean+3*sigma, 0, mean+3*sigma, max);
     }
     ratio[i]->GetXaxis()->SetRangeUser(-1,1);
     
@@ -191,8 +195,8 @@ int main(int argc, char **argv){
     delta  = (xmax-xmin)/6;        //
     max = specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin());
     specCh0[i]->Draw();
-    line.DrawLine(center-delta, 0, center-delta, max);  //changed here for smaller cut
-    line.DrawLine(center+delta, 0, center+delta, max);  //
+    line.DrawLine(center-3*delta, 0, center-3*delta, max);  //changed here for smaller cut
+    line.DrawLine(center+3*delta, 0, center+3*delta, max);  //
     specCh0[i]->GetXaxis()->SetRangeUser(0, 700);
     
     canSpecCh1->cd(i+1);
@@ -208,8 +212,14 @@ int main(int argc, char **argv){
     delta  = (xmax-xmin)/6;       //
     max = specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin());
     specCh1[i]->Draw();
-    line.DrawLine(center-delta, 0, center-delta, max);  //changed here for smaller cut
-    line.DrawLine(center+delta, 0, center+delta, max);  //
+    if(collimator=="Lead"){
+      line.DrawLine(center-delta, 0, center-delta, max);  //changed here for smaller cut
+      line.DrawLine(center+delta, 0, center+delta, max);  //
+    }
+    else if(collimator=="Electronic"){
+      line.DrawLine(center-3*delta, 0, center-3*delta, max);  //changed here for smaller cut
+      line.DrawLine(center+3*delta, 0, center+3*delta, max);  //
+    }
     specCh1[i]->GetXaxis()->SetRangeUser(0, 700);
   }
   

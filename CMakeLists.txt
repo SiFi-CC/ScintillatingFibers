@@ -7,6 +7,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOT
 find_package(ROOT REQUIRED COMPONENTS RIO Spectrum)
 set(ROOTSYS $ENV{ROOTSYS})
 
+find_package(CmdLineArgs 2.0.0 REQUIRED)
+find_package(FitterFactory)
+
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/include)

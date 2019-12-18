@@ -18,9 +18,10 @@
 #include "TFitResult.h"
 #include "SFData.hh"
 #include "SFTools.hh"
+#include "FitterFactory.h"
 #include <vector>
+#include <fstream>
 #include <iostream>
-
 
 /// Class designed to locate 511 keV in the recorded spectrum.
 /// With the provided set of functions it is possible to find
@@ -45,41 +46,27 @@ private:
   double  fPosErr;     ///< Error of the peak position
   double  fSigma;      ///< Energy resolution, determined as sigma of the Gaussian fit
   double  fSigErr;     ///< Error of the peak sigma
-  double  fChi2NDF;    ///< Chi2/NDF of the fit Gassian fit of the peak 
   bool    fVerbose;    ///< Print-outs level
   bool    fTests;      ///< Flag for testing mode
   
 public:
   SFPeakFinder();
+  SFPeakFinder(TH1D *spectrum, bool verbose, bool tests);
   SFPeakFinder(TH1D *spectrum, bool verbose);
   SFPeakFinder(TH1D *spectrum);
-  SFPeakFinder(TH1D *spectrum, bool verbose, bool tests);
   ~SFPeakFinder();
   
-  bool                 FindPeakSpectrum(void);
+  TString              Init(void);
   bool                 FindPeakRange(double &min, double &max);
   bool                 FindPeakFit(void);
-  bool                 FindPeakNoBackground(void);
+  //bool                 FindPeakNoBackground(void);
+  void                 SetSpectrum(TH1D *spectrum);
   std::vector <double> GetParameters(void); 
   void                 Print(void);
   
-  void SetSpectrum(TH1D *spectrum);
-  /// Sets level of print-outs: false - quiet, true - verbose.
-  void SetVerbLevel(bool verbose) { fVerbose = verbose; };
-  /// Sets flag for testing mode.
-  void SetTests(bool tests) { fTests = tests; };
-  /// Returns position of the peak.
-  double GetPeakPosition(void) { return fPosition; };
-  /// Returns error on peak position.
-  double GetPeakPosError(void) { return fPosErr; };
-  /// Returns sigma of the peak.
-  double GetPeakSigma(void)    { return fSigma; };
-  /// Returns error on peak's sigma
-  double GetPeakSigError(void) { return fSigErr; };
-  /// Returns the chi2 od the peak fit 
-  double GetChi2NDF(void)      { return fChi2NDF; };
-  /// Returns background-subtracted histogram. 
-  TH1D*  GetPeak(void)         { return fPeak; };
+  void   SetVerbLevel(bool verbose) { fVerbose = verbose; };
+  void   SetTests(bool tests) { fTests = tests; };
+  TH1D*  GetPeak(void) { return fPeak; };
   
   ClassDef(SFPeakFinder,1)
 };

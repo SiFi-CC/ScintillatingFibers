@@ -51,6 +51,9 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
         case SFSelectionType::LogSqrtPERatio:
             selectionName = "LogSqrtPERatio";
             break;
+        case SFSelectionType::LogSqrtRatioCut:
+            selectionName = "LogSqrtRatioCut";
+            break;
         case SFSelectionType::T0Difference:
             selectionName = "T0Difference";
             break;
@@ -74,9 +77,6 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
             break;
         case SFSelectionType::PEAttCorrectedSum:
             selectionName = "PEAttCorrectedSum";
-            break;
-        case SFSelectionType::MLRRatioCorrected:
-            selectionName = "MLRRatioCorrected";
             break;
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelectionName()!" << std::endl;
@@ -136,10 +136,14 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
                                      std::vector <double> customNum){
     
   TString selectionString = "";
-   
+  TString LogSqrtQ1Q0 = "log(sqrt(ch_1.fPE/ch_0.fPE))";
+
   switch(selection){
       case SFSelectionType::LogSqrtPERatio:
-          selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500,-5,5)", unique);
+          selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500, -2, 2)", unique);
+          break;
+      case SFSelectionType::LogSqrtRatioCut:
+          selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500, -0.5, 0.5)", unique);
           break;
       case SFSelectionType::T0Difference:
           selectionString = Form("(ch_0.fT0-ch_1.fT0)>>htemp%i(500,-50,50)", unique);
@@ -148,24 +152,21 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
           selectionString = Form("sqrt(ch_0.fPE*ch_1.fPE)>>htemp%i(1000,-150,1200)", unique);
           break;
       case SFSelectionType::AmplitudeAverage:
-          selectionString = Form("sqrt(ch_0.fAmp*ch_1.fAmp)>>htemp%i(1000,0,700)",unique);
+          selectionString = Form("sqrt(ch_0.fAmp*ch_1.fAmp)>>htemp%i(1000,0,800)",unique);
           break;
       case SFSelectionType::PECorrelation:
           selectionString = Form("ch_0.fPE:ch_1.fPE>>htemp%i(1000,-150,1200,1000,-150,1200)", unique);
           break;
       case SFSelectionType::AmplitudeCorrelation:
-          selectionString = Form("ch_0.fAmp:ch_1.fAmp>>htemp%i(1000,0,700,1000,0,700)", unique);
+          selectionString = Form("ch_0.fAmp:ch_1.fAmp>>htemp%i(1000,0,800,1000,0,800)", unique);
           break;
       case SFSelectionType::T0Correlation:
           selectionString = Form("ch_0.fT0:ch_1.fT0>>htemp%i(1000,-110,1100,1000,-110,1100", unique);
           break;
       case SFSelectionType::PEAttCorrectedSum:
-          selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1500,-150,2000)",
+          selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1500,-150,4000)",
                             customNum[0], customNum[1], customNum[2], customNum[3],
                             unique);
-          break;
-      case SFSelectionType::MLRRatioCorrected:
-          selectionString = Form("(%f*(log(sqrt(ch_1.fPE/ch_0.fPE))-%f))>>htemp%i(1000,-50,150)", customNum[0], customNum[1], unique);
           break;
       default:
           std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;

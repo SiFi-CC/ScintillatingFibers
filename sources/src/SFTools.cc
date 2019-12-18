@@ -10,37 +10,21 @@
 
 #include "SFTools.hh"
 
-ClassImp(SFTools);
-
 //------------------------------------------------------------------
-/// Returns index in the fNames and fPositions arrays for the 
-/// measurement of requested source position in mm. 
-/// If measurements in analyzed series don't have unique positions 
-/// a number of measurement should be passed. Measurements counting 
-/// starts at 1.
-/// \param positions - vector containing all source position in the 
-/// measurement series
-/// \param position - source position of the requested measurement
-int SFTools::GetIndex(std::vector <double> positions, double position){
- 
+int SFTools::GetIndex(std::vector <int> measurementsIDs, int id){
     
     int index = -1;
-    int npoints = positions.size();
-    
-    if(fabs(positions[0]-positions[1])<1E-10){
-      index = position-1;
-      return index;
-    }
+    int npoints = measurementsIDs.size();
     
     for(int i=0; i<npoints; i++){
-      if(fabs(positions[i]-position)<1){
+      if(measurementsIDs[i]-id == 0){
         index = i;
         break;
       }
     }
     
     if(index==-1){
-      std::cerr << "##### Error in SFTools::GetIndex()! Incorrect position!" << std::endl;
+      std::cerr << "##### Error in SFTools::GetIndex()! Incorrect ID!" << std::endl;
       std::abort();
     }
     
@@ -126,6 +110,94 @@ double SFTools::GetPosition(TString hname_tstr){
     int pos = atof(posName);
     
     return pos;
+}
+//------------------------------------------------------------------
+int SFTools::GetMeasurementID(TString hname_tstr){
+    
+    std::string hname = std::string(hname_tstr);
+    int nletters = hname.length();
+    char letters[nletters];
+    strcpy(letters,hname.c_str());
+    
+    int istart = -1;
+    for(int i=0; i<nletters; i++){
+      if(letters[i]=='D'){
+          istart = i;
+          break;
+      }
+    }  
+    
+    int istop = -1;
+    for(int i=istart; i<nletters; i++){
+      if(letters[i]=='_'){
+        istop = i;
+        break;
+      }
+    }
+    
+    if(istart==-1 || istop==-1){
+      std::cerr << "##### Error in SFTools::GetMeasurementID()!" << std::endl;
+      std::cerr << "Cannot interpret spectrum name!" << std::endl;
+      std::abort();
+    }
+    
+    TString idName = std::string(&letters[istart+1], &letters[istop]);
+    int id = atoi(idName);
+    
+    return id;
+}
+//------------------------------------------------------------------
+int SFTools::GetMeasurementID(int seriesNo, double position){
+ 
+  int id = -1;  
+    
+  SFData *data;
+  try{
+    data = new SFData(seriesNo);
+  }
+  catch(const char *message){
+    std::cerr << "##### Error in SFToolsGetMeasurementID()!" << std::endl;
+    std::cerr << message << std::endl;
+    std::abort();
+  }
+  
+  int npoints = data->GetNpoints();
+  std::vector <double> positions = data->GetPositions();
+  std::vector <int> measurementIDs = data->GetMeasurementsIDs();
+  int n = 0;
+
+  //----- checking how many times requested position appears in this series
+  for(int i=0; i<npoints; i++){
+    if(fabs(positions[i]-position)<1E-10){
+      n++;
+    }
+  }
+  
+  if(n>1){
+    std::cout << "##### Warning in SFTools::GetMeasurementID()" << std::endl;
+    std::cout << "Requested position appears " << n << " times in this series!" << std::endl;
+    std::cout << "First appearance of this position will be used!" << std::endl;
+  }
+  
+  //----- finding measuremnt ID
+  int index = -1;
+  
+  for(int i=0; i<npoints; i++){
+    if(fabs(positions[i]-position)<1E-10){
+      index = i;
+      break;
+    }
+  }
+  
+  id = measurementIDs[index];
+  
+  if(index==-1 || id==-1){
+    std::cerr << "##### Error in SFTools::GetMeasurementID()!" << std::endl;
+    std::cerr << "Did not find requested measurement!" << std::endl;
+    std::abort();
+  }
+  
+  return id;
 }
 //------------------------------------------------------------------
 double SFTools::GetPosError(TString collimator, TString testBench){
@@ -226,7 +298,7 @@ bool SFTools::CreateTable(TString database, TString table){
     query = "CREATE TABLE 'DATA' ('SERIES_ID' INTEGER PLRIMARY_KEY, 'RESULTS_FILE' TEXT, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "ATTENUATION_LENGTH"){
-    query = "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+    query = "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'ATT_COMB_POL3' NUMERIC, 'ATT_COMB_POL3_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "ENERGY_RESOLUTION"){
     query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ENRES_SUM' NUMERIC, 'ENRES_SUM_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, 'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
@@ -244,7 +316,7 @@ bool SFTools::CreateTable(TString database, TString table){
     query = "CREATE TABLE 'TEMPERATURE' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'TEMP_446D45' NUMERIC, 'TEMP_ERR_446D45' NUMERIC, 'TEMP_044F45' NUMERIC, 'TEMP_ERR_044F45' NUMERIC, 'TEMP_2BAD44' NUMERIC, 'TEMP_ERR_2BAD44' NUMERIC, 'TEMP_8F1F46' NUMERIC, 'TEMP_ERR_8F1F46' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "POSITION_RESOLUTION"){
-    query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'POSITION_RES_MLR' NUMERIC, 'POSITION_RES_MLR_ERR' NUMERIC, 'POSITION_RES_Y' NUMERIC, 'POSITION_RES_Y_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))"; 
+    query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))"; 
   }
   else if(table == "PEAK_FINDER"){
     query = "CREATE TABLE 'PEAK_FINDER' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
@@ -315,18 +387,85 @@ double SFTools::GetStandardErr(std::vector <double> vec){
   return stdErr;
 }
 //------------------------------------------------------------------
+std::vector <double> SFTools::GetFWHM(TH1D *h){
+    
+    double mean  = h->GetMean();
+    double sigma = h->GetRMS();
+    int    nbins = h->GetXaxis()->GetNbins();
+    
+    TF1* fgaus = new TF1("fgaus", "gaus", mean-sigma, mean+sigma);
+    h->Fit(fgaus, "RQ");
+    
+    double halfMax = fgaus->GetParameter(0)/2.;
+    int maxbin = h->GetMaximumBin();
+    int bincont = 0;
+    
+    //----- determining xmin
+    int istart = -1;
+    int istop = -1;
+    
+    for(int i=0; i<maxbin; i++){
+      bincont = h->GetBinContent(i);
+      if(bincont >= halfMax){
+        istart = i;
+        break;
+      }
+    }
+    
+    for(int i=maxbin; i>0; i--){
+      bincont = h->GetBinContent(i);
+      if(bincont <= halfMax){
+        istop = i;
+        break;
+      }
+    }
+    
+    double xmin_err = fabs(h->GetBinCenter(istop) - h->GetBinCenter(istart))/2.;
+    double xmin = h->GetBinCenter(istart) + xmin_err;
+    
+    //----- determining xmax
+    istart = -1;
+    istop = -1;
+    
+    for(int i=maxbin; i<nbins; i++){
+      bincont = h->GetBinContent(i);
+      if(bincont <= halfMax){
+          istart = i;
+          break;
+      }
+    }
+    
+    for(int i=nbins; i>maxbin; i--){
+      bincont = h->GetBinContent(i);
+      if(bincont >= halfMax){
+        istop = i;
+        break;
+      }
+    }
+    
+    double xmax_err = fabs(h->GetBinCenter(istop) - h->GetBinCenter(istart))/2.;
+    double xmax = h->GetBinCenter(istart) + xmax_err;
+    
+    //----- assigning values
+    std::vector <double> FWHM(2);
+    FWHM[0] = xmax-xmin;
+    FWHM[1] = xmin_err+xmax_err;
+    
+    return FWHM;
+}
+//------------------------------------------------------------------
 TString SFTools::FindData(TString directory){
 
-  TString path_1 = std::string(getenv("SFDATA")) + directory + "/results.root";
-  TFile *file_1 = new TFile(path_1, "READ");
+  TString path_1 = std::string(getenv("SFDATA")) + directory;
+  TFile *file_1 = new TFile(path_1+"/results.root", "READ");
   
   if(file_1->IsOpen()){
     file_1->Close();
     return path_1;
   }
   
-  TString path_2 = "/scratch/gccb/kasia/data/" + directory + "/results.root";
-  TFile *file_2 = new TFile(path_2, "READ");
+  TString path_2 = "/scratch/gccb/kasia/data/" + directory;
+  TFile *file_2 = new TFile(path_2+"/results.root", "READ");
     
   if(file_2->IsOpen()){
     file_2->Close();

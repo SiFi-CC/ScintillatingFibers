@@ -16,6 +16,8 @@
 #include "TF1.h"
 #include "TGraphErrors.h"
 #include "SFTools.hh"
+#include "TCanvas.h"
+#include "TLatex.h"
 #include "SFData.hh"
 #include "SFPeakFinder.hh"
 #include "SFAttenuation.hh"
@@ -67,6 +69,9 @@ public:
   
   bool CalculateLightCol(void);
   bool CalculateLightCol(int ch);
+  
+  double GetCrossTalk(void);
+  double GetPDE(void);
   
   std::vector <double> GetLightOutput(void);
   std::vector <double> GetLightOutput(int ch);

@@ -89,7 +89,7 @@ bool SFStabilityMon::AnalyzeStability(int ch){
     peakFin[i]->FindPeakFit();
     peakParams = peakFin[i]->GetParameters();
     gPeakPos->SetPoint(i, i, peakParams[0]);
-    gPeakPos->SetPointError(i, 0, peakParams[1]);
+    gPeakPos->SetPointError(i, 0, peakParams[2]);
     peakPositions.push_back(peakParams[0]);
   }
   
