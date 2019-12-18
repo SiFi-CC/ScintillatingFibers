@@ -73,7 +73,7 @@ bool SFAttenuation::AttAveragedCh(void){
   TString gname = Form("att_s%i", fSeriesNo);
   fAttnGraph = new TGraphErrors(npoints);
   fAttnGraph->GetXaxis()->SetTitle("source position [mm]");
-  fAttnGraph->GetYaxis()->SetTitle("M_{LR}");
+  fAttnGraph->GetYaxis()->SetTitle("ln(M_{LR})");
   fAttnGraph->SetTitle(gname);
   fAttnGraph->SetName(gname);
   fAttnGraph->SetMarkerStyle(4);
@@ -142,6 +142,7 @@ bool SFAttenuation::Fit3rdOrder(void){
   fpol3->SetParameter(0, fAttnGraph->GetFunction("fpol1")->GetParameter(0));
   fpol3->SetParameter(1, fAttnGraph->GetFunction("fpol1")->GetParameter(1));
   fpol3->SetParameter(3, fiberLengthHalf);
+
   fpol3->SetLineColor(kBlue-7);
   
   fAttnGraph->Fit(fpol3, "QR+");

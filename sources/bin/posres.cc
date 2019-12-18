@@ -74,6 +74,7 @@ int main(int argc, char **argv){
   
   std::vector <SFPeakFinder*> peakFinCh0;
   std::vector <SFPeakFinder*> peakFinCh1;
+
   std::vector <double> xmin(npoints);
   std::vector <double> xmax(npoints);
   
