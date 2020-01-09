@@ -22,13 +22,19 @@
 
 int main(int argc, char **argv){
     
-  if(argc<2 || argc>6){
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
+    
+  if(argc<2){
     std::cout << "to run type: ./lightout seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
- 
-  int seriesNo = atoi(argv[1]);
   
   SFData *data; 
   
@@ -63,7 +69,9 @@ int main(int argc, char **argv){
     std:: cerr << "##### Exception in lightout.cc!" << std::endl;
     return 1;
   }
-
+  
+  TCanvas *can = lout->GetInputData();
+  
   //----- 
   lout->CalculateLightOut(0);
   lout->CalculateLightOut(1);
@@ -72,7 +80,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightOutCh0 = lout->GetLightOutputGraph(0);
   TGraphErrors *gLightOutCh1 = lout->GetLightOutputGraph(1);
   TGraphErrors *gLightOut    = lout->GetLightOutputGraph();
-  LightOutResults LOresults  = lout->GetLOResults();
+  LightResults LOresults     = lout->GetLOResults();
   std::vector <TH1D*>  specCh0     = lout->GetSpectra(0);
   std::vector <TH1D*>  specCh1     = lout->GetSpectra(1);
   
@@ -84,7 +92,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightColCh0 = lout->GetLightColGraph(0);
   TGraphErrors *gLightColCh1 = lout->GetLightColGraph(1);
   TGraphErrors *gLightCol    = lout->GetLightColGraph();
-  LightColResults LCresults  = lout->GetLCResults();
+  LightResults LCresults     = lout->GetLCResults();
   
   //----- drawing
   TLatex text;
@@ -98,19 +106,19 @@ int main(int argc, char **argv){
   can_lout_ch->cd(1);
   gPad->SetGrid(1,1);
   gLightOutCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLOCh0, LOresults.fLOCh0Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fResCh0, LOresults.fResCh0Err));
   
   can_lout_ch->cd(2);
   gPad->SetGrid(1,1);
   gLightOutCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLOCh1, LOresults.fLOCh1Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fResCh1, LOresults.fResCh1Err));
   
   //----- light output summed
   TCanvas *can_lout = new TCanvas("can_lout","can_lout", 700, 500);
   can_lout->cd();
   gPad->SetGrid(1,1);
   gLightOut->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fLO, LOresults.fLOErr));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fRes, LOresults.fResErr));
 
    //----- light collection channels 0 and 1
   TCanvas *can_lcol_ch = new TCanvas("can_lcol_ch", "can_lcol_ch", 1200, 600);
@@ -119,19 +127,19 @@ int main(int argc, char **argv){
   can_lcol_ch->cd(1);
   gPad->SetGrid(1,1);
   gLightColCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLCCh0, LCresults.fLCCh0Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fResCh0, LCresults.fResCh0Err));
   
   can_lcol_ch->cd(2);
   gPad->SetGrid(1,1);
   gLightColCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLCCh1, LCresults.fLCCh1Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fResCh1, LCresults.fResCh1Err));
   
   //----- light output summed
   TCanvas *can_lcol = new TCanvas("can_lcol","can_lcol", 700, 500);
   can_lcol->cd();
   gPad->SetGrid(1,1);
   gLightCol->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fLC, LCresults.fLCErr));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fRes, LCresults.fResErr));
   
   //----- spectra
   TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
@@ -160,13 +168,6 @@ int main(int argc, char **argv){
   
   //----- saving
   TString fname = Form("lightout_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -184,11 +185,12 @@ int main(int argc, char **argv){
   can_lcol->Write();
   can_spec_ch0->Write();
   can_spec_ch1->Write();
+  can->Write();
   file->Close();
   
   //----- writing results to the data base
   TString table = "LIGHT_OUTPUT";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, LOUT, LOUT_ERR, LOUT_CH0, LOUT_CH0_ERR, LOUT_CH1, LOUT_CH1_ERR, LCOL, LCOL_ERR, LCOL_CH0, LCOL_CH0_ERR, LCOL_CH1, LCOL_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), LOresults.fLO, LOresults.fLOErr, LOresults.fLOCh0, LOresults.fLOCh0Err, LOresults.fLOCh1, LOresults.fLOCh1Err, LCresults.fLC, LCresults.fLCErr, LCresults.fLCCh0, LCresults.fLCCh0Err, LCresults.fLCCh1, LCresults.fLCCh1Err);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, LOUT, LOUT_ERR, LOUT_CH0, LOUT_CH0_ERR, LOUT_CH1, LOUT_CH1_ERR, LCOL, LCOL_ERR, LCOL_CH0, LCOL_CH0_ERR, LCOL_CH1, LCOL_CH1_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), LOresults.fRes, LOresults.fResErr, LOresults.fResCh0, LOresults.fResCh0Err, LOresults.fResCh1, LOresults.fResCh1Err, LCresults.fRes, LCresults.fResErr, LCresults.fResCh0, LCresults.fResCh0Err, LCresults.fResCh1, LCresults.fResCh1Err);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

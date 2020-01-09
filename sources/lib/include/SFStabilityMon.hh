@@ -20,6 +20,15 @@
 #include "SFDrawCommands.hh"
 #include <vector>
 
+struct StabilityResults{
+    
+    double fCh0Mean   = -1;
+    double fCh1Mean   = -1;
+    
+    double fCh0StdDev = -1;
+    double fCh1StdDev = -1;    
+};
+
 class SFStabilityMon : public TObject{
     
 private:
@@ -29,10 +38,8 @@ private:
     TGraphErrors *fCh1Graph;
     TGraphErrors *fCh0ResGraph;
     TGraphErrors *fCh1ResGraph;
-    double        fCh0StdDev;
-    double        fCh1StdDev;
-    double        fCh0Mean;
-    double        fCh1Mean;
+    
+    StabilityResults fResults;
     
     std::vector <TH1D*> fSpecCh0;
     std::vector <TH1D*> fSpecCh1; 
@@ -45,8 +52,7 @@ public:
     
     TGraphErrors*       GetPeakPosGraph(int ch);
     TGraphErrors*       GetResidualsGraph(int ch);
-    double              GetStdDev(int ch);
-    double              GetMean(int ch);
+    StabilityResults    GetResults(void) { return fResults; };
     std::vector <TH1D*> GetSpectra(int ch);
     void                Print();
     

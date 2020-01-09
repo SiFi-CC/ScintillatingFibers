@@ -50,21 +50,14 @@ private:
   double           fOvervoltage;     ///< Overvoltage [V]
   TString          fCoupling;        ///< Coupling type: silicone gel/silicone pads
   TString          fTempFile;        ///< Temperature log file
-  TH1D             *fSpectrum;       ///< Single requested spectrum
-  TH1D             *fHist;           ///< Custom histogram of requested type
-  TH2D             *fHist2D;         ///< 2D correlation histogram of requested type 
-  TProfile         *fSignalProfile;  ///< Average of n requested signals
-  TH1D             *fSignal;         ///< Histogram of single chosen signal
+  sqlite3          *fDB;        ///< SQLite3 data base
+  
   std::vector <TString> fNames;      ///< Vector with names of measurements
   std::vector <double>  fPositions;  ///< Vector with positions of radioactive source in mm
   std::vector <int>     fMeasureID;
-  std::vector <int>  fTimes;         ///< Vector with times of measurement in s
-  std::vector <int>  fStart;         ///< Vector containing starting times of measurements (in UNIX time)
-  std::vector <int>  fStop;          ///< Vector containing stopping times of measurements (in UNIX time)
-  std::vector <TH1D*>   fSpectra;    ///< Vector with all spectra from this series (requested type e.g. fPE)
-  std::vector <TH1D*>   fHists;      ///< Vector of custom histograms for all measurements (requested type)
-  std::vector <TH2D*>   fHists2D;    ///< Vector of 2D correlation histograms for all measurements (requested type)
-  sqlite3               *fDB;        ///< SQLite3 data base
+  std::vector <int>     fTimes;         ///< Vector with times of measurement in s
+  std::vector <int>     fStart;         ///< Vector containing starting times of measurements (in UNIX time)
+  std::vector <int>     fStop;          ///< Vector containing stopping times of measurements (in UNIX time)
   
   int  gUnique = 0.;                 ///< Unique flag to identify histograms
   

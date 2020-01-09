@@ -37,17 +37,23 @@
 /// Testing mode implemented for some methods in order to check fitting 
 /// and background subtraction quality.
 
+struct PeakParams{
+  
+    double fPosition    = -1;
+    double fSigma       = -1;
+    double fPositionErr = -1;
+    double fSigmaErr    = -1;
+};
+
 class SFPeakFinder : public TObject{
  
 private:
-  TH1D    *fSpectrum;  ///< Analyzed experimental spectrum
-  TH1D    *fPeak;      ///< Histogram with the chosen peak after background subtraction
-  double  fPosition;   ///< Position of the peak, determined as mean of Gaussian fit
-  double  fPosErr;     ///< Error of the peak position
-  double  fSigma;      ///< Energy resolution, determined as sigma of the Gaussian fit
-  double  fSigErr;     ///< Error of the peak sigma
-  bool    fVerbose;    ///< Print-outs level
-  bool    fTests;      ///< Flag for testing mode
+  TH1D       *fSpectrum;  ///< Analyzed experimental spectrum
+  TH1D       *fPeak;      ///< Histogram with the chosen peak after background subtraction
+  TF1        *fFittedFun;
+  bool       fVerbose;    ///< Print-outs level
+  bool       fTests;      ///< Flag for testing mode
+  PeakParams fParams;
   
 public:
   SFPeakFinder();
@@ -56,17 +62,17 @@ public:
   SFPeakFinder(TH1D *spectrum);
   ~SFPeakFinder();
   
-  TString              Init(void);
-  bool                 FindPeakRange(double &min, double &max);
-  bool                 FindPeakFit(void);
-  //bool                 FindPeakNoBackground(void);
-  void                 SetSpectrum(TH1D *spectrum);
-  std::vector <double> GetParameters(void); 
-  void                 Print(void);
+  TString    Init(void);
+  bool       FindPeakRange(double &min, double &max);
+  bool       FindPeakFit(void);
+  bool       SubtractBackground(void);
+  void       SetSpectrum(TH1D *spectrum);
+  void       Print(void);
   
-  void   SetVerbLevel(bool verbose) { fVerbose = verbose; };
-  void   SetTests(bool tests) { fTests = tests; };
-  TH1D*  GetPeak(void) { return fPeak; };
+  PeakParams GetParameters(void)        { return fParams; }; 
+  void       SetVerbLevel(bool verbose) { fVerbose = verbose; };
+  void       SetTests(bool tests)       { fTests = tests; };
+  TH1D*      GetPeak(void)              { return fPeak; };
   
   ClassDef(SFPeakFinder,1)
 };

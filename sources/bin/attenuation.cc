@@ -17,15 +17,21 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
-  
-  if(argc<2 || argc>6){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
+
+  if(argc<2){
     std::cout << "to run type: ./attenuation seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
  
-  int seriesNo = atoi(argv[1]);
-
   SFData *data;
   try{
     data = new SFData(seriesNo);
@@ -216,18 +222,11 @@ int main(int argc, char **argv){
   //----- saving
   
   TString fname = Form("attenuation_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
   TFile *file = new TFile(fname_full, "RECREATE");
-  
+
   if(!file->IsOpen()){
     std::cerr << "##### Error in attenuation.cc!" << std::endl;
     std::cerr << "Couldn't open file: " << fname_full << std::endl;
@@ -246,7 +245,7 @@ int main(int argc, char **argv){
   TString table = "ATTENUATION_LENGTH";
   TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fAttCh0, results.fAttCh0Err, results.fAttCh1, results.fAttCh1Err, results.fAttCombPol1, results.fAttCombPol1Err, results.fAttCombPol3, results.fAttCombPol3Err);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
-  
+
   delete data;
   delete att;
   

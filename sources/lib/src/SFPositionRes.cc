@@ -14,8 +14,6 @@ ClassImp(SFPositionRes);
 
 //------------------------------------------------------------------
 SFPositionRes::SFPositionRes(int seriesNo): fSeriesNo(seriesNo),
-                                            fPosResSeries(-1),
-                                            fPosResSeriesErr(-1),
                                             fData(nullptr),
                                             fAtt(nullptr),
                                             fPosRecoVsPos(nullptr),
@@ -155,25 +153,25 @@ bool SFPositionRes::AnalyzePositionRes(void){
     meanErr  = funGaus[i]->GetParError(1);
     FWHM = SFTools::GetFWHM(fPosRecoDist[i]);
     
-    fPosReco.push_back(mean);
-    fPosRecoErr.push_back(meanErr);
-    fPosRecoVsPos->SetPoint(i, positions[i], fPosReco[i]);
-    fPosRecoVsPos->SetPointError(i, SFTools::GetPosError(collimator, testBench), fPosRecoErr[i]);
+    fResults.fPosReco.push_back(mean);
+    fResults.fPosRecoErr.push_back(meanErr);
+    fPosRecoVsPos->SetPoint(i, positions[i], fResults.fPosReco[i]);
+    fPosRecoVsPos->SetPointError(i, SFTools::GetPosError(collimator, testBench), fResults.fPosRecoErr[i]);
     
-    fPosRes.push_back(FWHM[0]);
-    fPosResErr.push_back(FWHM[1]);
-    fPosResVsPos->SetPoint(i, positions[i], fPosRes[i]);
-    fPosResVsPos->SetPointError(i, SFTools::GetPosError(collimator, testBench), fPosResErr[i]);
+    fResults.fPosResAll.push_back(FWHM[0]);
+    fResults.fPosResAllErr.push_back(FWHM[1]);
+    fPosResVsPos->SetPoint(i, positions[i], fResults.fPosResAll[i]);
+    fPosResVsPos->SetPointError(i, SFTools::GetPosError(collimator, testBench), fResults.fPosResAllErr[i]);
     
-    posResAv += fPosRes[i] * (1./pow(fPosResErr[i], 2));
-    posResAvErr += (1./pow(fPosResErr[i], 2));
+    posResAv += fResults.fPosResAll[i] * (1./pow(fResults.fPosResAllErr[i], 2));
+    posResAvErr += (1./pow(fResults.fPosResAllErr[i], 2));
   }
   
-  fPosResSeries = posResAv/posResAvErr;
-  fPosResSeriesErr = sqrt(1./posResAvErr);
+  fResults.fPosRes = posResAv/posResAvErr;
+  fResults.fPosResErr = sqrt(1./posResAvErr);
   
   std::cout << "Average position resolution for this series is: ";
-  std::cout << fPosResSeries << " +/- " << fPosResSeriesErr << " mm\n\n"  << std::endl;
+  std::cout << fResults.fPosRes << " +/- " << fResults.fPosResErr << " mm\n\n"  << std::endl;
     
   return true;  
 }
@@ -230,63 +228,6 @@ std::vector <TH1D*> SFPositionRes::GetSpectra(void){
   }
   
   return fSpecAv;
-}
-//------------------------------------------------------------------
-std::vector <double> SFPositionRes::GetPositionResSeries(void){
-
-  std::vector <double> temp;
-  
-  temp.push_back(fPosResSeries);
-  temp.push_back(fPosResSeriesErr);
-  
-  if(temp[0]==-1 || temp[1]==-1){
-    std::cerr << "##### Error in SFPositionRes::GetPositionResSeries()!";
-    std::cerr << " Incorrect results!" << std::endl;
-    std::cerr << "PosRes = " << temp[0] << " +/- " << temp[1] << std::endl;
-    std::abort();
-  }
-  
-  return temp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFPositionRes::GetPositionRes(void){
-
-  if(fPosRes.empty()){
-    std::cerr << "##### Error in SFPositionRes::GetPositionRes()! Empty vector!" << std::endl;
-    std::abort();
-  }
-  
-  return fPosRes;
-}
-//------------------------------------------------------------------
-std::vector <double> SFPositionRes::GetPositionResError(void){
-  
-  if(fPosResErr.empty()){
-    std::cerr << "##### Error in SFPositionRes::GetPositionResError()! Empty vector!" << std::endl;
-    std::abort();
-  }
-  
-  return fPosResErr;
-}
-//------------------------------------------------------------------
-std::vector <double> SFPositionRes::GetPositionReco(void){
-
-  if(fPosReco.empty()){
-    std::cerr << "##### Error in SFPositionRes::GetPositionReco()! Empty vector!" << std::endl;
-    std::abort();
-  }
-  
-  return fPosReco;
-}
-//------------------------------------------------------------------
-std::vector <double> SFPositionRes::GetPositionRecoError(void){
-  
-  if(fPosRecoErr.empty()){
-    std::cerr << "##### Error in SFPositionRes::GetPositionRecoError()! Empty vector!" << std::endl;
-    std::abort();
-  }
-  
-  return fPosRecoErr;
 }
 //------------------------------------------------------------------
 void SFPositionRes::Print(void){

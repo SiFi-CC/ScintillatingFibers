@@ -18,11 +18,7 @@ ClassImp(SFTimingRes);
 SFTimingRes::SFTimingRes(int seriesNo): fSeriesNo(seriesNo),
                                         fData(nullptr), 
                                         fTResGraph(nullptr),
-                                        fTResECutGraph(nullptr),
-                                        fTimeRes(-1),
-                                        fTimeResErr(-1),
-                                        fTimeResECut(-1),
-                                        fTimeResECutErr(-1) {
+                                        fTResECutGraph(nullptr) {
   
   try{
     fData = new SFData(fSeriesNo);
@@ -163,22 +159,23 @@ bool SFTimingRes::AnalyzeNoECut(void){
     else 
       parNum=2;
     
-    fTimeResAll.push_back(fun[i]->GetParameter(parNum));
-    fTimeResAllErr.push_back(fun[i]->GetParError(parNum));
+    fResults.fTimeResAll.push_back(fun[i]->GetParameter(parNum));
+    fResults.fTimeResAllErr.push_back(fun[i]->GetParError(parNum));
     
     graph->SetPoint(i, positions[i], fun[i]->GetParameter(parNum-1));
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun[i]->GetParameter(parNum));
     
-    tResAv += fTimeResAll[i]*(1./pow(fTimeResAllErr[i], 2));
-    tResAvErr += 1./pow(fTimeResAllErr[i], 2);
+    tResAv += fResults.fTimeResAll[i]*(1./pow(fResults.fTimeResAllErr[i], 2));
+    tResAvErr += 1./pow(fResults.fTimeResAllErr[i], 2);
   }
 
   
-  fTResGraph  = graph;
-  fTimeRes    = tResAv/tResAvErr;
-  fTimeResErr = sqrt(1./tResAvErr);
+  fTResGraph           = graph;
+  fResults.fTimeRes    = tResAv/tResAvErr;
+  fResults.fTimeResErr = sqrt(1./tResAvErr);
   
-  std::cout << "Average timing resolution: " << fTimeRes << " +/- " << fTimeResErr << " ns" << std::endl;
+  std::cout << "Average timing resolution: " << fResults.fTimeRes 
+            << " +/- " << fResults.fTimeResErr << " ns" << std::endl;
   
   return true;
 }
@@ -211,7 +208,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
   //double f = 2*sqrt(2*log(2));   //to recalculate sigma into FWHM
   TString cut;
   
-  double center_ch0, delta_ch0;  //changed here for smaller cut
+  double center_ch0, delta_ch0;  //change here for smaller cut
   double center_ch1, delta_ch1;  //
   
   double tResAv = 0;
@@ -231,7 +228,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
     peakFin_ch0[i]->FindPeakRange(xmin_ch0, xmax_ch0);
     peakFin_ch1[i]->FindPeakRange(xmin_ch1, xmax_ch1);
     
-    center_ch0 = xmin_ch0+(xmax_ch0-xmin_ch0)/2.;   //changed here for smaller cut
+    center_ch0 = xmin_ch0+(xmax_ch0-xmin_ch0)/2.;   //change here for smaller cut
     delta_ch0  = (xmax_ch0-xmin_ch0)/6.;            //
     center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;   //
     delta_ch1  = (xmax_ch1-xmin_ch1)/6.;            //
@@ -247,21 +244,22 @@ bool SFTimingRes::AnalyzeWithECut(void){
     mean = fT0DiffECut[i]->GetMean();
     sigma = fT0DiffECut[i]->GetRMS();
     fT0DiffECut[i]->Fit(fun, "Q", "", mean-5*sigma, mean+5*sigma);
-    fTimeResECutAll.push_back(fun->GetParameter(2));	//Timing resolution as sigma, if FWHM needed multiply by f
-    fTimeResECutAllErr.push_back(fun->GetParError(2));		//FWHM - multiply by f
+    fResults.fTimeResECutAll.push_back(fun->GetParameter(2));   //Timing resolution as sigma, if FWHM needed multiply by f
+    fResults.fTimeResECutAllErr.push_back(fun->GetParError(2)); //FWHM - multiply by f
     
     graph->SetPoint(i, positions[i], fun->GetParameter(1));
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun->GetParameter(2));   //FWHM - multiply by f
     
-    tResAv += fTimeResECutAll[i]*(1./pow(fTimeResECutAllErr[i], 2));
-    tResAvErr += 1./pow(fTimeResECutAllErr[i], 2);
+    tResAv += fResults.fTimeResECutAll[i]*(1./pow(fResults.fTimeResECutAllErr[i], 2));
+    tResAvErr += 1./pow(fResults.fTimeResECutAllErr[i], 2);
   }
   
-  fTResECutGraph  = graph;
-  fTimeResECut    = tResAv/tResAvErr;
-  fTimeResECutErr = sqrt(1./tResAvErr);
+  fTResECutGraph           = graph;
+  fResults.fTimeResECut    = tResAv/tResAvErr;
+  fResults.fTimeResECutErr = sqrt(1./tResAvErr);
   
-  std::cout << "Average timing resolution: " << fTimeResECut << " +/- " << fTimeResECutErr << " ns" << std::endl; 
+  std::cout << "Average timing resolution: " << fResults.fTimeResECut 
+            << " +/- " << fResults.fTimeResECutErr << " ns" << std::endl; 
   
   return true;
 }
@@ -298,67 +296,6 @@ TGraphErrors* SFTimingRes::GetTimingResGraph(bool type){
     return fTResGraph;
   else if(type==1)
     return fTResECutGraph;
-}
-//------------------------------------------------------------------
-/// Returns vector containing average timing resolution for the 
-/// series along with the uncertainty.
-/// \param type - type of analysis (0 - no cut, 1 - with cut)
-std::vector <double> SFTimingRes::GetTimingResolution(bool type){
-    
-  std::vector <double> tmp;
-  
-  if(type==0){
-    tmp.push_back(fTimeRes);
-    tmp.push_back(fTimeResErr);
-  }
-  else if(type==1){
-    tmp.push_back(fTimeResECut);
-    tmp.push_back(fTimeResECutErr);
-  }
-
-  if(tmp[0]==-1 || tmp[1]==-1){
-    std::cerr << "##### Error in SFTimingRes::GetTimingResolution()!" << std::endl;
-    std::cerr << "Incorrect values: " << tmp[0] << " +/- " << tmp[1] << " ns" << std::endl;
-    std::abort();
-  }
-
-  return tmp;
-}
-//------------------------------------------------------------------
-/// Returns vector containing timing resolution values for 
-/// all measurements in the series.
-/// \param type - type of analysis (0 - no cut, 1 - with cut)
-std::vector <double> SFTimingRes::GetTimingResolutionAll(bool type){
-
-  if((type==0 && fTimeResAll.empty()) || 
-     (type==1 && fTimeResECutAll.empty())){
-    std::cerr << "##### Error in SFTimingRes::GetTimingResolutionAll()!" << std::endl;
-    std::cerr << "No results available!" << std::endl;
-    std::abort();
-  }
-  
-  if(type==0)
-    return fTimeResAll;
-  else if(type==1)
-    return fTimeResECutAll;
-}
-//------------------------------------------------------------------
-/// Returns vector containing uncertainties of timing resolutions for 
-/// all measurements in the series.
-/// \param type - type of analysis (0 - no cut, 1 - with cut)
-std::vector <double> SFTimingRes::GetTimingResolutionAllErr(bool type){
-  
-  if((type==0 && fTimeResAllErr.empty()) || 
-     (type==1 && fTimeResECutAllErr.empty())){
-    std::cerr << "##### Error in SFTimingRes::GetTimingResolutionAllErr()!" << std::endl;
-    std::cerr << "No results available!" << std::endl;
-    std::abort();
-  }
-  
-  if(type==0)
-    return fTimeResAllErr;
-  else if(type==1)
-    return fTimeResECutAllErr;   
 }
 //------------------------------------------------------------------
 /// Returns vector of ratio histograms used for cut on scattered events.

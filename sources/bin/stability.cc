@@ -20,14 +20,20 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
   
-  if(argc<2 || argc>6){
+  if(argc<2){
     std::cout << "to run type: ./stability seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
- 
-  int seriesNo = atoi(argv[1]);
 
   SFData *data;
   try{
@@ -65,17 +71,16 @@ int main(int argc, char **argv){
   stab->AnalyzeStability(0);
   TGraphErrors *gCh0PeakPos  = stab->GetPeakPosGraph(0);
   TGraphErrors *gCh0Residual = stab->GetResidualsGraph(0);
-  double stdDevCh0 = stab->GetStdDev(0);
-  double meanCh0   = stab->GetMean(0);
   std::vector <TH1D*> specCh0 = stab->GetSpectra(0);
   
   //----- stability of channel 1
   stab->AnalyzeStability(1);
   TGraphErrors *gCh1PeakPos  = stab->GetPeakPosGraph(1);
   TGraphErrors *gCh1Residual = stab->GetResidualsGraph(1);
-  double stdDevCh1 = stab->GetStdDev(1);
-  double meanCh1   = stab->GetMean(1);
   std::vector <TH1D*> specCh1 = stab->GetSpectra(1);
+  
+  //----- numerical results
+  StabilityResults results = stab->GetResults();
   
   TCanvas *can = new TCanvas("can", "can", 1000, 700);
   TPad *pad_peakPos = new TPad("pad_peakPos", "pad_peakPos", 0, 0.3, 1, 1, 10, 0);
@@ -99,9 +104,9 @@ int main(int argc, char **argv){
   text.SetNDC(true);
   text.SetTextSize(0.04);
   text.SetTextColor(kBlack);
-  text.DrawLatex(0.2, 0.3, Form("#bar{PP}_{ch0} = %.2f +/- %.2f", meanCh0, stdDevCh0));
+  text.DrawLatex(0.2, 0.3, Form("#bar{PP}_{ch0} = %.2f +/- %.2f", results.fCh0Mean, results.fCh0StdDev));
   text.SetTextColor(kRed);
-  text.DrawLatex(0.2, 0.2, Form("#bar{PP}_{ch1} = %.2f +/- %.2f", meanCh1, stdDevCh1));
+  text.DrawLatex(0.2, 0.2, Form("#bar{PP}_{ch1} = %.2f +/- %.2f", results.fCh1Mean, results.fCh1StdDev));
   
   can->cd(0);
   pad_res->Draw();
@@ -139,13 +144,6 @@ int main(int argc, char **argv){
   
   //----- saving
   TString fname = Form("stability_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -164,7 +162,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "STABILITY_MON";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, CH0_MEAN, CH0_STDDEV, CH1_MEAN, CH1_STDDEV) VALUES (%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), meanCh0, stdDevCh0, meanCh1, stdDevCh1);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, CH0_MEAN, CH0_STDDEV, CH1_MEAN, CH1_STDDEV) VALUES (%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fCh0Mean, results.fCh0StdDev, results.fCh1Mean, results.fCh1StdDev);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

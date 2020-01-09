@@ -153,27 +153,41 @@ double SFLightOutput::GetPDE(void){
   }
   
   double PDE_final = PDE*f;
+  
+  //----- input data canvas
   TLatex text;
+  TString cname = Form("fInputData_S%i", fSeriesNo);
 
-  TCanvas *can = new TCanvas("can","can",1800,1800);
+  TCanvas *can = new TCanvas(cname, cname, 1800, 1800);
   can->Divide(2,2);
+  
   can->cd(1);
+  gPad->SetGrid(1,1);
   gPDEvsVol->Draw("AP");
+  
   can->cd(2);
+  gPad->SetGrid(1,1);
   hLightOutvsWavelen->Draw("hist");
+  
   can->cd(3);
-  text.DrawLatex(0.2,0.9,Form("f = %.2f",f));
-  text.DrawLatex(0.2,0.8,Form("fPDE = %.2f",gPDEvsVol->Eval(overvol)));
-  text.DrawLatex(0.2,0.7,Form("fSiPM = %.2f",hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin())));
-  text.DrawLatex(0.2,0.6,Form("Nbins emission = %i",hLightOutvsWavelen->GetNbinsX()));
-  text.DrawLatex(0.2,0.5,Form("Nbins SiPM = %i",hPDEvsWavelen->GetNbinsX()));
-  text.DrawLatex(0.2,0.4,Form("Conv = %.2f",PDE));
-  text.DrawLatex(0.2,0.3,Form("PDE = %.2f",PDE_final));
+  text.DrawLatex(0.2,0.9,Form("PDE scaling factor f = %.2f", f));
+  text.DrawLatex(0.2,0.8,Form("PDE from PDE vs voltage curve = %.2f", gPDEvsVol->Eval(overvol)));
+  text.DrawLatex(0.2,0.7,Form("SiPM maximum sensitivity = %.2f", hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin())));
+  text.DrawLatex(0.2,0.6,Form("Nbins of emission spectrum = %i",hLightOutvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.2,0.5,Form("Nbins of SiPM sensitivity curve = %i",hPDEvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.2,0.4,Form("Emission and SiPMs sensitivity convolution = %.2f", PDE));
+  text.DrawLatex(0.2,0.3,Form("Final PDE value = %.2f",PDE_final));
+  
   can->cd(4);
+  gPad->SetGrid(1,1);
   hPDEvsWavelen->Draw();
-  can->SaveAs(Form("lightout_S%i.root",fSeriesNo));
+  
+  fInputData = (TCanvas*) can->Clone("fInputData");
+  TCanvas *dummy = new TCanvas("dummy", "dummy", 100, 100);
+  //-----
   
   file->Close();
+  
   std::cout << "\t----- PDE is: " << PDE << std::endl;
   
   return PDE_final;
@@ -215,8 +229,10 @@ bool SFLightOutput::CalculateLightOut(void){
   graph->SetTitle(gname);
   graph->SetMarkerStyle(4);
   
-  double lightOut, lightOutErr;
-  double lightOutAv, lightOutAvErr;
+  double lightOut      = 0;
+  double lightOutErr   = 0;
+  double lightOutAv    = 0;
+  double lightOutAvErr = 0;
   double x, yCh0, yCh1;
   
   for(int i=0; i<npoints; i++){
@@ -230,12 +246,12 @@ bool SFLightOutput::CalculateLightOut(void){
     lightOutAvErr += 1./pow(lightOutErr, 2);
   }
   
-  fLightOutResults.fLO    = lightOutAv/lightOutAvErr;
-  fLightOutResults.fLOErr = sqrt(1./lightOutAvErr);
+  fLightOutResults.fRes    = lightOutAv/lightOutAvErr;
+  fLightOutResults.fResErr = sqrt(1./lightOutAvErr);
   fLightOutGraph = graph;
   
-  std::cout << "Averaged and summed light output: " << fLightOutResults.fLO
-            <<" +/- " << fLightOutResults.fLOErr << " ph/MeV" << std::endl;
+  std::cout << "Averaged and summed light output: " << fLightOutResults.fRes
+            <<" +/- " << fLightOutResults.fResErr << " ph/MeV" << std::endl;
 
   return true;  
 }
@@ -287,7 +303,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  std::vector <double> parameters;
+  PeakParams parameters;
   double lightOut = 0;
   double lightOutErr = 0;
   double lightOutAv = 0;
@@ -301,9 +317,9 @@ bool SFLightOutput::CalculateLightOut(int ch){
     if(ch==1) distance = 100.-positions[i];
     parameters = peakFin[i]->GetParameters();
     
-    lightOut = parameters[0]*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/results.fAttCombPol1);
-    lightOutErr = sqrt((pow(lightOut, 2)*pow(parameters[1], 2)/pow(parameters[0], 2)) + 
-                       (pow(lightOut, 2)*pow(results.fAttCombPol1Err, 2)/pow(results.fAttCombPol1, 4)));
+    lightOut = parameters.fPosition*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/results.fAttCombPol1);
+    lightOutErr = sqrt((pow(lightOut, 2)*pow(parameters.fSigma, 2)/
+                  pow(parameters.fPosition, 2)) + (pow(lightOut,2) * pow(results.fAttCombPol1Err, 2)/pow(results.fAttCombPol1, 4)));
     graph->SetPoint(i, positions[i], lightOut);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
     lightOutAv += lightOut * (1./pow(lightOutErr, 2));
@@ -314,13 +330,13 @@ bool SFLightOutput::CalculateLightOut(int ch){
   lightOutAvErr = sqrt(1./lightOutAvErr);
   
   if(ch==0){
-    fLightOutResults.fLOCh0    = lightOutAv;
-    fLightOutResults.fLOCh0Err = lightOutAvErr;
+    fLightOutResults.fResCh0    = lightOutAv;
+    fLightOutResults.fResCh0Err = lightOutAvErr;
     fLightOutCh0Graph = graph;
   }
   else if(ch==1){
-    fLightOutResults.fLOCh1    = lightOutAv;
-    fLightOutResults.fLOCh1Err = lightOutAvErr;
+    fLightOutResults.fResCh1    = lightOutAv;
+    fLightOutResults.fResCh1Err = lightOutAvErr;
     fLightOutCh1Graph = graph;
   }
   
@@ -356,8 +372,10 @@ bool SFLightOutput::CalculateLightCol(void){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  double lightCol, lightColErr;
-  double lightColAv, lightColAvErr;
+  double lightCol      = 0;
+  double lightColErr   = 0;
+  double lightColAv    = 0;
+  double lightColAvErr = 0;
   double x, yCh0, yCh1;
   
   for(int i=0; i<npoints; i++){
@@ -371,12 +389,12 @@ bool SFLightOutput::CalculateLightCol(void){
     lightColAvErr += 1./pow(lightColErr, 2);
   }
   
-  fLightColResults.fLC    = lightColAv/lightColAvErr;
-  fLightColResults.fLCErr = sqrt(1./lightColAvErr);
+  fLightColResults.fRes    = lightColAv/lightColAvErr;
+  fLightColResults.fResErr = sqrt(1./lightColAvErr);
   fLightColGraph = graph;
   
-  std::cout << "Average light collection for this series: " << fLightColResults.fLC
-            << " +/- " << fLightColResults.fLCErr << " ph/MeV" << std::endl;
+  std::cout << "Average light collection for this series: " << fLightColResults.fRes
+            << " +/- " << fLightColResults.fResErr << " ph/MeV" << std::endl;
  
   return true;
 }
@@ -400,7 +418,7 @@ bool SFLightOutput::CalculateLightCol(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  std::vector <double> peak_par;
+  PeakParams peak_par;
   double lightCol = 0;
   double lightColErr = 0;
   double lightColAv = 0;
@@ -418,8 +436,8 @@ bool SFLightOutput::CalculateLightCol(int ch){
     }
     
     peak_par = tempPF[i]->GetParameters();
-    lightCol = peak_par[0]/0.511;
-    lightColErr = peak_par[1]/0.511;
+    lightCol = peak_par.fPosition/0.511;
+    lightColErr = peak_par.fSigma/0.511;
     graph->SetPoint(i, positions[i], lightCol);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
     
@@ -432,13 +450,13 @@ bool SFLightOutput::CalculateLightCol(int ch){
   
   if(ch==0){
     fLightColCh0Graph = graph;
-    fLightColResults.fLCCh0    = lightColAv;
-    fLightColResults.fLCCh0Err = lightColAvErr;
+    fLightColResults.fResCh0    = lightColAv;
+    fLightColResults.fResCh0Err = lightColAvErr;
   }
   else if(ch==1){
     fLightColCh1Graph = graph;
-    fLightColResults.fLCCh1    = lightColAv;
-    fLightColResults.fLCCh1Err = lightColAvErr;
+    fLightColResults.fResCh1    = lightColAv;
+    fLightColResults.fResCh1Err = lightColAvErr;
   }
  
   std::cout << "Average light collection for this series and channel " << ch 

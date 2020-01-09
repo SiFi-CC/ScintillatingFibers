@@ -35,6 +35,22 @@
 /// class objects. If function FitAllSignals() is called, average values of time constants 
 /// and intensities for the whole series are calculated.
 
+
+struct TimeConstResults{
+    
+    double fFastDecAv    = -1;
+    double fFastDecAvErr = -1;
+    
+    double fSlowDecAv    = -1;
+    double fSlowDecAvErr = -1;
+    
+    double fIfastAv      = -1;
+    double fIslowAv      = -1;  
+    
+    std::vector <SFFitResults*> fResultsCh0;
+    std::vector <SFFitResults*> fResultsCh1;
+};
+
 class SFTimeConst : public TObject{
   
 private:
@@ -42,33 +58,25 @@ private:
   SFData  *fData;     ///< Data of the measurement series  
   double  fPE;        ///< Value of signals PE
   bool    fVerb;      ///< Verbose level: false - quiet, true - verbose
-  double  fFastDecAv;
-  double  fFastDecAvErr;
-  double  fSlowDecAv;
-  double  fSlowDecAvErr;   
-  double  fIfastAv;
-  double  fIslowAv;
   
-  std::vector <TProfile*>     fSignalsCh0;   ///< Vector containing all signals from channel 0
-  std::vector <TProfile*>     fSignalsCh1;   ///< Vector containing all signals from channel 1 
-  std::vector <SFFitResults*> fResultsCh0;   ///< Vector containing fit results for signals of channel 0
-  std::vector <SFFitResults*> fResultsCh1;   ///< Vector containing fit results for signals of channel 1
+  std::vector <TProfile*> fSignalsCh0;   ///< Vector containing all signals from channel 0
+  std::vector <TProfile*> fSignalsCh1;   ///< Vector containing all signals from channel 1 
+  TimeConstResults        fResults;
   
 public:
   SFTimeConst();
   SFTimeConst(int seriesNo, double PE, bool verb);
   ~SFTimeConst();
   
-  bool          SetDetails(int seriesNo, double PE, bool verb);
-  bool          FitDecayTimeDouble(TProfile *signal, int ID);
-  bool          FitDecayTimeSingle(TProfile *signal, int ID);
-  bool          FitAllSignals(void);
-  bool          FitAllSignals(int ch);
-  void          Print(void);
-  std::vector   <TProfile*>     GetSignals(int ch);
-  std::vector   <SFFitResults*> GetResults(int ch);
-  std::vector   <double>        GetAverageDecayConst(void);
-  std::vector   <double>        GetAverageIntensities(void);
+  bool                    SetDetails(int seriesNo, double PE, bool verb);
+  bool                    FitDecayTimeDouble(TProfile *signal, int ID);
+  bool                    FitDecayTimeSingle(TProfile *signal, int ID);
+  bool                    FitAllSignals(void);
+  bool                    FitAllSignals(int ch);
+  void                    Print(void);
+  std::vector <TProfile*> GetSignals(int ch);
+  TimeConstResults        GetResults(void){ return fResults; };
+  
   
   ClassDef(SFTimeConst,1)
   

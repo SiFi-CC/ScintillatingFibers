@@ -23,28 +23,16 @@
 #include "SFAttenuation.hh"
 #include <iostream>
 
-struct LightOutResults{
+struct LightResults{
     
-    double fLO    = -1;
-    double fLOErr = -1;
+    double fRes    = -1;
+    double fResErr = -1;
     
-    double fLOCh0    = -1;
-    double fLOCh0Err = -1;
+    double fResCh0    = -1;
+    double fResCh0Err = -1;
     
-    double fLOCh1    = -1;
-    double fLOCh1Err = -1;
-};
-
-struct LightColResults{
-    
-    double fLC    = -1;
-    double fLCErr = -1;
-    
-    double fLCCh0    = -1;
-    double fLCCh0Err = -1;
-    
-    double fLCCh1    = -1;
-    double fLCCh1Err = -1;
+    double fResCh1    = -1;
+    double fResCh1Err = -1;
 };
 
 class SFLightOutput : public TObject{
@@ -62,6 +50,8 @@ private:
     TGraphErrors *fLightColCh0Graph;
     TGraphErrors *fLightColCh1Graph;
     
+    TCanvas       *fInputData;
+    
     std::vector <TH1D*> fSpectraCh0;
     std::vector <TH1D*> fSpectraCh1;
     std::vector <SFPeakFinder*> fPFCh0;
@@ -70,8 +60,8 @@ private:
     SFData        *fData;
     SFAttenuation *fAtt;
     
-    LightOutResults fLightOutResults;
-    LightColResults fLightColResults;
+    LightResults fLightOutResults;
+    LightResults fLightColResults;
     
 public:
   SFLightOutput(int seriesNo);
@@ -86,8 +76,9 @@ public:
   double GetCrossTalk(void);
   double GetPDE(void);
   
-  LightOutResults GetLOResults(void) { return fLightOutResults; };
-  LightColResults GetLCResults(void) { return fLightColResults; };
+  LightResults GetLOResults(void) { return fLightOutResults; };
+  LightResults GetLCResults(void) { return fLightColResults; };
+  TCanvas*     GetInputData(void) { return fInputData; };
   
   TGraphErrors*        GetLightOutputGraph(void);
   TGraphErrors*        GetLightOutputGraph(int ch);

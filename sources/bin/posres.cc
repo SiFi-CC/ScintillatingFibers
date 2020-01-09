@@ -18,15 +18,21 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
   
-  if(argc<2 || argc>6){
+  if(argc<2){
     std::cout << "to run type: ./posres seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
   
-  int seriesNo = atoi(argv[1]);
-
   SFData *data;
   try{
     data = new SFData(seriesNo);
@@ -61,14 +67,14 @@ int main(int argc, char **argv){
   }
   
   posres->AnalyzePositionRes();
-  TGraphErrors *gPosRecoVsPos     = posres->GetPositionRecoGraph();
-  TGraphErrors *gPosResVsPos      = posres->GetPositionResGraph();
-  std::vector <TH1D*> hPosReco    = posres->GetPositionRecoDist();
-  std::vector <double> results    = posres->GetPositionResSeries();
-  std::vector <double> posRes     = posres->GetPositionRes();
-  std::vector <double> posResErr  = posres->GetPositionResError();
-  std::vector <double> posReco    = posres->GetPositionReco();
-  std::vector <double> posRecoErr = posres->GetPositionRecoError();
+  TGraphErrors *gPosRecoVsPos       = posres->GetPositionRecoGraph();
+  TGraphErrors *gPosResVsPos        = posres->GetPositionResGraph();
+  std::vector <TH1D*> hPosReco      = posres->GetPositionRecoDist();
+  PositionResResults results        = posres->GetResults();
+  std::vector <double> posResAll    = results.fPosResAll;
+  std::vector <double> posResAllErr = results.fPosResAllErr;
+  std::vector <double> posReco      = results.fPosReco;
+  std::vector <double> posRecoErr   = results.fPosRecoErr;
   
   std::vector <TH1D*> spec = posres->GetSpectra();
   
@@ -103,7 +109,7 @@ int main(int argc, char **argv){
     gPad->SetGrid(1,1);
     hPosReco[i]->Draw();
     text.DrawLatex(0.3, 0.8, Form("#mu = (%.2f +/- %.2f) mm", posReco[i], posRecoErr[i]));
-    text.DrawLatex(0.3, 0.7, Form("FWHM = (%.2f +/- %.2f) mm", posRes[i], posResErr[i]));
+    text.DrawLatex(0.3, 0.7, Form("FWHM = (%.2f +/- %.2f) mm", posResAll[i], posResAllErr[i]));
     
     can_spec->cd(i+1);
     gPad->SetGrid(1,1);
@@ -122,17 +128,10 @@ int main(int argc, char **argv){
   can_posres->cd(2);
   gPad->SetGrid(1,1);
   gPosResVsPos->Draw("AP");
-  text.DrawLatex(0.3, 0.8, Form("PR = (%.2f +/- %.2f) mm", results[0], results[1]));
+  text.DrawLatex(0.3, 0.8, Form("PR = (%.2f +/- %.2f) mm", results.fPosRes, results.fPosResErr));
   
   //----- saving
   TString fname = Form("posres_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -151,7 +150,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "POSITION_RESOLUTION";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, POSITION_RES, POSITION_RES_ERR) VALUES(%i, '%s', %f, %f)", table.Data(), seriesNo, fname_full.Data(), results[0], results[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, POSITION_RES, POSITION_RES_ERR) VALUES(%i, '%s', %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fPosRes, results.fPosResErr);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;

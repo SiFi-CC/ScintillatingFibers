@@ -18,14 +18,20 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
  
-  if(argc<2 || argc>6){
+  if(argc<2){
     std::cout << "to run type: ./timeres seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
-  
-  int seriesNo = atoi(argv[1]);
   
   SFData *data;
   try{
@@ -67,20 +73,22 @@ int main(int argc, char **argv){
   
   //----- timing resolution, no enery cut
   std::vector <TH1D*>  T0diff  = timeres->GetT0Diff(0);
-  std::vector <double> timeRes = timeres->GetTimingResolution(0);
   std::vector <TH1D*>  ratio   = timeres->GetRatios();
   TGraphErrors *gTimeRes       = timeres->GetTimingResGraph(0);
-  std::vector <double> timeResAll    = timeres->GetTimingResolutionAll(0);
-  std::vector <double> timeResAllErr = timeres->GetTimingResolutionAllErr(0);
   
   //----- timing resolution, with energy cut
   std::vector <TH1D*>  T0diffECut  = timeres->GetT0Diff(1);
-  std::vector <double> timeResECut = timeres->GetTimingResolution(1);
   std::vector <TH1D*>  specCh0  = timeres->GetSpectra(0);
   std::vector <TH1D*>  specCh1  = timeres->GetSpectra(1);
   TGraphErrors *gTimeResECut    = timeres->GetTimingResGraph(1);
-  std::vector <double> timeResECutAll = timeres->GetTimingResolutionAll(1);
-  std::vector <double> timeResECutAllErr = timeres->GetTimingResolutionAllErr(1);
+  
+  //----- numerical results
+  TimingResResults results = timeres->GetResults();
+  std::vector <double> timeResAll        = results.fTimeResAll; 
+  std::vector <double> timeResAllErr     = results.fTimeResAllErr; 
+  std::vector <double> timeResECutAll    = results.fTimeResECutAll;
+  std::vector <double> timeResECutAllErr = results.fTimeResECutAllErr;;
+  
   
   //----- drawing
   TCanvas *canTDiff = new TCanvas("canTDiff", "canTDiff", 1200, 1200);
@@ -229,22 +237,15 @@ int main(int argc, char **argv){
   canTimingRes->cd(1);
   gPad->SetGrid(1,1);
   gTimeRes->Draw("AP");
-  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", timeRes[0], timeRes[1]));
+  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", results.fTimeRes, results.fTimeResErr));
   
   canTimingRes->cd(2);
   gPad->SetGrid(1,1);
   gTimeResECut->Draw("AP");
-  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", timeResECut[0], timeResECut[1]));
+  text.DrawLatex(0.15, 0.8, Form("TR = (%.3f +/- %.3f) ns", results.fTimeResECut, results.fTimeResECutErr));
        
   //----- saving
   TString fname = Form("timeres_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -266,7 +267,7 @@ int main(int argc, char **argv){
   
    //----- writing results to the data base
   TString table = "TIMING_RESOLUTION";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, TIMERES, TIMERES_ERR, TIMERES_ECUT, TIMERES_ECUT_ERR) VALUES(%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), timeRes[0], timeRes[1], timeResECut[0], timeResECut[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, TIMERES, TIMERES_ERR, TIMERES_ECUT, TIMERES_ECUT_ERR) VALUES(%i, '%s', %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fTimeRes, results.fTimeResErr, results.fTimeResECut, results.fTimeResECutErr);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete timeres;

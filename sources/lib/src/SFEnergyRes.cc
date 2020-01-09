@@ -86,7 +86,7 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  std::vector <double> parameters;
+  PeakParams parameters;
   double enRes = 0;
   double enResErr = 0;
   double enResAve = 0;
@@ -95,9 +95,9 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   for(int i=0; i<npoints; i++){
     peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
-    enRes = parameters[1]/parameters[0];
-    enResErr = enRes * sqrt(pow(parameters[2], 2)/pow(parameters[0], 2) +
-                            pow(parameters[3], 2)/pow(parameters[1], 2));
+    enRes = parameters.fSigma/parameters.fPosition;
+    enResErr = enRes * sqrt(pow(parameters.fPositionErr, 2)/pow(parameters.fPosition, 2) +
+                            pow(parameters.fSigmaErr, 2)/pow(parameters.fSigma, 2));
     enRes = enRes*100;
     enResErr = enResErr*100;
     graph->SetPoint(i, positions[i], enRes);
@@ -175,7 +175,7 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  std::vector <double> parameters;
+  PeakParams parameters;
   double distCh0, distCh1;
   double enRes, enResErr;
   double enResAve, enResAveErr;
@@ -199,9 +199,9 @@ bool SFEnergyRes::CalculateEnergyRes(void){
     peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
     
-    enRes = parameters[1]/parameters[0];
-    enResErr = enRes * sqrt(pow(parameters[2], 2)/pow(parameters[0], 2) + 
-                            pow(parameters[3], 2)/pow(parameters[1], 2));
+    enRes = parameters.fSigma/parameters.fPosition;
+    enResErr = enRes * sqrt(pow(parameters.fPositionErr, 2)/pow(parameters.fPosition, 2) + 
+                            pow(parameters.fSigmaErr, 2)/pow(parameters.fSigma, 2));
     enRes = enRes*100;
     enResErr = enResErr*100;
     graph->SetPoint(i, positions[i], enRes);

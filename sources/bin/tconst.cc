@@ -18,14 +18,20 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
  
-  if(argc<2 || argc>6){
+  if(argc<2){
     std::cout << "to run type: ./tconst seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
-  
-  int seriesNo = atoi(argv[1]);
   
   SFData *data;
   try{
@@ -60,18 +66,17 @@ int main(int argc, char **argv){
   
   tconst->Print();
   tconst->FitAllSignals();
-  std::vector <TProfile*>     signalsCh0 = tconst->GetSignals(0);
-  std::vector <SFFitResults*> resultsCh0 = tconst->GetResults(0);
+  std::vector <TProfile*> signalsCh0 = tconst->GetSignals(0);
   std::vector <TF1*> compFunCh0;
   int statCh0 = -1;
   
-  std::vector <TProfile*>     signalsCh1 = tconst->GetSignals(1);
-  std::vector <SFFitResults*> resultsCh1 = tconst->GetResults(1);
+  std::vector <TProfile*> signalsCh1 = tconst->GetSignals(1);
   std::vector <TF1*> compFunCh1;
   int statCh1 = -1;
   
-  std::vector <double> decConst = tconst->GetAverageDecayConst();
-  std::vector <double> intens = tconst->GetAverageIntensities();
+  TimeConstResults results = tconst->GetResults();
+  std::vector <SFFitResults*> resultsCh0 = results.fResultsCh0;
+  std::vector <SFFitResults*> resultsCh1 = results.fResultsCh1;
   
   TCanvas *canCh0 = new TCanvas("canCh0", "canCh0", 1500, 1200);
   canCh0->DivideSquare(npoints);
@@ -162,14 +167,7 @@ int main(int argc, char **argv){
   legCh1->Draw();
   
   //----- saving
-  TString fname = Form("tconst_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
+  TString fname = Form("tconst_series%i.root", seriesNo);  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -187,7 +185,7 @@ int main(int argc, char **argv){
   
   //----- writing results to the data base
   TString table = "TIME_CONSTANTS";
-  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, FAST_DEC, FAST_DEC_ERR, SLOW_DEC, SLOW_DEC_ERR, IFAST, ISLOW) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), decConst[0], decConst[1], decConst[2], decConst[3], intens[0], intens[1]);
+  TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, FAST_DEC, FAST_DEC_ERR, SLOW_DEC, SLOW_DEC_ERR, IFAST, ISLOW) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), results.fFastDecAv, results.fFastDecAvErr, results.fSlowDecAv, results.fSlowDecAvErr, results.fIfastAv, results.fIslowAv);
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete tconst;

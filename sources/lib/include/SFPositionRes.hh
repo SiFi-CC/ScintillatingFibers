@@ -22,13 +22,22 @@
 #include <iostream>
 #include "TCanvas.h"
 
+struct PositionResResults{
+    
+    double fPosRes    = -1;
+    double fPosResErr = -1;
+    
+    std::vector <double> fPosResAll;
+    std::vector <double> fPosResAllErr;
+    
+    std::vector <double> fPosReco;
+    std::vector <double> fPosRecoErr;    
+};
+
 class SFPositionRes : public TObject{
     
 private:
     int                  fSeriesNo;
-    double               fPosResSeries;
-    double               fPosResSeriesErr;
-    
     SFData              *fData;
     SFAttenuation       *fAtt;
     
@@ -40,10 +49,7 @@ private:
     std::vector <TH1D*>  fPosRecoDist;
     std::vector <TH1D*>  fSpecAv;
     
-    std::vector <double> fPosRes;
-    std::vector <double> fPosResErr;
-    std::vector <double> fPosReco;
-    std::vector <double> fPosRecoErr;
+    PositionResResults   fResults;
     
     bool LoadRatios(void);
     
@@ -60,16 +66,12 @@ public:
     std::vector <TH1D*>  GetRatios(void);
     std::vector <TH1D*>  GetPositionRecoDist(void);
     std::vector <TH1D*>  GetSpectra(void);
-    std::vector <double> GetPositionResSeries(void);
-    std::vector <double> GetPositionRes(void);
-    std::vector <double> GetPositionResError(void);
-    std::vector <double> GetPositionReco(void);
-    std::vector <double> GetPositionRecoError(void);
+    
+    PositionResResults   GetResults(void) { return fResults; };
     
     void Print();
     
-    
-  ClassDef(SFPositionRes,1)
+    ClassDef(SFPositionRes,1)
 };
 
 #endif

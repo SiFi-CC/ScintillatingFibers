@@ -176,14 +176,14 @@ bool SFAttenuation::AttSeparateCh(int ch){
   graph->SetMarkerStyle(4);
   
   std::vector <SFPeakFinder*> peakfin;
-  std::vector <double> parameter;
+  PeakParams peakParams;
   
   for(int i=0; i<npoints; i++){
     peakfin.push_back(new SFPeakFinder(spectra[i], false));
     peakfin[i]->FindPeakFit();
-    parameter = peakfin[i]->GetParameters();
-    graph->SetPoint(i, positions[i], parameter[0]);
-    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), parameter[2]);
+    peakParams = peakfin[i]->GetParameters();
+    graph->SetPoint(i, positions[i], peakParams.fPosition);
+    graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), peakParams.fPositionErr);
   }
   
   //----- fitting 

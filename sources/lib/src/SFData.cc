@@ -31,12 +31,7 @@ SFData::SFData(): fSeriesNo(-1),
                   fSiPM("dummy"),
                   fOvervoltage(-1),
                   fCoupling("dummy"),
-                  fTempFile("dummy"),
-                  fSpectrum(nullptr),
-                  fHist(nullptr),
-                  fHist2D(nullptr),
-                  fSignalProfile(nullptr),
-                  fSignal(nullptr) {
+                  fTempFile("dummy") {
                       
  std::cout << "##### Warning in SFData constructor!" << std::endl;
  std::cout << "You are using the default constructor. Set the series number & open data base!" << std::endl;
@@ -55,12 +50,7 @@ SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fSiPM("dummy"),
                               fOvervoltage(-1),
                               fCoupling("dummy"),
-                              fTempFile("dummy"),
-                              fSpectrum(nullptr),
-                              fHist(nullptr),
-                              fHist2D(nullptr),
-                              fSignalProfile(nullptr),
-                              fSignal(nullptr) {
+                              fTempFile("dummy") {
                                   
  bool db_stat  = OpenDataBase("ScintFib_2.db");
  bool set_stat = SetDetails(seriesNo);
@@ -366,18 +356,18 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
-  fSpectrum = new TH1D();
+  TH1D *spec = nullptr;
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
   tree->Draw(selection, cut);
-  fSpectrum = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID)+SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
-  fSpectrum->SetName(hname);
-  fSpectrum->SetTitle(htitle);
+  spec->SetName(hname);
+  spec->SetTitle(htitle);
   
-  return fSpectrum; 
+  return spec;
 }
 //------------------------------------------------------------------
 /// Returns a vector with all spectra of requested type.
@@ -388,13 +378,12 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
 /// Like with sigle spectrum, it is possible to have cut and raw spectra.
 std::vector <TH1D*> SFData::GetSpectra(int ch, SFSelectionType sel_type, TString cut){
 
-  bool empty = fSpectra.empty();
+  std::vector <TH1D*> spectra;  
   for(int i=0; i<fNpoints; i++){
-   if(empty) fSpectra.push_back(new TH1D());
-   fSpectra[i] = GetSpectrum(ch, sel_type, cut, fMeasureID[i]);
+    spectra.push_back(GetSpectrum(ch, sel_type, cut, fMeasureID[i]));
   }
   
-  return fSpectra;
+  return spectra;
 }
 //------------------------------------------------------------------
 /// Returns single requested custom 1D histogram.
@@ -411,19 +400,19 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID,
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
-  fHist = new TH1D();
+  TH1D* hist = nullptr;
   
   gUnique+=1;
   TString selection; 
   selection = SFDrawCommands::GetSelection(sel_type, gUnique, customNumbers);
   tree->Draw(selection, cut);
-  fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
-  fHist->SetName(hname);
-  fHist->SetTitle(htitle);
+  hist->SetName(hname);
+  hist->SetTitle(htitle);
   
-  return fHist;
+  return hist;
 }
 //------------------------------------------------------------------
 /// Returns a vector of requested custom 1D histograms for all measurements in this series.
@@ -432,13 +421,12 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID,
 /// all events will be drawn.
 std::vector <TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TString cut){
   
-  bool empty = fHists.empty();
+  std::vector <TH1D*> hists;
   for(int i=0; i<fNpoints; i++){
-    if(empty) fHists.push_back(new TH1D());
-    fHists[i] = GetCustomHistogram(sel_type, cut, fMeasureID[i]);
+    hists.push_back(GetCustomHistogram(sel_type, cut, fMeasureID[i]));
   }
   
-  return fHists;
+  return hists;
 }
 //------------------------------------------------------------------
 TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, int ID, 
@@ -450,7 +438,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
-  fHist = new TH1D();
+  TH1D* hist = nullptr;
   
   gUnique+=1;
   TString selection;
@@ -459,13 +447,13 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
   else 
     selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch, customNumbers);
   tree->Draw(selection, cut);
-  fHist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID)+ SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
-  fHist->SetName(hname);
-  fHist->SetTitle(htitle);
+  hist->SetName(hname);
+  hist->SetTitle(htitle);
   
-  return fHist;
+  return hist;
     
 }
 //------------------------------------------------------------------
@@ -482,18 +470,18 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
-  fHist2D = new TH2D();
+  TH2D *hist = nullptr;
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique);
   tree->Draw(selection, cut, "colz");
-  fHist2D = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
+  hist = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
-  fHist2D->SetName(hname);
-  fHist2D->SetTitle(htitle);
+  hist->SetName(hname);
+  hist->SetTitle(htitle);
   
-  return fHist2D;
+  return hist;
 }
 //------------------------------------------------------------------
 /// Returns a vector of requested 2D correlation histograms for all measurements in 
@@ -503,13 +491,12 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
 /// all events will be drawn.
 std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut){
   
-  bool empty = fHists2D.empty();
+    std::vector <TH2D*> hists;
   for(int i=0; i<fNpoints; i++){
-    if(empty) fHists2D.push_back(new TH2D());
-    fHists2D[i] = GetCorrHistogram(sel_type, cut, fMeasureID[i]);
+    hists.push_back(GetCorrHistogram(sel_type, cut, fMeasureID[i]));
   }
   
-  return fHists2D;
+  return hists;
 }
 //------------------------------------------------------------------
 /// Returns averaged signal.
@@ -558,7 +545,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   
   TString hname = "sig_profile";
   TString htitle = "sig_profile";
-  fSignalProfile = new TProfile(hname, htitle, ipoints, 0, ipoints, "");
+  TProfile *psig = new TProfile(hname, htitle, ipoints, 0, ipoints, "");
   
   int nentries = tree->GetEntries();
   double baseline = 0.;
@@ -585,8 +572,8 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
      input.seekg(infile);
      for(int ii=0; ii<ipoints; ii++){
        input.read((char*)&x, sizeof(x));
-       if(bl) fSignalProfile->Fill(ii, (x/gmV)-baseline);
-       else   fSignalProfile->Fill(ii, (x/gmV));
+       if(bl) psig->Fill(ii, (x/gmV)-baseline);
+       else   psig->Fill(ii, (x/gmV));
      }
      if(counter<number) counter++;
      else break;
@@ -595,8 +582,8 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   
   hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_num_%i", fSeriesNo, ch, position, ID, counter);
   htitle = hname + " " + cut;
-  fSignalProfile->SetName(hname);
-  fSignalProfile->SetTitle(htitle);
+  psig->SetName(hname);
+  psig->SetTitle(htitle);
   
   if(counter<number){ 
     std::cout << "##### Warning in SFData::GetSignalAverage()! " << counter 
@@ -606,7 +593,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   
   input.close();
   
-  return fSignalProfile;
+  return psig;
 }
 //------------------------------------------------------------------
 TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number){
@@ -631,7 +618,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   
   TString hname = "sig_profile";
   TString htitle = "sig_profile";
-  fSignalProfile = new TProfile(hname, htitle, ipoints, 0, ipoints, "");
+  TProfile *psig = new TProfile(hname, htitle, ipoints, 0, ipoints, "");
   
   int nentries = tree->GetEntries();
   int counter = 0;
@@ -645,7 +632,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
    if(condition && fabs(sig->GetT0()-firstT0)<1){
      iTree->GetEntry(i);
      for(int ii=0; ii<ipoints; ii++){
-       fSignalProfile->Fill(ii+1, (*iVolt)[ii]);
+       psig->Fill(ii+1, (*iVolt)[ii]);
      }
      if(counter<number) counter++;
      else break;
@@ -654,8 +641,8 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   
   hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_num_%i", fSeriesNo, ch, position, ID, counter);
   htitle = hname + " " + cut;
-  fSignalProfile->SetName(hname);
-  fSignalProfile->SetTitle(htitle);
+  psig->SetName(hname);
+  psig->SetTitle(htitle);
   
   if(counter<number){ 
     std::cout << "##### Warning in SFData::GetSignalAverage()! " << counter 
@@ -663,7 +650,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
     std::cout << "Position: " << position << "\t channel: " << ch << std::endl; 
   }
   
-  return fSignalProfile;
+  return psig;
 }
 //------------------------------------------------------------------
 TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl){
@@ -704,7 +691,7 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   TString hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_no%i", fSeriesNo, ch, position, ID, number);
   TString htitle = hname + " " + cut; 
   
-  fSignal = new TH1D(hname, htitle, ipoints, 0, ipoints);
+  TH1D *hsig = new TH1D(hname, htitle, ipoints, 0, ipoints);
   
   int nentries = tree->GetEntries();
   double baseline = 0.;
@@ -731,15 +718,15 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
         input.seekg(infile);
         for(int ii=1; ii<ipoints+1; ii++){
           input.read((char*)&x, sizeof(x));
-          if(bl) fSignal->SetBinContent(ii, (x/gmV)-baseline);
-          else   fSignal->SetBinContent(ii, (x/gmV));
+          if(bl) hsig->SetBinContent(ii, (x/gmV)-baseline);
+          else   hsig->SetBinContent(ii, (x/gmV));
         }
     }
   }
   
   input.close();
   
-  return fSignal;
+  return hsig;
 }
 //------------------------------------------------------------------
 /// Returns single signal.
@@ -773,7 +760,7 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
   TString hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_no%i", fSeriesNo, ch, position, ID, number);
   TString htitle = hname + " " + cut;
   
-  fSignal = new TH1D(hname, htitle, ipoints, 0, ipoints);
+  TH1D *hsig = new TH1D(hname, htitle, ipoints, 0, ipoints);
   
   int nentries = tree->GetEntries();
   int counter = 0;
@@ -787,12 +774,12 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
       counter++;
       if(counter!=number) continue;
       for(int ii=0; ii<ipoints; ii++){
-        fSignal->SetBinContent(ii+1, (*iVolt)[ii]);
+        hsig->SetBinContent(ii+1, (*iVolt)[ii]);
       }
     }
   }
   
-  return fSignal;
+  return hsig;
 }
 //------------------------------------------------------------------
 /// Prints details of currently analyzed experimental series

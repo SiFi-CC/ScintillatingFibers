@@ -12,12 +12,12 @@ find_package(FitterFactory)
 
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/lib/include)
 include_directories($ENV{DD6PATH}sources/include)
 
 add_subdirectory(sources)
 
-find_package(Doxygen)
+#find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/sources/Doxyfile.in)

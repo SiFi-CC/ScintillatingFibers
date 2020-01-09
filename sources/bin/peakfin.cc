@@ -18,13 +18,19 @@
 
 int main(int argc, char **argv){
     
-  if(argc<2 || argc>6){
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
+    
+  if(argc<2){
     std::cout << "to run type: ./posres seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
-  
-  int seriesNo = atoi(argv[1]);
   
   SFData *data;
   try{
@@ -58,6 +64,11 @@ int main(int argc, char **argv){
   std::vector <TH1D*> hSpecAv  = data->GetCustomHistograms(SFSelectionType::PEAverage, 
                                  "ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>0 && ch_1.fPE>0");
   std::vector <TH1D*> hSpecSum;
+  
+  std::vector <TH1D*> hPeakCh0;
+  std::vector <TH1D*> hPeakCh1;
+  std::vector <TH1D*> hPeakAv;
+  std::vector <TH1D*> hPeakSum;
     
   std::vector <SFPeakFinder*> pfCh0;
   std::vector <SFPeakFinder*> pfCh1;
@@ -88,8 +99,19 @@ int main(int argc, char **argv){
     pfCh1[i]->FindPeakFit();
     pfSum[i]->FindPeakFit();
     pfAve[i]->FindPeakFit();
+    
+    pfCh0[i]->SubtractBackground();
+    pfCh1[i]->SubtractBackground();
+    pfSum[i]->SubtractBackground();
+    pfAve[i]->SubtractBackground();
+    
+    hPeakCh0.push_back(pfCh0[i]->GetPeak());
+    hPeakCh1.push_back(pfCh1[i]->GetPeak());
+    hPeakAv.push_back(pfAve[i]->GetPeak());
+    hPeakSum.push_back(pfSum[i]->GetPeak());
   }
   
+  //----- results of fitting
   TCanvas *canCh0 = new TCanvas("canCh0", "canCh0", 1200, 1200);
   canCh0->DivideSquare(npoints);
   
@@ -102,6 +124,23 @@ int main(int argc, char **argv){
   TCanvas *canAve = new TCanvas("canAve", "canAve", 1200, 1200);
   canAve->DivideSquare(npoints);
   
+  //----- results of background subtracting
+  TCanvas *canCh0_bgs = new TCanvas("canCh0_bgs", "canCh0_bgs", 1200, 1200);
+  canCh0_bgs->DivideSquare(npoints);
+  
+  TCanvas *canCh1_bgs = new TCanvas("canCh1_bgs", "canCh1_bgs", 1200, 1200);
+  canCh1_bgs->DivideSquare(npoints);
+  
+  TCanvas *canSum_bgs = new TCanvas("canSum_bgs", "canSum_bgs", 1200, 1200);
+  canSum_bgs->DivideSquare(npoints);
+  
+  TCanvas *canAve_bgs = new TCanvas("canAve_bgs", "canAve_bgs", 1200, 1200);
+  canAve_bgs->DivideSquare(npoints);
+  
+  //----- drawing
+  
+  double maxval = 0;
+  
   for(int i=0; i<npoints; i++){
     canCh0->cd(i+1);
     gPad->SetGrid(1,1);
@@ -109,7 +148,18 @@ int main(int argc, char **argv){
     hSpecCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
     hSpecCh0[i]->GetYaxis()->SetTitle("counts");
     hSpecCh0[i]->SetTitle(Form("PE spectrum: S%i ch0 %.1f mm", seriesNo, positions[i]));
+    maxval = hSpecCh0[i]->GetBinContent(hSpecCh0[i]->GetMaximumBin());
+    hSpecCh0[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    hSpecCh0[i]->DrawClone();
+    
+    canCh0_bgs->cd(i+1);
+    gPad->SetGrid(1,1);
     hSpecCh0[i]->Draw();
+    hSpecCh0[i]->GetFunction("fun_pol1_clone")->Delete();
+    hSpecCh0[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecCh0[i]->GetFunction("fun_gaus_clone")->Delete();
+    hPeakCh0[i]->SetLineColor(kMagenta);
+    hPeakCh0[i]->Draw("same");
     
     canCh1->cd(i+1);
     gPad->SetGrid(1,1);
@@ -117,7 +167,18 @@ int main(int argc, char **argv){
     hSpecCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
     hSpecCh1[i]->GetYaxis()->SetTitle("counts");
     hSpecCh1[i]->SetTitle(Form("PE spectrum: S%i ch1 %.1f mm", seriesNo, positions[i]));
+    maxval = hSpecCh1[i]->GetBinContent(hSpecCh1[i]->GetMaximumBin());
+    hSpecCh1[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    hSpecCh1[i]->DrawClone();
+    
+    canCh1_bgs->cd(i+1);
+    gPad->SetGrid(1,1);
     hSpecCh1[i]->Draw();
+    hSpecCh1[i]->GetFunction("fun_pol1_clone")->Delete();
+    hSpecCh1[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecCh1[i]->GetFunction("fun_gaus_clone")->Delete();
+    hPeakCh1[i]->SetLineColor(kMagenta);
+    hPeakCh1[i]->Draw("same");
     
     canSum->cd(i+1);
     gPad->SetGrid(1,1);
@@ -126,7 +187,18 @@ int main(int argc, char **argv){
     hSpecSum[i]->GetYaxis()->SetTitle("counts");
     hSpecSum[i]->SetTitle(Form("Summed and corrected PE spectrum: S%i %.1f mm", 
                                seriesNo, positions[i]));
+    maxval = hSpecSum[i]->GetBinContent(hSpecSum[i]->GetMaximumBin());
+    hSpecSum[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    hSpecSum[i]->DrawClone();
+    
+    canSum_bgs->cd(i+1);
+    gPad->SetGrid(1,1);
     hSpecSum[i]->Draw();
+    hSpecSum[i]->GetFunction("fun_pol1_clone")->Delete();
+    hSpecSum[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecSum[i]->GetFunction("fun_gaus_clone")->Delete();
+    hPeakSum[i]->SetLineColor(kMagenta);
+    hPeakSum[i]->Draw("same");
     
     canAve->cd(i+1);
     gPad->SetGrid(1,1);
@@ -134,18 +206,22 @@ int main(int argc, char **argv){
     hSpecAv[i]->GetXaxis()->SetTitle("charge [P.E.]");
     hSpecAv[i]->GetYaxis()->SetTitle("counts");
     hSpecAv[i]->SetTitle(Form("Average charge spectrum: S%i %.1f mm", seriesNo, positions[i]));
+    maxval = hSpecAv[i]->GetBinContent(hSpecAv[i]->GetMaximumBin());
+    hSpecAv[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    hSpecAv[i]->DrawClone();
+    
+    canAve_bgs->cd(i+1);
+    gPad->SetGrid(1,1);
     hSpecAv[i]->Draw();
+    hSpecAv[i]->GetFunction("fun_pol1_clone")->Delete();
+    hSpecAv[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecAv[i]->GetFunction("fun_gaus_clone")->Delete();
+    hPeakAv[i]->SetLineColor(kMagenta);
+    hPeakAv[i]->Draw("same");
   }
   
   //----- saving
   TString fname = Form("peakfin_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
@@ -161,6 +237,10 @@ int main(int argc, char **argv){
   canCh1->Write();
   canSum->Write();
   canAve->Write();
+  canCh0_bgs->Write();
+  canCh1_bgs->Write();
+  canSum_bgs->Write();
+  canAve_bgs->Write();
   file->Close();
   
   //----- writing results to the data base

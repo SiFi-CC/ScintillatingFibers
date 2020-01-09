@@ -18,11 +18,7 @@ SFStabilityMon::SFStabilityMon(int seriesNo): fSeriesNo(seriesNo),
                                               fCh0Graph(nullptr),
                                               fCh1Graph(nullptr),
                                               fCh0ResGraph(nullptr),
-                                              fCh1ResGraph(nullptr),
-                                              fCh0StdDev(-1),
-                                              fCh1StdDev(-1),
-                                              fCh0Mean(-1),
-                                              fCh1Mean(-1){
+                                              fCh1ResGraph(nullptr) {
   
   try{
     fData = new SFData(fSeriesNo);
@@ -55,11 +51,11 @@ bool SFStabilityMon::AnalyzeStability(int ch){
   std::cout << "----- Series: " << fSeriesNo << std::endl; 
   std::cout << "----- Channel: " << ch << std::endl; 
     
-  int npoints          = fData->GetNpoints();
+  int npoints = fData->GetNpoints();
     
   std::vector <SFPeakFinder*> peakFin;
   std::vector <TH1D*> spec;
-  std::vector <double> peakParams;
+  PeakParams  peakParams;
   std::vector <double> peakPositions;
   
   if(ch==0)
@@ -88,9 +84,9 @@ bool SFStabilityMon::AnalyzeStability(int ch){
     peakFin.push_back(new SFPeakFinder(spec[i], false));
     peakFin[i]->FindPeakFit();
     peakParams = peakFin[i]->GetParameters();
-    gPeakPos->SetPoint(i, i, peakParams[0]);
-    gPeakPos->SetPointError(i, 0, peakParams[2]);
-    peakPositions.push_back(peakParams[0]);
+    gPeakPos->SetPoint(i, i, peakParams.fPosition);
+    gPeakPos->SetPointError(i, 0, peakParams.fPositionErr);
+    peakPositions.push_back(peakParams.fPosition);
   }
   
   TF1 *funPol0 = new TF1("funPol0", "pol0", 0, npoints);
@@ -115,16 +111,16 @@ bool SFStabilityMon::AnalyzeStability(int ch){
   }
   
   if(ch==0){
-    fCh0Graph    = gPeakPos;
-    fCh0ResGraph = gResiduals;
-    fCh0Mean     = mean;
-    fCh0StdDev   = stdDev;
+    fCh0Graph           = gPeakPos;
+    fCh0ResGraph        = gResiduals;
+    fResults.fCh0Mean   = mean;
+    fResults.fCh0StdDev = stdDev;
   }
   else if(ch==1){
-    fCh1Graph    = gPeakPos;
-    fCh1ResGraph = gResiduals;
-    fCh1Mean     = mean;
-    fCh1StdDev   = stdDev;
+    fCh1Graph           = gPeakPos;
+    fCh1ResGraph        = gResiduals;
+    fResults.fCh1Mean   = mean;
+    fResults.fCh1StdDev = stdDev;
   }
     
   return true;  
@@ -174,52 +170,6 @@ TGraphErrors *SFStabilityMon::GetResidualsGraph(int ch){
   }
   
   return g;  
-}
-//------------------------------------------------------------------
-double SFStabilityMon::GetStdDev(int ch){
-    
-  double stdDev = -1;
-  
-  if(ch==0)
-    stdDev = fCh0StdDev;
-  else if(ch==1)
-    stdDev = fCh1StdDev;
-  else{
-    std::cerr << "##### Error in SFStabilityMon::GetStdDev()" << std::endl;  
-    std::cerr << "Incorrect channel number! Please check!" << std::endl;  
-    std::abort();
-  }
-  
-  if(fabs(stdDev+1)<1E-10){
-    std::cerr << "##### Error in SFStabilityMon::GetStdDev()" << std::endl;  
-    std::cerr << "Incorrect standard deviation value! Please check!" << std::endl;  
-    std::abort();
-  }
-    
-  return stdDev;
-}
-//------------------------------------------------------------------
-double SFStabilityMon::GetMean(int ch){
-    
-  double mean = -1;
-  
-  if(ch==0)
-    mean = fCh0Mean;
-  else if(ch==1)
-    mean = fCh1Mean;
-  else{
-    std::cerr << "##### Error in SFStabilityMon::GetMean()" << std::endl;  
-    std::cerr << "Incorrect channel number! Please check!" << std::endl;  
-    std::abort();
-  }
-  
-  if(fabs(mean+1)<1E-10){
-    std::cerr << "##### Error in SFStabilityMon::GetMean()" << std::endl;  
-    std::cerr << "Incorrect mean value! Please check!" << std::endl;  
-    std::abort();
-  }
-    
-  return mean;
 }
 //------------------------------------------------------------------
 std::vector <TH1D*> SFStabilityMon::GetSpectra(int ch){

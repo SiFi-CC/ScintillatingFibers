@@ -16,10 +16,7 @@ ClassImp(SFPeakFinder);
 /// Default constructor.
 SFPeakFinder::SFPeakFinder(): fSpectrum(nullptr),
                               fPeak(nullptr),
-                              fPosition(-1),
-                              fPosErr(-1),
-                              fSigma(-1),
-                              fSigErr(-1),
+                              fFittedFun(nullptr),
                               fVerbose(false),
                               fTests(false) {
                                   
@@ -34,13 +31,9 @@ SFPeakFinder::SFPeakFinder(): fSpectrum(nullptr),
 /// \param tests - flag for testing mode
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, bool verbose, bool tests): fSpectrum(spectrum),
                                                                       fPeak(nullptr),
-                                                                      fPosition(-1),
-                                                                      fPosErr(-1),
-                                                                      fSigma(-1),
-                                                                      fSigErr(-1),
+                                                                      fFittedFun(nullptr),
                                                                       fVerbose(verbose),
                                                                       fTests(tests) { 
-                                                              
 }
 //------------------------------------------------------------------
 /// Standard constructor.
@@ -48,13 +41,9 @@ SFPeakFinder::SFPeakFinder(TH1D *spectrum, bool verbose, bool tests): fSpectrum(
 /// \param verbose - print-outs level
 SFPeakFinder::SFPeakFinder(TH1D *spectrum, bool verbose): fSpectrum(spectrum),
                                                           fPeak(nullptr),
-                                                          fPosition(-1),
-                                                          fPosErr(-1),
-                                                          fSigma(-1),
-                                                          fSigErr(-1),
+                                                          fFittedFun(nullptr),
                                                           fVerbose(verbose),
                                                           fTests(false) { 
-                                                              
 }
 //------------------------------------------------------------------
 /// Standard constructor. Vebose level set by default to quiet. In order to change verbose
@@ -62,10 +51,7 @@ SFPeakFinder::SFPeakFinder(TH1D *spectrum, bool verbose): fSpectrum(spectrum),
 /// \param spectrum - analyzed spectrum
 SFPeakFinder::SFPeakFinder(TH1D *spectrum): fSpectrum(spectrum),
                                             fPeak(nullptr),
-                                            fPosition(-1),
-                                            fPosErr(-1),
-                                            fSigma(-1),
-                                            fSigErr(-1),
+                                            fFittedFun(nullptr),
                                             fVerbose(false),
                                             fTests(false) {
 
@@ -203,17 +189,18 @@ bool SFPeakFinder::FindPeakRange(double &min, double &max){
   // Calculating peak range
   const double delta = 1E-8;
   
-  //if(fabs(fSigma+1)<delta || fabs(fPosition+1)<delta){
+  if(fabs(fParams.fSigma+1)<delta || 
+     fabs(fParams.fPosition+1)<delta) {
     FindPeakFit();
-  //}
+  }
 
   if(type=="Lead"){
-    min = fPosition - fSigma;
-    max = fPosition + 1.5*fSigma;
+    min = fParams.fPosition - fParams.fSigma;
+    max = fParams.fPosition + 1.5*fParams.fSigma;
   }
   else if(type=="Electronic"){
-    min = fPosition - 2*fSigma;
-    max = fPosition + 2*fSigma;
+    min = fParams.fPosition - 2*fParams.fSigma;
+    max = fParams.fPosition + 2*fParams.fSigma;
   }
 
   if(max<min || fabs(min+1)<delta || fabs(max+1)<delta){
@@ -242,26 +229,24 @@ bool SFPeakFinder::FindPeakFit(void){
   fitter.fit(histFP, fSpectrum);
   fitter.updateParams(fSpectrum, histFP);
   fitter.exportFactoryToFile();
-
-  TString fun_name = std::string("f_")+fSpectrum->GetName();
-  TF1 *fun_fitted = histFP.funSum;
+  fFittedFun = (TF1*)histFP.funSum->Clone();
   
-  if(fun_fitted == nullptr){
+  if(fFittedFun == nullptr){
     std::cerr << "##### Error in SFPeakFinder::FindPeak()! Function is null pointer" << std::endl;
     std::abort();
   }
 
-  fPosition = fun_fitted->GetParameter(1);
-  fPosErr = fun_fitted->GetParError(1);
-  fSigma = fun_fitted->GetParameter(2);
-  fSigErr = fun_fitted->GetParError(2);
+  fParams.fPosition    = fFittedFun->GetParameter(1);
+  fParams.fPositionErr = fFittedFun->GetParError(1);
+  fParams.fSigma       = fFittedFun->GetParameter(2);
+  fParams.fSigmaErr    = fFittedFun->GetParError(2);
     
   // for tests
   if(fTests){
   
     double fit_min = 0;
     double fit_max = 0;
-    fun_fitted->GetRange(fit_min, fit_max);
+    fFittedFun->GetRange(fit_min, fit_max);
       
     TString opt;
     if(fVerbose) opt = "BS+";
@@ -269,16 +254,16 @@ bool SFPeakFinder::FindPeakFit(void){
   
     TF1 *fun_expo_clone = new TF1("fun_expo_clone", "[0]*TMath::Exp((x-[1])*[2])", fit_min, fit_max); 
     fun_expo_clone->SetLineColor(kGreen+3);
-    fun_expo_clone->FixParameter(0, fun_fitted->GetParameter(5));
-    fun_expo_clone->FixParameter(1, fun_fitted->GetParameter(6));
-    fun_expo_clone->FixParameter(2, fun_fitted->GetParameter(7));
+    fun_expo_clone->FixParameter(0, fFittedFun->GetParameter(5));
+    fun_expo_clone->FixParameter(1, fFittedFun->GetParameter(6));
+    fun_expo_clone->FixParameter(2, fFittedFun->GetParameter(7));
     fSpectrum->Fit("fun_expo_clone", opt);
     
     if(fVerbose){
       std::cout << "Fitted functions parameters: \n" 
-                << fun_fitted->GetParameter(5) << "\t" 
-                << fun_fitted->GetParameter(6) << "\t" 
-                << fun_fitted->GetParameter(7) << std::endl;
+                << fFittedFun->GetParameter(5) << "\t" 
+                << fFittedFun->GetParameter(6) << "\t" 
+                << fFittedFun->GetParameter(7) << std::endl;
                 
       std::cout << "Expo clone parameters: \n" 
                 << fun_expo_clone->GetParameter(0) << "\t" 
@@ -288,14 +273,14 @@ bool SFPeakFinder::FindPeakFit(void){
   
     TF1 *fun_pol1_clone = new TF1("fun_pol1_clone", "pol1", fit_min, fit_max);
     fun_pol1_clone->SetLineColor(kBlue);
-    fun_pol1_clone->FixParameter(0, fun_fitted->GetParameter(3));
-    fun_pol1_clone->FixParameter(1, fun_fitted->GetParameter(4));
+    fun_pol1_clone->FixParameter(0, fFittedFun->GetParameter(3));
+    fun_pol1_clone->FixParameter(1, fFittedFun->GetParameter(4));
     fSpectrum->Fit("fun_pol1_clone", opt);
     
     if(fVerbose){
       std::cout << "Fitted function parameters: \n"
-                << fun_fitted->GetParameter(3) << "\t" 
-                << fun_fitted->GetParameter(4) << std::endl;
+                << fFittedFun->GetParameter(3) << "\t" 
+                << fFittedFun->GetParameter(4) << std::endl;
                 
       std::cout << "Pol1 clone parameters: \n" 
                 << fun_pol1_clone->GetParameter(0) << "\t" 
@@ -304,16 +289,16 @@ bool SFPeakFinder::FindPeakFit(void){
   
     TF1 *fun_gaus_clone = new TF1("fun_gaus_clone", "gaus", fit_min, fit_max);
     fun_gaus_clone->SetLineColor(kMagenta);
-    fun_gaus_clone->FixParameter(0, fun_fitted->GetParameter(0));
-    fun_gaus_clone->FixParameter(1, fun_fitted->GetParameter(1));
-    fun_gaus_clone->FixParameter(2, fun_fitted->GetParameter(2));
+    fun_gaus_clone->FixParameter(0, fFittedFun->GetParameter(0));
+    fun_gaus_clone->FixParameter(1, fFittedFun->GetParameter(1));
+    fun_gaus_clone->FixParameter(2, fFittedFun->GetParameter(2));
     fSpectrum->Fit("fun_gaus_clone", opt);
     
     if(fVerbose){
       std::cout << "Fitted function parameters: \n" 
-                << fun_fitted->GetParameter(0) << "\t" 
-                << fun_fitted->GetParameter(1) <<  "\t" 
-                << fun_fitted->GetParameter(2) << std::endl;
+                << fFittedFun->GetParameter(0) << "\t" 
+                << fFittedFun->GetParameter(1) <<  "\t" 
+                << fFittedFun->GetParameter(2) << std::endl;
       
       std::cout << "Gaus clone parameters: \n" 
                 << fun_gaus_clone->GetParameter(0) << "\t" 
@@ -322,9 +307,9 @@ bool SFPeakFinder::FindPeakFit(void){
     }
   }
 
-  if(fPosition<0 || fSigma<0){
+  if(fParams.fPosition<0 || fParams.fSigma<0){
     std::cerr << "##### Error in SFPeakFinder::FitPeak(). Position and Sigma cannot be negative!" << std::endl;
-    std::cerr << "position = " << fPosition << "\t fSigma = " << fSigma << std::endl;
+    std::cerr << "fPosition = " << fParams.fPosition << "\t fSigma = " << fParams.fSigma << std::endl;
     return false;
   }
 
@@ -341,103 +326,51 @@ bool SFPeakFinder::FindPeakFit(void){
 /// definded getter functions.
 /// IMPORTANT - if you want to use this function, all the parameters of 
 /// the fits need to be adjusted!
-/*
-bool SFPeakFinder::FindPeakNoBackground(void){
- 
+
+bool SFPeakFinder::SubtractBackground(void){
+    
   // setting background-subtracted histogram
   TString tmp = fSpectrum->GetName();
   TString pname = tmp.Append("_peak");
   fPeak = (TH1D*) fSpectrum->Clone(pname);
   fPeak->Reset();
   
-  // setting fitting option based on verbose level
-  TString opt;
-  if(fVerbose) opt = "SR+";
-  else opt = "SQR+";
+  // getting background + signal function
+  if(fFittedFun == nullptr)
+      FindPeakFit(); 
   
-  // setting fit parameters and fitting
-  double mean, sigma;
-  bool stat = FindPeakSpectrum();
+  double peak_min, peak_max; 
+  FindPeakRange(peak_min, peak_max);  
   
-  if(stat){
-    mean = fPosition;
-    sigma = fSigma;
-  }
-  else{
-    return false;
-  }
+  peak_min = peak_min - fParams.fSigma;
+  peak_max = peak_max + fParams.fSigma;
+
+  TF1 *fun_pol1 = new TF1("fun_pol1", "pol1", 0, 1000);
+  fun_pol1->SetParameters(fFittedFun->GetParameter(3),
+                          fFittedFun->GetParameter(4));
   
-  double peak_min = mean-4*sigma;
-  double peak_max = mean+4*sigma;
-  double fit_min = 0;
-  double fit_max = 0;
-  TString name = fSpectrum->GetName();
-  
-  if(name.Contains("Sum")){
-    fit_min = mean - 5*sigma;
-    fit_max = mean - 4*sigma;
-  }
-  else{
-    fit_min = mean - 4*sigma;
-    fit_max = mean - 3*sigma;
-  }
-  
-  TF1 *fun_pol0 = new TF1("fun_pol0", "pol0", mean+3*sigma, mean+5*sigma);
-  fSpectrum->Fit("fun_pol0", opt);
-  
-  TF1 *fun_expo = new TF1("fun_expo", "pol0(0)+expo(1)", fit_min, fit_max);
-  fun_expo->FixParameter(0, fun_pol0->GetParameter(0));
-  fSpectrum->Fit("fun_expo", opt);
+  TF1 *fun_expo = new TF1("fun_expo", "[0]*TMath::Exp((x-[1])*[2])", 0, 1000); 
+  fun_expo->SetParameters(fFittedFun->GetParameter(5),
+                          fFittedFun->GetParameter(6),
+                          fFittedFun->GetParameter(7));
   
   // background subtraction
   double x, y;
   
-  for(int i=0; i<fSpectrum->GetNbinsX(); i++){
+  for(int i=1; i<fSpectrum->GetNbinsX()+1; i++){
     x = fSpectrum->GetBinCenter(i);
     if(x>peak_min && x<peak_max){
-      if(fun_expo->Eval(x) > fun_pol0->Eval(x))
+      if(fun_expo->Eval(x) > fun_pol1->Eval(x))
         y = fSpectrum->GetBinContent(i) - fun_expo->Eval(x);
       else
-        y = fSpectrum->GetBinContent(i) - fun_pol0->Eval(x);
+        y = fSpectrum->GetBinContent(i) - fun_pol1->Eval(x);
     }
     else 
         y = 0;
     fPeak->SetBinContent(i,y);
   }
   
-  TF1 *fun_gaus = new TF1("fun_gaus", "gaus", peak_min, peak_max);
-  fun_gaus->SetParameters(fPeak->GetBinContent(fPeak->GetMaximumBin()),
-                          fPeak->GetBinCenter(fPeak->GetMaximumBin()),
-                          30);
-  TFitResultPtr fitRes = fPeak->Fit("fun_gaus", opt);
-  
-  fun_gaus = fPeak->GetFunction("fun_gaus");
-  
-  fPosition = fun_gaus->GetParameter(1);
-  fPosErr   = fun_gaus->GetParError(1);
-  fSigma    = fun_gaus->GetParameter(2);
-  fSigErr   = fun_gaus->GetParError(2);
-  
-  // for tests
-  if(fTests){
-    TFile *file = new TFile("PeakFinderTests.root", "UPDATE");
-    fSpectrum->Write();
-    fPeak->Write();
-    file->Close();
-  }
-  
   return true;
-}*/
-//------------------------------------------------------------------
-/// Returns vector containing peak position and sigma along with their errors. 
-/// Order in the vector: position, sigma, position error, sigma error.
-std::vector <double> SFPeakFinder::GetParameters(void){
-  std::vector <double> temp;
-  temp.push_back(fPosition);
-  temp.push_back(fSigma);
-  temp.push_back(fPosErr);
-  temp.push_back(fSigErr);
-  return temp;
 }
 //------------------------------------------------------------------
 /// Prints details of SFPeakFinder class object.

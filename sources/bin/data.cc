@@ -18,14 +18,20 @@
 #include "common_options.h"
 
 int main(int argc, char **argv){
+    
+  TString outdir;
+  TString dbase;
+  int seriesNo = -1;
+
+  int ret = parse_common_options(argc, argv, outdir, dbase, seriesNo);
+  if(ret != 0) 
+    exit(ret);
  
-  if(argc<2 || argc>6){
+  if(argc<2){
     std::cout << "to run type: ./data seriesNo ";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
-  
-  int seriesNo = atoi(argv[1]);
   
   SFData *data;
   
@@ -368,13 +374,6 @@ int main(int argc, char **argv){
   
   //----- saving
   TString fname = Form("data_series%i.root", seriesNo);
-  TString outdir;
-  TString dbase;
-
-  int ret = parse_common_options(argc, argv, outdir, dbase);
-  if(ret != 0) 
-    exit(ret);
-  
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   

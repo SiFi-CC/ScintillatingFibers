@@ -18,13 +18,7 @@ ClassImp(SFTimeConst);
 SFTimeConst::SFTimeConst(): fSeriesNo(-1),
                             fData(nullptr),
                             fPE(-1),
-                            fVerb(false),
-                            fFastDecAv(-1),
-                            fFastDecAvErr(-1),
-                            fSlowDecAv(-1),
-                            fSlowDecAvErr(-1),
-                            fIfastAv(-1),
-                            fIslowAv(-1) {
+                            fVerb(false) {
                                 
   std::cout << "##### Warning in SFTimeConst constructor! You are using default constructor!" << std::endl;
   std::cout << "Set object attributes via SetDetails()" << std::endl;
@@ -36,13 +30,7 @@ SFTimeConst::SFTimeConst(): fSeriesNo(-1),
 /// \param verb - verbose level
 SFTimeConst::SFTimeConst(int seriesNo, double PE, bool verb): fSeriesNo(seriesNo),
                                                               fPE(PE),
-                                                              fVerb(verb),
-                                                              fFastDecAv(-1),
-                                                              fFastDecAvErr(-1),
-                                                              fSlowDecAv(-1),
-                                                              fSlowDecAvErr(-1), 
-                                                              fIfastAv(-1),
-                                                              fIslowAv(-1) {
+                                                              fVerb(verb) {
                                                                   
   bool stat = SetDetails(seriesNo, PE, verb);
   if(stat==false){
@@ -101,11 +89,11 @@ bool SFTimeConst::SetDetails(int seriesNo, double PE, bool verb){
   for(int i=0; i<npoints; i++){
    fSignalsCh0.push_back(fData->GetSignalAverage(0, measurementsIDs[i], selection, nsig, true));
    results_name = fSignalsCh0[i]->GetName();
-   fResultsCh0.push_back(new SFFitResults(results_name));
+   fResults.fResultsCh0.push_back(new SFFitResults(results_name));
    
    fSignalsCh1.push_back(fData->GetSignalAverage(1, measurementsIDs[i], selection, nsig, true));
    results_name = fSignalsCh1[i]->GetName();
-   fResultsCh1.push_back(new SFFitResults(results_name));
+   fResults.fResultsCh1.push_back(new SFFitResults(results_name));
   }
   
   ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000);
@@ -173,14 +161,14 @@ bool SFTimeConst::FitDecayTimeSingle(TProfile *signal, int ID){
   }
   
   if(ch==0){
-    fResultsCh0[index]->SetFromFunction(fun_all);
-    if(fitStat!=0) fResultsCh0[index]->SetStat(-1);
-    fResultsCh0[index]->Print();
+    fResults.fResultsCh0[index]->SetFromFunction(fun_all);
+    if(fitStat!=0) fResults.fResultsCh0[index]->SetStat(-1);
+    fResults.fResultsCh0[index]->Print();
   }
   else if(ch==1){
-    fResultsCh1[index]->SetFromFunction(fun_all);
-    if(fitStat!=0) fResultsCh1[index]->SetStat(-1);
-    fResultsCh1[index]->Print();
+    fResults.fResultsCh1[index]->SetFromFunction(fun_all);
+    if(fitStat!=0) fResults.fResultsCh1[index]->SetStat(-1);
+    fResults.fResultsCh1[index]->Print();
   }
   
   return true;
@@ -246,14 +234,14 @@ bool SFTimeConst::FitDecayTimeDouble(TProfile *signal, int ID){
   }
   
   if(ch==0){
-    fResultsCh0[index]->SetFromFunction(fun_all);
-    if(fitStat!=0) fResultsCh0[index]->SetStat(-1);
-    fResultsCh0[index]->Print();
+    fResults.fResultsCh0[index]->SetFromFunction(fun_all);
+    if(fitStat!=0) fResults.fResultsCh0[index]->SetStat(-1);
+    fResults.fResultsCh0[index]->Print();
   }
   else if(ch==1){
-    fResultsCh1[index]->SetFromFunction(fun_all);
-    if(fitStat!=0) fResultsCh1[index]->SetStat(-1);
-    fResultsCh1[index]->Print();
+    fResults.fResultsCh1[index]->SetFromFunction(fun_all);
+    if(fitStat!=0) fResults.fResultsCh1[index]->SetStat(-1);
+    fResults.fResultsCh1[index]->Print();
   }
   
   return true;
@@ -309,19 +297,19 @@ bool SFTimeConst::FitAllSignals(void){
   if(fiber.Contains("LuAG") || fiber.Contains("GAGG")){
   
     for(int i=0; i<n; i++){
-      statCh0 = fResultsCh0[i]->GetStat();
-      statCh1 = fResultsCh1[i]->GetStat();
+      statCh0 = fResults.fResultsCh0[i]->GetStat();
+      statCh1 = fResults.fResultsCh1[i]->GetStat();
     
       if(statCh0==0){
-        fResultsCh0[i]->GetFastDecTime(fastDec, fastDecErr);
-        fResultsCh0[i]->GetSlowDecTime(slowDec, slowDecErr);
+        fResults.fResultsCh0[i]->GetFastDecTime(fastDec, fastDecErr);
+        fResults.fResultsCh0[i]->GetSlowDecTime(slowDec, slowDecErr);
         fastDecSum += fastDec*(1./pow(fastDecErr,2));
         slowDecSum += slowDec*(1./pow(slowDecErr,2));
         fastDecSumErr += 1./pow(fastDecErr,2);
         slowDecSumErr += 1./pow(slowDecErr,2);
       
-        fResultsCh0[i]->GetAmpFast(fastAmp, fastAmpErr);
-        fResultsCh0[i]->GetAmpSlow(slowAmp, slowAmpErr);
+        fResults.fResultsCh0[i]->GetAmpFast(fastAmp, fastAmpErr);
+        fResults.fResultsCh0[i]->GetAmpSlow(slowAmp, slowAmpErr);
         fastAmpSum += fastAmp*(1./pow(fastAmpErr,2));
         slowAmpSum += slowAmp*(1./pow(slowAmpErr,2));
         fastAmpSumErr += 1./pow(fastAmpErr,2);
@@ -331,15 +319,15 @@ bool SFTimeConst::FitAllSignals(void){
       }
     
       if(statCh1==0){
-        fResultsCh1[i]->GetFastDecTime(fastDec,fastDecErr);
-        fResultsCh1[i]->GetSlowDecTime(slowDec,slowDecErr);
+        fResults.fResultsCh1[i]->GetFastDecTime(fastDec,fastDecErr);
+        fResults.fResultsCh1[i]->GetSlowDecTime(slowDec,slowDecErr);
         fastDecSum += fastDec*(1./pow(fastDecErr,2));
         slowDecSum += slowDec*(1./pow(slowDecErr,2));
         fastDecSumErr += 1./pow(fastDecErr,2);
         slowDecSumErr += 1./pow(slowDecErr,2);
         
-        fResultsCh1[i]->GetAmpFast(fastAmp,fastAmpErr);
-        fResultsCh1[i]->GetAmpSlow(slowAmp,slowAmpErr);
+        fResults.fResultsCh1[i]->GetAmpFast(fastAmp,fastAmpErr);
+        fResults.fResultsCh1[i]->GetAmpSlow(slowAmp,slowAmpErr);
         fastAmpSum += fastAmp*(1./pow(fastAmpErr,2));
         slowAmpSum += slowAmp*(1./pow(slowAmpErr,2));
         fastAmpSumErr += 1./pow(fastAmpErr,2);
@@ -349,26 +337,26 @@ bool SFTimeConst::FitAllSignals(void){
       }
     }
   
-    fFastDecAv = fastDecSum/fastDecSumErr;
-    fSlowDecAv = slowDecSum/slowDecSumErr;
-    fFastDecAvErr = sqrt(1./fastDecSumErr);
-    fSlowDecAvErr = sqrt(1./slowDecSumErr);
+    fResults.fFastDecAv = fastDecSum/fastDecSumErr;
+    fResults.fSlowDecAv = slowDecSum/slowDecSumErr;
+    fResults.fFastDecAvErr = sqrt(1./fastDecSumErr);
+    fResults.fSlowDecAvErr = sqrt(1./slowDecSumErr);
   
     double fastAmpAve = fastAmpSum/fastAmpSumErr;
     double slowAmpAve = slowAmpSum/slowAmpSumErr;
     double fastAmpAveErr = sqrt(1./fastAmpSumErr);
     double slowAmpAveErr = sqrt(1./slowAmpSumErr);
   
-    double denom = fastAmpAve*fFastDecAv + slowAmpAve*fSlowDecAv;
-    fIfastAv = ((fastAmpAve*fFastDecAv)/denom) * 100;
-    fIslowAv = ((slowAmpAve*fSlowDecAv)/denom) * 100;
+    double denom = fastAmpAve*fResults.fFastDecAv + slowAmpAve*fResults.fSlowDecAv;
+    fResults.fIfastAv = ((fastAmpAve*fResults.fFastDecAv)/denom) * 100;
+    fResults.fIslowAv = ((slowAmpAve*fResults.fSlowDecAv)/denom) * 100;
   
     std::cout << "\n\n----------------------------------" << std::endl;
     std::cout << "Average decay constants for whole series:" << std::endl;
-    std::cout << "Fast decay: " << fFastDecAv << " +/- " << fFastDecAvErr << " ns" << std::endl;
-    std::cout << "Fast component intensity: " << fIfastAv << " %" << std::endl; 
-    std::cout << "Slow decay: " << fSlowDecAv << " +/- " << fSlowDecAvErr << " ns" << std::endl;
-    std::cout << "Slow component intensity: " << fIslowAv << " %" << std::endl; 
+    std::cout << "Fast decay: " << fResults.fFastDecAv << " +/- " << fResults.fFastDecAvErr << " ns" << std::endl;
+    std::cout << "Fast component intensity: " << fResults.fIfastAv << " %" << std::endl; 
+    std::cout << "Slow decay: " << fResults.fSlowDecAv << " +/- " << fResults.fSlowDecAvErr << " ns" << std::endl;
+    std::cout << "Slow component intensity: " << fResults.fIslowAv << " %" << std::endl; 
     std::cout << "Counter: " << counter << std::endl;
     std::cout << "----------------------------------" << std::endl;
   }
@@ -381,34 +369,34 @@ bool SFTimeConst::FitAllSignals(void){
   if(fiber.Contains("LYSO")){
     
     for(int i=0; i<n; i++){
-      statCh0 = fResultsCh0[i]->GetStat();
-      statCh1 = fResultsCh1[i]->GetStat();
+      statCh0 = fResults.fResultsCh0[i]->GetStat();
+      statCh1 = fResults.fResultsCh1[i]->GetStat();
       
       if(statCh0==0){
-        fResultsCh0[i]->GetDecTime(dec, decErr);
+        fResults.fResultsCh0[i]->GetDecTime(dec, decErr);
         decSum += dec*(1./pow(decErr,2));
         decSumErr += 1./pow(decErr,2);
         counter++;
       }
       
       if(statCh1==0){
-        fResultsCh1[i]->GetDecTime(dec, decErr);
+        fResults.fResultsCh1[i]->GetDecTime(dec, decErr);
         decSum += dec*(1./pow(decErr,2));
         decSumErr += 1./pow(decErr,2);
         counter++;
       }
     }
     
-    fFastDecAv    = decSum/decSumErr;
-    fFastDecAvErr = sqrt(1./decSumErr);
-    fSlowDecAv    = 0;
-    fSlowDecAvErr = 0;
-    fIfastAv      = 100;
-    fIslowAv      = 0;
+    fResults.fFastDecAv    = decSum/decSumErr;
+    fResults.fFastDecAvErr = sqrt(1./decSumErr);
+    fResults.fSlowDecAv    = 0;
+    fResults.fSlowDecAvErr = 0;
+    fResults.fIfastAv      = 100;
+    fResults.fIslowAv      = 0;
     
     std::cout << "\n\n----------------------------------" << std::endl;
     std::cout << "Average decay constant for the whole series:" << std::endl;
-    std::cout << "Decay constant: " << fFastDecAv << " +/- " << fFastDecAvErr << " ns" << std::endl;
+    std::cout << "Decay constant: " << fResults.fFastDecAv << " +/- " << fResults.fFastDecAvErr << " ns" << std::endl;
     std::cout << "Counter: " << counter << std::endl;
     std::cout << "----------------------------------" << std::endl;
     
@@ -477,61 +465,6 @@ std::vector <TProfile*> SFTimeConst::GetSignals(int ch){
     std::cerr << "No signals available!" << std::endl;
     std::abort();
   }
-}
-//------------------------------------------------------------------
-///Returns vector containing results of fits for whole series and  
-///chosen channel
-///\param ch - channel number
-std::vector <SFFitResults*> SFTimeConst::GetResults(int ch){
-    
-  if((ch==0 && fResultsCh0.empty()) ||
-     (ch==1 && fResultsCh1.empty())){
-    std::cerr << "##### Error in SFTimeConst::GetResults()!" << std::endl;
-    std::cerr << "No results available!" << std::endl;
-    std::abort();
-  }
-  
-  if(ch==0)
-    return fResultsCh0;
-  else if(ch==1) 
-    return fResultsCh1;
-  else{
-    std::cerr << "##### Error in SFTimeConst::GetResults()!" << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-}
-//------------------------------------------------------------------
-std::vector <double> SFTimeConst::GetAverageDecayConst(void){
-
-  TString fiber = fData->GetFiber();
-
-  if(fiber.Contains("LYSO") && fVerb){
-    std::cout <<"##### Warning in SFTimeConst::GetAverageDecayConst()!" << std::endl;
-    std::cout << "This is LYSO fiber - only one decay component!" << std::endl;
-  }
-    
-  std::vector <double> tmp;
-  tmp.push_back(fFastDecAv);
-  tmp.push_back(fFastDecAvErr);
-  tmp.push_back(fSlowDecAv);
-  tmp.push_back(fSlowDecAvErr);
-  return tmp;
-}
-//------------------------------------------------------------------
-std::vector <double> SFTimeConst::GetAverageIntensities(void){
-
-  TString fiber = fData->GetFiber();
-  
-  if(fiber.Contains("LYSO") && fVerb){
-    std::cout << "##### Warning in SFTimeConst::GetAverageIntensities()!" << std::endl;
-    std::cout << "This is LYSO fiber - only one decay component!" << std::endl;
-  }
-  
-  std::vector <double> tmp;
-  tmp.push_back(fIfastAv);
-  tmp.push_back(fIslowAv);
-  return tmp;
 }
 //------------------------------------------------------------------
 /// Prints details of the SFTimeConst class ojbect.

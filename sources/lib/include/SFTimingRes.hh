@@ -24,6 +24,21 @@
 /// IMPORTANT: timing resolution is determined as FWHM of lorentzian and gaussian functions
 /// fitted to the ch_0.fT0-ch_1.fT0 distributions.
 
+struct TimingResResults{
+    
+    double fTimeRes    = -1;
+    double fTimeResErr = -1;
+    
+    double fTimeResECut    = -1;
+    double fTimeResECutErr = -1;
+    
+    std::vector <double> fTimeResAll;
+    std::vector <double> fTimeResAllErr;
+    
+    std::vector <double> fTimeResECutAll;
+    std::vector <double> fTimeResECutAllErr;
+};
+
 class SFTimingRes : public TObject{
  
 private:
@@ -33,19 +48,13 @@ private:
   std::vector <TH1D*>  fRatios;
   std::vector <TH1D*>  fSpecCh0;
   std::vector <TH1D*>  fSpecCh1;
-  TGraphErrors *fTResGraph;        
-  TGraphErrors *fTResECutGraph;
   std::vector <TH1D*>  fT0Diff; 
   std::vector <TH1D*>  fT0DiffECut;
-  std::vector <double> fTimeResAll;
-  std::vector <double> fTimeResAllErr;
-  std::vector <double> fTimeResECutAll;
-  std::vector <double> fTimeResECutAllErr;
   
-  double fTimeRes;
-  double fTimeResErr;
-  double fTimeResECut;
-  double fTimeResECutErr;
+  TGraphErrors *fTResGraph;        
+  TGraphErrors *fTResECutGraph;
+  
+  TimingResResults fResults;
 
   bool LoadRatios(void);
   
@@ -59,11 +68,9 @@ public:
   
   std::vector <TH1D*>  GetRatios(void);
   std::vector <TH1D*>  GetSpectra(int ch);
-  std::vector <double> GetTimingResolution(bool type);
-  std::vector <double> GetTimingResolutionAll(bool type);
-  std::vector <double> GetTimingResolutionAllErr(bool type);
   std::vector <TH1D*>  GetT0Diff(bool type);
   TGraphErrors*        GetTimingResGraph(bool type);
+  TimingResResults     GetResults(void) { return fResults; };
 
   ClassDef(SFTimingRes,1)
 };
