@@ -87,20 +87,28 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3041bb4688a8ce3a72f86bdcc7fbab53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cd1ee43593533cb8ec86909842b1007"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a3cd1ee43593533cb8ec86909842b1007">SFData</a> (int seriesNo)</td></tr>
 <tr class="separator:a3cd1ee43593533cb8ec86909842b1007"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff33d2a9966641ad89c6dac4be0b597a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aff33d2a9966641ad89c6dac4be0b597a">SFData</a> (int seriesNo, TString threshold)</td></tr>
-<tr class="separator:aff33d2a9966641ad89c6dac4be0b597a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2ccfbc2c1474764c7d57a83efca720b"><td class="memItemLeft" align="right" valign="top"><a id="ae2ccfbc2c1474764c7d57a83efca720b"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae2ccfbc2c1474764c7d57a83efca720b">~SFData</a> ()</td></tr>
 <tr class="memdesc:ae2ccfbc2c1474764c7d57a83efca720b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:ae2ccfbc2c1474764c7d57a83efca720b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace2c2b0015a8615554b8757e14624f2b"><td class="memItemLeft" align="right" valign="top">TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ace2c2b0015a8615554b8757e14624f2b">GetCorrHistogram</a> (TString selection, TString cut, double position)</td></tr>
-<tr class="separator:ace2c2b0015a8615554b8757e14624f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a49daa5f7ad477d8e4287111652673efe"><td class="memItemLeft" align="right" valign="top">vector&lt; TH2D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a49daa5f7ad477d8e4287111652673efe">GetCorrHistograms</a> (TString type, TString cut)</td></tr>
-<tr class="separator:a49daa5f7ad477d8e4287111652673efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98cfc4a752e6130f52329d5d99521d9c"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a98cfc4a752e6130f52329d5d99521d9c">GetCustomHistogram</a> (TString selection, TString cut, double position)</td></tr>
-<tr class="separator:a98cfc4a752e6130f52329d5d99521d9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29b92986b78753f26432875be7744bc1"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a29b92986b78753f26432875be7744bc1">GetCustomHistograms</a> (TString type, TString cut)</td></tr>
-<tr class="separator:a29b92986b78753f26432875be7744bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a774ef686fea59c45ef33f8925da4f97f"><td class="memItemLeft" align="right" valign="top"><a id="a774ef686fea59c45ef33f8925da4f97f"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a774ef686fea59c45ef33f8925da4f97f">GetCollimator</a> (void)</td></tr>
+<tr class="memdesc:a774ef686fea59c45ef33f8925da4f97f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns collimator type. <br /></td></tr>
+<tr class="separator:a774ef686fea59c45ef33f8925da4f97f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a187276a93e9dbd9f0b3ce85502175d"><td class="memItemLeft" align="right" valign="top">TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5a187276a93e9dbd9f0b3ce85502175d">GetCorrHistogram</a> (SFSelectionType sel_type, TString cut, int ID)</td></tr>
+<tr class="separator:a5a187276a93e9dbd9f0b3ce85502175d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3d8b49f32e026a4c9411afcf0c25d7a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH2D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#af3d8b49f32e026a4c9411afcf0c25d7a">GetCorrHistograms</a> (SFSelectionType sel_type, TString cut)</td></tr>
+<tr class="separator:af3d8b49f32e026a4c9411afcf0c25d7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37401c1af1494971f60434fbff6e125a"><td class="memItemLeft" align="right" valign="top"><a id="a37401c1af1494971f60434fbff6e125a"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a37401c1af1494971f60434fbff6e125a">GetCoupling</a> (void)</td></tr>
+<tr class="memdesc:a37401c1af1494971f60434fbff6e125a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns coupling type. <br /></td></tr>
+<tr class="separator:a37401c1af1494971f60434fbff6e125a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a782e53d32619685e8204d4fbf827c6bb"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a782e53d32619685e8204d4fbf827c6bb">GetCustomHistogram</a> (SFSelectionType sel_type, TString cut, int ID, std::vector&lt; double &gt; customNum={})</td></tr>
+<tr class="separator:a782e53d32619685e8204d4fbf827c6bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33a358ab3df3f1e7c843c25cfe5f5822"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a33a358ab3df3f1e7c843c25cfe5f5822">GetCustomHistogram</a> (int ch, SFSelectionType sel_type, TString cut, int ID, std::vector&lt; double &gt; customNum)</td></tr>
+<tr class="separator:a33a358ab3df3f1e7c843c25cfe5f5822"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2790fef6a8172cd3da2ddaf35de4ba6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad2790fef6a8172cd3da2ddaf35de4ba6">GetCustomHistograms</a> (SFSelectionType sel_type, TString cut)</td></tr>
+<tr class="separator:ad2790fef6a8172cd3da2ddaf35de4ba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21eb858b2ac22fafc2977d2112d34676"><td class="memItemLeft" align="right" valign="top"><a id="a21eb858b2ac22fafc2977d2112d34676"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a21eb858b2ac22fafc2977d2112d34676">GetDescription</a> (void)</td></tr>
 <tr class="memdesc:a21eb858b2ac22fafc2977d2112d34676"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns description of the series. <br /></td></tr>
@@ -109,66 +117,104 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a56d421fcb6c699244dcd70fa32c3d683">GetFiber</a> (void)</td></tr>
 <tr class="memdesc:a56d421fcb6c699244dcd70fa32c3d683"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns fiber type. <br /></td></tr>
 <tr class="separator:a56d421fcb6c699244dcd70fa32c3d683"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afdf46ffc67b811e878b13418793e2724"><td class="memItemLeft" align="right" valign="top"><a id="afdf46ffc67b811e878b13418793e2724"></a>
-TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#afdf46ffc67b811e878b13418793e2724">GetMeasureType</a> (void)</td></tr>
-<tr class="memdesc:afdf46ffc67b811e878b13418793e2724"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns measurement type of the series. <br /></td></tr>
-<tr class="separator:afdf46ffc67b811e878b13418793e2724"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a197810619f0abf6ab6675e0ce2f9d322"><td class="memItemLeft" align="right" valign="top"><a id="a197810619f0abf6ab6675e0ce2f9d322"></a>
-vector&lt; TString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a197810619f0abf6ab6675e0ce2f9d322">GetNames</a> (void)</td></tr>
-<tr class="memdesc:a197810619f0abf6ab6675e0ce2f9d322"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing names of all measurements in this series. <br /></td></tr>
-<tr class="separator:a197810619f0abf6ab6675e0ce2f9d322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae905531313804984813e06b92bb16bc7"><td class="memItemLeft" align="right" valign="top"><a id="ae905531313804984813e06b92bb16bc7"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae905531313804984813e06b92bb16bc7">GetFiberLength</a> (void)</td></tr>
+<tr class="memdesc:ae905531313804984813e06b92bb16bc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns length of the fiber [mm]. <br /></td></tr>
+<tr class="separator:ae905531313804984813e06b92bb16bc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc04358e76618228df8921799226c171"><td class="memItemLeft" align="right" valign="top"><a id="abc04358e76618228df8921799226c171"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#abc04358e76618228df8921799226c171">GetLogFile</a> (void)</td></tr>
+<tr class="memdesc:abc04358e76618228df8921799226c171"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns name of the measurment log file. <br /></td></tr>
+<tr class="separator:abc04358e76618228df8921799226c171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a13907b6d115f6d97d8c6dc408c62b3"><td class="memItemLeft" align="right" valign="top"><a id="a4a13907b6d115f6d97d8c6dc408c62b3"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4a13907b6d115f6d97d8c6dc408c62b3">GetMeasurementsIDs</a> (void)</td></tr>
+<tr class="memdesc:a4a13907b6d115f6d97d8c6dc408c62b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing IDs of all measurements in the series. <br /></td></tr>
+<tr class="separator:a4a13907b6d115f6d97d8c6dc408c62b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ccbe883fb9f35e423ded34b5ff86aa3"><td class="memItemLeft" align="right" valign="top"><a id="a0ccbe883fb9f35e423ded34b5ff86aa3"></a>
+std::vector&lt; TString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0ccbe883fb9f35e423ded34b5ff86aa3">GetNames</a> (void)</td></tr>
+<tr class="memdesc:a0ccbe883fb9f35e423ded34b5ff86aa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing names of all measurements in the series. <br /></td></tr>
+<tr class="separator:a0ccbe883fb9f35e423ded34b5ff86aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad57471bebd9e817b9a57616bda63394c"><td class="memItemLeft" align="right" valign="top"><a id="ad57471bebd9e817b9a57616bda63394c"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad57471bebd9e817b9a57616bda63394c">GetNpoints</a> (void)</td></tr>
 <tr class="memdesc:ad57471bebd9e817b9a57616bda63394c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns number of measurements in the series. <br /></td></tr>
 <tr class="separator:ad57471bebd9e817b9a57616bda63394c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeed0fe92581b96a2add434637fdef18e"><td class="memItemLeft" align="right" valign="top"><a id="aeed0fe92581b96a2add434637fdef18e"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aeed0fe92581b96a2add434637fdef18e">GetPositions</a> (void)</td></tr>
-<tr class="memdesc:aeed0fe92581b96a2add434637fdef18e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing source positions for all measurements in this series. <br /></td></tr>
-<tr class="separator:aeed0fe92581b96a2add434637fdef18e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae9fce8eb845b663085bf4861196983b9"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae9fce8eb845b663085bf4861196983b9">GetSignal</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
-<tr class="separator:ae9fce8eb845b663085bf4861196983b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0446ba8102cd62eb8236fd3b79bdc6ac"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0446ba8102cd62eb8236fd3b79bdc6ac">GetSignalAverage</a> (int ch, double position, TString cut, int number, bool bl)</td></tr>
-<tr class="separator:a0446ba8102cd62eb8236fd3b79bdc6ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7a530e0bb693d6f54bc44da47f1ab79"><td class="memItemLeft" align="right" valign="top"><a id="aa7a530e0bb693d6f54bc44da47f1ab79"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aa7a530e0bb693d6f54bc44da47f1ab79">GetOvervoltage</a> (void)</td></tr>
+<tr class="memdesc:aa7a530e0bb693d6f54bc44da47f1ab79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns overvoltage [V]. <br /></td></tr>
+<tr class="separator:aa7a530e0bb693d6f54bc44da47f1ab79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b0c3037b98924d4d0678e80d564145c"><td class="memItemLeft" align="right" valign="top"><a id="a5b0c3037b98924d4d0678e80d564145c"></a>
+std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5b0c3037b98924d4d0678e80d564145c">GetPositions</a> (void)</td></tr>
+<tr class="memdesc:a5b0c3037b98924d4d0678e80d564145c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing source positions for all measurements in the series. <br /></td></tr>
+<tr class="separator:a5b0c3037b98924d4d0678e80d564145c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94095d3c6a22a7c33c710584cd48f7d5"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a94095d3c6a22a7c33c710584cd48f7d5">GetSignal</a> (int ch, int ID, TString cut, int number, bool bl)</td></tr>
+<tr class="separator:a94095d3c6a22a7c33c710584cd48f7d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b0db98a4a3e70183448b3520571a207"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8b0db98a4a3e70183448b3520571a207">GetSignalAverage</a> (int ch, int ID, TString cut, int number, bool bl)</td></tr>
+<tr class="separator:a8b0db98a4a3e70183448b3520571a207"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62ec3c71bcf66eb69ccf4c5209811d27"><td class="memItemLeft" align="right" valign="top"><a id="a62ec3c71bcf66eb69ccf4c5209811d27"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a62ec3c71bcf66eb69ccf4c5209811d27">GetSiPM</a> (void)</td></tr>
+<tr class="memdesc:a62ec3c71bcf66eb69ccf4c5209811d27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns SiPM type. <br /></td></tr>
+<tr class="separator:a62ec3c71bcf66eb69ccf4c5209811d27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ca2f3f9de90ef3b11ac25c02d8c7eac"><td class="memItemLeft" align="right" valign="top"><a id="a5ca2f3f9de90ef3b11ac25c02d8c7eac"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5ca2f3f9de90ef3b11ac25c02d8c7eac">GetSource</a> (void)</td></tr>
 <tr class="memdesc:a5ca2f3f9de90ef3b11ac25c02d8c7eac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns source type. <br /></td></tr>
 <tr class="separator:a5ca2f3f9de90ef3b11ac25c02d8c7eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73a21609b61a6435eecaafc40c2f7dac"><td class="memItemLeft" align="right" valign="top">vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a73a21609b61a6435eecaafc40c2f7dac">GetSpectra</a> (int ch, TString type, TString cut)</td></tr>
-<tr class="separator:a73a21609b61a6435eecaafc40c2f7dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7e574dec6210364759d95fc84882870"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ab7e574dec6210364759d95fc84882870">GetSpectrum</a> (int ch, TString type, TString cut, double position)</td></tr>
-<tr class="separator:ab7e574dec6210364759d95fc84882870"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95f04dfd44b3ed3c4d4f8319fd6ca6ff"><td class="memItemLeft" align="right" valign="top"><a id="a95f04dfd44b3ed3c4d4f8319fd6ca6ff"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a95f04dfd44b3ed3c4d4f8319fd6ca6ff">GetTimes</a> (void)</td></tr>
-<tr class="memdesc:a95f04dfd44b3ed3c4d4f8319fd6ca6ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing times of measurements. <br /></td></tr>
-<tr class="separator:a95f04dfd44b3ed3c4d4f8319fd6ca6ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59ba8931d2382c7a76f668bcccc13356"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a59ba8931d2382c7a76f668bcccc13356">GetSpectra</a> (int ch, SFSelectionType sel_type, TString cut)</td></tr>
+<tr class="separator:a59ba8931d2382c7a76f668bcccc13356"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4777965db090ec2032825afc6d266a16"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4777965db090ec2032825afc6d266a16">GetSpectrum</a> (int ch, SFSelectionType sel_type, TString cut, int ID)</td></tr>
+<tr class="separator:a4777965db090ec2032825afc6d266a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9e18ffa12c131b981ce7584455574ff"><td class="memItemLeft" align="right" valign="top"><a id="ac9e18ffa12c131b981ce7584455574ff"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ac9e18ffa12c131b981ce7584455574ff">GetStartTimes</a> (void)</td></tr>
+<tr class="memdesc:ac9e18ffa12c131b981ce7584455574ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing starting times of all measurements in the series. <br /></td></tr>
+<tr class="separator:ac9e18ffa12c131b981ce7584455574ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af30f4998f4dba6c5eca597c2efefc0e8"><td class="memItemLeft" align="right" valign="top"><a id="af30f4998f4dba6c5eca597c2efefc0e8"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#af30f4998f4dba6c5eca597c2efefc0e8">GetStopTimes</a> (void)</td></tr>
+<tr class="memdesc:af30f4998f4dba6c5eca597c2efefc0e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing stopping times of all measurements in the series. <br /></td></tr>
+<tr class="separator:af30f4998f4dba6c5eca597c2efefc0e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acaf544bb2f4682cc67a94f2243e5318f"><td class="memItemLeft" align="right" valign="top"><a id="acaf544bb2f4682cc67a94f2243e5318f"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#acaf544bb2f4682cc67a94f2243e5318f">GetTempFile</a> (void)</td></tr>
+<tr class="memdesc:acaf544bb2f4682cc67a94f2243e5318f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns name of the temperature log file. <br /></td></tr>
+<tr class="separator:acaf544bb2f4682cc67a94f2243e5318f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ea07f6b037e272724d080a4263bf647"><td class="memItemLeft" align="right" valign="top"><a id="a9ea07f6b037e272724d080a4263bf647"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a9ea07f6b037e272724d080a4263bf647">GetTestBench</a> (void)</td></tr>
+<tr class="memdesc:a9ea07f6b037e272724d080a4263bf647"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns test bench type. <br /></td></tr>
+<tr class="separator:a9ea07f6b037e272724d080a4263bf647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5b33d662d4509caf3cfd2d95dc8be8d"><td class="memItemLeft" align="right" valign="top"><a id="aa5b33d662d4509caf3cfd2d95dc8be8d"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aa5b33d662d4509caf3cfd2d95dc8be8d">GetTimes</a> (void)</td></tr>
+<tr class="memdesc:aa5b33d662d4509caf3cfd2d95dc8be8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a vector containing measurement times for all measurements in the series. <br /></td></tr>
+<tr class="separator:aa5b33d662d4509caf3cfd2d95dc8be8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b076c1d4065a034b733d2e2d765b7d5"><td class="memItemLeft" align="right" valign="top">TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8b076c1d4065a034b733d2e2d765b7d5">GetTree</a> (int ID)</td></tr>
+<tr class="separator:a8b076c1d4065a034b733d2e2d765b7d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6afc26a24147a8238acf695e8935ab89"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a6afc26a24147a8238acf695e8935ab89">OpenDataBase</a> (TString name)</td></tr>
 <tr class="separator:a6afc26a24147a8238acf695e8935ab89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe3bbe244e4ab515140c4613c92fa59b"><td class="memItemLeft" align="right" valign="top"><a id="abe3bbe244e4ab515140c4613c92fa59b"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#abe3bbe244e4ab515140c4613c92fa59b">Print</a> (void)</td></tr>
 <tr class="memdesc:abe3bbe244e4ab515140c4613c92fa59b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints details of currently analyzed experimental series. <br /></td></tr>
 <tr class="separator:abe3bbe244e4ab515140c4613c92fa59b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8aac9ef9696a6bcc2ebedd27bc176054"><td class="memItemLeft" align="right" valign="top"><a id="a8aac9ef9696a6bcc2ebedd27bc176054"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8aac9ef9696a6bcc2ebedd27bc176054">Reset</a> (void)</td></tr>
-<tr class="memdesc:a8aac9ef9696a6bcc2ebedd27bc176054"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets all members of the class to their default values. <br /></td></tr>
-<tr class="separator:a8aac9ef9696a6bcc2ebedd27bc176054"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a0391f6c96e47526434525127e66a86"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5a0391f6c96e47526434525127e66a86">SetDetails</a> (int seriesNo)</td></tr>
 <tr class="separator:a5a0391f6c96e47526434525127e66a86"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad7404fc59cbb071fc05352c6326c6b34"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad7404fc59cbb071fc05352c6326c6b34">SetThreshold</a> (TString threshold)</td></tr>
-<tr class="separator:ad7404fc59cbb071fc05352c6326c6b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a10a920c4940e62ad7e40266a42bddd5e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a10a920c4940e62ad7e40266a42bddd5e">GetIndex</a> (double position)</td></tr>
-<tr class="separator:a10a920c4940e62ad7e40266a42bddd5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8997c01855b6c851fc56b1a7e386cc0a"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8997c01855b6c851fc56b1a7e386cc0a">GetSelection</a> (int ch, TString type)</td></tr>
-<tr class="separator:a8997c01855b6c851fc56b1a7e386cc0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60647493595e5e30172befb66088925f"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a60647493595e5e30172befb66088925f">GetSelectionCustom</a> (TString selection)</td></tr>
-<tr class="separator:a60647493595e5e30172befb66088925f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbc5bd59ad57634f7202e95ea5053964"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#afbc5bd59ad57634f7202e95ea5053964">GetSignalAachen</a> (int ch, int ID, TString cut, int number)</td></tr>
+<tr class="separator:afbc5bd59ad57634f7202e95ea5053964"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c36a3030660b1b2abafbf703f8bd639"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8c36a3030660b1b2abafbf703f8bd639">GetSignalAverageAachen</a> (int ch, int ID, TString cut, int number)</td></tr>
+<tr class="separator:a8c36a3030660b1b2abafbf703f8bd639"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad76a9667db308725787612b46e4d540"><td class="memItemLeft" align="right" valign="top">TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aad76a9667db308725787612b46e4d540">GetSignalAverageKrakow</a> (int ch, int ID, TString cut, int number, bool bl)</td></tr>
+<tr class="separator:aad76a9667db308725787612b46e4d540"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a322e4c2598b638c076e1ba167b745578"><td class="memItemLeft" align="right" valign="top">TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a322e4c2598b638c076e1ba167b745578">GetSignalKrakow</a> (int ch, int ID, TString cut, int number, bool bl)</td></tr>
+<tr class="separator:a322e4c2598b638c076e1ba167b745578"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fd7f8e62021cd8363f2cee6e93dcc5f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut</a> (DDSignal *sig, TString cut)</td></tr>
 <tr class="separator:a5fd7f8e62021cd8363f2cee6e93dcc5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
+<tr class="memitem:ae006ee034fb4d7ae212ace54001150d4"><td class="memItemLeft" align="right" valign="top"><a id="ae006ee034fb4d7ae212ace54001150d4"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae006ee034fb4d7ae212ace54001150d4">fCollimator</a></td></tr>
+<tr class="memdesc:ae006ee034fb4d7ae212ace54001150d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of the used collimator: Lead or Electronic. <br /></td></tr>
+<tr class="separator:ae006ee034fb4d7ae212ace54001150d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97207ceb9e667ecef22888232f9882a7"><td class="memItemLeft" align="right" valign="top"><a id="a97207ceb9e667ecef22888232f9882a7"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a97207ceb9e667ecef22888232f9882a7">fCoupling</a></td></tr>
+<tr class="memdesc:a97207ceb9e667ecef22888232f9882a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Coupling type: silicone gel/silicone pads. <br /></td></tr>
+<tr class="separator:a97207ceb9e667ecef22888232f9882a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee69d0988b071f7930d43425e3ef0f1d"><td class="memItemLeft" align="right" valign="top"><a id="aee69d0988b071f7930d43425e3ef0f1d"></a>
 sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aee69d0988b071f7930d43425e3ef0f1d">fDB</a></td></tr>
 <tr class="memdesc:aee69d0988b071f7930d43425e3ef0f1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">SQLite3 data base. <br /></td></tr>
@@ -179,77 +225,79 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="separator:a03ce48ed3e49a499a384f5b31169367c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="memItemLeft" align="right" valign="top"><a id="a31a35b4359edb08e2982ff31ae2d5e0f"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a31a35b4359edb08e2982ff31ae2d5e0f">fFiber</a></td></tr>
-<tr class="memdesc:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scintillating fiber type e.g. LuAG (1) <br /></td></tr>
+<tr class="memdesc:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scintillating fiber type e.g. LuAG:Ce Crytur (1) <br /></td></tr>
 <tr class="separator:a31a35b4359edb08e2982ff31ae2d5e0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11ec83a24dd3de4782e0183cb72fd111"><td class="memItemLeft" align="right" valign="top"><a id="a11ec83a24dd3de4782e0183cb72fd111"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a11ec83a24dd3de4782e0183cb72fd111">fHist</a></td></tr>
-<tr class="memdesc:a11ec83a24dd3de4782e0183cb72fd111"><td class="mdescLeft">&#160;</td><td class="mdescRight">Custom histogram of requested type. <br /></td></tr>
-<tr class="separator:a11ec83a24dd3de4782e0183cb72fd111"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="memItemLeft" align="right" valign="top"><a id="ae84ee2d995e3d7a084f9eea264bb2d15"></a>
-TH2D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae84ee2d995e3d7a084f9eea264bb2d15">fHist2D</a></td></tr>
-<tr class="memdesc:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="mdescLeft">&#160;</td><td class="mdescRight">2D correlation histogram of requested type <br /></td></tr>
-<tr class="separator:ae84ee2d995e3d7a084f9eea264bb2d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="memItemLeft" align="right" valign="top"><a id="a4116d1eadfc97a458c4dc1bc7e3c6f93"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4116d1eadfc97a458c4dc1bc7e3c6f93">fHists</a></td></tr>
-<tr class="memdesc:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of custom histograms for all measurements (requested type) <br /></td></tr>
-<tr class="separator:a4116d1eadfc97a458c4dc1bc7e3c6f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="memItemLeft" align="right" valign="top"><a id="a0a99c1d041974fb36a70cfc89c86d1ca"></a>
-vector&lt; TH2D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a0a99c1d041974fb36a70cfc89c86d1ca">fHists2D</a></td></tr>
-<tr class="memdesc:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of 2D correlation histograms for all measurements (requested type) <br /></td></tr>
-<tr class="separator:a0a99c1d041974fb36a70cfc89c86d1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c7125f1dbe03d54d2cec5cf9599c68b"><td class="memItemLeft" align="right" valign="top"><a id="a4c7125f1dbe03d54d2cec5cf9599c68b"></a>
-vector&lt; TString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4c7125f1dbe03d54d2cec5cf9599c68b">fNames</a></td></tr>
-<tr class="memdesc:a4c7125f1dbe03d54d2cec5cf9599c68b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector with names of measurements. <br /></td></tr>
-<tr class="separator:a4c7125f1dbe03d54d2cec5cf9599c68b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79247f3a1acbfbbc76787d81d3ac987d"><td class="memItemLeft" align="right" valign="top"><a id="a79247f3a1acbfbbc76787d81d3ac987d"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a79247f3a1acbfbbc76787d81d3ac987d">fFiberLength</a></td></tr>
+<tr class="memdesc:a79247f3a1acbfbbc76787d81d3ac987d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Length of the scintillating fiber [mm]. <br /></td></tr>
+<tr class="separator:a79247f3a1acbfbbc76787d81d3ac987d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4b6b68d9825170c345ee68b41bc7608"><td class="memItemLeft" align="right" valign="top"><a id="af4b6b68d9825170c345ee68b41bc7608"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#af4b6b68d9825170c345ee68b41bc7608">fLogFile</a></td></tr>
+<tr class="memdesc:af4b6b68d9825170c345ee68b41bc7608"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name of measurment log file. <br /></td></tr>
+<tr class="separator:af4b6b68d9825170c345ee68b41bc7608"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7baa93f803e3c7e703a7dbca4081560d"><td class="memItemLeft" align="right" valign="top"><a id="a7baa93f803e3c7e703a7dbca4081560d"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a7baa93f803e3c7e703a7dbca4081560d">fMeasureID</a></td></tr>
+<tr class="memdesc:a7baa93f803e3c7e703a7dbca4081560d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing IDs of measurements. <br /></td></tr>
+<tr class="separator:a7baa93f803e3c7e703a7dbca4081560d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8de6fc1da098fd552c76267dcad8da38"><td class="memItemLeft" align="right" valign="top"><a id="a8de6fc1da098fd552c76267dcad8da38"></a>
+std::vector&lt; TString &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8de6fc1da098fd552c76267dcad8da38">fNames</a></td></tr>
+<tr class="memdesc:a8de6fc1da098fd552c76267dcad8da38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing names of measurements. <br /></td></tr>
+<tr class="separator:a8de6fc1da098fd552c76267dcad8da38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36895a6461d8c9911584e66fbb43186f"><td class="memItemLeft" align="right" valign="top"><a id="a36895a6461d8c9911584e66fbb43186f"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a36895a6461d8c9911584e66fbb43186f">fNpoints</a></td></tr>
 <tr class="memdesc:a36895a6461d8c9911584e66fbb43186f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of measurements in the series. <br /></td></tr>
 <tr class="separator:a36895a6461d8c9911584e66fbb43186f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe13011696838262413be8acd1993ce3"><td class="memItemLeft" align="right" valign="top"><a id="abe13011696838262413be8acd1993ce3"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#abe13011696838262413be8acd1993ce3">fPositions</a></td></tr>
-<tr class="memdesc:abe13011696838262413be8acd1993ce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector with positions of radioactive source in mm. <br /></td></tr>
-<tr class="separator:abe13011696838262413be8acd1993ce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a325442d9a22e6b10f41f8416a5874aff"><td class="memItemLeft" align="right" valign="top"><a id="a325442d9a22e6b10f41f8416a5874aff"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a325442d9a22e6b10f41f8416a5874aff">fOvervoltage</a></td></tr>
+<tr class="memdesc:a325442d9a22e6b10f41f8416a5874aff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overvoltage [V]. <br /></td></tr>
+<tr class="separator:a325442d9a22e6b10f41f8416a5874aff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab40672495b551c39a4dd8ab2e544da75"><td class="memItemLeft" align="right" valign="top"><a id="ab40672495b551c39a4dd8ab2e544da75"></a>
+std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ab40672495b551c39a4dd8ab2e544da75">fPositions</a></td></tr>
+<tr class="memdesc:ab40672495b551c39a4dd8ab2e544da75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing positions of radioactive source [mm]. <br /></td></tr>
+<tr class="separator:ab40672495b551c39a4dd8ab2e544da75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="memItemLeft" align="right" valign="top"><a id="ad0d9ef8c1d067566e01f3cb91e087d89"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ad0d9ef8c1d067566e01f3cb91e087d89">fSeriesNo</a></td></tr>
-<tr class="memdesc:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Series number. <br /></td></tr>
+<tr class="memdesc:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Experimental series number. <br /></td></tr>
 <tr class="separator:ad0d9ef8c1d067566e01f3cb91e087d89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfd3a9a2534dd48860c86dd632d6da24"><td class="memItemLeft" align="right" valign="top"><a id="acfd3a9a2534dd48860c86dd632d6da24"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#acfd3a9a2534dd48860c86dd632d6da24">fSignal</a></td></tr>
-<tr class="memdesc:acfd3a9a2534dd48860c86dd632d6da24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Histogram of single chosen signal. <br /></td></tr>
-<tr class="separator:acfd3a9a2534dd48860c86dd632d6da24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a51b4107ec7f72bbb2123c8c7e20bef"><td class="memItemLeft" align="right" valign="top"><a id="a1a51b4107ec7f72bbb2123c8c7e20bef"></a>
-TProfile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a1a51b4107ec7f72bbb2123c8c7e20bef">fSignalProfile</a></td></tr>
-<tr class="memdesc:a1a51b4107ec7f72bbb2123c8c7e20bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Average of n requested signals. <br /></td></tr>
-<tr class="separator:a1a51b4107ec7f72bbb2123c8c7e20bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9265758d79fe33526b36df4ea11b454f"><td class="memItemLeft" align="right" valign="top"><a id="a9265758d79fe33526b36df4ea11b454f"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a9265758d79fe33526b36df4ea11b454f">fSiPM</a></td></tr>
+<tr class="memdesc:a9265758d79fe33526b36df4ea11b454f"><td class="mdescLeft">&#160;</td><td class="mdescRight">SiPM type: Hamamatsu or SensL. <br /></td></tr>
+<tr class="separator:a9265758d79fe33526b36df4ea11b454f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ef2d1aa4497ba51272f3847b5346bc3"><td class="memItemLeft" align="right" valign="top"><a id="a7ef2d1aa4497ba51272f3847b5346bc3"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a7ef2d1aa4497ba51272f3847b5346bc3">fSource</a></td></tr>
 <tr class="memdesc:a7ef2d1aa4497ba51272f3847b5346bc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of the radioactive source. <br /></td></tr>
 <tr class="separator:a7ef2d1aa4497ba51272f3847b5346bc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63351cb827bc9446e2b8a4382943f779"><td class="memItemLeft" align="right" valign="top"><a id="a63351cb827bc9446e2b8a4382943f779"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a63351cb827bc9446e2b8a4382943f779">fSpectra</a></td></tr>
-<tr class="memdesc:a63351cb827bc9446e2b8a4382943f779"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector with all spectra from this series (requested type e.g. fPE) <br /></td></tr>
-<tr class="separator:a63351cb827bc9446e2b8a4382943f779"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24a728164962fdfd3d8a0b5bed362a90"><td class="memItemLeft" align="right" valign="top"><a id="a24a728164962fdfd3d8a0b5bed362a90"></a>
-TH1D *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a24a728164962fdfd3d8a0b5bed362a90">fSpectrum</a></td></tr>
-<tr class="memdesc:a24a728164962fdfd3d8a0b5bed362a90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Single requested spectrum. <br /></td></tr>
-<tr class="separator:a24a728164962fdfd3d8a0b5bed362a90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e7675868c0032c57906025671555a95"><td class="memItemLeft" align="right" valign="top">TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a8e7675868c0032c57906025671555a95">fThreshold</a></td></tr>
-<tr class="memdesc:a8e7675868c0032c57906025671555a95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default value - "ft".  <a href="#a8e7675868c0032c57906025671555a95">More...</a><br /></td></tr>
-<tr class="separator:a8e7675868c0032c57906025671555a95"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6662e3c7ccd4c8f05dcce7c3ab92b6dd"><td class="memItemLeft" align="right" valign="top"><a id="a6662e3c7ccd4c8f05dcce7c3ab92b6dd"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a6662e3c7ccd4c8f05dcce7c3ab92b6dd">fTimes</a></td></tr>
-<tr class="memdesc:a6662e3c7ccd4c8f05dcce7c3ab92b6dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector with times of measurement in s. <br /></td></tr>
-<tr class="separator:a6662e3c7ccd4c8f05dcce7c3ab92b6dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31e00911bbdae8fb0a36376d58c7e139"><td class="memItemLeft" align="right" valign="top"><a id="a31e00911bbdae8fb0a36376d58c7e139"></a>
-TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a31e00911bbdae8fb0a36376d58c7e139">fType</a></td></tr>
-<tr class="memdesc:a31e00911bbdae8fb0a36376d58c7e139"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of the measurement ( Lead o electrical collimator == Cracow or Aachen data) <br /></td></tr>
-<tr class="separator:a31e00911bbdae8fb0a36376d58c7e139"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0601404ac92a64e65c1e85c9d50436c"><td class="memItemLeft" align="right" valign="top"><a id="ae0601404ac92a64e65c1e85c9d50436c"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#ae0601404ac92a64e65c1e85c9d50436c">fStart</a></td></tr>
+<tr class="memdesc:ae0601404ac92a64e65c1e85c9d50436c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing starting times of measurements (in UNIX time) <br /></td></tr>
+<tr class="separator:ae0601404ac92a64e65c1e85c9d50436c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab174908e62861077af54c145aec75fb"><td class="memItemLeft" align="right" valign="top"><a id="aab174908e62861077af54c145aec75fb"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#aab174908e62861077af54c145aec75fb">fStop</a></td></tr>
+<tr class="memdesc:aab174908e62861077af54c145aec75fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing stopping times of measurements (in UNIX time) <br /></td></tr>
+<tr class="separator:aab174908e62861077af54c145aec75fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d85923b336a97792a416860884f67b1"><td class="memItemLeft" align="right" valign="top"><a id="a4d85923b336a97792a416860884f67b1"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a4d85923b336a97792a416860884f67b1">fTempFile</a></td></tr>
+<tr class="memdesc:a4d85923b336a97792a416860884f67b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name of temperature log file. <br /></td></tr>
+<tr class="separator:a4d85923b336a97792a416860884f67b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeb5559d673cca12ac3eeba90bd7d8f4"><td class="memItemLeft" align="right" valign="top"><a id="adeb5559d673cca12ac3eeba90bd7d8f4"></a>
+TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#adeb5559d673cca12ac3eeba90bd7d8f4">fTestBench</a></td></tr>
+<tr class="memdesc:adeb5559d673cca12ac3eeba90bd7d8f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of test bench: PL/DE/Simulation. <br /></td></tr>
+<tr class="separator:adeb5559d673cca12ac3eeba90bd7d8f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05ab3238d006cb7d01bb6f9af60e92fc"><td class="memItemLeft" align="right" valign="top"><a id="a05ab3238d006cb7d01bb6f9af60e92fc"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a05ab3238d006cb7d01bb6f9af60e92fc">fTimes</a></td></tr>
+<tr class="memdesc:a05ab3238d006cb7d01bb6f9af60e92fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing times of measurements [s]. <br /></td></tr>
+<tr class="separator:a05ab3238d006cb7d01bb6f9af60e92fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22cd7f632f9a0689ce229ef5612762a2"><td class="memItemLeft" align="right" valign="top"><a id="a22cd7f632f9a0689ce229ef5612762a2"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFData.html#a22cd7f632f9a0689ce229ef5612762a2">gUnique</a> = 0.</td></tr>
+<tr class="memdesc:a22cd7f632f9a0689ce229ef5612762a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unique flag to identify temporary histograms. <br /></td></tr>
+<tr class="separator:a22cd7f632f9a0689ce229ef5612762a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p class="">Class to access experiemntal data. Data is acessed via SQLite3 data base. It is possible to get single histograms and vectors of histograms of requested type. Single signals and averaged signals are also possible to access. Cutting functionality for all has been implemented. </p>
+<div class="textblock"><p class="">Class to access experiemntal data. Information about an experimental series and all measurements is loaded from the SQLite3 data base. <br />
+Subsequently requested data is accessed from ROOT files and binary files stored on the computer or remote scratch drive. It is possible to get single histograms as well as vectors of histograms of requested type. All possible selections for histograms are defined in <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a> class. Single signals and averaged signals are also possible to access. Cutting functionality based on ROOT's TTree for all has been implemented. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3041bb4688a8ce3a72f86bdcc7fbab53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3041bb4688a8ce3a72f86bdcc7fbab53">&#9670;&nbsp;</a></span>SFData() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3041bb4688a8ce3a72f86bdcc7fbab53">&#9670;&nbsp;</a></span>SFData() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -267,7 +315,7 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div>
 </div>
 <a id="a3cd1ee43593533cb8ec86909842b1007"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3cd1ee43593533cb8ec86909842b1007">&#9670;&nbsp;</a></span>SFData() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cd1ee43593533cb8ec86909842b1007">&#9670;&nbsp;</a></span>SFData() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -283,43 +331,7 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div><div class="memdoc">
 <p class="">Standard constructor (recommended). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">seriesNo</td><td>is number of experimental series to analyze.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>By deafult data analyzed with fixed threshold in DD6 is accessed. If you need constant fraction data use <a class="el" href="classSFData.html#ad7404fc59cbb071fc05352c6326c6b34">SetThreshold()</a> function. </p>
-
-</div>
-</div>
-<a id="aff33d2a9966641ad89c6dac4be0b597a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff33d2a9966641ad89c6dac4be0b597a">&#9670;&nbsp;</a></span>SFData() <span class="overload">[3/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">SFData::SFData </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>seriesNo</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>threshold</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p class="">Standard constructor. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">seriesNo</td><td>is number of the experimental series to analyze. </td></tr>
-    <tr><td class="paramname">threshold</td><td>is threshold type in DD6 preliminary data analysis. Possible options are: "ft" - fixed threshold and "cf" - constant fraction. </td></tr>
+    <tr><td class="paramname">seriesNo</td><td>is number of experimental series to analyze. </td></tr>
   </table>
   </dd>
 </dl>
@@ -327,8 +339,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ace2c2b0015a8615554b8757e14624f2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace2c2b0015a8615554b8757e14624f2b">&#9670;&nbsp;</a></span>GetCorrHistogram()</h2>
+<a id="a5a187276a93e9dbd9f0b3ce85502175d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a187276a93e9dbd9f0b3ce85502175d">&#9670;&nbsp;</a></span>GetCorrHistogram()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -336,8 +348,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="memname">TH2D * SFData::GetCorrHistogram </td>
           <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -348,8 +360,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -358,28 +370,28 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">Returns single requested correlation 2D histogram. </p><dl class="params"><dt>Parameters</dt><dd>
+<p class="">Returns single requested 2D correlation histogram. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
-    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
-    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- predefined selection type (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax </td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurement </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a49daa5f7ad477d8e4287111652673efe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49daa5f7ad477d8e4287111652673efe">&#9670;&nbsp;</a></span>GetCorrHistograms()</h2>
+<a id="af3d8b49f32e026a4c9411afcf0c25d7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3d8b49f32e026a4c9411afcf0c25d7a">&#9670;&nbsp;</a></span>GetCorrHistograms()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vector&lt; TH2D * &gt; SFData::GetCorrHistograms </td>
+          <td class="memname">std::vector&lt; TH2D * &gt; SFData::GetCorrHistograms </td>
           <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -396,16 +408,16 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div><div class="memdoc">
 <p class="">Returns a vector of requested 2D correlation histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "ch_0.fPE:ch_1.fPE". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
-    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- predefined selection type (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a98cfc4a752e6130f52329d5d99521d9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a98cfc4a752e6130f52329d5d99521d9c">&#9670;&nbsp;</a></span>GetCustomHistogram()</h2>
+<a id="a782e53d32619685e8204d4fbf827c6bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a782e53d32619685e8204d4fbf827c6bb">&#9670;&nbsp;</a></span>GetCustomHistogram() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -413,8 +425,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="memname">TH1D * SFData::GetCustomHistogram </td>
           <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -425,8 +437,14 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>customNumbers</em> = <code>{}</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -437,26 +455,83 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div><div class="memdoc">
 <p class="">Returns single requested custom 1D histogram. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree. </td></tr>
-    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. </td></tr>
-    <tr><td class="paramname">position</td><td>- position of source in mm. If position is not unique a number of measurement should be entered. </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- predefined selection type (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax </td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurement </td></tr>
+    <tr><td class="paramname">customNumbers</td><td>- vector containing set of numbers necessary for the selection of events to be drawn on the histogram </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a29b92986b78753f26432875be7744bc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29b92986b78753f26432875be7744bc1">&#9670;&nbsp;</a></span>GetCustomHistograms()</h2>
+<a id="a33a358ab3df3f1e7c843c25cfe5f5822"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33a358ab3df3f1e7c843c25cfe5f5822">&#9670;&nbsp;</a></span>GetCustomHistogram() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vector&lt; TH1D * &gt; SFData::GetCustomHistograms </td>
+          <td class="memname">TH1D * SFData::GetCustomHistogram </td>
           <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em>, </td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt;&#160;</td>
+          <td class="paramname"><em>customNumbers</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Returns single requested custom 1D histogram. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- predefined selection type (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
+    <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax </td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurement </td></tr>
+    <tr><td class="paramname">customNumbers</td><td>- vector containing set of numbers necessary for the selection of events to be drawn on the histogram. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad2790fef6a8172cd3da2ddaf35de4ba6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2790fef6a8172cd3da2ddaf35de4ba6">&#9670;&nbsp;</a></span>GetCustomHistograms()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; TH1D * &gt; SFData::GetCustomHistograms </td>
+          <td>(</td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -473,7 +548,7 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </div><div class="memdoc">
 <p class="">Returns a vector of requested custom 1D histograms for all measurements in this series. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selection</td><td>- selection like for Draw() method of TTree, e.g. "log(ch_0.fPE/ch_1.fPE)". Redirection to specific histogram should not be entered here, it is done inside the function. </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- predefined selection type (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
     <tr><td class="paramname">cut</td><td>- cut for drawn events. Also TTree-style syntax. If empty string is passed here all events will be drawn. </td></tr>
   </table>
   </dd>
@@ -481,110 +556,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 
 </div>
 </div>
-<a id="a10a920c4940e62ad7e40266a42bddd5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10a920c4940e62ad7e40266a42bddd5e">&#9670;&nbsp;</a></span>GetIndex()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int SFData::GetIndex </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p class="">Returns index in the fNames and fPositions arrays for the measurement of requested source position in mm. If measurements in analyzed series don't have unique positions a number of measurement should be passed. Measurements counting starts at 1. </p>
-
-</div>
-</div>
-<a id="a8997c01855b6c851fc56b1a7e386cc0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8997c01855b6c851fc56b1a7e386cc0a">&#9670;&nbsp;</a></span>GetSelection()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">TString SFData::GetSelection </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ch</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>type</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p class="">Returns proper selection for Draw() method of TTree. It sets binning, ranges and unique names for created histograms. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
-    <tr><td class="paramname">type</td><td>- type of spectrum to be drawn. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a60647493595e5e30172befb66088925f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60647493595e5e30172befb66088925f">&#9670;&nbsp;</a></span>GetSelectionCustom()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">TString SFData::GetSelectionCustom </td>
-          <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>selection</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p class="">Returns selection for Draw method of TTree for custom histograms. It sets binning, ranges and unique names for created histograms. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">selection</td><td>is custom selection entered by user. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae9fce8eb845b663085bf4861196983b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae9fce8eb845b663085bf4861196983b9">&#9670;&nbsp;</a></span>GetSignal()</h2>
+<a id="a94095d3c6a22a7c33c710584cd48f7d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94095d3c6a22a7c33c710584cd48f7d5">&#9670;&nbsp;</a></span>GetSignal()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -598,8 +571,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -626,22 +599,79 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">Returns single signal. </p><dl class="params"><dt>Parameters</dt><dd>
+<p class="">Returns single raw signal. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ch</td><td>- channel number </td></tr>
-    <tr><td class="paramname">position</td><td>- source position in mm. If there's no unique position pass a number of measurement here. </td></tr>
-    <tr><td class="paramname">cut</td><td>- logic cut to choose signals. Syntax of this cut is explained in <a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut()</a> function </td></tr>
-    <tr><td class="paramname">number</td><td>- requested number of the signal to be drawn </td></tr>
-    <tr><td class="paramname">bl</td><td>- flag for base line subtraction. See <a class="el" href="classSFData.html#a0446ba8102cd62eb8236fd3b79bdc6ac">GetSignalAverage()</a></td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurement </td></tr>
+    <tr><td class="paramname">cut</td><td>- logic cut to choose signals (syntax explained in <a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut()</a> function) </td></tr>
+    <tr><td class="paramname">number</td><td>- number of the signal to be drawn, eg. number=1 means that first signal which fulfills given cut will be drawn </td></tr>
+    <tr><td class="paramname">bl</td><td>- flag for base line subtraction. If true - base line will be subtracted, if false - it won't</td></tr>
   </table>
   </dd>
 </dl>
-<p>If no cut is needed an empty string should be passed. </p>
+<p>If no cut is required pass an empty string. This function calls separate methods to access binary files depending on the test bench type. </p>
 
 </div>
 </div>
-<a id="a0446ba8102cd62eb8236fd3b79bdc6ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0446ba8102cd62eb8236fd3b79bdc6ac">&#9670;&nbsp;</a></span>GetSignalAverage()</h2>
+<a id="afbc5bd59ad57634f7202e95ea5053964"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbc5bd59ad57634f7202e95ea5053964">&#9670;&nbsp;</a></span>GetSignalAachen()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TH1D * SFData::GetSignalAachen </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">This private function allows to access raw signals recorded with the Aachen test bench. It opens ROOT file and TTree corresponding to the chosen measurement and channel. Based on the digitized data saved in the ROOT TTree it searches for signals which fulfil given cut and draws them. Returns single signal. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
+    <tr><td class="paramname">ID</td><td>- measurement ID </td></tr>
+    <tr><td class="paramname">cut</td><td>- logic cut to choose signals. Syntax of this cut is explained in <a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut()</a> function </td></tr>
+    <tr><td class="paramname">number</td><td>- requested number of the signal to be drawn. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8b0db98a4a3e70183448b3520571a207"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b0db98a4a3e70183448b3520571a207">&#9670;&nbsp;</a></span>GetSignalAverage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -655,8 +685,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -686,25 +716,28 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <p class="">Returns averaged signal. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ch</td><td>- channel number </td></tr>
-    <tr><td class="paramname">position</td><td>- position of the source in mm. If position is not unique pass measurement number here. Measurement numbering starts at 1. </td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurement </td></tr>
     <tr><td class="paramname">cut</td><td>- logic cut to choose signals. Syntax of this cut is explained in <a class="el" href="classSFData.html#a5fd7f8e62021cd8363f2cee6e93dcc5f">InterpretCut()</a> function </td></tr>
     <tr><td class="paramname">number</td><td>- number of signals to be averaged </td></tr>
     <tr><td class="paramname">bl</td><td>- flag for base line subtraction. If true - base line will be subtracted, if false - it won't</td></tr>
   </table>
   </dd>
 </dl>
-<p>If no cut is required pass an empty string. </p>
+<p>If no cut is required pass an empty string. This function calls separate methods to access binary files depending on the test bench type. </p>
 
 </div>
 </div>
-<a id="a73a21609b61a6435eecaafc40c2f7dac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73a21609b61a6435eecaafc40c2f7dac">&#9670;&nbsp;</a></span>GetSpectra()</h2>
+<a id="a8c36a3030660b1b2abafbf703f8bd639"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c36a3030660b1b2abafbf703f8bd639">&#9670;&nbsp;</a></span>GetSignalAverageAachen()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">vector&lt; TH1D * &gt; SFData::GetSpectra </td>
+          <td class="memname">TProfile * SFData::GetSignalAverageAachen </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>ch</em>, </td>
@@ -712,8 +745,190 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">This private function allows to access averaged signals recorded with the Aachen test bench. It opens ROOT file and TTree corresponding to the chosen measurement and channel. Based on the digitized data saved in the ROOT TTree it searches for signals which fulfil given cut and performs averaging using ROOT's TProfile object. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
+    <tr><td class="paramname">ID</td><td>- measuement ID </td></tr>
+    <tr><td class="paramname">cut</td><td>- logic cut to choose signals (syntax explained in InterpretCutt() </td></tr>
+    <tr><td class="paramname">number</td><td>- number of signals to be averaged. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aad76a9667db308725787612b46e4d540"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad76a9667db308725787612b46e4d540">&#9670;&nbsp;</a></span>GetSignalAverageKrakow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TProfile * SFData::GetSignalAverageKrakow </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>bl</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">This private function allows to access averaged signals recorded with the Krakow test bench. It opens binary file corresponding to the chosen measurement and channel. Based on the digitized data saved in the ROOT TTree it searches for signals which fulfil given cut and performs averaging using ROOT's TProfile object. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
+    <tr><td class="paramname">ID</td><td>- measuement ID </td></tr>
+    <tr><td class="paramname">cut</td><td>- logic cut to choose signals (syntax explained in InterpretCutt() </td></tr>
+    <tr><td class="paramname">number</td><td>- number of signals to be averaged </td></tr>
+    <tr><td class="paramname">bl</td><td>- flag for base line subtraction - if true baseline will be subtracted, if false - it will not. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a322e4c2598b638c076e1ba167b745578"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a322e4c2598b638c076e1ba167b745578">&#9670;&nbsp;</a></span>GetSignalKrakow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">TH1D * SFData::GetSignalKrakow </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>cut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>bl</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">This private function allows to access single raw signals recorded with the Krakow test bench. It opens binary file corresponding to the chosen measurement and channel. Based on the digitized data saved in the ROOT TTree it searches for signals which fulfil given cut and draws them. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ch</td><td>- channel number </td></tr>
+    <tr><td class="paramname">ID</td><td>- measuement ID </td></tr>
+    <tr><td class="paramname">cut</td><td>- logic cut to choose signals (syntax explained in InterpretCutt() </td></tr>
+    <tr><td class="paramname">number</td><td>- number of signals to be averaged </td></tr>
+    <tr><td class="paramname">bl</td><td>- flag for base line subtraction - if true baseline will be subtracted, if false - it will not. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a59ba8931d2382c7a76f668bcccc13356"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59ba8931d2382c7a76f668bcccc13356">&#9670;&nbsp;</a></span>GetSpectra()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; TH1D * &gt; SFData::GetSpectra </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ch</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -731,7 +946,7 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <p class="">Returns a vector with all spectra of requested type. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ch</td><td>- channel number </td></tr>
-    <tr><td class="paramname">type</td><td>- type of spectra (fAmp, fCharge, fPE, fT0, fTOT) </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- type of spectra (see <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a>) </td></tr>
     <tr><td class="paramname">cut</td><td>- logic cut for drawn events (syntax like for Draw() method of TTree)</td></tr>
   </table>
   </dd>
@@ -740,8 +955,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 
 </div>
 </div>
-<a id="ab7e574dec6210364759d95fc84882870"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7e574dec6210364759d95fc84882870">&#9670;&nbsp;</a></span>GetSpectrum()</h2>
+<a id="a4777965db090ec2032825afc6d266a16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4777965db090ec2032825afc6d266a16">&#9670;&nbsp;</a></span>GetSpectrum()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -755,8 +970,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
+          <td class="paramtype">SFSelectionType&#160;</td>
+          <td class="paramname"><em>sel_type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -767,8 +982,8 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>position</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -780,13 +995,37 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <p class="">Returns single spectrum of requested type. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ch</td><td>- chennel number </td></tr>
-    <tr><td class="paramname">type</td><td>- type of the spectrum. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT </td></tr>
+    <tr><td class="paramname">sel_type</td><td>- type of the spectrum, as defined in <a class="el" href="classSFDrawCommands.html">SFDrawCommands</a> class </td></tr>
     <tr><td class="paramname">cut</td><td>- logic cut for drawn events (syntax like for Draw() method of TTree) </td></tr>
-    <tr><td class="paramname">position</td><td>- position of the source in mm. If analyzed series doesn't have unique positions a number of measurement should be passed here. Numbering starts at 1.</td></tr>
+    <tr><td class="paramname">ID</td><td>- ID of requested measurements</td></tr>
   </table>
   </dd>
 </dl>
 <p>It is possible to have spectrum with cut or raw spectrum as recorded. In the latter case pass empty string as cut. </p>
+
+</div>
+</div>
+<a id="a8b076c1d4065a034b733d2e2d765b7d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b076c1d4065a034b733d2e2d765b7d5">&#9670;&nbsp;</a></span>GetTree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TTree * SFData::GetTree </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ID</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Accesses ROOT file and returns tree containing measured data for the requested measurement. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ID</td><td>- measurement ID </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -826,16 +1065,16 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <p class="">Parses given cut and checks if signal fulfills conditions specified by it. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sig</td><td>- currently analyzed signal, as read from the tree </td></tr>
-    <tr><td class="paramname">cut</td><td>- a logic cut to select specific signals. The following syntax of the cut is acceptable:<ul>
+    <tr><td class="paramname">cut</td><td>- a logic cut to select specific signals.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The following syntax of the cut is acceptable:</p><ul>
 <li>inequality signs: '&lt;' and '&gt;'</li>
 <li>single expressions, e.g. "fAmp&gt;50", "ch_0.fPE&gt;10", "fT0&lt;100"</li>
 <li>double expressions with &amp;&amp;, e.g. "fPE&gt;10 &amp;&amp; fPE&lt;100", "ch_0.fT0&gt;0 &amp;&amp; ch_0.fT0&lt;500"</li>
 </ul>
-</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If empty cut is passed returns true. </p>
+<p class="">If empty cut is passed returns true. </p>
 
 </div>
 </div>
@@ -854,7 +1093,12 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">Opens SQLite3 data base containing details of experimental series and measurements. </p>
+<p class="">Opens SQLite3 data base containing details of experimental series and measurements. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>- name of the data base file. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -873,74 +1117,40 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
         </tr>
       </table>
 </div><div class="memdoc">
-<p class="">Sets all details of selected experimental series. If default constructor was used, this function needs to be called explicitly with the number of of requested series as an argument. The following attributes are set within this function: </p>
+<p class="">Sets all details of selected experimental series. If default constructor was used, this function needs to be called explicitly with the number of of requested series as an argument. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">seriesNo</td><td>- number of experimental series to analyze.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The following attributes of the experimental series are set within this function: </p>
 <ul>
 <li>fiber type</li>
-<li>measurement type</li>
+<li>liber length [mm]</li>
 <li>radioactive source type</li>
+<li>test bench type</li>
+<li>collimator type</li>
+<li>SiPM type</li>
+<li>overvoltage [V]</li>
+<li>coupling type</li>
 <li>number of measurements in the series</li>
+<li>name of the measurement log file</li>
+<li>name of the temperature log file</li>
 <li>description of the series <br />
 </li>
 <li>list of measurements names</li>
+<li>list of measurements duration times</li>
 <li>list of source positions</li>
-<li>list of measurements times </li>
+<li>list of measurements starting times</li>
+<li>list of measurements stopping times</li>
+<li>list of measurements IDs </li>
 </ul>
 
 </div>
 </div>
-<a id="ad7404fc59cbb071fc05352c6326c6b34"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7404fc59cbb071fc05352c6326c6b34">&#9670;&nbsp;</a></span>SetThreshold()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool SFData::SetThreshold </td>
-          <td>(</td>
-          <td class="paramtype">TString&#160;</td>
-          <td class="paramname"><em>threshold</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p class="">Sets the flag to identify the tree with data which should be accessed. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">threshold</td><td>- type of threshold used during data analysis in DD6. Possible options are: ft - fixed threshold (default) and cf - constant fraction. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a8e7675868c0032c57906025671555a95"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8e7675868c0032c57906025671555a95">&#9670;&nbsp;</a></span>fThreshold</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">TString SFData::fThreshold</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Default value - "ft". </p>
-<p class="">Flag to identify which tree should be opened. </p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/kasia/ScintillatingFibers/sources/include/<a class="el" href="SFData_8hh_source.html">SFData.hh</a></li>
-<li>/home/kasia/ScintillatingFibers/sources/src/SFData.cc</li>
+<li>/home/kasia/Projects/ScintillatingFibers/sources/lib/include/<a class="el" href="SFData_8hh_source.html">SFData.hh</a></li>
+<li>/home/kasia/Projects/ScintillatingFibers/sources/lib/src/SFData.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

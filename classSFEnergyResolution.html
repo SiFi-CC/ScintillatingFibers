@@ -63,15 +63,12 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="classSFEnergyResolution-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">SFEnergyResolution Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p><code>#include &lt;<a class="el" href="SFEnergyResolution_8hh_source.html">SFEnergyResolution.hh</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for SFEnergyResolution:</div>
 <div class="dyncontent">
@@ -93,134 +90,114 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a4970fa87733812175e1db486b9059e65">~SFEnergyResolution</a> ()</td></tr>
 <tr class="memdesc:a4970fa87733812175e1db486b9059e65"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:a4970fa87733812175e1db486b9059e65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3437cb92d7663b9c9a48a94bcd5e7cbd"><td class="memItemLeft" align="right" valign="top"><a id="a3437cb92d7663b9c9a48a94bcd5e7cbd"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetAveSpectra</b> ()</td></tr>
-<tr class="separator:a3437cb92d7663b9c9a48a94bcd5e7cbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3aafa4171f59a37b5b5d57abdd048de9"><td class="memItemLeft" align="right" valign="top"><a id="a3aafa4171f59a37b5b5d57abdd048de9"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetAveSpectra</b> (int ch)</td></tr>
-<tr class="separator:a3aafa4171f59a37b5b5d57abdd048de9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f4bfe77297a56d674d2a409ca55983a"><td class="memItemLeft" align="right" valign="top"><a id="a3f4bfe77297a56d674d2a409ca55983a"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a3f4bfe77297a56d674d2a409ca55983a">GetEnergyResolution</a> ()</td></tr>
-<tr class="memdesc:a3f4bfe77297a56d674d2a409ca55983a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the fEnergyResAve and fEnergyResErrAve in an vector. <br /></td></tr>
-<tr class="separator:a3f4bfe77297a56d674d2a409ca55983a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2720a951d0ec1e2f5f17933ca1f1e4fe"><td class="memItemLeft" align="right" valign="top"><a id="a2720a951d0ec1e2f5f17933ca1f1e4fe"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a2720a951d0ec1e2f5f17933ca1f1e4fe">GetEnergyResolution</a> (int ch)</td></tr>
-<tr class="memdesc:a2720a951d0ec1e2f5f17933ca1f1e4fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the fEnergyRes and fEnergyResErr in an vector for the requested channel. <br /></td></tr>
-<tr class="separator:a2720a951d0ec1e2f5f17933ca1f1e4fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a947f500b502c52cdab3670891310c9eb"><td class="memItemLeft" align="right" valign="top"><a id="a947f500b502c52cdab3670891310c9eb"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>CalculateEnergyRes</b> (int ch)</td></tr>
+<tr class="separator:a947f500b502c52cdab3670891310c9eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50c75f60851970c2560b15cb6eec5a8f"><td class="memItemLeft" align="right" valign="top"><a id="a50c75f60851970c2560b15cb6eec5a8f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>CalculateEnergyRes</b> (void)</td></tr>
+<tr class="separator:a50c75f60851970c2560b15cb6eec5a8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad071d4ca54b4a702439f8af674da5ee3"><td class="memItemLeft" align="right" valign="top"><a id="ad071d4ca54b4a702439f8af674da5ee3"></a>
+std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnergyResolution</b> (void)</td></tr>
+<tr class="separator:ad071d4ca54b4a702439f8af674da5ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab308d349fe417f204cdd6e21f4fc72b7"><td class="memItemLeft" align="right" valign="top"><a id="ab308d349fe417f204cdd6e21f4fc72b7"></a>
+std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnergyResolution</b> (int ch)</td></tr>
+<tr class="separator:ab308d349fe417f204cdd6e21f4fc72b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e24f51afba4b0261b26fba4317f47ab"><td class="memItemLeft" align="right" valign="top"><a id="a1e24f51afba4b0261b26fba4317f47ab"></a>
-TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a1e24f51afba4b0261b26fba4317f47ab">GetEnergyResolutionGraph</a> ()</td></tr>
-<tr class="memdesc:a1e24f51afba4b0261b26fba4317f47ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the fEnergyResolutionGraphAve. <br /></td></tr>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnergyResolutionGraph</b> ()</td></tr>
 <tr class="separator:a1e24f51afba4b0261b26fba4317f47ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaf019f8e9693fc24cb53736fbc524fa"><td class="memItemLeft" align="right" valign="top"><a id="aaaf019f8e9693fc24cb53736fbc524fa"></a>
-TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#aaaf019f8e9693fc24cb53736fbc524fa">GetEnergyResolutionGraph</a> (int ch)</td></tr>
-<tr class="memdesc:aaaf019f8e9693fc24cb53736fbc524fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the fEnergyResolutionGraph for the requested channel. <br /></td></tr>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><b>GetEnergyResolutionGraph</b> (int ch)</td></tr>
 <tr class="separator:aaaf019f8e9693fc24cb53736fbc524fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91979df87047ea44fc7ae57b335afaaa"><td class="memItemLeft" align="right" valign="top"><a id="a91979df87047ea44fc7ae57b335afaaa"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSpectra</b> (int ch)</td></tr>
-<tr class="separator:a91979df87047ea44fc7ae57b335afaaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab0c6f10b265f9fe93751566619ef4b8"><td class="memItemLeft" align="right" valign="top"><a id="aab0c6f10b265f9fe93751566619ef4b8"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetPeaks</b> (void)</td></tr>
+<tr class="separator:aab0c6f10b265f9fe93751566619ef4b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73e9ed48fb048d173e8b7364de38a747"><td class="memItemLeft" align="right" valign="top"><a id="a73e9ed48fb048d173e8b7364de38a747"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetPeaks</b> (int ch)</td></tr>
+<tr class="separator:a73e9ed48fb048d173e8b7364de38a747"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a285e4cf96c26d2e0e754f4669632be1d"><td class="memItemLeft" align="right" valign="top"><a id="a285e4cf96c26d2e0e754f4669632be1d"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSpectra</b> (int ch)</td></tr>
+<tr class="separator:a285e4cf96c26d2e0e754f4669632be1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e8fcd45fdce33985727af4905238a33"><td class="memItemLeft" align="right" valign="top"><a id="a5e8fcd45fdce33985727af4905238a33"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSpectraCorrected</b> (int ch)</td></tr>
+<tr class="separator:a5e8fcd45fdce33985727af4905238a33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd5c3bac35a2241910078e6841cb73a6"><td class="memItemLeft" align="right" valign="top"><a id="acd5c3bac35a2241910078e6841cb73a6"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetSpectraSum</b> (void)</td></tr>
+<tr class="separator:acd5c3bac35a2241910078e6841cb73a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8115a0209e5646b7650f19900b71376"><td class="memItemLeft" align="right" valign="top"><a id="ab8115a0209e5646b7650f19900b71376"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ab8115a0209e5646b7650f19900b71376">Print</a> (void)</td></tr>
-<tr class="memdesc:ab8115a0209e5646b7650f19900b71376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints details of <a class="el" href="classSFAttenuation.html">SFAttenuation</a> class object. <br /></td></tr>
+<tr class="memdesc:ab8115a0209e5646b7650f19900b71376"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints details of the <a class="el" href="classSFEnergyResolution.html">SFEnergyResolution</a> class object. <br /></td></tr>
 <tr class="separator:ab8115a0209e5646b7650f19900b71376"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f1d6ccd23874afc2d374034b41a1b2f"><td class="memItemLeft" align="right" valign="top"><a id="a5f1d6ccd23874afc2d374034b41a1b2f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a5f1d6ccd23874afc2d374034b41a1b2f">Reset</a> ()</td></tr>
-<tr class="memdesc:a5f1d6ccd23874afc2d374034b41a1b2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets values of private members of the class to their default values. <br /></td></tr>
-<tr class="separator:a5f1d6ccd23874afc2d374034b41a1b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
-Private Member Functions</h2></td></tr>
-<tr class="memitem:aa9ec72795e5e04eb0adde06acb367b2d"><td class="memItemLeft" align="right" valign="top"><a id="aa9ec72795e5e04eb0adde06acb367b2d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#aa9ec72795e5e04eb0adde06acb367b2d">CalculateER</a> (int ch)</td></tr>
-<tr class="memdesc:aa9ec72795e5e04eb0adde06acb367b2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the Ligthoutput for the single channels with the averaged attenuation length. <br /></td></tr>
-<tr class="separator:aa9ec72795e5e04eb0adde06acb367b2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa77d178766a132e0cb1ea54d0243a280"><td class="memItemLeft" align="right" valign="top"><a id="aa77d178766a132e0cb1ea54d0243a280"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>CalculateERAve</b> ()</td></tr>
-<tr class="separator:aa77d178766a132e0cb1ea54d0243a280"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:a2ac8f01e75a1340a873e36c6a6e62f0b"><td class="memItemLeft" align="right" valign="top"><a id="a2ac8f01e75a1340a873e36c6a6e62f0b"></a>
-<a class="el" href="classSFAttenuation.html">SFAttenuation</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a2ac8f01e75a1340a873e36c6a6e62f0b">fAtt</a></td></tr>
-<tr class="memdesc:a2ac8f01e75a1340a873e36c6a6e62f0b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classSFAttenuation.html">SFAttenuation</a> object of the analyzed series. <br /></td></tr>
-<tr class="separator:a2ac8f01e75a1340a873e36c6a6e62f0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3a5faafe89497963fd5b99806c44e0b"><td class="memItemLeft" align="right" valign="top"><a id="ab3a5faafe89497963fd5b99806c44e0b"></a>
-vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ab3a5faafe89497963fd5b99806c44e0b">fAttLen</a></td></tr>
-<tr class="memdesc:ab3a5faafe89497963fd5b99806c44e0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains the averaged Attenuation Length and the Error. <br /></td></tr>
-<tr class="separator:ab3a5faafe89497963fd5b99806c44e0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a760e945aaa9d892e3ee62a84b8824c9e"><td class="memItemLeft" align="right" valign="top"><a id="a760e945aaa9d892e3ee62a84b8824c9e"></a>
 <a class="el" href="classSFData.html">SFData</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a760e945aaa9d892e3ee62a84b8824c9e">fData</a></td></tr>
 <tr class="memdesc:a760e945aaa9d892e3ee62a84b8824c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classSFData.html">SFData</a> object of the analyzed series. <br /></td></tr>
 <tr class="separator:a760e945aaa9d892e3ee62a84b8824c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f75565e878e6d810bad616fb3c11a09"><td class="memItemLeft" align="right" valign="top"><a id="a2f75565e878e6d810bad616fb3c11a09"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a2f75565e878e6d810bad616fb3c11a09">fEnergyResAve</a></td></tr>
-<tr class="memdesc:a2f75565e878e6d810bad616fb3c11a09"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution Averaged for all positions [%]. <br /></td></tr>
-<tr class="separator:a2f75565e878e6d810bad616fb3c11a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33591c55a41d76d31dd7f87be8482016"><td class="memItemLeft" align="right" valign="top"><a id="a33591c55a41d76d31dd7f87be8482016"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a33591c55a41d76d31dd7f87be8482016">fEnergyResCh0</a></td></tr>
-<tr class="memdesc:a33591c55a41d76d31dd7f87be8482016"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution Ch0 for all positions [%]. <br /></td></tr>
+<tr class="memdesc:a33591c55a41d76d31dd7f87be8482016"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution of Ch0 for all positions [%]. <br /></td></tr>
 <tr class="separator:a33591c55a41d76d31dd7f87be8482016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d92000c08ffa7f2e2455a2ff880278c"><td class="memItemLeft" align="right" valign="top"><a id="a2d92000c08ffa7f2e2455a2ff880278c"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a2d92000c08ffa7f2e2455a2ff880278c">fEnergyResCh0Err</a></td></tr>
+<tr class="memdesc:a2d92000c08ffa7f2e2455a2ff880278c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResCh0 [%]. <br /></td></tr>
+<tr class="separator:a2d92000c08ffa7f2e2455a2ff880278c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a996aec9b873d54f3b39c64ede9648961"><td class="memItemLeft" align="right" valign="top"><a id="a996aec9b873d54f3b39c64ede9648961"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a996aec9b873d54f3b39c64ede9648961">fEnergyResCh1</a></td></tr>
-<tr class="memdesc:a996aec9b873d54f3b39c64ede9648961"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution Ch1 for all positions [%]. <br /></td></tr>
+<tr class="memdesc:a996aec9b873d54f3b39c64ede9648961"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution of Ch1 for all positions [%]. <br /></td></tr>
 <tr class="separator:a996aec9b873d54f3b39c64ede9648961"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb3be763ffd5dcf76f3cd40a8227bdc6"><td class="memItemLeft" align="right" valign="top"><a id="abb3be763ffd5dcf76f3cd40a8227bdc6"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#abb3be763ffd5dcf76f3cd40a8227bdc6">fEnergyResErrAve</a></td></tr>
-<tr class="memdesc:abb3be763ffd5dcf76f3cd40a8227bdc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResAve [%]. <br /></td></tr>
-<tr class="separator:abb3be763ffd5dcf76f3cd40a8227bdc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ca3640dc9f0dd0bca230f0fdc6bcffe"><td class="memItemLeft" align="right" valign="top"><a id="a0ca3640dc9f0dd0bca230f0fdc6bcffe"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a0ca3640dc9f0dd0bca230f0fdc6bcffe">fEnergyResErrCh0</a></td></tr>
-<tr class="memdesc:a0ca3640dc9f0dd0bca230f0fdc6bcffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResCh0 [%]. <br /></td></tr>
-<tr class="separator:a0ca3640dc9f0dd0bca230f0fdc6bcffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c62a7163f71fd3c28f38de05c66a023"><td class="memItemLeft" align="right" valign="top"><a id="a5c62a7163f71fd3c28f38de05c66a023"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a5c62a7163f71fd3c28f38de05c66a023">fEnergyResErrCh1</a></td></tr>
-<tr class="memdesc:a5c62a7163f71fd3c28f38de05c66a023"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResCh1 [%]. <br /></td></tr>
-<tr class="separator:a5c62a7163f71fd3c28f38de05c66a023"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e9f9a55d6e824b16fd3d9090cce2a8e"><td class="memItemLeft" align="right" valign="top"><a id="a6e9f9a55d6e824b16fd3d9090cce2a8e"></a>
-TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a6e9f9a55d6e824b16fd3d9090cce2a8e">fEnergyResGraphAve</a></td></tr>
-<tr class="memdesc:a6e9f9a55d6e824b16fd3d9090cce2a8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution graph for channel 0. <br /></td></tr>
-<tr class="separator:a6e9f9a55d6e824b16fd3d9090cce2a8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7eb49d81dacf7c0cd93786bf3615549"><td class="memItemLeft" align="right" valign="top"><a id="aa7eb49d81dacf7c0cd93786bf3615549"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#aa7eb49d81dacf7c0cd93786bf3615549">fEnergyResCh1Err</a></td></tr>
+<tr class="memdesc:aa7eb49d81dacf7c0cd93786bf3615549"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResCh1 [%]. <br /></td></tr>
+<tr class="separator:aa7eb49d81dacf7c0cd93786bf3615549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa150979b2c926cd58095d85311078f3e"><td class="memItemLeft" align="right" valign="top"><a id="aa150979b2c926cd58095d85311078f3e"></a>
 TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#aa150979b2c926cd58095d85311078f3e">fEnergyResGraphCh0</a></td></tr>
-<tr class="memdesc:aa150979b2c926cd58095d85311078f3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution graph for channel 0. <br /></td></tr>
+<tr class="memdesc:aa150979b2c926cd58095d85311078f3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution graph for channel 0. <br /></td></tr>
 <tr class="separator:aa150979b2c926cd58095d85311078f3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb87de2da44f8f113c0d1aea12d2fc2d"><td class="memItemLeft" align="right" valign="top"><a id="adb87de2da44f8f113c0d1aea12d2fc2d"></a>
 TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#adb87de2da44f8f113c0d1aea12d2fc2d">fEnergyResGraphCh1</a></td></tr>
-<tr class="memdesc:adb87de2da44f8f113c0d1aea12d2fc2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">EnergyResolution graph for channel 1. <br /></td></tr>
+<tr class="memdesc:adb87de2da44f8f113c0d1aea12d2fc2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution graph for channel 1. <br /></td></tr>
 <tr class="separator:adb87de2da44f8f113c0d1aea12d2fc2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8dec786fe3b0e4153bb2e502d5c7099"><td class="memItemLeft" align="right" valign="top"><a id="ab8dec786fe3b0e4153bb2e502d5c7099"></a>
-vector&lt; <a class="el" href="classSFPeakFinder.html">SFPeakFinder</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fPFCh0</b></td></tr>
-<tr class="separator:ab8dec786fe3b0e4153bb2e502d5c7099"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13daf12f3edd97d0998556dcc64ef5bb"><td class="memItemLeft" align="right" valign="top"><a id="a13daf12f3edd97d0998556dcc64ef5bb"></a>
-vector&lt; <a class="el" href="classSFPeakFinder.html">SFPeakFinder</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fPFCh1</b></td></tr>
-<tr class="separator:a13daf12f3edd97d0998556dcc64ef5bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f35d533fa405a5036c541e6ea367ea2"><td class="memItemLeft" align="right" valign="top"><a id="a2f35d533fa405a5036c541e6ea367ea2"></a>
+TGraphErrors *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a2f35d533fa405a5036c541e6ea367ea2">fEnergyResGraphSum</a></td></tr>
+<tr class="memdesc:a2f35d533fa405a5036c541e6ea367ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution graph for summed spectra. <br /></td></tr>
+<tr class="separator:a2f35d533fa405a5036c541e6ea367ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab482a6c32e341dde332fb62e009e9095"><td class="memItemLeft" align="right" valign="top"><a id="ab482a6c32e341dde332fb62e009e9095"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ab482a6c32e341dde332fb62e009e9095">fEnergyResSum</a></td></tr>
+<tr class="memdesc:ab482a6c32e341dde332fb62e009e9095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy resolution of summed spectra for all positions [%]. <br /></td></tr>
+<tr class="separator:ab482a6c32e341dde332fb62e009e9095"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bddab06b38625c1c9c80db77f3f0079"><td class="memItemLeft" align="right" valign="top"><a id="a3bddab06b38625c1c9c80db77f3f0079"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a3bddab06b38625c1c9c80db77f3f0079">fEnergyResSumErr</a></td></tr>
+<tr class="memdesc:a3bddab06b38625c1c9c80db77f3f0079"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error on fEnergyResSum [%]. <br /></td></tr>
+<tr class="separator:a3bddab06b38625c1c9c80db77f3f0079"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8be907cde34b4a5aec75ca83f35d5bed"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a8be907cde34b4a5aec75ca83f35d5bed">fPeaksCh0</a></td></tr>
+<tr class="separator:a8be907cde34b4a5aec75ca83f35d5bed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab74be7725627c171884b2d77bcf6fa9d"><td class="memItemLeft" align="right" valign="top"><a id="ab74be7725627c171884b2d77bcf6fa9d"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fPeaksCh1</b></td></tr>
+<tr class="separator:ab74be7725627c171884b2d77bcf6fa9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa564d914f5bfbfff16cfc2b17f4ed10d"><td class="memItemLeft" align="right" valign="top"><a id="aa564d914f5bfbfff16cfc2b17f4ed10d"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fPeaksSum</b></td></tr>
+<tr class="separator:aa564d914f5bfbfff16cfc2b17f4ed10d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f0d5be87c124c090d0417dea899e142"><td class="memItemLeft" align="right" valign="top"><a id="a6f0d5be87c124c090d0417dea899e142"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a6f0d5be87c124c090d0417dea899e142">fSeriesNo</a></td></tr>
 <tr class="memdesc:a6f0d5be87c124c090d0417dea899e142"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of experimental series to be analyzed. <br /></td></tr>
 <tr class="separator:a6f0d5be87c124c090d0417dea899e142"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e41ca7194d6c2044b4766750b7d7736"><td class="memItemLeft" align="right" valign="top"><a id="a1e41ca7194d6c2044b4766750b7d7736"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a1e41ca7194d6c2044b4766750b7d7736">fSpectraAve</a></td></tr>
-<tr class="memdesc:a1e41ca7194d6c2044b4766750b7d7736"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra sum corrected for attenuation. <br /></td></tr>
-<tr class="separator:a1e41ca7194d6c2044b4766750b7d7736"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adebd0580b2dabb9c28334cd21559e249"><td class="memItemLeft" align="right" valign="top"><a id="adebd0580b2dabb9c28334cd21559e249"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#adebd0580b2dabb9c28334cd21559e249">fSpectraCh0</a></td></tr>
-<tr class="memdesc:adebd0580b2dabb9c28334cd21559e249"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 0. <br /></td></tr>
-<tr class="separator:adebd0580b2dabb9c28334cd21559e249"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c874416259b8a3df3652562b8894994"><td class="memItemLeft" align="right" valign="top"><a id="a3c874416259b8a3df3652562b8894994"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a3c874416259b8a3df3652562b8894994">fSpectraCh1</a></td></tr>
-<tr class="memdesc:a3c874416259b8a3df3652562b8894994"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 1. <br /></td></tr>
-<tr class="separator:a3c874416259b8a3df3652562b8894994"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48b4ce88f6a3f28a6f0deb789ffd183c"><td class="memItemLeft" align="right" valign="top"><a id="a48b4ce88f6a3f28a6f0deb789ffd183c"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#a48b4ce88f6a3f28a6f0deb789ffd183c">fSpectraCorCh0</a></td></tr>
-<tr class="memdesc:a48b4ce88f6a3f28a6f0deb789ffd183c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 0 corrected for attenuationlength. <br /></td></tr>
-<tr class="separator:a48b4ce88f6a3f28a6f0deb789ffd183c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad3dc466060c08f1152b4d12d2f08b6a3"><td class="memItemLeft" align="right" valign="top"><a id="ad3dc466060c08f1152b4d12d2f08b6a3"></a>
-vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ad3dc466060c08f1152b4d12d2f08b6a3">fSpectraCorCh1</a></td></tr>
-<tr class="memdesc:ad3dc466060c08f1152b4d12d2f08b6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 1 corrected for attenuation length. <br /></td></tr>
-<tr class="separator:ad3dc466060c08f1152b4d12d2f08b6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee2a6f7b05344502ef4c3c0de8714527"><td class="memItemLeft" align="right" valign="top"><a id="aee2a6f7b05344502ef4c3c0de8714527"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#aee2a6f7b05344502ef4c3c0de8714527">fSpectraCh0</a></td></tr>
+<tr class="memdesc:aee2a6f7b05344502ef4c3c0de8714527"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 0. <br /></td></tr>
+<tr class="separator:aee2a6f7b05344502ef4c3c0de8714527"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4b740fc3edce2a87974e386507341de"><td class="memItemLeft" align="right" valign="top"><a id="ae4b740fc3edce2a87974e386507341de"></a>
+std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ae4b740fc3edce2a87974e386507341de">fSpectraCh1</a></td></tr>
+<tr class="memdesc:ae4b740fc3edce2a87974e386507341de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector containing charge spectra from channel 1. <br /></td></tr>
+<tr class="separator:ae4b740fc3edce2a87974e386507341de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd9a80b6b332f3b56e7bf22c28f52b57"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#acd9a80b6b332f3b56e7bf22c28f52b57">fSpectraCorrCh0</a></td></tr>
+<tr class="separator:acd9a80b6b332f3b56e7bf22c28f52b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab707c066af0945e2be63dba6f69435f8"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#ab707c066af0945e2be63dba6f69435f8">fSpectraCorrCh1</a></td></tr>
+<tr class="separator:ab707c066af0945e2be63dba6f69435f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add1b605b2b1ff8c18058de95996c57de"><td class="memItemLeft" align="right" valign="top">std::vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSFEnergyResolution.html#add1b605b2b1ff8c18058de95996c57de">fSpectraSum</a></td></tr>
+<tr class="separator:add1b605b2b1ff8c18058de95996c57de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p class="">Class to determine the energy resolution of the fibres for 511 keV. This class is suitable for experimental series with different positions of source, i.e. 1, 2, 3, 4 and 5. or for single positions of a series. </p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a573652b7e192a985353807670bd3534b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a573652b7e192a985353807670bd3534b">&#9670;&nbsp;</a></span>SFEnergyResolution()</h2>
 
@@ -245,9 +222,102 @@ vector&lt; TH1D * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a cla
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a8be907cde34b4a5aec75ca83f35d5bed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8be907cde34b4a5aec75ca83f35d5bed">&#9670;&nbsp;</a></span>fPeaksCh0</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;TH1D*&gt; SFEnergyResolution::fPeaksCh0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Vector containing spectra after background subtraction; this vector is filled only if series measured with lead collimator is analyzed </p>
+
+</div>
+</div>
+<a id="acd9a80b6b332f3b56e7bf22c28f52b57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd9a80b6b332f3b56e7bf22c28f52b57">&#9670;&nbsp;</a></span>fSpectraCorrCh0</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;TH1D*&gt; SFEnergyResolution::fSpectraCorrCh0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Vector containing charge spectra from channel 0 corrected for attenuationlength </p>
+
+</div>
+</div>
+<a id="ab707c066af0945e2be63dba6f69435f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab707c066af0945e2be63dba6f69435f8">&#9670;&nbsp;</a></span>fSpectraCorrCh1</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;TH1D*&gt; SFEnergyResolution::fSpectraCorrCh1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Vector containing charge spectra from channel 1 corrected for attenuation length </p>
+
+</div>
+</div>
+<a id="add1b605b2b1ff8c18058de95996c57de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add1b605b2b1ff8c18058de95996c57de">&#9670;&nbsp;</a></span>fSpectraSum</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;TH1D*&gt; SFEnergyResolution::fSpectraSum</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">Vector containing charge spectra summed and corrected for attenuation length </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/kasia/ScintillatingFibers/sources/include/<a class="el" href="SFEnergyResolution_8hh_source.html">SFEnergyResolution.hh</a></li>
-<li>/home/kasia/ScintillatingFibers/sources/src/SFEnergyResolution.cc</li>
+<li>/home/kasia/Projects/ScintillatingFibers/sources/include/<a class="el" href="SFEnergyResolution_8hh_source.html">SFEnergyResolution.hh</a></li>
+<li>/home/kasia/Projects/ScintillatingFibers/sources/src/SFEnergyResolution.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bgfit',['BGFit',['../classBGFit.html',1,'']]]
+  ['attenuationresults',['AttenuationResults',['../structAttenuationResults.html',1,'']]]
 ];

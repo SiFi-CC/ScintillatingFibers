@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tfit',['TFit',['../classTFit.html',1,'']]]
+  ['lightresults',['LightResults',['../structLightResults.html',1,'']]]
 ];
