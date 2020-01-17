@@ -18,3 +18,7 @@ cd build
 cmake ../sources
 make
 ```
+
+Documentation
+------------------------------------------------
+[Link](https://sifi-cc.github.io/ScintillatingFibers/index.html)
