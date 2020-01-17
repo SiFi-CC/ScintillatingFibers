@@ -14,7 +14,7 @@ ClassImp(SFData);
 
 //------------------------------------------------------------------
 // constants
-static const char  *gPath = getenv("SFDATA");  // path to the experimental data and database
+static const char  *gPath = getenv("SFDATA");  // path to the experimental data and data base
 static const int    gBaselineMax = 50;         // number of samples for base line determination
 static const double gmV          = 4.096;      // coefficient to calibrate ADC channels to mV
 //------------------------------------------------------------------
@@ -69,6 +69,7 @@ SFData::~SFData(){
 //------------------------------------------------------------------
 /// Opens SQLite3 data base containing details of experimental series
 /// and measurements.
+/// \param name - name of the data base file. 
 bool SFData::OpenDataBase(TString name){
 
  TString db_name = std::string(gPath) + "/DB/" + name;
@@ -86,9 +87,10 @@ bool SFData::OpenDataBase(TString name){
 /// Sets all details of selected experimental series. If default constructor
 /// was used, this function needs to be called explicitly with the number of 
 /// of requested series as an argument. 
-/// \param seriesNo - number of experimental series
+/// \param seriesNo - number of experimental series to analyze.
 /// 
-/// The following attributes are set within this function:
+/// The following attributes of the experimental series are set within this 
+/// function:
 bool SFData::SetDetails(int seriesNo){
   
   TString query;
@@ -121,12 +123,18 @@ bool SFData::SetDetails(int seriesNo){
   
   //----- Setting series attributes
   ///- fiber type 
+  ///- liber length [mm]
   ///- radioactive source type
   ///- test bench type
-  ///- collimator type 
+  ///- collimator type
+  ///- SiPM type
+  ///- overvoltage [V]
+  ///- coupling type
   ///- number of measurements in the series
+  ///- name of the measurement log file
+  ///- name of the temperature log file
   ///- description of the series
-  query = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  query = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
@@ -138,8 +146,9 @@ bool SFData::SetDetails(int seriesNo){
     const unsigned char *collimator = sqlite3_column_text(statement, 4);
     const unsigned char *sipm = sqlite3_column_text(statement, 5);
     const unsigned char *coupling = sqlite3_column_text(statement, 7);
-    const unsigned char *tempfile = sqlite3_column_text(statement, 9);
-    const unsigned char *description = sqlite3_column_text(statement, 10);
+    const unsigned char *logfile = sqlite3_column_text(statement, 9);
+    const unsigned char *tempfile = sqlite3_column_text(statement, 10);
+    const unsigned char *description = sqlite3_column_text(statement, 11);
     fNpoints = sqlite3_column_int(statement, 8);
     fFiberLength = sqlite3_column_double(statement, 1);
     fOvervoltage = sqlite3_column_double(statement, 6);
@@ -150,6 +159,7 @@ bool SFData::SetDetails(int seriesNo){
     fTestBench = std::string(reinterpret_cast<const char*>(test_bench));
     fSiPM = std::string(reinterpret_cast<const char*>(sipm));
     fCoupling = std::string(reinterpret_cast<const char*>(coupling));
+    fLogFile = std::string(reinterpret_cast<const char*>(logfile));
     fTempFile = std::string(reinterpret_cast<const char*>(tempfile));
   }
   
@@ -164,6 +174,7 @@ bool SFData::SetDetails(int seriesNo){
   ///- list of source positions
   ///- list of measurements starting times
   ///- list of measurements stopping times
+  ///- list of measurements IDs
   query = Form("SELECT MEASUREMENT_NAME, DURATION_TIME, SOURCE_POSITION, START_TIME, STOP_TIME, MEASUREMENT_ID FROM MEASUREMENT WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
@@ -189,6 +200,7 @@ bool SFData::SetDetails(int seriesNo){
 /// Parses given cut and checks if signal fulfills conditions specified by it. 
 /// \param sig - currently analyzed signal, as read from the tree
 /// \param cut - a logic cut to select specific signals.
+///
 /// The following syntax of the cut is acceptable: 
 /// - inequality signs: '<' and '>'
 /// - single expressions, e.g. "fAmp>50", "ch_0.fPE>10", "fT0<100"
@@ -265,7 +277,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
   
   for(int i=0; i<nexpressions; i++){
     
-   if(expression[i].find("fAmp")!=std::string::npos){		//cut on fAmp
+   if(expression[i].find("fAmp")!=std::string::npos){   //cut on fAmp
      if(expression[i].find("<")!=std::string::npos){
        logic[i] = amp<number[i];
      }
@@ -274,7 +286,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
      }
    }
    
-   else if(expression[i].find("fPE")!=std::string::npos){		//cut on fPE
+   else if(expression[i].find("fPE")!=std::string::npos){   //cut on fPE
      if(expression[i].find("<")!=std::string::npos){
        logic[i] = pe<number[i];
      }
@@ -283,7 +295,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
      }
    }
    
-   else if(expression[i].find("fCharge")!=std::string::npos){	//cut on fCharge
+   else if(expression[i].find("fCharge")!=std::string::npos){   //cut on fCharge
      if(expression[i].find("<")!=std::string::npos){
        logic[i] = charge<number[i];
      }
@@ -292,7 +304,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
      }
    }
    
-   else if(expression[i].find("fT0")!=std::string::npos){		//cut on fT0
+   else if(expression[i].find("fT0")!=std::string::npos){   //cut on fT0
      if(expression[i].find("<")!=std::string::npos){
        logic[i] = t0<number[i];
      }
@@ -301,7 +313,7 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
      }
    } 
    
-   else if(expression[i].find("fTOT")!=std::string::npos){		//cut on fTOT
+   else if(expression[i].find("fTOT")!=std::string::npos){   //cut on fTOT
      if(expression[i].find("<")!=std::string::npos){
        logic[i] = tot<number[i];
      }
@@ -322,6 +334,9 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
   return result;
 }
 //------------------------------------------------------------------
+/// Accesses ROOT file and returns tree containing measured data for 
+/// the requested measurement.
+/// \param ID - measurement ID
 TTree* SFData::GetTree(int ID){
     
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -341,10 +356,9 @@ TTree* SFData::GetTree(int ID){
 //------------------------------------------------------------------
 /// Returns single spectrum of requested type.
 /// \param ch - chennel number
-/// \param sel_type - type of the spectrum. Possible options are: fAmp, fCharge, fPE, fT0 and fTOT
+/// \param sel_type - type of the spectrum, as defined in SFDrawCommands class
 /// \param cut - logic cut for drawn events (syntax like for Draw() method of TTree)
-/// \param position - position of the source in mm. If analyzed series doesn't have
-/// unique positions a number of measurement should be passed here. Numbering starts at 1. 
+/// \param ID - ID of requested measurements 
 ///
 /// It is possible to have spectrum with cut or raw spectrum as recorded. In the latter case pass
 /// empty string as cut.
@@ -356,12 +370,11 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
-  TH1D *spec = nullptr;
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
   tree->Draw(selection, cut);
-  spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D *spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID)+SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   spec->SetName(hname);
@@ -372,7 +385,7 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
 //------------------------------------------------------------------
 /// Returns a vector with all spectra of requested type.
 /// \param ch - channel number
-/// \param sel_type - type of spectra (fAmp, fCharge, fPE, fT0, fTOT)
+/// \param sel_type - type of spectra (see SFDrawCommands)
 /// \param cut - logic cut for drawn events (syntax like for Draw() method of TTree)
 ///
 /// Like with sigle spectrum, it is possible to have cut and raw spectra.
@@ -387,10 +400,11 @@ std::vector <TH1D*> SFData::GetSpectra(int ch, SFSelectionType sel_type, TString
 }
 //------------------------------------------------------------------
 /// Returns single requested custom 1D histogram.
-/// \param sel_type - predefined selection type
+/// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax
-/// \param position - position of source in mm. If position is not unique a 
-/// number of measurement should be entered.
+/// \param ID - ID of requested measurement 
+/// \param customNumbers - vector containing set of numbers necessary for 
+/// the selection of events to be drawn on the histogram
 TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID, 
                                 std::vector <double> customNumbers){
   
@@ -400,13 +414,12 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID,
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
-  TH1D* hist = nullptr;
   
   gUnique+=1;
   TString selection; 
   selection = SFDrawCommands::GetSelection(sel_type, gUnique, customNumbers);
   tree->Draw(selection, cut);
-  hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D* hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -416,7 +429,7 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID,
 }
 //------------------------------------------------------------------
 /// Returns a vector of requested custom 1D histograms for all measurements in this series.
-/// \param sel_type - predefined selection type
+/// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
 /// all events will be drawn.
 std::vector <TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TString cut){
@@ -429,6 +442,13 @@ std::vector <TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TStrin
   return hists;
 }
 //------------------------------------------------------------------
+/// Returns single requested custom 1D histogram.
+/// \param ch - channel number
+/// \param sel_type - predefined selection type (see SFDrawCommands)
+/// \param cut - cut for drawn events. Also TTree-style syntax
+/// \param ID - ID of requested measurement
+/// \param customNumbers - vector containing set of numbers necessary for 
+/// the selection of events to be drawn on the histogram.
 TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, int ID, 
                                  std::vector <double> customNumbers){
     
@@ -438,7 +458,6 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = "tree_ft";
   TTree *tree = (TTree*)file->Get(tname);
-  TH1D* hist = nullptr;
   
   gUnique+=1;
   TString selection;
@@ -447,7 +466,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
   else 
     selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch, customNumbers);
   tree->Draw(selection, cut);
-  hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D* hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID)+ SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -457,11 +476,10 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
     
 }
 //------------------------------------------------------------------
-/// Returns single requested correlation 2D histogram.
-/// \param sel_type - predefined selection type
+/// Returns single requested 2D correlation histogram.
+/// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax
-/// \param position - position of source in mm. If position is not unique a 
-/// number of measurement should be entered.
+/// \param ID - ID of requested measurement
 TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
   
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -470,12 +488,11 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
-  TH2D *hist = nullptr;
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique);
   tree->Draw(selection, cut, "colz");
-  hist = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
+  TH2D* hist = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -486,9 +503,8 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
 //------------------------------------------------------------------
 /// Returns a vector of requested 2D correlation histograms for all measurements in 
 /// this series.
-/// \param sel_type - predefined selection type
-/// \param cut - cut for drawn events. Also TTree-style syntax. If empty string is passed here 
-/// all events will be drawn.
+/// \param sel_type - predefined selection type (see SFDrawCommands)
+/// \param cut - cut for drawn events. Also TTree-style syntax.
 std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut){
   
     std::vector <TH2D*> hists;
@@ -501,13 +517,15 @@ std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString 
 //------------------------------------------------------------------
 /// Returns averaged signal.
 /// \param ch - channel number 
-/// \param position - position of the source in mm. If position is not unique pass measurement number here.
-/// Measurement numbering starts at 1.
-/// \param cut - logic cut to choose signals. Syntax of this cut is explained in InterpretCut() function
+/// \param ID - ID of requested measurement
+/// \param cut - logic cut to choose signals. Syntax of this cut is explained 
+/// in InterpretCut() function
 /// \param number - number of signals to be averaged
-/// \param bl - flag for base line subtraction. If true - base line will be subtracted, if false - it won't
+/// \param bl - flag for base line subtraction. If true - base line will be subtracted, 
+/// if false - it won't
 ///
 /// If no cut is required pass an empty string.
+/// This function calls separate methods to access binary files depending on the test bench type.
 TProfile* SFData::GetSignalAverage(int ch, int ID, TString cut, int number, bool bl){
 
   TProfile *sig = nullptr;
@@ -527,6 +545,17 @@ TProfile* SFData::GetSignalAverage(int ch, int ID, TString cut, int number, bool
   return sig;
 }
 //------------------------------------------------------------------
+/// This private function allows to access averaged signals recorded 
+/// with the Krakow test bench. It opens binary file corresponding
+/// to the chosen measurement and channel. Based on the digitized data
+/// saved in the ROOT TTree it searches for signals which fulfil given cut
+/// and performs averaging using ROOT's TProfile object. 
+/// \param ch - channel number
+/// \param ID - measuement ID
+/// \param cut - logic cut to choose signals (syntax explained in InterpretCutt()
+/// \param number - number of signals to be averaged
+/// \param bl - flag for base line subtraction - if true baseline will be 
+/// subtracted, if false - it will not.
 TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number, bool bl){
  
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -596,6 +625,15 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   return psig;
 }
 //------------------------------------------------------------------
+/// This private function allows to access averaged signals recorded 
+/// with the Aachen test bench. It opens ROOT file and TTree corresponding
+/// to the chosen measurement and channel. Based on the digitized data
+/// saved in the ROOT TTree it searches for signals which fulfil given cut
+/// and performs averaging using ROOT's TProfile object. 
+/// \param ch - channel number
+/// \param ID - measuement ID
+/// \param cut - logic cut to choose signals (syntax explained in InterpretCutt()
+/// \param number - number of signals to be averaged.
 TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number){
   
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -653,6 +691,17 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   return psig;
 }
 //------------------------------------------------------------------
+/// Returns single raw signal.
+/// \param ch - channel number 
+/// \param ID - ID of requested measurement
+/// \param cut - logic cut to choose signals (syntax explained in InterpretCut() function)
+/// \param number - number of the signal to be drawn, eg. number=1 means that first signal 
+/// which fulfills given cut will be drawn
+/// \param bl - flag for base line subtraction. If true - base line will be subtracted, 
+/// if false - it won't
+///
+/// If no cut is required pass an empty string.
+/// This function calls separate methods to access binary files depending on the test bench type.
 TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl){
  
   TH1D *sig = nullptr;
@@ -672,6 +721,17 @@ TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl){
   return sig;
 }
 //------------------------------------------------------------------
+/// This private function allows to access single raw signals recorded 
+/// with the Krakow test bench. It opens binary file corresponding
+/// to the chosen measurement and channel. Based on the digitized data
+/// saved in the ROOT TTree it searches for signals which fulfil given cut
+/// and draws them. 
+/// \param ch - channel number
+/// \param ID - measuement ID
+/// \param cut - logic cut to choose signals (syntax explained in InterpretCutt()
+/// \param number - number of signals to be averaged
+/// \param bl - flag for base line subtraction - if true baseline will be 
+/// subtracted, if false - it will not.
 TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
 
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -729,14 +789,16 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   return hsig;
 }
 //------------------------------------------------------------------
+/// This private function allows to access raw signals recorded 
+/// with the Aachen test bench. It opens ROOT file and TTree corresponding
+/// to the chosen measurement and channel. Based on the digitized data
+/// saved in the ROOT TTree it searches for signals which fulfil given cut
+/// and draws them. 
 /// Returns single signal.
 /// \param ch - channel number
-/// \param position - source position in mm. If there's no unique position pass a number of measurement here.
+/// \param ID - measurement ID
 /// \param cut - logic cut to choose signals. Syntax of this cut is explained in InterpretCut() function
-/// \param number - requested number of the signal to be drawn
-/// \param bl - flag for base line subtraction. See GetSignalAverage()
-///
-/// If no cut is needed an empty string should be passed.
+/// \param number - requested number of the signal to be drawn.
 TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
  
   int index = SFTools::GetIndex(fMeasureID, ID);
@@ -782,7 +844,7 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
   return hsig;
 }
 //------------------------------------------------------------------
-/// Prints details of currently analyzed experimental series
+/// Prints details of currently analyzed experimental series.
 void SFData::Print(void){
  std::cout << "\n\n------------------------------------------------" << std::endl;
  std::cout << "This is Print() for SFData class object" << std::endl;

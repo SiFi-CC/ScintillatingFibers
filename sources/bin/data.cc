@@ -46,10 +46,9 @@ int main(int argc, char **argv){
   
   TString desc = data->GetDescription();
   if(!desc.Contains("Regular series")){
-    std::cerr << "##### Error in data.cc! This is not regular series!" << std::endl;
+    std::cerr << "##### Warning in data.cc! This is not regular series!" << std::endl;
     std::cerr << "Series number: " << seriesNo << std::endl;
     std::cerr << "Description: " << desc << std::endl;
-    return 1;
   }
   
   int npoints  = data->GetNpoints();
