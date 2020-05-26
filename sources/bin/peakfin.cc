@@ -8,13 +8,17 @@
 // *                                       *
 // *****************************************
 
+#include "common_options.h"
 #include "SFPeakFinder.hh"
 #include "SFData.hh"
 #include "SFAttenuation.hh"
-#include "TCanvas.h"
+
+#include <DistributionContext.h>
+
+#include <TCanvas.h>
+
 #include <sys/stat.h> 
 #include <sys/types.h> 
-#include "common_options.h"
 
 int main(int argc, char **argv){
     
@@ -44,97 +48,70 @@ int main(int argc, char **argv){
   
   data->Print();
   
-  SFAttenuation *att;
-  try{
-    att = new SFAttenuation(seriesNo);
-  }
-  catch(const char* message){
-    std::cerr << message << std::endl;
-    std::cerr << "##### Exception in peakfin.cc!" << std::endl;
-    return 1;
-  }
-  
-  att->AttAveragedCh();
-  
   int npoints = data->GetNpoints();
+  int anaGroup = data->GetAnalysisGroup();
   std::vector <double> positions = data->GetPositions();
   std::vector <int>    measurementsIDs = data->GetMeasurementsIDs();
   std::vector <TH1D*> hSpecCh0 = data->GetSpectra(0, SFSelectionType::PE, "ch_0.fPE>0");
   std::vector <TH1D*> hSpecCh1 = data->GetSpectra(1, SFSelectionType::PE, "ch_1.fPE>0");
   std::vector <TH1D*> hSpecAv  = data->GetCustomHistograms(SFSelectionType::PEAverage, 
                                  "ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>0 && ch_1.fPE>0");
-  std::vector <TH1D*> hSpecSum;
   
   std::vector <TH1D*> hPeakCh0;
   std::vector <TH1D*> hPeakCh1;
   std::vector <TH1D*> hPeakAv;
-  std::vector <TH1D*> hPeakSum;
     
   std::vector <SFPeakFinder*> pfCh0;
   std::vector <SFPeakFinder*> pfCh1;
-  std::vector <SFPeakFinder*> pfSum;
   std::vector <SFPeakFinder*> pfAve;
+   
   
-  std::vector <double> customNum(4);
-  AttenuationResults results = att->GetResults();
-  customNum[1] = results.fAttCombPol1;
-  customNum[3] = results.fAttCombPol1;
-  double distCh0, distCh1;
-  TString cut = "ch_0.fPE>0 && ch_1.fPE>0 && ch_0.fT0>0 && ch_1.fT0>0";
+  DistributionContext ctx;
+  ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
+
+  ctx.dim = DIM1;
+  ctx.x.min = 0;
+  ctx.x.max = 100;
+  ctx.y.min = 0;
+  ctx.y.max = 1000;
   
   for(int i=0; i<npoints; i++){
-    distCh0 = positions[i];
-    distCh1 = 100. - positions[i];
-    customNum[0] = -distCh0;
-    customNum[2] = -distCh1;
-    hSpecSum.push_back(data->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
-                                                cut, measurementsIDs[i], customNum));
     
-    pfCh0.push_back(new SFPeakFinder(hSpecCh0[i], 1, 1));   // verbose = 1, tests = 1
-    pfCh1.push_back(new SFPeakFinder(hSpecCh1[i], 1, 1));
-    pfSum.push_back(new SFPeakFinder(hSpecSum[i], 1, 1));
-    pfAve.push_back(new SFPeakFinder(hSpecAv[i], 1, 1));
+    pfCh0.push_back(new SFPeakFinder(hSpecCh0[i], 0, 1));   // verbose = 1, tests = 1
+    pfCh1.push_back(new SFPeakFinder(hSpecCh1[i], 0, 1));
+    pfAve.push_back(new SFPeakFinder(hSpecAv[i], 0, 1));
     
     pfCh0[i]->FindPeakFit();
     pfCh1[i]->FindPeakFit();
-    pfSum[i]->FindPeakFit();
     pfAve[i]->FindPeakFit();
     
     pfCh0[i]->SubtractBackground();
     pfCh1[i]->SubtractBackground();
-    pfSum[i]->SubtractBackground();
     pfAve[i]->SubtractBackground();
     
     hPeakCh0.push_back(pfCh0[i]->GetPeak());
     hPeakCh1.push_back(pfCh1[i]->GetPeak());
     hPeakAv.push_back(pfAve[i]->GetPeak());
-    hPeakSum.push_back(pfSum[i]->GetPeak());
   }
   
   //----- results of fitting
-  TCanvas *canCh0 = new TCanvas("canCh0", "canCh0", 1200, 1200);
+  TCanvas *canCh0 = new TCanvas("pf_ch0", "pf_ch0", 2000, 1200);
   canCh0->DivideSquare(npoints);
   
-  TCanvas *canCh1 = new TCanvas("canCh1", "canCh1", 1200, 1200);
+  TCanvas *canCh1 = new TCanvas("pf_ch1", "pf_ch1", 2000, 1200);
   canCh1->DivideSquare(npoints);
   
-  TCanvas *canSum = new TCanvas("canSum", "canSum", 1200, 1200);
-  canSum->DivideSquare(npoints);
-  
-  TCanvas *canAve = new TCanvas("canAve", "canAve", 1200, 1200);
+  TCanvas *canAve = new TCanvas("pf_ave", "pf_ave", 2000, 1200);
   canAve->DivideSquare(npoints);
   
   //----- results of background subtracting
-  TCanvas *canCh0_bgs = new TCanvas("canCh0_bgs", "canCh0_bgs", 1200, 1200);
+  TCanvas *canCh0_bgs = new TCanvas("pf_ch0_bgs", "pf_ch0_bgs", 2000, 1200);
   canCh0_bgs->DivideSquare(npoints);
   
-  TCanvas *canCh1_bgs = new TCanvas("canCh1_bgs", "canCh1_bgs", 1200, 1200);
+  TCanvas *canCh1_bgs = new TCanvas("pf_ch1_bgs", "pf_ch1_bgs", 2000, 1200);
   canCh1_bgs->DivideSquare(npoints);
   
-  TCanvas *canSum_bgs = new TCanvas("canSum_bgs", "canSum_bgs", 1200, 1200);
-  canSum_bgs->DivideSquare(npoints);
-  
-  TCanvas *canAve_bgs = new TCanvas("canAve_bgs", "canAve_bgs", 1200, 1200);
+  TCanvas *canAve_bgs = new TCanvas("pf_ave_bgs", "pf_ave_bgs", 2000, 1200);
   canAve_bgs->DivideSquare(npoints);
   
   //----- drawing
@@ -149,14 +126,17 @@ int main(int argc, char **argv){
     hSpecCh0[i]->GetYaxis()->SetTitle("counts");
     hSpecCh0[i]->SetTitle(Form("PE spectrum: S%i ch0 %.1f mm", seriesNo, positions[i]));
     maxval = hSpecCh0[i]->GetBinContent(hSpecCh0[i]->GetMaximumBin());
-    hSpecCh0[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    //hSpecCh0[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    ctx.configureFromJson("hSpec");
+    ctx.print();
+    hSpecCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+    hSpecCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
     hSpecCh0[i]->DrawClone();
     
     canCh0_bgs->cd(i+1);
     gPad->SetGrid(1,1);
     hSpecCh0[i]->Draw();
-    hSpecCh0[i]->GetFunction("fun_pol1_clone")->Delete();
-    hSpecCh0[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecCh0[i]->GetFunction("fun_bg_clone")->Delete();
     hSpecCh0[i]->GetFunction("fun_gaus_clone")->Delete();
     hPeakCh0[i]->SetLineColor(kMagenta);
     hPeakCh0[i]->Draw("same");
@@ -168,37 +148,18 @@ int main(int argc, char **argv){
     hSpecCh1[i]->GetYaxis()->SetTitle("counts");
     hSpecCh1[i]->SetTitle(Form("PE spectrum: S%i ch1 %.1f mm", seriesNo, positions[i]));
     maxval = hSpecCh1[i]->GetBinContent(hSpecCh1[i]->GetMaximumBin());
-    hSpecCh1[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    //hSpecCh1[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    hSpecCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+    hSpecCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
     hSpecCh1[i]->DrawClone();
     
     canCh1_bgs->cd(i+1);
     gPad->SetGrid(1,1);
     hSpecCh1[i]->Draw();
-    hSpecCh1[i]->GetFunction("fun_pol1_clone")->Delete();
-    hSpecCh1[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecCh1[i]->GetFunction("fun_bg_clone")->Delete();
     hSpecCh1[i]->GetFunction("fun_gaus_clone")->Delete();
     hPeakCh1[i]->SetLineColor(kMagenta);
     hPeakCh1[i]->Draw("same");
-    
-    canSum->cd(i+1);
-    gPad->SetGrid(1,1);
-    hSpecSum[i]->SetStats(0);
-    hSpecSum[i]->GetXaxis()->SetTitle("charge [P.E.]");
-    hSpecSum[i]->GetYaxis()->SetTitle("counts");
-    hSpecSum[i]->SetTitle(Form("Summed and corrected PE spectrum: S%i %.1f mm", 
-                               seriesNo, positions[i]));
-    maxval = hSpecSum[i]->GetBinContent(hSpecSum[i]->GetMaximumBin());
-    hSpecSum[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
-    hSpecSum[i]->DrawClone();
-    
-    canSum_bgs->cd(i+1);
-    gPad->SetGrid(1,1);
-    hSpecSum[i]->Draw();
-    hSpecSum[i]->GetFunction("fun_pol1_clone")->Delete();
-    hSpecSum[i]->GetFunction("fun_expo_clone")->Delete();
-    hSpecSum[i]->GetFunction("fun_gaus_clone")->Delete();
-    hPeakSum[i]->SetLineColor(kMagenta);
-    hPeakSum[i]->Draw("same");
     
     canAve->cd(i+1);
     gPad->SetGrid(1,1);
@@ -207,14 +168,17 @@ int main(int argc, char **argv){
     hSpecAv[i]->GetYaxis()->SetTitle("counts");
     hSpecAv[i]->SetTitle(Form("Average charge spectrum: S%i %.1f mm", seriesNo, positions[i]));
     maxval = hSpecAv[i]->GetBinContent(hSpecAv[i]->GetMaximumBin());
-    hSpecAv[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    //hSpecAv[i]->GetYaxis()->SetRangeUser(-10, maxval+0.1*maxval);
+    ctx.configureFromJson("hSpecAv");
+    ctx.print();
+    hSpecAv[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+    hSpecAv[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
     hSpecAv[i]->DrawClone();
     
     canAve_bgs->cd(i+1);
     gPad->SetGrid(1,1);
     hSpecAv[i]->Draw();
-    hSpecAv[i]->GetFunction("fun_pol1_clone")->Delete();
-    hSpecAv[i]->GetFunction("fun_expo_clone")->Delete();
+    hSpecAv[i]->GetFunction("fun_bg_clone")->Delete();
     hSpecAv[i]->GetFunction("fun_gaus_clone")->Delete();
     hPeakAv[i]->SetLineColor(kMagenta);
     hPeakAv[i]->Draw("same");
@@ -235,11 +199,9 @@ int main(int argc, char **argv){
   
   canCh0->Write();
   canCh1->Write();
-  canSum->Write();
   canAve->Write();
   canCh0_bgs->Write();
   canCh1_bgs->Write();
-  canSum_bgs->Write();
   canAve_bgs->Write();
   file->Close();
   
@@ -249,7 +211,7 @@ int main(int argc, char **argv){
   SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
   
   delete data;
-  delete att;
+  //delete att;
   
   return 0;
 }

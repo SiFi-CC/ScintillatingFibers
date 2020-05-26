@@ -23,37 +23,43 @@
 #include <fstream>
 #include <iostream>
 
-/// Class designed to locate 511 keV in the recorded spectrum.
-/// With the provided set of functions it is possible to find
-/// the peak using ROOT's TSpectrum (SFPeakFinder::FindPeakSpectrum()),
-/// by fitting sum of functions describing shape of spectrum 
-/// (SFPeakFinder::FindPeakFit()) and by backgournd subtraction
-/// (SFPeakFinder::FindPeakNoBackground()). All of the methods
-/// provide information about peak position and sigma along with
-/// their uncertainties. The latter method creates histogram with 
-/// background subtracted 511 keV peak. Additionally, it is possible
-/// to get peak range. 
-///
-/// Testing mode implemented for some methods in order to check fitting 
-/// and background subtraction quality.
-
+/// Structure containing parameters of 511 keV peak, determined from 
+/// fit of gaussian function and background.
 struct PeakParams{
   
-    double fPosition    = -1;
-    double fSigma       = -1;
-    double fPositionErr = -1;
-    double fSigmaErr    = -1;
+    double fConst       = -1;   ///< Constant parameter 
+    double fConstErr    = -1;   ///< Uncertainty of the constant parameter
+    double fPosition    = -1;   ///< Mean parameter, i.e. position of the peak
+    double fSigma       = -1;   ///< Uncertainty of the mean parameter
+    double fPositionErr = -1;   ///< Sigma parameter
+    double fSigmaErr    = -1;   ///< Uncertainty of the sigma parameter
 };
+
+/// Class searching for the 511 keV peak and performing peak fitting and background 
+/// subtraction on measured charge spectra. 
+/// Function fitted to the analyzed spectra has the following form:
+/// \f[
+/// f(Q) = \mathrm{signal} + \mathrm{background}
+/// \f]
+/// where signal is described with gaussian function:
+/// \f[
+/// f_{sig}(Q) = c \cdot \exp{\left(\frac{1}{2} \left(\frac{Q-\mu}{\sigma}\right)^2\right)}
+/// \f]
+/// where \f$c\f$, \f$\mu\f$ and \f$\sigma\f$ are parameters desribing 511 kev peak. 
+/// And background is defined as:
+/// \f[
+/// f_{bg}(Q) = p_0 + p_1 \cdot e^{(Q-p_2) \cdot p_3}
+/// \f]
 
 class SFPeakFinder : public TObject{
  
 private:
   TH1D       *fSpectrum;  ///< Analyzed experimental spectrum
   TH1D       *fPeak;      ///< Histogram with the chosen peak after background subtraction
-  TF1        *fFittedFun;
+  TF1        *fFittedFun; ///< Function fitted to the analyzed spectrum: Gauss+background
   bool       fVerbose;    ///< Print-outs level
   bool       fTests;      ///< Flag for testing mode
-  PeakParams fParams;
+  PeakParams fParams;     ///< Structure containing parameters of 511 keV peak as determined by the fit
   
 public:
   SFPeakFinder();
@@ -69,9 +75,13 @@ public:
   void       SetSpectrum(TH1D *spectrum);
   void       Print(void);
   
+  /// Returns structure containing parameters of the 511 keV peak.
   PeakParams GetParameters(void)        { return fParams; }; 
+  /// Sets print-outs level.
   void       SetVerbLevel(bool verbose) { fVerbose = verbose; };
+  /// Sets testing mode.
   void       SetTests(bool tests)       { fTests = tests; };
+  /// Returns histogram of background subtracted spectrum.
   TH1D*      GetPeak(void)              { return fPeak; };
   
   ClassDef(SFPeakFinder,1)

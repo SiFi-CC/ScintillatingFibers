@@ -22,6 +22,7 @@ static const double gmV          = 4.096;      // coefficient to calibrate ADC c
 /// number should be set via SetDetails(int seriesNo) function.
 SFData::SFData(): fSeriesNo(-1),
                   fNpoints(-1),
+                  fAnalysisGroup(-1),
                   fFiber("dummy"),
                   fFiberLength(-1),
                   fSource("dummy"),
@@ -41,6 +42,7 @@ SFData::SFData(): fSeriesNo(-1),
 /// \param seriesNo is number of experimental series to analyze.
 SFData::SFData(int seriesNo): fSeriesNo(seriesNo),
                               fNpoints(-1),
+                              fAnalysisGroup(-1),
                               fFiber("dummy"),
                               fFiberLength(-1),
                               fSource("dummy"),
@@ -134,7 +136,8 @@ bool SFData::SetDetails(int seriesNo){
   ///- name of the measurement log file
   ///- name of the temperature log file
   ///- description of the series
-  query = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
+  ///- analysis group number 
+  query = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION, ANALYSIS_GROUP FROM SERIES WHERE SERIES_ID = %i", fSeriesNo);
   status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
   
   SFTools::CheckDBStatus(status, fDB);
@@ -161,6 +164,7 @@ bool SFData::SetDetails(int seriesNo){
     fCoupling = std::string(reinterpret_cast<const char*>(coupling));
     fLogFile = std::string(reinterpret_cast<const char*>(logfile));
     fTempFile = std::string(reinterpret_cast<const char*>(tempfile));
+    fAnalysisGroup = sqlite3_column_int(statement, 12);
   }
   
   SFTools::CheckDBStatus(status, fDB);
@@ -366,7 +370,7 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
 
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
-  TString fname = SFTools::FindData(fNames[index]);
+  TString fname = SFTools::FindData(fNames[index]);  
   TFile *file = new TFile(fname+"/results.root", "READ");
   TString tname = std::string("tree_ft");
   TTree *tree = (TTree*)file->Get(tname);
@@ -480,7 +484,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
 /// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax
 /// \param ID - ID of requested measurement
-TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
+TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, int ch){
   
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
@@ -490,7 +494,11 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
   TTree *tree = (TTree*)file->Get(tname);
   
   gUnique+=1;
-  TString selection = SFDrawCommands::GetSelection(sel_type, gUnique);
+  TString selection;
+  if(ch==-1)
+      selection = SFDrawCommands::GetSelection(sel_type, gUnique);
+  else 
+      selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
   tree->Draw(selection, cut, "colz");
   TH2D* hist = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
@@ -505,11 +513,11 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID){
 /// this series.
 /// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax.
-std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut){
+std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut, int ch){
   
     std::vector <TH2D*> hists;
   for(int i=0; i<fNpoints; i++){
-    hists.push_back(GetCorrHistogram(sel_type, cut, fMeasureID[i]));
+    hists.push_back(GetCorrHistogram(sel_type, cut, fMeasureID[i], ch));
   }
   
   return hists;
@@ -541,7 +549,7 @@ TProfile* SFData::GetSignalAverage(int ch, int ID, TString cut, int number, bool
     std::cerr << "Unknown data format!" << std::endl;
     std::abort();
   }
-  
+
   return sig;
 }
 //------------------------------------------------------------------
@@ -569,8 +577,14 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
   
-  TString iname = std::string(gPath) + fNames[index] + Form("/wave_%i.dat", ch);
+  TString iname = fname + Form("/wave_%i.dat", ch);
   std::ifstream input(iname, std::ios::binary);
+
+  if(! input.is_open()){ 
+    std::cerr << "##### Error in SFData::GetSignalKraków()! Cannot open binary file!" << std::endl;
+    std::cerr << iname << std::endl;
+    std::abort();
+  }
   
   TString hname = "sig_profile";
   TString htitle = "sig_profile";
@@ -593,14 +607,14 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
        input.seekg(infile);
        baseline = 0.;
        for(int ii=0; ii<gBaselineMax; ii++){
-         input.read((char*)&x, sizeof(x));
+         input.read(reinterpret_cast<char*>(&x), sizeof(float));
          baseline += x/gmV;
        }
        baseline = baseline/gBaselineMax;
      }
      input.seekg(infile);
      for(int ii=0; ii<ipoints; ii++){
-       input.read((char*)&x, sizeof(x));
+       input.read(reinterpret_cast<char*>(&x), sizeof(float));
        if(bl) psig->Fill(ii, (x/gmV)-baseline);
        else   psig->Fill(ii, (x/gmV));
      }
@@ -621,6 +635,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   }
   
   input.close();
+
   
   return psig;
 }
@@ -647,7 +662,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
   
-  TString iname = std::string(gPath) + fNames[index] + "/waves.root";
+  TString iname = fname + "/waves.root";
   TFile* iFile = new TFile(iname, "READ");
   TTree* iTree = (TTree*)iFile->Get("wavetree");
   TVectorT<float>* iVolt= new TVectorT<float>(ipoints);
@@ -687,7 +702,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
               << " out of " << number << " plotted." << std::endl;
     std::cout << "Position: " << position << "\t channel: " << ch << std::endl; 
   }
-  
+
   return psig;
 }
 //------------------------------------------------------------------
@@ -717,7 +732,7 @@ TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl){
     std::cerr << "Unknown data format!" << std::endl;
     std::abort();
   }
-  
+
   return sig;
 }
 //------------------------------------------------------------------
@@ -745,9 +760,15 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
   
-  TString iname = std::string(gPath) + fNames[index] + Form("/wave_%i.dat", ch);
+  TString iname = fname + Form("/wave_%i.dat", ch);
   std::ifstream input(iname, std::ios::binary);
-  
+
+  if(! input.is_open()){ 
+    std::cerr << "##### Error in SFData::GetSignalKraków()! Cannot open binary file!" << std::endl;
+    std::cerr << iname << std::endl;
+    std::abort();
+  }
+
   TString hname = Form("S%i_ch%i_pos_%.1f_ID%i_sig_no%i", fSeriesNo, ch, position, ID, number);
   TString htitle = hname + " " + cut; 
   
@@ -762,28 +783,29 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   for(int i=0; i<nentries; i++){
     tree->GetEntry(i);
     condition = InterpretCut(sig, cut);
-    if(condition){
+   if(condition)
+    {
       counter++;
-        if(counter!=number) continue;
+       if(counter!=number) continue;
         infile = sizeof(x)*ipoints*i;
         if(bl){
           input.seekg(infile);
           baseline = 0;
           for(int ii=0; ii<gBaselineMax; ii++){
-            input.read((char*)&x, sizeof(x));
+            input.read(reinterpret_cast<char*>(&x), sizeof(float));
             baseline += x/gmV;
           }
           baseline = baseline/gBaselineMax;
         }  
         input.seekg(infile);
         for(int ii=1; ii<ipoints+1; ii++){
-          input.read((char*)&x, sizeof(x));
+          input.read(reinterpret_cast<char*>(&x), sizeof(float));
           if(bl) hsig->SetBinContent(ii, (x/gmV)-baseline);
           else   hsig->SetBinContent(ii, (x/gmV));
         }
     }
   }
-  
+
   input.close();
   
   return hsig;
@@ -812,7 +834,7 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
   DDSignal *sig = new DDSignal();
   tree->SetBranchAddress(Form("ch_%i", ch), &sig);
   
-  TString iname = std::string(gPath) + fNames[index] + "/waves.root";
+  TString iname = fname + "/waves.root";
   TFile* iFile = new TFile(iname, "READ");
   TTree* iTree = (TTree*)iFile->Get("wavetree");
   TVectorT<float>* iVolt= new TVectorT<float>(ipoints);

@@ -47,7 +47,7 @@ int main(int argc, char **argv){
   
   int npoints = data->GetNpoints();
   std::vector <double> positions = data->GetPositions();
-  std::vector <int> times = data->GetStartTimes();
+  //std::vector <int> times = data->GetStartTimes();
   data->Print();
   
   SFTemperature *temp;
@@ -101,10 +101,10 @@ int main(int argc, char **argv){
   text.SetTextFont(42);
   text.SetNDC(true);
   
-  TCanvas *can_temp = new TCanvas("can_temp", "can_temp", 800, 800);
+  TCanvas *can_temp = new TCanvas("temp", "temp", 800, 800);
   gPad->SetGrid(1,1);
   
-  TCanvas *can_av = new TCanvas("can_av", "can_av", 800, 800);
+  TCanvas *can_av = new TCanvas("temp_ave", "temp_ave", 800, 800);
   gPad->SetGrid(1,1);
   
   TLegend *leg_temp = new TLegend();
@@ -159,16 +159,16 @@ int main(int argc, char **argv){
   can_av->cd();
   leg_av->Draw();
   
-  TLine line;
-  line.SetLineColor(kGray);
-  line.SetLineWidth(1);
-  double time; 
-  can_temp->cd();
+  //TLine line;
+  //line.SetLineColor(kGray);
+  //line.SetLineWidth(1);
+  //double time; 
+  //can_temp->cd();
   
-  for(int i=0; i<npoints; i++){
-    time = (times[i]-times[0])/60.;
-    line.DrawLine(time,20,time,30);  
-  }
+  //for(int i=0; i<npoints; i++){
+  //  time = (times[i]-times[0])/60.;
+  //  line.DrawLine(time,20,time,30);  
+  //}
 
   //----- saving
   TString fname = Form("temp_series%i.root", seriesNo);

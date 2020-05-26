@@ -170,13 +170,13 @@ double SFLightOutput::GetPDE(void){
   hLightOutvsWavelen->Draw("hist");
   
   can->cd(3);
-  text.DrawLatex(0.2,0.9,Form("PDE scaling factor f = %.2f", f));
-  text.DrawLatex(0.2,0.8,Form("PDE from PDE vs voltage curve = %.2f", gPDEvsVol->Eval(overvol)));
-  text.DrawLatex(0.2,0.7,Form("SiPM maximum sensitivity = %.2f", hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin())));
-  text.DrawLatex(0.2,0.6,Form("Nbins of emission spectrum = %i",hLightOutvsWavelen->GetNbinsX()));
-  text.DrawLatex(0.2,0.5,Form("Nbins of SiPM sensitivity curve = %i",hPDEvsWavelen->GetNbinsX()));
-  text.DrawLatex(0.2,0.4,Form("Emission and SiPMs sensitivity convolution = %.2f", PDE));
-  text.DrawLatex(0.2,0.3,Form("Final PDE value = %.2f",PDE_final));
+  text.DrawLatex(0.1, 0.9, Form("PDE scaling factor f = %.2f", f));
+  text.DrawLatex(0.1, 0.8, Form("PDE from PDE vs voltage curve = %.2f", gPDEvsVol->Eval(overvol)));
+  text.DrawLatex(0.1, 0.7, Form("SiPM maximum sensitivity = %.2f", hPDEvsWavelen->GetBinContent(hPDEvsWavelen->GetMaximumBin())));
+  text.DrawLatex(0.1, 0.6, Form("Nbins of emission spectrum = %i",hLightOutvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.1, 0.5, Form("Nbins of SiPM sensitivity curve = %i",hPDEvsWavelen->GetNbinsX()));
+  text.DrawLatex(0.1, 0.4, Form("Emission and SiPMs sensitivity convolution = %.2f", PDE));
+  text.DrawLatex(0.1, 0.3, Form("Final PDE value = %.2f",PDE_final));
   
   can->cd(4);
   gPad->SetGrid(1,1);
@@ -224,7 +224,7 @@ bool SFLightOutput::CalculateLightOut(void){
   TString gname = Form("LightOutSum_S%i", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("light output [ph/MeV]");
+  graph->GetYaxis()->SetTitle("light output [PE/MeV]");
   graph->SetName(gname);
   graph->SetTitle(gname);
   graph->SetMarkerStyle(4);
@@ -262,6 +262,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   std::cout << "----- Series: " << fSeriesNo << "\t Channel: " << ch << std::endl; 
   
   int npoints = fData->GetNpoints();
+  double fiberLen = fData->GetFiberLength();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
   std::vector <double> positions = fData->GetPositions();
@@ -298,7 +299,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
 
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("light output [ph/MeV]");
+  graph->GetYaxis()->SetTitle("light output [PE/MeV]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
@@ -314,7 +315,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
     
     peakFin[i]->FindPeakFit();
     if(ch==0) distance = positions[i];
-    if(ch==1) distance = 100.-positions[i];
+    if(ch==1) distance = fiberLen - positions[i];
     parameters = peakFin[i]->GetParameters();
     
     lightOut = parameters.fPosition*(1-fCrossTalk)/fPDE/0.511/TMath::Exp(-distance/results.fAttCombPol1);
@@ -367,7 +368,7 @@ bool SFLightOutput::CalculateLightCol(void){
   TString gname = Form("LCol_s%i_sum",fSeriesNo);
   TGraphErrors* graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("collected light [P.E./MeV]");
+  graph->GetYaxis()->SetTitle("collected light [PE/MeV]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
@@ -382,7 +383,7 @@ bool SFLightOutput::CalculateLightCol(void){
     fLightColCh0Graph->GetPoint(i, x, yCh0);
     fLightColCh1Graph->GetPoint(i, x, yCh1);
     lightCol = yCh0+yCh1;
-    lightColErr = fLightColCh0Graph->GetErrorY(i) + fLightColCh1Graph->GetErrorY(i);
+    lightColErr = sqrt(pow(fLightColCh0Graph->GetErrorY(i), 2) + pow(fLightColCh1Graph->GetErrorY(i),2));
     graph->SetPoint(i, positions[i], lightCol);
     graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
     lightColAv += lightCol*(1./pow(lightColErr, 2));
@@ -413,7 +414,7 @@ bool SFLightOutput::CalculateLightCol(int ch){
   TString gname = Form("LCol_s%i_ch%i",fSeriesNo,ch);
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
-  graph->GetYaxis()->SetTitle("collected light [P.E./MeV]");
+  graph->GetYaxis()->SetTitle("collected light [PE/MeV]");
   graph->SetTitle(gname);
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
@@ -431,7 +432,7 @@ bool SFLightOutput::CalculateLightCol(int ch){
       tempPF = fPFCh1;
     else{
       std::cerr << "##### Error in SFLightOutput::CalculateLightCol()!" << std::endl;
-      std::cerr << "Incorrect channel number! PLease check!" << std::endl;
+      std::cerr << "Incorrect channel number! Please check!" << std::endl;
       return false;
     }
     

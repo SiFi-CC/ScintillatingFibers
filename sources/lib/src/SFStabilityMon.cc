@@ -69,12 +69,14 @@ bool SFStabilityMon::AnalyzeStability(int ch){
   }
   
   TGraphErrors *gPeakPos = new TGraphErrors(npoints);
+  gPeakPos->SetName(Form("511PeakPosition_S%i_ch%i", fSeriesNo, ch));
   gPeakPos->SetTitle(Form("511PeakPosition_S%i_ch%i", fSeriesNo, ch));
   gPeakPos->GetXaxis()->SetTitle("source position [mm]");
   gPeakPos->GetYaxis()->SetTitle("511 keV peak position [PE]");
   gPeakPos->SetMarkerStyle(4);
   
   TGraphErrors *gResiduals = new TGraphErrors(npoints);  
+  gResiduals->SetName(Form("Residuals_S%i_ch%i", fSeriesNo, ch));
   gResiduals->SetTitle(Form("Residuals_S%i_ch%i", fSeriesNo, ch));
   gResiduals->GetXaxis()->SetTitle("source position [mm]");
   gResiduals->GetYaxis()->SetTitle("residual [PE]");
@@ -88,26 +90,23 @@ bool SFStabilityMon::AnalyzeStability(int ch){
     gPeakPos->SetPointError(i, 0, peakParams.fPositionErr);
     peakPositions.push_back(peakParams.fPosition);
   }
-  
-  TF1 *funPol0 = new TF1("funPol0", "pol0", 0, npoints);
-  gPeakPos->Fit(funPol0, "Q");
     
   double mean = SFTools::GetMean(peakPositions);
   double stdDev = SFTools::GetStandardDev(peakPositions);
   
-  std::cout << "\n\tFit parameters: " << funPol0->GetParameter(0) <<  "+/-"  
-            << funPol0->GetParError(0) << std::endl;
+  TF1 *funPol0 = new TF1("funPol0", "pol0", 0, npoints);
+  funPol0->FixParameter(0, mean);
+  gPeakPos->Fit(funPol0, "Q");
+  
   std::cout << "\tCalculation results: " << mean << "+/-" << stdDev << std::endl;
   
   double x, y;
-  double res, resErr;
+  double res;
   
   for(int i=0; i<npoints; i++){
     gPeakPos->GetPoint(i, x, y);
-    res = y - funPol0->GetParameter(0);
-    resErr = gPeakPos->GetErrorY(i) + funPol0->GetParError(0);
+    res = y - mean;
     gResiduals->SetPoint(i, i, res);
-    gResiduals->SetPointError(i, 0, resErr);
   }
   
   if(ch==0){

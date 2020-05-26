@@ -23,6 +23,7 @@
 #include "SFDrawCommands.hh"
 #include "SFTools.hh"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <stdlib.h>
@@ -43,6 +44,7 @@ class SFData : public TObject{
 private:
   int              fSeriesNo;        ///< Experimental series number
   int              fNpoints;         ///< Number of measurements in the series
+  int              fAnalysisGroup;   ///< Analysis group
   TString          fFiber;           ///< Scintillating fiber type e.g. LuAG:Ce Crytur (1)
   double           fFiberLength;     ///< Length of the scintillating fiber [mm]
   TString          fSource;          ///< Type of the radioactive source
@@ -84,16 +86,18 @@ public:
                                          std::vector <double> customNum={});
   TH1D*               GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
                                          int ID, std::vector <double> customNum);
-  TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID);
+  TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, int ch = -1);
   std::vector <TH1D*> GetSpectra(int ch, SFSelectionType sel_type, TString cut);
   std::vector <TH1D*> GetCustomHistograms(SFSelectionType sel_type, TString cut);
-  std::vector <TH2D*> GetCorrHistograms(SFSelectionType sel_type, TString cut);
+  std::vector <TH2D*> GetCorrHistograms(SFSelectionType sel_type, TString cut, int ch = -1);
   TProfile*           GetSignalAverage(int ch, int ID, TString cut, int number, bool bl);
   TH1D*               GetSignal(int ch, int ID, TString cut, int number, bool bl);
   void                Print(void);
   
   /// Returns number of measurements in the series.
   int      GetNpoints(void){ return fNpoints; };
+  /// Returns analysis group number. 
+  int      GetAnalysisGroup(void){ return fAnalysisGroup; };
   /// Returns fiber type.
   TString  GetFiber(void){ return fFiber; };
   /// Returns length of the fiber [mm]

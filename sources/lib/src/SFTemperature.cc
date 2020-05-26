@@ -122,6 +122,7 @@ bool SFTemperature::BuildTempPlotAverage(TString sensor){
   int npoints = fData->GetNpoints();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
+  TString desc = fData->GetDescription();
   std::vector <TString> names = fData->GetNames();
   std::vector <double> pos = fData->GetPositions();
   TemperatureResults result;
@@ -129,13 +130,22 @@ bool SFTemperature::BuildTempPlotAverage(TString sensor){
   TGraphErrors *gr = new TGraphErrors(npoints);
   gr->SetName(sensor);
   gr->SetMarkerStyle(4);
-  gr->GetXaxis()->SetTitle("source position");
+  if(desc.Contains("Regular series"))
+    gr->GetXaxis()->SetTitle("source position");
+  else
+    gr->GetXaxis()->SetTitle("number of measurement");
   gr->GetYaxis()->SetTitle("average temperature during measurement [deg C]");
     
   for(int i =0; i<npoints; i++){
     result = CalcAverageTempMeasure(sensor, names[i]);
-    gr->SetPoint(i, pos[i], result.fTemp);
-    gr->SetPointError(i, SFTools::GetPosError(collimator, testBench), result.fTempErr);
+    if(desc.Contains("Regular series")){
+      gr->SetPoint(i, pos[i], result.fTemp);
+      gr->SetPointError(i, SFTools::GetPosError(collimator, testBench), result.fTempErr);
+    }
+    else{
+      gr->SetPoint(i, i, result.fTemp);
+      gr->SetPointError(i, 0, result.fTempErr);
+    }
   }
   
   fTempPlotAv.insert(std::pair<TString, TGraphErrors*>(sensor, gr));

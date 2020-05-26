@@ -78,10 +78,10 @@ int main(int argc, char **argv){
   std::vector <SFFitResults*> resultsCh0 = results.fResultsCh0;
   std::vector <SFFitResults*> resultsCh1 = results.fResultsCh1;
   
-  TCanvas *canCh0 = new TCanvas("canCh0", "canCh0", 1500, 1200);
+  TCanvas *canCh0 = new TCanvas("tc_ch0", "tc_ch0", 1500, 1200);
   canCh0->DivideSquare(npoints);
   
-  TCanvas *canCh1 = new TCanvas("canCh1", "canCh1", 1500, 1200);
+  TCanvas *canCh1 = new TCanvas("tc_h1", "tc_ch1", 1500, 1200);
   canCh1->DivideSquare(npoints);
   
   double ymin, ymax;

@@ -22,7 +22,7 @@ SFEnergyRes::SFEnergyRes(int seriesNo): fSeriesNo(seriesNo),
                                         fData(nullptr),
                                         fEnergyResGraphCh0(nullptr),
                                         fEnergyResGraphCh1(nullptr),
-                                        fEnergyResGraphSum(nullptr) {
+                                        fEnergyResGraphAve(nullptr) {
 
   try{
     fData = new SFData(fSeriesNo);
@@ -43,6 +43,8 @@ SFEnergyRes::SFEnergyRes(int seriesNo): fSeriesNo(seriesNo),
   TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
   fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cut_ch0);
   fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cut_ch1);
+  fSpectraAve = fData->GetCustomHistograms(SFSelectionType::PEAverage, 
+                                           "ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>0 && ch_1.fPE>0");
    
 }
 //------------------------------------------------------------------
@@ -53,6 +55,12 @@ SFEnergyRes::~SFEnergyRes(){
     delete fData;
 }
 //------------------------------------------------------------------
+/// Calculates energy resolution based on charge spectra of requested channel 
+/// for all measurements in analyzed measurement series. In this function
+/// fEnergyResGrapCh0 and fEnergyResGraphCh1 graphs are filled and values of
+/// fResults.fEnergyResCh0, fEnergyResCh0Err, fResults.fEnergyResCh1 and
+/// fResults.fEnergyResAveCh1Err are assigned. 
+/// \param ch - channel number
 bool SFEnergyRes::CalculateEnergyRes(int ch){
     
   std::cout << "\n----- Inside SFEnergyRes::CalculateEnergyRes()" << std::endl;
@@ -126,6 +134,10 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   return true;
 }
 //------------------------------------------------------------------
+/// Calculates energy resolution based on averaged charge spectra for 
+/// all measurements in analyzed measurement series. In this function
+/// fEnergyResGraphAve graph is filled and values of fResults.fEnergyResAve
+/// and fResults.fEnergyResAveErr are assigned.  
 bool SFEnergyRes::CalculateEnergyRes(void){
     
   std::cout << "\n----- Inside SFEnergyRes::CalculateEnergyRes()" << std::endl;
@@ -138,35 +150,6 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   std::vector <int> measIDs = fData->GetMeasurementsIDs();
   std::vector <SFPeakFinder*> peakFin;
   
-  SFAttenuation *att;
-  
-  try{
-    att = new SFAttenuation(fSeriesNo);
-  }
-  catch(const char *message){
-    std::cerr << message << std::endl;
-    std::cerr << "##### Exception in SFEnergyRes::CalculateEergyRes()" << std::endl;
-    std::cerr << "Couldn't access attenuation length data!" << std::endl;
-    std::abort();
-  }
-  
-  att->AttAveragedCh();
-  AttenuationResults results = att->GetResults();
-  
-  TString cut_ch0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
-  TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
-  TString cut = cut_ch0 + std::string(" && ") + cut_ch1;
-  
-  std::vector <double> customNumCh0(2);
-  customNumCh0[1] = results.fAttCombPol1; 
-  
-  std::vector <double> customNumCh1(2);
-  customNumCh1[1] = results.fAttCombPol1; 
-  
-  std::vector <double> customNumSum(4);
-  customNumSum[1] = results.fAttCombPol1; 
-  customNumSum[3] = results.fAttCombPol1;
-  
   TString gname = Form("ER_s%i_ave", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
   graph->GetXaxis()->SetTitle("source position [mm]");
@@ -176,26 +159,11 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   graph->SetMarkerStyle(4);
   
   PeakParams parameters;
-  double distCh0, distCh1;
   double enRes, enResErr;
   double enResAve, enResAveErr;
   
-  for(int i=0; i<npoints; i++){
-    distCh0 = positions[i];
-    distCh1 = 100. - positions[i]; 
-    customNumCh0[0] = -distCh0;
-    customNumCh1[0] = -distCh1;
-    customNumSum[0] = -distCh0;
-    customNumSum[2] = -distCh1;
-    
-    fSpectraCorrCh0.push_back(fData->GetCustomHistogram(0, SFSelectionType::PEAttCorrected, 
-                                                        cut_ch0, measIDs[i], customNumCh0));
-    fSpectraCorrCh1.push_back(fData->GetCustomHistogram(1, SFSelectionType::PEAttCorrected, 
-                                                        cut_ch1, measIDs[i], customNumCh1));
-    fSpectraSum.push_back(fData->GetCustomHistogram(SFSelectionType::PEAttCorrectedSum, 
-                                                    cut, measIDs[i], customNumSum));
-    
-    peakFin.push_back(new SFPeakFinder(fSpectraSum[i], 0));
+  for(int i=0; i<npoints; i++){    
+    peakFin.push_back(new SFPeakFinder(fSpectraAve[i], 0));
     peakFin[i]->FindPeakFit();
     parameters = peakFin[i]->GetParameters();
     
@@ -210,23 +178,27 @@ bool SFEnergyRes::CalculateEnergyRes(void){
     enResAveErr += (1./pow(enResErr, 2));
   }
   
-  fResults.fEnergyResSum = enResAve/enResAveErr;
-  fResults.fEnergyResSumErr = sqrt(1./enResAveErr);
-  fEnergyResGraphSum = graph;
+  fResults.fEnergyResAve = enResAve/enResAveErr;
+  fResults.fEnergyResAveErr = sqrt(1./enResAveErr);
+  fEnergyResGraphAve = graph;
   
-  if(std::isnan(fResults.fEnergyResSum) || fResults.fEnergyResSum<0 || fResults.fEnergyResSum>100){
+  if(std::isnan(fResults.fEnergyResAve) || fResults.fEnergyResAve<0 || fResults.fEnergyResAve>100){
     std::cout << "##### Warning in SFEnergyRes class!" << std::endl;
-    std::cout << "Incorrect energy resolution value: " << fResults.fEnergyResSum  
-              << " +/- " << fResults.fEnergyResSumErr << std::endl;
-    fResults.fEnergyResSum = 0;
-    fResults.fEnergyResSumErr = 0;
+    std::cout << "Incorrect energy resolution value: " << fResults.fEnergyResAve  
+              << " +/- " << fResults.fEnergyResAveErr << std::endl;
+    fResults.fEnergyResAve = 0;
+    fResults.fEnergyResAveErr = 0;
   }
   
-  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fResults.fEnergyResSum << " +/- " << fResults.fEnergyResSumErr << " % \n" << std::endl;
+  std::cout << "Average energy resolution calculated from summed and attenuation length corrected histograms is: "  << fResults.fEnergyResAve << " +/- " << fResults.fEnergyResAveErr << " % \n" << std::endl;
   
   return true;
 }
 //------------------------------------------------------------------
+/// Returns energy resolution graph for requested channel. Energy resolution
+/// graph shows dependency of energy resolution [%] determined for given source 
+/// position vs. the position [mm]
+/// \param ch - channel number
 TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(int ch){
     
   if((ch==0 && fEnergyResGraphCh0==nullptr) || 
@@ -249,17 +221,22 @@ TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(int ch){
   }
 }
 //------------------------------------------------------------------
+/// Returns energy resolution graph for averaged channels. Energy resolution 
+/// graph shows dependency of energy resolution [%] determined for given source
+/// position vs. the position [mm].
 TGraphErrors* SFEnergyRes::GetEnergyResolutionGraph(void){
  
-  if(fEnergyResGraphSum==nullptr){
+  if(fEnergyResGraphAve==nullptr){
     std::cerr << "##### Error in SFEnergyRes::GetEnergyResolution()" << std::endl;  
     std::cerr << "Requested graph doesn't exist!" << std::endl;
     std::abort();
   }
   
-  return fEnergyResGraphSum;
+  return fEnergyResGraphAve;
 }
 //------------------------------------------------------------------
+/// Returns vector containing charge spectra of requested channel.
+/// \par ch - channel number 
 std::vector <TH1D*> SFEnergyRes::GetSpectra(int ch){
     
   if((ch==0 && fSpectraCh0.empty()) ||
@@ -280,50 +257,33 @@ std::vector <TH1D*> SFEnergyRes::GetSpectra(int ch){
   }
 }
 //------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyRes::GetSpectraCorrected(int ch){
-    
-  if((ch==0 && fSpectraCorrCh0.empty()) ||
-     (ch==1 && fSpectraCorrCh1.empty())) {
-      std::cerr << "##### Error in SFEnergyRes::GetSpectraCorrected() for ch" 
-                << ch << std::endl; 
-      std::cerr << "No spectra available!" << std::endl; 
-      std::abort();
-  }
-
-  if(ch==0)
-    return fSpectraCorrCh0;
-  else if(ch==1)
-    return fSpectraCorrCh1;
-  else{
-    std::cerr << "##### Error in SFEnergyRes::GetSpectraCorrected() for ch" 
-              << ch << std::endl;
-    std::cerr << "Incorrect channel number!" << std::endl;
-    std::abort();
-  }
-}
-//------------------------------------------------------------------
-std::vector <TH1D*> SFEnergyRes::GetSpectraSum(void){
+/// Returns vector containing averaged charge spectra.
+std::vector <TH1D*> SFEnergyRes::GetSpectra(void){
   
-  if(fSpectraSum.empty()){
+  if(fSpectraAve.empty()){
     std::cerr << "##### Error in SFEnergyRes::GetSpectraSum()" << std::endl;
     std::cerr << "No spectra available!" << std::endl;
     std::abort();
   }
   
-  return fSpectraSum;
+  return fSpectraAve;
 }
 //------------------------------------------------------------------
+/// Returns vector containing background subtracted averaged charge spectra.
 std::vector <TH1D*> SFEnergyRes::GetPeaks(void){
   
-  if(fPeaksSum.empty()){
+  if(fPeaksAve.empty()){
     std::cerr << "##### Error in SFEnergyRes::GetPeaks()" << std::endl;
     std::cerr << "No spectra available!" << std::endl;
     std::abort();
   }
   
-  return fPeaksSum;
+  return fPeaksAve;
 }
 //------------------------------------------------------------------
+/// Returns vector containing background subtracted charge spectra of requested 
+/// channel.
+/// \param ch - channel number
 std::vector <TH1D*> SFEnergyRes::GetPeaks(int ch){
     
   if((ch==0 && fPeaksCh0.empty()) ||

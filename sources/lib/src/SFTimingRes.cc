@@ -43,6 +43,7 @@ bool SFTimingRes::LoadRatios(void){
   
   int npoints = fData->GetNpoints();
   TString collimator = fData->GetCollimator();
+  TString sipm = fData->GetSiPM();
   
   TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0"; 
   fRatios = fData->GetCustomHistograms(SFSelectionType::LogSqrtPERatio, cut);
@@ -64,10 +65,42 @@ bool SFTimingRes::LoadRatios(void){
       fun[i]->SetParameter(5, 2E-1);
       fRatios[i]->Fit(fun[i], "QR");
     }
-    else if(collimator.Contains("Electronic")){
+    else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
       min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
       max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
-      fun.push_back(new TF1("fun", "gaus", min, max));   //single gauss
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", min, max)); 
+      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2, 6E-2);
+      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/10.);
+      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(5, 6E-1);
+      fRatios[i]->Fit(fun[i], "QR");
+    }
+    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
+//       min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
+//       max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
+//       fun.push_back(new TF1("fun", "gaus", min, max));   //single gauss
+      min = fRatios[i]->GetMean()-1*fRatios[i]->GetRMS();
+      max = fRatios[i]->GetMean()+1*fRatios[i]->GetRMS();
+      /*fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", min, max));
+      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParLimits(0, 0, 1E6);
+      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2, 5E-2);
+      fun[i]->SetParLimits(2, 0, 50);
+      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/20.);
+      fun[i]->SetParLimits(3, 0, 1E6);
+      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(5, 1E-1);
+      fun[i]->SetParLimits(5, 0, 50);*/
+      fun.push_back(new TF1("fun", "gaus", min, max));
+      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParLimits(0, 0, 1E6);
+      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
+      fun[i]->SetParameter(2, 5E-2);
+      fun[i]->SetParLimits(2, 0, 50);
+      
       fRatios[i]->Fit(fun[i], "QR");
     }
   }
@@ -99,7 +132,9 @@ bool SFTimingRes::AnalyzeNoECut(void){
   std::vector <double> positions = fData->GetPositions();
   std::vector <int> measIDs = fData->GetMeasurementsIDs();
   TString collimator = fData->GetCollimator();
+  TString sipm = fData->GetSiPM();
   TString testBench = fData->GetTestBench();
+  TString fiber = fData->GetFiber();
   
   TString cut;
   double mean, sigma;
@@ -119,12 +154,23 @@ bool SFTimingRes::AnalyzeNoECut(void){
   
   for(int i=0; i<npoints; i++){
     
-    mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
-    sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
+    int parNum = 0;  
     
     if(collimator.Contains("Lead")){
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
+      
+    if(fRatios[i]->GetFunction("fun")->GetParameter(0) > 
+       fRatios[i]->GetFunction("fun")->GetParameter(3))
+        parNum = 1;
+    else 
+        parNum = 4;
+    
+      mean = fRatios[i]->GetFunction("fun")->GetParameter(parNum);
+      sigma = fRatios[i]->GetFunction("fun")->GetParameter(parNum+1);
+    
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>15 && ch_1.fPE>15 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
+    
       fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -100, 100));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
@@ -137,21 +183,76 @@ bool SFTimingRes::AnalyzeNoECut(void){
       fun[i]->SetParameter(5,fT0Diff[i]->GetRMS()*2);
       fT0Diff[i]->Fit(fun[i],"QR");
     }
-    else if(collimator.Contains("Electronic")){
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
+    else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
+      
+      if(fRatios[i]->GetFunction("fun")->GetParameter(0) > 
+         fRatios[i]->GetFunction("fun")->GetParameter(3))
+          parNum = 1;
+      else 
+          parNum = 4;
+    
+      mean = fRatios[i]->GetFunction("fun")->GetParameter(parNum);
+      sigma = fRatios[i]->GetFunction("fun")->GetParameter(parNum+1);
+      
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>20 && ch_1.fPE>20 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fT0Diff.back()->Rebin(2);
-      fun.push_back(new TF1("fun", "gaus", -50, 50));
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -30, 30));
+      
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
       fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
+      fun[i]->SetParLimits(2, 0, 10);
+      fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10.);
+      fun[i]->SetParameter(4, fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(5, fT0Diff[i]->GetRMS()*10);
+      fun[i]->SetParLimits(5, 0, 20);
+      fT0Diff[i]->Fit(fun[i], "R");
+    }
+    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
+    
+      mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
+      sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
+      fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
+      fT0Diff.back()->Rebin(2);
+      
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -50, 50));
+      fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
+      fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
+      fun[i]->SetParLimits(2, 0, 50);
+      if(fiber.Contains("LuAG")){
+        fun[i]->FixParameter(3, 0);
+        fun[i]->FixParameter(4, 0);
+        fun[i]->FixParameter(5, 0);
+      }
+      else if(fiber.Contains("LYSO")){
+        fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10);
+        if(i<npoints/2)
+          fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-2);
+        else
+          fun[i]->SetParameter(4, fT0Diff[i]->GetMean()+2);
+        fun[i]->SetParameter(5, fT0Diff[i]->GetRMS()*5);
+        fun[i]->SetParLimits(5, 0, 50);
+      }
+      else if(fiber.Contains("GAGG")){
+        fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10);
+        if(i<npoints/2)
+          fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-1);
+        else
+          fun[i]->SetParameter(4, fT0Diff[i]->GetMean()+1);
+        fun[i]->SetParameter(5, fT0Diff[i]->GetRMS()*2);
+        fun[i]->SetParLimits(5, 0, 50);
+      }
       fT0Diff[i]->Fit(fun[i], "QR");
     }
 
-    int parNum=0;
+    parNum=0;
     
-    if(collimator=="Lead"){
-      if(fun[i]->GetParameter(2)<fun[i]->GetParameter(5))
+    if(fun[i]->GetNpar()>3){
+      if(fun[i]->GetParameter(0)>fun[i]->GetParameter(3))
         parNum=2;
       else 
         parNum=5;
@@ -193,6 +294,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
   std::vector <int> measIDs = fData->GetMeasurementsIDs();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
+  TString sipm = fData->GetSiPM();
   
   if(fRatios.empty()) LoadRatios();
   
@@ -237,8 +339,10 @@ bool SFTimingRes::AnalyzeWithECut(void){
     
     if(collimator.Contains("Lead"))
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);   //changed here for smaller cut
-    else if(collimator.Contains("Electronic"))
+    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu"))
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
+    else if(collimator.Contains("Electronic") && sipm.Contains("SensL"))
+      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio, mean_ratio+2*sigma_ratio);
       
     fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
     mean = fT0DiffECut[i]->GetMean();

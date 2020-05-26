@@ -10,15 +10,19 @@
 // *                                       *
 // *****************************************
 
+#include "common_options.h"
 #include "SFData.hh"
 #include "SFLightOutput.hh"
 #include "SFTools.hh"
-#include "TSystem.h"
-#include "TCanvas.h"
-#include "TLatex.h"
-#include <sys/stat.h> 
+
+#include <TSystem.h>
+#include <TCanvas.h>
+#include <TLatex.h>
+
+#include <DistributionContext.h>
+
+#include <sys/stat.h>
 #include <sys/types.h> 
-#include "common_options.h"
 
 int main(int argc, char **argv){
     
@@ -56,6 +60,7 @@ int main(int argc, char **argv){
   }
   
   int npoints = data->GetNpoints();
+  int anaGroup = data->GetAnalysisGroup();
   TString collimator = data->GetCollimator();
   std::vector <double> positions = data->GetPositions();
   data->Print();
@@ -70,6 +75,15 @@ int main(int argc, char **argv){
     return 1;
   }
   
+  DistributionContext ctx;
+  ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
+
+  ctx.dim = DIM1;
+  ctx.x.min = 0;
+  ctx.x.max = 100;
+  ctx.y.min = 0;
+  ctx.y.max = 1000;
+
   TCanvas *can = lout->GetInputData();
   
   //----- 
@@ -81,8 +95,8 @@ int main(int argc, char **argv){
   TGraphErrors *gLightOutCh1 = lout->GetLightOutputGraph(1);
   TGraphErrors *gLightOut    = lout->GetLightOutputGraph();
   LightResults LOresults     = lout->GetLOResults();
-  std::vector <TH1D*>  specCh0     = lout->GetSpectra(0);
-  std::vector <TH1D*>  specCh1     = lout->GetSpectra(1);
+  std::vector <TH1D*>  specCh0 = lout->GetSpectra(0);
+  std::vector <TH1D*>  specCh1 = lout->GetSpectra(1);
   
   //-----
   lout->CalculateLightCol(0);
@@ -100,52 +114,68 @@ int main(int argc, char **argv){
   text.SetTextSize(0.04);
   
   //----- light output channels 0 and 1
-  TCanvas *can_lout_ch = new TCanvas("can_lout_ch", "can_lout_ch", 1200, 600);
+  TCanvas *can_lout_ch = new TCanvas("lo_lout_ch", "lo_lout_ch", 1200, 600);
   can_lout_ch->Divide(2,1);
   
   can_lout_ch->cd(1);
   gPad->SetGrid(1,1);
+  gLightOutCh0->GetYaxis()->SetMaxDigits(2);
+  gLightOutCh0->GetXaxis()->SetLabelSize(0.035);
+  gLightOutCh0->GetYaxis()->SetLabelSize(0.035);
+  gLightOutCh0->GetYaxis()->SetTitleOffset(1.4);
   gLightOutCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fResCh0, LOresults.fResCh0Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LOresults.fResCh0, LOresults.fResCh0Err));
   
   can_lout_ch->cd(2);
   gPad->SetGrid(1,1);
+  gLightOutCh1->GetYaxis()->SetMaxDigits(2);
+  gLightOutCh1->GetXaxis()->SetLabelSize(0.035);
+  gLightOutCh1->GetYaxis()->SetLabelSize(0.035);
+  gLightOutCh1->GetYaxis()->SetTitleOffset(1.4);
   gLightOutCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fResCh1, LOresults.fResCh1Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LOresults.fResCh1, LOresults.fResCh1Err));
   
   //----- light output summed
-  TCanvas *can_lout = new TCanvas("can_lout","can_lout", 700, 500);
+  TCanvas *can_lout = new TCanvas("lo_lout","lo_lout", 700, 500);
   can_lout->cd();
   gPad->SetGrid(1,1);
   gLightOut->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LOresults.fRes, LOresults.fResErr));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LOresults.fRes, LOresults.fResErr));
 
    //----- light collection channels 0 and 1
-  TCanvas *can_lcol_ch = new TCanvas("can_lcol_ch", "can_lcol_ch", 1200, 600);
+  TCanvas *can_lcol_ch = new TCanvas("lo_lcol_ch", "lo_lcol_ch", 1200, 600);
   can_lcol_ch->Divide(2,1);
   
   can_lcol_ch->cd(1);
   gPad->SetGrid(1,1);
+  gLightColCh0->GetYaxis()->SetMaxDigits(2);
+  gLightColCh0->GetXaxis()->SetLabelSize(0.035);
+  gLightColCh0->GetYaxis()->SetLabelSize(0.035);
+  gLightColCh0->GetYaxis()->SetTitleOffset(1.4);
   gLightColCh0->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fResCh0, LCresults.fResCh0Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LCresults.fResCh0, LCresults.fResCh0Err));
   
   can_lcol_ch->cd(2);
   gPad->SetGrid(1,1);
+  gLightColCh1->GetYaxis()->SetMaxDigits(2);
+  gLightColCh1->GetXaxis()->SetLabelSize(0.035);
+  gLightColCh1->GetYaxis()->SetLabelSize(0.035);
+  gLightColCh1->GetYaxis()->SetTitleOffset(1.4);
   gLightColCh1->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fResCh1, LCresults.fResCh1Err));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LCresults.fResCh1, LCresults.fResCh1Err));
   
   //----- light output summed
-  TCanvas *can_lcol = new TCanvas("can_lcol","can_lcol", 700, 500);
+  TCanvas *can_lcol = new TCanvas("lo_lcol","lo_lcol", 700, 500);
   can_lcol->cd();
   gPad->SetGrid(1,1);
   gLightCol->Draw("AP");
-  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) ph/MeV", LCresults.fRes, LCresults.fResErr));
+  text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", LCresults.fRes, LCresults.fResErr));
   
   //----- spectra
-  TCanvas *can_spec_ch0 = new TCanvas("can_spec_ch0", "can_spec_ch0", 1200, 1200);
+  TCanvas *can_spec_ch0 = new TCanvas("lo_spec_ch0", "lo_spec_ch0", 2000, 1200);
   can_spec_ch0->DivideSquare(npoints);
   
-  TCanvas *can_spec_ch1 = new TCanvas("can_spec_ch1", "can_spec_ch1", 1200, 1200);
+  TCanvas *can_spec_ch1 = new TCanvas("lo_spec_ch1", "lo_spec_ch1", 2000, 1200);
   can_spec_ch1->DivideSquare(npoints);
   
   for(int i=0; i<npoints; i++){
@@ -155,6 +185,10 @@ int main(int argc, char **argv){
     specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
     specCh0[i]->GetYaxis()->SetTitle("counts");
     specCh0[i]->SetTitle(Form("Cherge spectrum Ch0, position %.2f mm", positions[i]));
+    ctx.configureFromJson("hSpec");
+    ctx.print();
+    specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+    specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
     specCh0[i]->Draw();
     
     can_spec_ch1->cd(i+1);
@@ -163,6 +197,8 @@ int main(int argc, char **argv){
     specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
     specCh1[i]->GetYaxis()->SetTitle("counts");
     specCh1[i]->SetTitle(Form("Cherge spectrum Ch1, position %.2f mm", positions[i]));
+    specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+    specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
     specCh1[i]->Draw();
   }
   

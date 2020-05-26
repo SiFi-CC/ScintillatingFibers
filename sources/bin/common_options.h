@@ -7,9 +7,10 @@
 
 int parse_common_options(int argc, char ** argv, TString & outdir, TString & dbase, Int_t & seriesno)
 {
-  TString path = std::string(getenv("SFPATH"));
+  //TString path = std::string(getenv("SFPATH"));
+    TString path = std::string("./");
 
-  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: $SFPATH/results", path+"results");
+  CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: ./", path);
   
   CmdLineOption cmd_dbase("Database", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
 

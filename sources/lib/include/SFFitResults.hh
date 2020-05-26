@@ -13,6 +13,7 @@
 #include "TObject.h"
 #include "TF1.h"
 #include "TPaveText.h"
+#include <iomanip>
 
 /// This class stores results of the fit and the fitted function itself.
 /// This is assistant class for SFTimeConst.

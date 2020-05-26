@@ -15,6 +15,7 @@ ClassImp(SFDrawCommands);
 //------------------------------------------------------------------
 /// Checks whether returned selection or selection name is not an 
 /// empty string. 
+/// \param string - string to be validated.
 void SFDrawCommands::CheckSelection(TString string){
     
   if(string=="" || string==" "){
@@ -51,9 +52,6 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
         case SFSelectionType::LogSqrtPERatio:
             selectionName = "LogSqrtPERatio";
             break;
-        case SFSelectionType::LogSqrtRatioCut:
-            selectionName = "LogSqrtRatioCut";
-            break;
         case SFSelectionType::T0Difference:
             selectionName = "T0Difference";
             break;
@@ -68,6 +66,12 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
             break;
         case SFSelectionType::AmplitudeCorrelation:
             selectionName = "AmplitudeCorrelation";
+            break;
+        case SFSelectionType::AmpPECorrelation:
+            selectionName = "AmpPECorrelation";
+            break;
+        case SFSelectionType::PEvsPEch2Correlation:
+            selectionName = "PEvsPEch2Correlation";
             break;
         case SFSelectionType::T0Correlation:
             selectionName = "T0Correlation";
@@ -92,7 +96,7 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection){
 /// \param selection - selection type
 /// \param unique - unique histogram ID
 /// \param ch - channel number
-/// \param customNum - standard vector containing values to be inserted in the selection
+/// \param customNum - standard vector containing values to be inserted in the selection.
 TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int ch,
                                      std::vector <double> customNum){
     
@@ -100,23 +104,31 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
    
   switch(selection){
       case SFSelectionType::PE:
-          selectionString = Form("ch_%i.fPE>>htemp%i(1000,-150,1500)", ch, unique);
+          selectionString = Form("ch_%i.fPE>>htemp%i(2200,-150,1500)", ch, unique);
           break;
       case SFSelectionType::Charge:
           selectionString = Form("ch_%i.fCharge>>htemp%i(1000,-1E4,2.5E5)", ch, unique);
           break;
       case SFSelectionType::Amplitude:
-          selectionString = Form("ch_%i.fAmp>>htemp%i(1000,0,700)", ch, unique);
+          selectionString = Form("ch_%i.fAmp>>htemp%i(1000,0,800)", ch, unique);
           break;
       case SFSelectionType::T0:
-          selectionString = Form("ch_%i.fT0>>htemp%.i(1000,-110,1100)", ch, unique);
+          selectionString = Form("ch_%i.fT0>>htemp%.i(1210,-110,1100)", ch, unique);
           break;
       case SFSelectionType::TOT:
-          selectionString = Form("ch_%i.fTOT>>htemp%.i(1000,-110,1100)", ch, unique);
+          selectionString = Form("ch_%i.fTOT>>htemp%.i(1210,-110,1100)", ch, unique);
           break;
       case SFSelectionType::PEAttCorrected:
           selectionString = Form("ch_%i.fPE/exp(%f/%f)>>htemp%i(1300,-150,1600)", ch,
                             customNum[0], customNum[1], unique);
+          break;
+      case SFSelectionType::AmpPECorrelation:
+          selectionString = Form("ch_%i.fAmp:ch_%i.fPE>>htemp%i(2200,-150,1500,1000,-10,800)", 
+                            ch, ch, unique);
+          break;
+      case SFSelectionType::PEvsPEch2Correlation:
+          selectionString = Form("ch_%i.fPE:ch_2.fPE>>htemp%i(1000,-100,15E4,2200,-150,1500)",
+                            ch, unique);
           break;
       default:
           std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;
@@ -131,7 +143,7 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
 /// Returns selection as a TString for ROOT's TTree type object. 
 /// \param selection - selection type
 /// \param unique - unique histogram ID
-/// \param customNum - standard vector containing values to be inserted in the selection
+/// \param customNum - standard vector containing values to be inserted in the selection.
 TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
                                      std::vector <double> customNum){
     
@@ -142,26 +154,23 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
       case SFSelectionType::LogSqrtPERatio:
           selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500, -2, 2)", unique);
           break;
-      case SFSelectionType::LogSqrtRatioCut:
-          selectionString = Form("log(sqrt(ch_1.fPE/ch_0.fPE))>>htemp%i(500, -0.5, 0.5)", unique);
-          break;
       case SFSelectionType::T0Difference:
-          selectionString = Form("(ch_0.fT0-ch_1.fT0)>>htemp%i(500,-50,50)", unique);
+          selectionString = Form("(ch_0.fT0-ch_1.fT0)>>htemp%i(2500,-50,50)", unique);
           break;
       case SFSelectionType::PEAverage:
-          selectionString = Form("sqrt(ch_0.fPE*ch_1.fPE)>>htemp%i(1000,-150,1200)", unique);
+          selectionString = Form("sqrt(ch_0.fPE*ch_1.fPE)>>htemp%i(1350,-150,1200)", unique);
           break;
       case SFSelectionType::AmplitudeAverage:
           selectionString = Form("sqrt(ch_0.fAmp*ch_1.fAmp)>>htemp%i(1000,0,800)",unique);
           break;
       case SFSelectionType::PECorrelation:
-          selectionString = Form("ch_0.fPE:ch_1.fPE>>htemp%i(1000,-150,1200,1000,-150,1200)", unique);
+          selectionString = Form("ch_0.fPE:ch_1.fPE>>htemp%i(3300,-150,1500,3300,-150,1500)", unique);
           break;
       case SFSelectionType::AmplitudeCorrelation:
           selectionString = Form("ch_0.fAmp:ch_1.fAmp>>htemp%i(1000,0,800,1000,0,800)", unique);
           break;
       case SFSelectionType::T0Correlation:
-          selectionString = Form("ch_0.fT0:ch_1.fT0>>htemp%i(1000,-110,1100,1000,-110,1100", unique);
+          selectionString = Form("ch_0.fT0:ch_1.fT0>>htemp%i(2420,-110,1100,2420,-110,1100", unique);
           break;
       case SFSelectionType::PEAttCorrectedSum:
           selectionString = Form("ch_0.fPE/exp(%f/%f) + ch_1.fPE/exp(%f/%f)>>htemp%i(1500,-150,4000)",

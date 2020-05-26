@@ -339,6 +339,7 @@ bool SFFitResults::GetDecTime(double &t, double &err){
   }
   t   = fDecTime;
   err = fDecTimeErr; 
+  return true;
 }
 //------------------------------------------------------------------
 ///Returns references to the fast decay time and its uncertainty.
@@ -378,6 +379,7 @@ bool SFFitResults::GetAmp(double &amp, double &ampErr){
   }
   amp    = fAmp;
   ampErr = fAmpErr;
+  return true;
 }
 //------------------------------------------------------------------
 ///Returns references to the amplitude of the fast decay component.

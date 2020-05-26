@@ -8,16 +8,18 @@
 // *                                       *
 // *****************************************
 
+#include "common_options.h"
 #include "SFData.hh"
 #include "SFStabilityMon.hh"
 #include "SFTools.hh"
-#include "TCanvas.h"
-#include "TLatex.h"
-#include "CmdLineConfig.hh"
-#include "CmdLineOption.hh"
+
+#include <TCanvas.h>
+#include <TLatex.h>
+
+#include <DistributionContext.h>
+
 #include <sys/stat.h> 
 #include <sys/types.h>
-#include "common_options.h"
 
 int main(int argc, char **argv){
     
@@ -47,6 +49,7 @@ int main(int argc, char **argv){
  
   data->Print();
   int npoints = data->GetNpoints();
+  int anaGroup = data->GetAnalysisGroup();
   std::vector <double> positions = data->GetPositions();
     
   TString desc = data->GetDescription();
@@ -67,6 +70,15 @@ int main(int argc, char **argv){
     return 1;
   }
   
+  DistributionContext ctx;
+  ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
+
+  ctx.dim = DIM1;
+  ctx.x.min = 0;
+  ctx.x.max = 100;
+  ctx.y.min = 0;
+  ctx.y.max = 1000;
+  
   //----- stability of channel 0
   stab->AnalyzeStability(0);
   TGraphErrors *gCh0PeakPos  = stab->GetPeakPosGraph(0);
@@ -82,9 +94,12 @@ int main(int argc, char **argv){
   //----- numerical results
   StabilityResults results = stab->GetResults();
   
-  TCanvas *can = new TCanvas("can", "can", 1000, 700);
+  TCanvas *can = new TCanvas("stab", "stab", 1000, 700);
   TPad *pad_peakPos = new TPad("pad_peakPos", "pad_peakPos", 0, 0.3, 1, 1, 10, 0);
   TPad *pad_res     = new TPad("pad_res", "pad_res", 0, 0, 1, 0.3, 10, 0);
+    
+  double minCh0, minCh1;
+  double maxCh0, maxCh1;
   
   can->cd(0);
   pad_peakPos->Draw();
@@ -92,21 +107,30 @@ int main(int argc, char **argv){
   pad_peakPos->SetGrid(1,1);
   gCh0PeakPos->Draw("AP");
   gCh0PeakPos->SetTitle("511 keV peak position stability");
-  gCh0PeakPos->SetMarkerColor(kBlack);
-  gCh0PeakPos->SetLineColor(kBlack);
-  gCh0PeakPos->GetFunction("funPol0")->SetLineColor(kGray+1);
+  gCh0PeakPos->SetMarkerColor(kPink-8);
+  gCh0PeakPos->SetLineColor(kPink-8);
+  gCh0PeakPos->GetFunction("funPol0")->SetLineColor(kPink-8);
+  minCh0 = TMath::MinElement(npoints, gCh0PeakPos->GetY());
+  maxCh0 = TMath::MaxElement(npoints, gCh0PeakPos->GetY());
+  
   gCh1PeakPos->Draw("P");
-  gCh1PeakPos->SetMarkerColor(kRed);
-  gCh1PeakPos->SetLineColor(kRed);
-  gCh1PeakPos->GetFunction("funPol0")->SetLineColor(kRed-7);
+  gCh1PeakPos->SetMarkerColor(kAzure-6);
+  gCh1PeakPos->SetLineColor(kAzure-6);
+  gCh1PeakPos->GetFunction("funPol0")->SetLineColor(kAzure-6);
+  minCh1 = TMath::MinElement(npoints, gCh1PeakPos->GetY());
+  maxCh1 = TMath::MaxElement(npoints, gCh1PeakPos->GetY());
+  
+  double min = TMath::Min(minCh0, minCh1);
+  double max = TMath::Max(maxCh0, maxCh1);
+  gCh0PeakPos->GetYaxis()->SetRangeUser(min-2, max+2);
   
   TLatex text;
   text.SetNDC(true);
   text.SetTextSize(0.04);
-  text.SetTextColor(kBlack);
-  text.DrawLatex(0.2, 0.3, Form("#bar{PP}_{ch0} = %.2f +/- %.2f", results.fCh0Mean, results.fCh0StdDev));
-  text.SetTextColor(kRed);
-  text.DrawLatex(0.2, 0.2, Form("#bar{PP}_{ch1} = %.2f +/- %.2f", results.fCh1Mean, results.fCh1StdDev));
+  text.SetTextColor(kPink-8);
+  text.DrawLatex(0.2, 0.5, Form("#bar{PP}_{ch0} = %.2f +/- %.2f", results.fCh0Mean, results.fCh0StdDev));
+  text.SetTextColor(kAzure-6);
+  text.DrawLatex(0.2, 0.4, Form("#bar{PP}_{ch1} = %.2f +/- %.2f", results.fCh1Mean, results.fCh1StdDev));
   
   can->cd(0);
   pad_res->Draw();
@@ -114,16 +138,23 @@ int main(int argc, char **argv){
   pad_res->SetGrid(1,1);
   gCh0Residual->Draw("AP");
   gCh0Residual->SetTitle("Residuals graph");
-  gCh0Residual->SetMarkerColor(kBlack);
-  gCh0Residual->SetLineColor(kBlack);
+  gCh0Residual->GetYaxis()->SetRangeUser(-2,2);
+  gCh0Residual->SetMarkerColor(kPink-8);
+  gCh0Residual->SetLineColor(kPink-8);
   gCh1Residual->Draw("P");
-  gCh1Residual->SetMarkerColor(kRed);
-  gCh1Residual->SetLineColor(kRed);
+  gCh1Residual->SetMarkerColor(kAzure-6);
+  gCh1Residual->SetLineColor(kAzure-6);
   
-  TCanvas *can_ch0 = new TCanvas("can_ch0", "can_ch0", 1200, 1000);
+  TF1* funPol0 = new TF1("funPol0", "pol0", 0, npoints);
+  funPol0->FixParameter(0, 0);
+  funPol0->SetLineColor(kGray+2);
+  funPol0->SetLineStyle(9);
+  gCh0Residual->Fit(funPol0, "Q");
+  
+  TCanvas *can_ch0 = new TCanvas("stab_ch0", "stab_ch0", 2000, 1200);
   can_ch0->DivideSquare(npoints);
   
-  TCanvas *can_ch1 = new TCanvas("can_ch1", "can_ch1", 1200, 1000);
+  TCanvas *can_ch1 = new TCanvas("stab_ch1", "stab_ch1", 2000, 1200);
   can_ch1->DivideSquare(npoints);
   
   for(int i=0; i<npoints; i++){
@@ -132,6 +163,10 @@ int main(int argc, char **argv){
     specCh0[i]->SetTitle(Form("PE spectrum, ch0, position %.2f", positions[i]));
     specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
     specCh0[i]->GetYaxis()->SetTitle("counts");
+    ctx.configureFromJson("hSpec");
+    ctx.print();
+    specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+    specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
     specCh0[i]->Draw();
     
     can_ch1->cd(i+1);
@@ -139,6 +174,8 @@ int main(int argc, char **argv){
     specCh1[i]->SetTitle(Form("PE spectrum, ch1, position %.2f", positions[i]));
     specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
     specCh1[i]->GetYaxis()->SetTitle("counts");
+    specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+    specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
     specCh1[i]->Draw();
   }
   

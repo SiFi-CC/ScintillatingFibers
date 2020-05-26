@@ -17,26 +17,29 @@
 #include "SFPeakFinder.hh"
 #include <iostream>
 
-/// Class to determine attenuation length. This class is suitable only for experimental 
-/// series with different positions of source. Two methods of attenuation length
-/// determination are available: AttAveragedCh() - based on Pauwels et al., JINST 8 (2013)
-/// P09019, where combined signal from both channels is analyzed, and AttSeparateCh()
-/// - where attenuation length is calulated for each channel separately.
+/// Structure containing numerical results of attenuation
+/// length analysis.
 
 struct AttenuationResults{
     
-    double fAttCombPol1    = -1;
-    double fAttCombPol1Err = -1;
+    double fAttCombPol1    = -1;   ///< Attenuation length determined with combined channels method and 1st degree polynomial fit
+    double fAttCombPol1Err = -1;   ///< Uncertainty of fAttCombPol1
     
-    double fAttCombPol3    = -1;
-    double fAttCombPol3Err = -1;
+    double fAttCombPol3    = -1;   ///< Attenuation length determined with combined channels method and 3rd degree polynomial fit
+    double fAttCombPol3Err = -1;   ///< Uncertainty of fAttCombPol3
     
-    double fAttCh0    = -1;
-    double fAttCh0Err = -1;
+    double fAttCh0    = -1;   ///< Attenuation length of channel 0
+    double fAttCh0Err = -1;   ///< Uncertainty of fAttCh0
     
-    double fAttCh1    = -1;
-    double fAttCh1Err = -1;
+    double fAttCh1    = -1;   ///< Attenuation length of channel 1
+    double fAttCh1Err = -1;   ///< Uncertainty of fAttCh1
 };
+
+/// Class to determine attenuation length. This class is suitable only for experimental 
+/// series with different positions of source. Two methods of attenuation length
+/// determination are available: AttAveragedCh() - based on Pauwels et al., JINST 8 (2013)
+/// P09019, where combined signal from both channels is analyzed, and AttSeparateCh(),
+/// where attenuation length is calulated for each channel separately.
 
 class SFAttenuation : public TObject{
  

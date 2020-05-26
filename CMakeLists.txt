@@ -27,6 +27,8 @@ set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+find_package(MultiDimensionalFactory REQUIRED)
+
 add_subdirectory(sources)
 	
 install(TARGETS ScintillatingFibers

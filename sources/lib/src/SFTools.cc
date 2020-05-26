@@ -301,7 +301,7 @@ bool SFTools::CreateTable(TString database, TString table){
     query = "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'ATT_COMB_POL3' NUMERIC, 'ATT_COMB_POL3_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "ENERGY_RESOLUTION"){
-    query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ENRES_SUM' NUMERIC, 'ENRES_SUM_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, 'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
+    query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'ENRES_AV' NUMERIC, 'ENRES_AV_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, 'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
   }
   else if(table == "LIGHT_OUTPUT"){
     query = "CREATE TABLE 'LIGHT_OUTPUT' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, 'LOUT' NUMERIC, 'LOUT_ERR' NUMERIC, 'LOUT_CH0' NUMERIC, 'LOUT_CH0_ERR' NUMERIC, 'LOUT_CH1' NUMERIC, 'LOUT_CH1_ERR' NUMERIC, 'LCOL' NUMERIC, 'LCOL_ERR' NUMERIC, 'LCOL_CH0' NUMERIC, 'LCOL_CH0_ERR' NUMERIC, 'LCOL_CH1' NUMERIC, 'LCOL_CH1_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
@@ -406,7 +406,7 @@ std::vector <double> SFTools::GetFWHM(TH1D *h){
     
     for(int i=0; i<maxbin; i++){
       bincont = h->GetBinContent(i);
-      if(bincont >= halfMax){
+      if((bincont >= halfMax) && i>1){
         istart = i;
         break;
       }
@@ -457,19 +457,21 @@ std::vector <double> SFTools::GetFWHM(TH1D *h){
 TString SFTools::FindData(TString directory){
 
   TString path_1 = std::string(getenv("SFDATA")) + directory;
-  TFile *file_1 = new TFile(path_1+"/results.root", "READ");
   
-  if(file_1->IsOpen()){
-    file_1->Close();
-    return path_1;
-  }
+  //if(! gSystem->AccessPathName(path_1+"/results.root")){
+  //  return path_1;
+  //}
   
-  TString path_2 = "/scratch/gccb/kasia/data/" + directory;
-  TFile *file_2 = new TFile(path_2+"/results.root", "READ");
+  //TString path_2 = "/scratch/gccb/kasia/data/" + directory;
     
-  if(file_2->IsOpen()){
-    file_2->Close();
-    return path_2;
+  //if(! gSystem->AccessPathName(path_2+"/results.root")){
+  //  return path_2;
+  //}
+  
+  TString path_3 = "/media/kasia/Maxtor/data/" + directory;
+  
+  if(! gSystem->AccessPathName(path_3+"/results.root")){
+    return path_3;
   }
   
   std::cerr << "##### Error in SFTools::FindData()! Requested file doesn't exist!" << std::endl;

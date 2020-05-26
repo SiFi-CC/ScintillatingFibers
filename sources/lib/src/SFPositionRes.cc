@@ -70,9 +70,8 @@ bool SFPositionRes::AnalyzePositionRes(void){
   std::vector <int> measurementsIDs = fData->GetMeasurementsIDs();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
+  TString sipm = fData->GetSiPM();
   
-  std::vector <SFPeakFinder*> peakFinCh0;
-  std::vector <SFPeakFinder*> peakFinCh1;
   std::vector <SFPeakFinder*> peakFinAv;
     
   fPosRecoVsPos = new TGraphErrors(npoints);
@@ -95,12 +94,31 @@ bool SFPositionRes::AnalyzePositionRes(void){
   double posResAv = 0;
   double posResAvErr = 0;
   
+  //-----
   fAtt->AttAveragedCh();
   fAtt->Fit3rdOrder();
-  fMLRvsPos = fAtt->GetAttGraph();
-  TF1 *fPol3 = (TF1*)fMLRvsPos->GetFunction("fpol3");
+  TGraphErrors *tmp = fAtt->GetAttGraph();
   
-  if(fPol3 == nullptr){
+  double *x = tmp->GetX();
+  double *ex = tmp->GetEX();
+  double *y = tmp->GetY();
+  double *ey = tmp->GetEY();
+  
+  fMLRvsPos = new TGraphErrors(npoints, y, x, ey, ex);
+  fMLRvsPos->SetName("PosVsMLR");
+  fMLRvsPos->SetTitle(Form("Source position vs. ln(M_{LR}) S%i", fSeriesNo));
+  fMLRvsPos->GetXaxis()->SetTitle("ln(M_{LR})");
+  fMLRvsPos->GetYaxis()->SetTitle("source position [mm]");
+  fMLRvsPos->SetMarkerStyle(4);
+  fMLRvsPos->GetXaxis()->SetRangeUser(-1,1);
+  
+  TF1 *funPol3 = new TF1("funpol3", "pol3", -1, 1);
+  funPol3->SetParLimits(3,0,100000);
+  fMLRvsPos->Fit(funPol3, "R");
+
+  //-----
+  
+  if(funPol3 == nullptr){
     std::cerr << "##### Error in SFPositionRes::AnalyzePositionRes()" << std::endl;
     std::cerr << "Attenuation function was not found!" << std::endl;
     return false;
@@ -139,7 +157,7 @@ bool SFPositionRes::AnalyzePositionRes(void){
          sqrt(sig_ch0->GetPE()*sig_ch1->GetPE())>xmin &&
          sqrt(sig_ch0->GetPE()*sig_ch1->GetPE())<xmax){  
         MLR = log(sqrt(sig_ch1->GetPE()/sig_ch0->GetPE()));
-        pos = fPol3->GetX(MLR);
+        pos = funPol3->Eval(MLR);
         fPosRecoDist[i]->Fill(pos);
       }
     }
@@ -147,11 +165,23 @@ bool SFPositionRes::AnalyzePositionRes(void){
     //----- fitting histogram and calculating position resolution
     mean  = fPosRecoDist[i]->GetMean();
     sigma = fPosRecoDist[i]->GetRMS();
-    funGaus.push_back(new TF1("funGaus", "gaus", mean-5*sigma, mean+5*sigma));
-    fPosRecoDist[i]->Fit(funGaus[i], "QR");
-    mean     = funGaus[i]->GetParameter(1);
-    meanErr  = funGaus[i]->GetParError(1);
-    FWHM = SFTools::GetFWHM(fPosRecoDist[i]);
+    double xmin = fPosRecoDist[i]->GetBinCenter(2);
+    funGaus.push_back(new TF1("funGaus", "gaus", xmin, 200));
+    
+    //if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
+        fPosRecoDist[i]->Fit(funGaus[i], "QR");
+        mean = funGaus[i]->GetParameter(1);
+        meanErr  = funGaus[i]->GetParError(1);
+        if(i==0) FWHM.resize(2);
+        FWHM[0] = 2.35*funGaus[i]->GetParameter(2);
+        FWHM[1] = 2.35*funGaus[i]->GetParError(2);
+    //}
+    //else{
+    //  fPosRecoDist[i]->Fit(funGaus[i], "Q", "", mean-5*sigma, mean+5*sigma);
+    //  mean     = funGaus[i]->GetParameter(1);
+    //  meanErr  = funGaus[i]->GetParError(1);
+    //  FWHM = SFTools::GetFWHM(fPosRecoDist[i]);
+    //}
     
     fResults.fPosReco.push_back(mean);
     fResults.fPosRecoErr.push_back(meanErr);
@@ -170,6 +200,25 @@ bool SFPositionRes::AnalyzePositionRes(void){
   fResults.fPosRes = posResAv/posResAvErr;
   fResults.fPosResErr = sqrt(1./posResAvErr);
   
+  TF1 *funpol1 = new TF1("funpol1", "pol1", 0, 100);
+  fPosRecoVsPos->Fit(funpol1, "Q");
+  
+  fResiduals = new TGraphErrors(npoints);
+  fResiduals->SetName(Form("PosRecoResiduals_S%i", fSeriesNo));
+  fResiduals->SetTitle(Form("Reconstructed position residuals S%i", fSeriesNo));
+  fResiduals->GetXaxis()->SetTitle("source position [mm]");
+  fResiduals->GetYaxis()->SetTitle("residual [mm]");
+  fResiduals->SetMarkerStyle(4);
+  
+  double res, res_err;
+  double point_x, point_y;
+  
+  for(int i=0; i<npoints; i++){
+    fPosRecoVsPos->GetPoint(i, point_x, point_y);
+    res = point_y - funpol1->Eval(point_x);
+    fResiduals->SetPoint(i, point_x, res);
+  }
+  
   std::cout << "Average position resolution for this series is: ";
   std::cout << fResults.fPosRes << " +/- " << fResults.fPosResErr << " mm\n\n"  << std::endl;
     
@@ -185,6 +234,17 @@ TGraphErrors* SFPositionRes::GetPositionRecoGraph(void){
   }
   
   return fPosRecoVsPos;
+}
+//------------------------------------------------------------------
+TGraphErrors* SFPositionRes::GetResiduals(void){
+    
+  if(fResiduals == nullptr){
+      std::cerr << "#### Error in SFPositionRes::GetResiduals()!" << std::endl;
+      std::cerr << "Requested graph doesn't exist!" << std::endl;
+      std::abort();
+  }
+   
+   return fResiduals;
 }
 //------------------------------------------------------------------
 TGraphErrors* SFPositionRes::GetPositionResGraph(void){

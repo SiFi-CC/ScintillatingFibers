@@ -44,6 +44,7 @@ private:
     TGraphErrors        *fPosRecoVsPos;
     TGraphErrors        *fPosResVsPos;
     TGraphErrors        *fMLRvsPos;
+    TGraphErrors        *fResiduals;
     
     std::vector <TH1D*>  fQRatios;
     std::vector <TH1D*>  fPosRecoDist;
@@ -62,6 +63,7 @@ public:
     TGraphErrors *GetPositionRecoGraph(void);
     TGraphErrors *GetPositionResGraph(void);
     TGraphErrors *GetAttenuationCurve(void);
+    TGraphErrors *GetResiduals(void);
     
     std::vector <TH1D*>  GetRatios(void);
     std::vector <TH1D*>  GetPositionRecoDist(void);
