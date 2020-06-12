@@ -80,77 +80,44 @@ bool SFAttenuation::AttAveragedCh(void){
   fSigmaGraph->SetMarkerStyle(4);
   
   int parNo = 1;
+  double const_1 = 0;
+  double const_2 = 0;
+  TString fun_name = "";
   
   for(int i=0; i<npoints; i++){
-    mean = fRatios[i]->GetMean();
-    sigma = fRatios[i]->GetRMS();
+      
     if(collimator.Contains("Lead")){
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -1, 1));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));		//thin gauss
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 6E-2);
-      fun[i]->SetParameter(3, 0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));	//thick gauss
-      if(i<npoints/2)
-        fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
-      else
-      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
-      fun[i]->SetParameter(5, 2E-1);
-      fRatios[i]->Fit(fun[i],"QR");  
-      if(fun[i]->GetParameter(0)>fun[i]->GetParameter(3))
+      SFTools::RatiosFitDoubleGauss(fRatios, 5);
+      fun_name = "fDGauss";
+      const_1 = fRatios[i]->GetFunction(fun_name)->GetParameter(0);
+      const_2 = fRatios[i]->GetFunction(fun_name)->GetParameter(3);
+      if(const_1 > const_2)
           parNo = 1;
       else 
           parNo = 4;
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
-      fit_min = mean - 2*sigma;
-      fit_max = mean + 2*sigma;
-      //fit_min = -0.5;
-      //fit_max = 0.5;
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", fit_min, fit_max));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 6E-2);
-      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/10.);
-      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(5, 6E-1);  
-      fRatios[i]->Fit(fun[i],"QR");  
-      if(fun[i]->GetParameter(0)>fun[i]->GetParameter(3))
+      SFTools::RatiosFitDoubleGauss(fRatios, 2);
+      fun_name = "fDGauss";
+      const_1 = fRatios[i]->GetFunction(fun_name)->GetParameter(0);
+      const_2 = fRatios[i]->GetFunction(fun_name)->GetParameter(3);
+      if(const_1 > const_2)
           parNo = 1;
       else 
           parNo = 4;
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
-      /*fit_min = mean - 5*sigma;
-      fit_max = mean + 5*sigma;
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", fit_min, fit_max));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParLimits(0, 0, 1E6);
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 5E-2);
-      fun[i]->SetParLimits(2, 0, 50);
-      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/20.);
-      fun[i]->SetParLimits(3, 0, 1E6);
-      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(5, 1E-1);
-      fun[i]->SetParLimits(5, 0, 50);*/
-      fit_min = mean - 1*sigma;
-      fit_max = mean + 1*sigma;
-      fun.push_back(new TF1("fun", "gaus", fit_min, fit_max));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParLimits(0, 0, 1E6);
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 5E-2);
-      fun[i]->SetParLimits(2, 0, 50);
-      fRatios[i]->Fit(fun[i],"QR");
+      SFTools::RatiosFitGauss(fRatios, 1);
+      fun_name = "fGauss";
       parNo = 1;
     }
     
-    
-    //std::cout << "\n\n big/small = " << fun[i]->GetParameter(0)/fun[i]->GetParameter(3) << "\t big center = " << fun[i]->GetParameter(1) << "\t small center = " << fun[i]->GetParameter(4) << "\n\n" << std::endl;
-    fAttnGraph->SetPoint(i, positions[i], fun[i]->GetParameter(parNo));
-    fAttnGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun[i]->GetParError(parNo));
-    fSigmaGraph->SetPoint(i, positions[i], fun[i]->GetParameter(parNo+1));
-    fSigmaGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), fun[i]->GetParError(parNo+1));
+    fAttnGraph->SetPoint(i, positions[i], fRatios[i]->GetFunction(fun_name)->GetParameter(parNo));
+    fAttnGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), 
+                              fRatios[i]->GetFunction(fun_name)->GetParError(parNo));
+    fSigmaGraph->SetPoint(i, positions[i], fRatios[i]->GetFunction(fun_name)->GetParameter(parNo+1));
+    fSigmaGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), 
+                               fRatios[i]->GetFunction(fun_name)->GetParError(parNo+1));
   }
   
   TF1 *fpol1 = new TF1("fpol1", "pol1", positions[0], positions[npoints-1]);
@@ -162,6 +129,9 @@ bool SFAttenuation::AttAveragedCh(void){
 
   std::cout << "Attenuation lenght from pol1 fit is: " << fResults.fAttCombPol1  
             << " +/- " << fResults.fAttCombPol1Err << " mm\n" << std::endl;
+            
+  Fit1stOrder();
+  Fit3rdOrder();
   
   return true;
 }
@@ -174,13 +144,30 @@ double myPol3(double *x, double *par){
   return f;  
 }
 //------------------------------------------------------------------
+bool SFAttenuation::Fit1stOrder(void){
+    
+  if(fAttnGraph==nullptr)
+      AttAveragedCh();
+  
+  TF1 *fpol1 = new TF1("fpol1", "pol1", -50, 150);
+  fpol1->SetParameters(-0.15, 0.005);
+  fAttnGraph->Fit(fpol1, "QR+");
+  
+  fResults.fAttCombPol1    = fabs(1./fpol1->GetParameter(1));
+  fResults.fAttCombPol1Err = fpol1->GetParError(1)/pow(fpol1->GetParameter(1), 2);
+
+  std::cout << "Attenuation lenght from pol1 fit is: " << fResults.fAttCombPol1  
+            << " +/- " << fResults.fAttCombPol1Err << " mm\n" << std::endl;
+    
+}
+//------------------------------------------------------------------
 bool SFAttenuation::Fit3rdOrder(void){
     
   if(fAttnGraph==nullptr)
       AttAveragedCh();
   
   TF1 *fpol3 = new TF1("fpol3", myPol3, -50, 150, 3); 
-  double fiberLengthHalf = fData->GetFiberLength()/2;
+  //double fiberLengthHalf = fData->GetFiberLength()/2;
   fpol3->SetParameter(0, fAttnGraph->GetFunction("fpol1")->GetParameter(0));
   fpol3->SetParameter(1, fAttnGraph->GetFunction("fpol1")->GetParameter(1));
   //fpol3->FixParameter(3, fiberLengthHalf);

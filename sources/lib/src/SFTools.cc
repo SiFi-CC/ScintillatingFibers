@@ -478,3 +478,79 @@ TString SFTools::FindData(TString directory){
   std::abort();
 }
 //------------------------------------------------------------------
+bool SFTools::RatiosFitGauss(std::vector <TH1D*> & vec, float range_in_RMS){
+    
+    std::cout << "\n\n----- SFTools::RatiosFitGauss() fitting...\n" << std::endl;
+    
+    std::vector <TF1*> fGauss;
+    
+    int nsize = vec.size();
+    double fit_min = 0;
+    double fit_max = 0;
+    double mean = 0;
+    double rms = 0;
+    
+    for(int i=0; i<nsize; i++){
+        mean = vec[i]->GetMean();
+        rms = vec[i]->GetRMS();
+        fit_min = mean - (range_in_RMS*rms);
+        fit_max = mean + (range_in_RMS*rms);
+        fGauss.push_back(new TF1("fGauss", "gaus", fit_min, fit_max));
+        fGauss[i]->SetParameters(vec[i]->GetBinContent(vec[i]->GetMaximumBin()),
+                                 mean, rms);
+        vec[i]->Fit(fGauss[i], "RQ+");
+        
+        std::cout << "\tFitting histogram " << vec[i]->GetName() << " ..." << std::endl;
+        std::cout << "\t\tConst = " << fGauss[i]->GetParameter(0) << " +/- " << fGauss[i]->GetParError(0) 
+                  << "\tMean = " << fGauss[i]->GetParameter(1) << " +/- " << fGauss[i]->GetParError(1) 
+                  << "\tSigma = " << fGauss[i]->GetParameter(2) << " +/- " << fGauss[i]->GetParError(2) 
+                  << "\n" << std::endl;
+    }
+    
+    return true;
+}
+//------------------------------------------------------------------
+bool SFTools::RatiosFitDoubleGauss(std::vector <TH1D*> & vec, float range_in_RMS){
+    
+    std::cout << "\n\n----- SFTools::RatiosFitDoubleGauss() fitting...\n" << std::endl;
+    
+    std::vector <TF1*> fDGauss;
+    
+    int nsize = vec.size();
+    double fit_min = 0;
+    double fit_max = 0;
+    double mean = 0;
+    double rms = 0;
+    
+    for(int i=0; i<nsize; i++){
+        mean = vec[i]->GetMean();
+        rms = vec[i]->GetRMS();
+        fit_min = mean - (range_in_RMS*rms);
+        fit_max = mean + (range_in_RMS*rms);
+        fDGauss.push_back(new TF1("fDGauss", "gaus(0)+gaus(3)", fit_min, fit_max));
+        fDGauss[i]->SetParameter(0, vec[i]->GetBinContent(vec[i]->GetMaximumBin()));
+        fDGauss[i]->SetParameter(1, mean);
+        fDGauss[i]->SetParameter(2, 6E-2);
+        fDGauss[i]->SetParameter(3, vec[i]->GetBinContent(vec[i]->GetMaximumBin())/10.);
+        if(i < nsize/2)
+            fDGauss[i]->SetParameter(4, mean - rms);
+        else 
+            fDGauss[i]->SetParameter(4, mean + rms);
+        fDGauss[i]->SetParameter(5, 6E-1);
+        vec[i]->Fit(fDGauss[i], "QR+");
+        
+        std::cout << "\tFitting histogram " << vec[i]->GetName() << " ..." << std::endl;
+        std::cout << "\tFirst component:" << std::endl;
+        std::cout << "\t\tConst = " << fDGauss[i]->GetParameter(0) << " +/- " << fDGauss[i]->GetParError(0) 
+                  << "\tMean = " << fDGauss[i]->GetParameter(1) << " +/- " << fDGauss[i]->GetParError(1) 
+                  << "\tSigma = " << fDGauss[i]->GetParameter(2) << " +/- " << fDGauss[i]->GetParError(2) 
+                  << std::endl;
+        std::cout << "\tSecond component:" << std::endl;
+        std::cout << "\t\tConst = " << fDGauss[i]->GetParameter(3) << " +/- " << fDGauss[i]->GetParError(3) 
+                  << "\tMean = " << fDGauss[i]->GetParameter(4) << " +/- " << fDGauss[i]->GetParError(4) 
+                  << "\tSigma = " << fDGauss[i]->GetParameter(5) << " +/- " << fDGauss[i]->GetParError(5) 
+                  << "\n" << std::endl;
+    }
+    
+    return true;
+}

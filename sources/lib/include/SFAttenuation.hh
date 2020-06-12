@@ -66,6 +66,7 @@ private:
   
   bool                 AttAveragedCh(void);
   bool                 AttSeparateCh(int ch);
+  bool                 Fit1stOrder(void);
   bool                 Fit3rdOrder(void);
   
   TGraphErrors*        GetAttGraph(void);

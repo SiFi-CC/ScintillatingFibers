@@ -30,11 +30,13 @@ namespace SFTools{
     double  GetPosError(TString collimator, TString testBench);
     void    CheckDBStatus(int status, sqlite3 *database); 
     bool    SaveResultsDB(TString database, TString table, 
-                                 TString query, int seriesNo);
+                          TString query, int seriesNo);
     bool    CreateTable(TString database, TString table);  
     double  GetMean(std::vector <double> vec);
     double  GetStandardDev(std::vector <double> vec);
     double  GetStandardErr(std::vector <double> vec);
+    bool    RatiosFitGauss(std::vector <TH1D*> & vec, float range_in_RMS=1);
+    bool    RatiosFitDoubleGauss(std::vector <TH1D*> & vec, float range_in_RMS=1);
     std::vector <double> GetFWHM(TH1D* h);
     TString FindData(TString directory);
     

@@ -84,7 +84,6 @@ int main(int argc, char **argv){
   
   //----- averaged channels method
   att->AttAveragedCh();
-  att->Fit3rdOrder();
   std::vector <TH1D*> attRatios = att->GetRatios();
   TGraphErrors *attGraph        = att->GetAttGraph();
   TGraphErrors *attGraphPol3    = (TGraphErrors*)attGraph->Clone("attGraphPol3");
@@ -177,7 +176,7 @@ int main(int argc, char **argv){
    attRatios[i]->Draw();
    if((collimator=="Lead") || 
       (collimator=="Electronic" && sipm=="SensL")){
-     fun = attRatios[i]->GetFunction("fun");
+     fun = attRatios[i]->GetFunction("fDGauss");
      fthin->SetParameters(fun->GetParameter(0),
                           fun->GetParameter(1),
                           fun->GetParameter(2));
@@ -193,7 +192,7 @@ int main(int argc, char **argv){
      text.DrawLatex(0.2, 0.70, Form("S = %.4f", fun->GetParameter(4)));
    }
    else if(collimator=="Electronic" && sipm=="Hamamatsu"){
-     fun = attRatios[i]->GetFunction("fun");
+     fun = attRatios[i]->GetFunction("fDauss");
      fun_clone->SetParameters(fun->GetParameter(0),
                               fun->GetParameter(1),
                               fun->GetParameter(2));
