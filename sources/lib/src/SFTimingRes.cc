@@ -49,59 +49,16 @@ bool SFTimingRes::LoadRatios(void){
   fRatios = fData->GetCustomHistograms(SFSelectionType::LogSqrtPERatio, cut);
   
   std::vector <TF1*> fun;
-  double min, max;
   
   for(int i=0; i<npoints; i++){
     if(collimator.Contains("Lead")){
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -1, 1));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));   //thin gauss
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 6E-2);
-      fun[i]->SetParameter(3, 0.5*fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));   //thick gauss
-      if(i<npoints/2)
-        fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())+0.2);
-      else
-	fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin())-0.2);
-      fun[i]->SetParameter(5, 2E-1);
-      fRatios[i]->Fit(fun[i], "QR");
+      SFTools::RatiosFitDoubleGauss(fRatios, 5);
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
-      min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
-      max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", min, max)); 
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 6E-2);
-      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/10.);
-      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(5, 6E-1);
-      fRatios[i]->Fit(fun[i], "QR");
+      SFTools::RatiosFitDoubleGauss(fRatios, 2);
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
-//       min = fRatios[i]->GetMean()-2*fRatios[i]->GetRMS();
-//       max = fRatios[i]->GetMean()+2*fRatios[i]->GetRMS();
-//       fun.push_back(new TF1("fun", "gaus", min, max));   //single gauss
-      min = fRatios[i]->GetMean()-1*fRatios[i]->GetRMS();
-      max = fRatios[i]->GetMean()+1*fRatios[i]->GetRMS();
-      /*fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", min, max));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParLimits(0, 0, 1E6);
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 5E-2);
-      fun[i]->SetParLimits(2, 0, 50);
-      fun[i]->SetParameter(3, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin())/20.);
-      fun[i]->SetParLimits(3, 0, 1E6);
-      fun[i]->SetParameter(4, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(5, 1E-1);
-      fun[i]->SetParLimits(5, 0, 50);*/
-      fun.push_back(new TF1("fun", "gaus", min, max));
-      fun[i]->SetParameter(0, fRatios[i]->GetBinContent(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParLimits(0, 0, 1E6);
-      fun[i]->SetParameter(1, fRatios[i]->GetBinCenter(fRatios[i]->GetMaximumBin()));
-      fun[i]->SetParameter(2, 5E-2);
-      fun[i]->SetParLimits(2, 0, 50);
-      
-      fRatios[i]->Fit(fun[i], "QR");
+      SFTools::RatiosFitGauss(fRatios, 1);  
     }
   }
 
@@ -158,14 +115,14 @@ bool SFTimingRes::AnalyzeNoECut(void){
     
     if(collimator.Contains("Lead")){
       
-    if(fRatios[i]->GetFunction("fun")->GetParameter(0) > 
-       fRatios[i]->GetFunction("fun")->GetParameter(3))
+    if(fRatios[i]->GetFunction("fDGauss")->GetParameter(0) > 
+       fRatios[i]->GetFunction("fDGauss")->GetParameter(3))
         parNum = 1;
     else 
         parNum = 4;
     
-      mean = fRatios[i]->GetFunction("fun")->GetParameter(parNum);
-      sigma = fRatios[i]->GetFunction("fun")->GetParameter(parNum+1);
+      mean = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum);
+      sigma = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum+1);
     
       //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>15 && ch_1.fPE>15 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
@@ -185,14 +142,14 @@ bool SFTimingRes::AnalyzeNoECut(void){
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
       
-      if(fRatios[i]->GetFunction("fun")->GetParameter(0) > 
-         fRatios[i]->GetFunction("fun")->GetParameter(3))
+      if(fRatios[i]->GetFunction("fDGauss")->GetParameter(0) > 
+         fRatios[i]->GetFunction("fDGauss")->GetParameter(3))
           parNum = 1;
       else 
           parNum = 4;
     
-      mean = fRatios[i]->GetFunction("fun")->GetParameter(parNum);
-      sigma = fRatios[i]->GetFunction("fun")->GetParameter(parNum+1);
+      mean = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum);
+      sigma = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum+1);
       
       //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>20 && ch_1.fPE>20 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
@@ -212,8 +169,8 @@ bool SFTimingRes::AnalyzeNoECut(void){
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
     
-      mean = fRatios[i]->GetFunction("fun")->GetParameter(1);
-      sigma = fRatios[i]->GetFunction("fun")->GetParameter(2);
+      mean = fRatios[i]->GetFunction("fGauss")->GetParameter(1);
+      sigma = fRatios[i]->GetFunction("fGauss")->GetParameter(2);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fT0Diff.back()->Rebin(2);
@@ -307,6 +264,7 @@ bool SFTimingRes::AnalyzeWithECut(void){
   double xmin_ch1, xmax_ch1;
   double mean_ratio, sigma_ratio;
   double mean, sigma;
+  double const_1, const_2;
   //double f = 2*sqrt(2*log(2));   //to recalculate sigma into FWHM
   TString cut;
   
@@ -315,6 +273,8 @@ bool SFTimingRes::AnalyzeWithECut(void){
   
   double tResAv = 0;
   double tResAvErr = 0;
+  
+  int parNo = 0;
   
   TString gname = Form("timeDiffECut_S%i", fSeriesNo);
   TGraphErrors *graph = new TGraphErrors(npoints);
@@ -334,16 +294,36 @@ bool SFTimingRes::AnalyzeWithECut(void){
     delta_ch0  = (xmax_ch0-xmin_ch0)/6.;            //
     center_ch1 = xmin_ch1+(xmax_ch1-xmin_ch1)/2.;   //
     delta_ch1  = (xmax_ch1-xmin_ch1)/6.;            //
-    mean_ratio = fRatios[i]->GetFunction("fun")->GetParameter(1);
-    sigma_ratio = fRatios[i]->GetFunction("fun")->GetParameter(2);
     
-    if(collimator.Contains("Lead"))
+    if(collimator.Contains("Lead")){
+      const_1 = fRatios[i]->GetFunction("fDGauss")->GetParameter(0); 
+      const_2 = fRatios[i]->GetFunction("fDGauss")->GetParameter(3);
+      if(const_1 > const_2)
+          parNo = 1;
+      else
+          parNo = 4;
+      mean_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo);
+      sigma_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);   //changed here for smaller cut
-    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu"))
+    }
+    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
+      parNo = 1;
+      mean_ratio = fRatios[i]->GetFunction("fGauss")->GetParameter(parNo);
+      sigma_ratio = fRatios[i]->GetFunction("fGauss")->GetParameter(parNo+1);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
-    else if(collimator.Contains("Electronic") && sipm.Contains("SensL"))
+    }
+    else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
+      const_1 = fRatios[i]->GetFunction("fDGauss")->GetParameter(0);
+      const_2 = fRatios[i]->GetFunction("fDGauss")->GetParameter(3);
+      if(const_1 > const_2)
+          parNo = 1;
+      else
+          parNo = 4;
+      mean_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo);
+      sigma_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
       cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio, mean_ratio+2*sigma_ratio);
-      
+    }
+    
     fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
     mean = fT0DiffECut[i]->GetMean();
     sigma = fT0DiffECut[i]->GetRMS();

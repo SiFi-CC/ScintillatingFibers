@@ -210,7 +210,7 @@ bool SFPositionRes::AnalyzePositionRes(void){
   fResiduals->GetYaxis()->SetTitle("residual [mm]");
   fResiduals->SetMarkerStyle(4);
   
-  double res, res_err;
+  double res;
   double point_x, point_y;
   
   for(int i=0; i<npoints; i++){

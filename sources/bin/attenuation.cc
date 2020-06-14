@@ -192,7 +192,7 @@ int main(int argc, char **argv){
      text.DrawLatex(0.2, 0.70, Form("S = %.4f", fun->GetParameter(4)));
    }
    else if(collimator=="Electronic" && sipm=="Hamamatsu"){
-     fun = attRatios[i]->GetFunction("fDauss");
+     fun = attRatios[i]->GetFunction("fGauss");
      fun_clone->SetParameters(fun->GetParameter(0),
                               fun->GetParameter(1),
                               fun->GetParameter(2));

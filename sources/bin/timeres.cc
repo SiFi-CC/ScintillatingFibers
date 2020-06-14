@@ -150,21 +150,24 @@ int main(int argc, char **argv){
   TF1 *fClone = new TF1("fColone", "gaus", -1, 1);
   fRthin->SetLineColor(kMagenta);
   fRthick->SetLineColor(kMagenta-10);
-  fClone->SetLineColor(kMagenta-10);
+  fClone->SetLineColor(kRed);
   
   for(int i=0; i<npoints; i++){
     title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm", seriesNo, positions[i]);
+    std::cout << title << std::endl;
     
     canTDiff->cd(i+1);
     gPad->SetGrid(1,1);
     string = Form("%.3f +/- %.3f ns", timeResAll[i], timeResAllErr[i]);
     T0diff[i]->SetTitle(title);
+    std::cout << "flag#1" << std::endl;
     T0diff[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
     T0diff[i]->Draw();
     text.DrawLatex(0.15, 0.8, string);
     //if((collimator=="Lead" && sipm=="Hamamatsu") ||
     //   (collimator=="Electronic" && sipm=="SensL")){
       fT0thin->FixParameter(0, T0diff[i]->GetFunction("fun")->GetParameter(0));
+      
       fT0thin->FixParameter(1, T0diff[i]->GetFunction("fun")->GetParameter(1));
       fT0thin->FixParameter(2, T0diff[i]->GetFunction("fun")->GetParameter(2));
       fT0thick->FixParameter(0, T0diff[i]->GetFunction("fun")->GetParameter(3));
@@ -179,6 +182,7 @@ int main(int argc, char **argv){
     gPad->SetGrid(1,1);
     string = Form("%.3f +/- %.3f ns", timeResECutAll[i], timeResECutAllErr[i]);
     T0diffECut[i]->SetTitle(title);
+    std::cout << "flag#3" << std::endl;
     T0diffECut[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
     T0diffECut[i]->GetXaxis()->SetRangeUser(-20, 20);
     T0diffECut[i]->Draw();
@@ -187,53 +191,58 @@ int main(int argc, char **argv){
     canRatio->cd(i+1);
     gPad->SetGrid(1,1);
     ratio[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
+    std::cout << "flag#4" << std::endl;
     ratio[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
     max = ratio[i]->GetBinContent(ratio[i]->GetMaximumBin());
     
     int parNo = -1;
-    if(ratio[i]->GetFunction("fun")->GetNpar()>3){
-      if(ratio[i]->GetFunction("fun")->GetParameter(0)>
-         ratio[i]->GetFunction("fun")->GetParameter(3))
-        parNo = 1;
-      else 
-        parNo = 4;
-    }
-    else{
-        parNo = 1;
-    }
-  
-    mean = ratio[i]->GetFunction("fun")->GetParameter(parNo);
-    sigma = ratio[i]->GetFunction("fun")->GetParameter(parNo+1);
+
     ratio[i]->Draw();
     
     if(collimator=="Lead" && sipm=="Hamamatsu"){
+      if(ratio[i]->GetFunction("fDGauss")->GetParameter(0)>
+         ratio[i]->GetFunction("fDGauss")->GetParameter(3))
+        parNo = 1;
+      else 
+        parNo = 4;
+      mean = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo);
+      sigma = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
       line.DrawLine(mean-0.5*sigma, 0, mean-0.5*sigma, max);
       line.DrawLine(mean+0.5*sigma, 0, mean+0.5*sigma, max);
-      fRthin->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(0));
-      fRthin->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(1));
-      fRthin->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(2));
-      fRthick->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(3));
-      fRthick->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(4));
-      fRthick->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(5));
+      fRthin->FixParameter(0, ratio[i]->GetFunction("fDGauss")->GetParameter(0));
+      fRthin->FixParameter(1, ratio[i]->GetFunction("fDGauss")->GetParameter(1));
+      fRthin->FixParameter(2, ratio[i]->GetFunction("fDGauss")->GetParameter(2));
+      fRthick->FixParameter(0, ratio[i]->GetFunction("fDGauss")->GetParameter(3));
+      fRthick->FixParameter(1, ratio[i]->GetFunction("fDGauss")->GetParameter(4));
+      fRthick->FixParameter(2, ratio[i]->GetFunction("fDGauss")->GetParameter(5));
       fRthin->DrawClone("same");
       fRthick->DrawClone("same");
     }
     else if(collimator=="Electronic" && sipm=="SensL"){
-      fRthin->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(0));
-      fRthin->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(1));
-      fRthin->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(2));
-      fRthick->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(3));
-      fRthick->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(4));
-      fRthick->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(5));
+      if(ratio[i]->GetFunction("fDGauss")->GetParameter(0)>
+         ratio[i]->GetFunction("fDGauss")->GetParameter(3))
+        parNo = 1;
+      else 
+        parNo = 4;
+      mean = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo);
+      sigma = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
+      fRthin->FixParameter(0, ratio[i]->GetFunction("fDGauss")->GetParameter(0));
+      fRthin->FixParameter(1, ratio[i]->GetFunction("fDGauss")->GetParameter(1));
+      fRthin->FixParameter(2, ratio[i]->GetFunction("fDGauss")->GetParameter(2));
+      fRthick->FixParameter(0, ratio[i]->GetFunction("fDGauss")->GetParameter(3));
+      fRthick->FixParameter(1, ratio[i]->GetFunction("fDGauss")->GetParameter(4));
+      fRthick->FixParameter(2, ratio[i]->GetFunction("fDGauss")->GetParameter(5));
       fRthin->DrawClone("same");
       fRthick->DrawClone("same");
       line.DrawLine(mean-2*sigma, 0, mean-2*sigma, max);
       line.DrawLine(mean+2*sigma, 0, mean+2*sigma, max);
     }
     else if(collimator=="Electronic" && sipm=="Hamamatsu"){
-      fClone->FixParameter(0, ratio[i]->GetFunction("fun")->GetParameter(0));
-      fClone->FixParameter(1, ratio[i]->GetFunction("fun")->GetParameter(1));
-      fClone->FixParameter(2, ratio[i]->GetFunction("fun")->GetParameter(2));
+      mean = ratio[i]->GetFunction("fGauss")->GetParameter(1);
+      sigma = ratio[i]->GetFunction("fGauss")->GetParameter(2);
+      fClone->FixParameter(0, ratio[i]->GetFunction("fGauss")->GetParameter(0));
+      fClone->FixParameter(1, ratio[i]->GetFunction("fGauss")->GetParameter(1));
+      fClone->FixParameter(2, ratio[i]->GetFunction("fGauss")->GetParameter(2));
       fClone->DrawClone("same");
       line.DrawLine(mean-3*sigma, 0, mean-3*sigma, max);
       line.DrawLine(mean+3*sigma, 0, mean+3*sigma, max);
