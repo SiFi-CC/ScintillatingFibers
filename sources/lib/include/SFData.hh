@@ -10,18 +10,30 @@
 
 #ifndef __SFData_H_
 #define __SFData_H_ 1
+
+//#define NDEBUG
+
 #include "TObject.h"
 #include "TString.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
-#include "TROOT.h"
+// #include "TROOT.h"
 #include "TProfile.h"
 #include "TVectorT.h"
+
+#include "SDDSamples.h"
+#include "SFibersStackCal.h"
+#include "SFibersStackRaw.h"
+#include "SCategoryManager.h"
+#include "SLoop.h"
+
 #include "DDSignal.hh"
+
 #include "SFDrawCommands.hh"
 #include "SFTools.hh"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -29,6 +41,21 @@
 #include <stdlib.h>
 #include <vector>
 #include <sqlite3.h>
+#include <assert.h>
+
+struct SFSignal{
+    
+    float fAmp    = -100;
+    float fCharge = -100;
+    float fPE     = -100;
+    float fT0     = -100;
+    float fTOT    = -100;
+    float fBL     = -100;
+    float fBLsig  = -100;
+    int fPileUp   = -100;
+    int fVeto     = -100;
+    bool fSDDSignal = 0;
+};
 
 /// Class to access experiemntal data. Information about an experimental 
 /// series and all measurements is loaded from the SQLite3 data base.  
@@ -67,7 +94,9 @@ private:
   
   int  gUnique = 0.;                 ///< Unique flag to identify temporary histograms
   
-  bool      InterpretCut(DDSignal *sig, TString cut);
+  SFSignal* ConvertSignal(DDSignal *sig);
+  SFSignal* ConvertSignal(SDDSignal *sig);
+  bool      InterpretCut(SFSignal *sig, TString cut);
   TProfile* GetSignalAverageKrakow(int ch, int ID, TString cut, int number, bool bl);
   TProfile* GetSignalAverageAachen(int ch, int ID, TString cut, int number);
   TH1D*     GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl);
@@ -80,16 +109,18 @@ public:
   
   bool                OpenDataBase(TString name);
   bool                SetDetails(int seriesNo);
-  TTree*              GetTree(int ID);
+  SLoop*              GetTree(int ID);
   TH1D*               GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID);
   TH1D*               GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID, 
                                          std::vector <double> customNum={});
   TH1D*               GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
                                          int ID, std::vector <double> customNum);
   TH2D*               GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, int ch = -1);
+  TH2D*               GetRefCorrHistogram(int ID, int ch);
   std::vector <TH1D*> GetSpectra(int ch, SFSelectionType sel_type, TString cut);
   std::vector <TH1D*> GetCustomHistograms(SFSelectionType sel_type, TString cut);
   std::vector <TH2D*> GetCorrHistograms(SFSelectionType sel_type, TString cut, int ch = -1);
+  std::vector <TH2D*> GetRefCorrHistograms(int ch);
   TProfile*           GetSignalAverage(int ch, int ID, TString cut, int number, bool bl);
   TH1D*               GetSignal(int ch, int ID, TString cut, int number, bool bl);
   void                Print(void);

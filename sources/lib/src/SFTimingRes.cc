@@ -45,7 +45,10 @@ bool SFTimingRes::LoadRatios(void){
   TString collimator = fData->GetCollimator();
   TString sipm = fData->GetSiPM();
   
-  TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0"; 
+  //TString cut = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0 && ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0"; 
+  double s = SFTools::GetSigmaBL(sipm);
+  std::vector <double> sigmas = {s, s};
+  TString cut = SFDrawCommands::GetCut(SFCutType::CombCh0Ch1, sigmas);
   fRatios = fData->GetCustomHistograms(SFSelectionType::LogSqrtPERatio, cut);
   
   std::vector <TF1*> fun;
@@ -109,6 +112,8 @@ bool SFTimingRes::AnalyzeNoECut(void){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
+  double s = SFTools::GetSigmaBL(sipm);
+  
   for(int i=0; i<npoints; i++){
     
     int parNum = 0;  
@@ -125,14 +130,18 @@ bool SFTimingRes::AnalyzeNoECut(void){
       sigma = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum+1);
     
       //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>15 && ch_1.fPE>15 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>15 && ch_1.fPE>15 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
+      std::vector <double> customNum = {s, s, 15, 15, mean-0.5*sigma, mean+0.5*sigma};
+      cut = SFDrawCommands::GetCut(SFCutType::T0Diff, customNum); 
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
     
       fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -100, 100));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParLimits(0, 1, 1E6);
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
       fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
       fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/4);
+      fun[i]->SetParLimits(3, 1, 1E6);
       if(i<npoints/2)
         fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-5);
       else
@@ -152,16 +161,20 @@ bool SFTimingRes::AnalyzeNoECut(void){
       sigma = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNum+1);
       
       //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>20 && ch_1.fPE>20 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>20 && ch_1.fPE>20 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-2*sigma,  mean+2*sigma);
+      std::vector <double> customNum = {s, s, 20, 20, mean-2*sigma, mean+2*sigma};
+      cut = SFDrawCommands::GetCut(SFCutType::T0Diff, customNum); 
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fT0Diff.back()->Rebin(2);
-      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -30, 30));
       
+      fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -30, 30));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParLimits(0, 1, 1E6);
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
       fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
       fun[i]->SetParLimits(2, 0, 10);
       fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10.);
+      fun[i]->SetParLimits(3, 1, 1E6);
       fun[i]->SetParameter(4, fT0Diff[i]->GetMean());
       fun[i]->SetParameter(5, fT0Diff[i]->GetRMS()*10);
       fun[i]->SetParLimits(5, 0, 20);
@@ -171,12 +184,15 @@ bool SFTimingRes::AnalyzeNoECut(void){
     
       mean = fRatios[i]->GetFunction("fGauss")->GetParameter(1);
       sigma = fRatios[i]->GetFunction("fGauss")->GetParameter(2);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>0 && ch_1.fPE>0 && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-3*sigma,  mean+3*sigma);
+      std::vector <double> customNum = {s, s, 0, 0, mean-3*sigma, mean+3*sigma};
+      cut = SFDrawCommands::GetCut(SFCutType::T0Diff, customNum); 
       fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));
       fT0Diff.back()->Rebin(2);
       
       fun.push_back(new TF1("fun", "gaus(0)+gaus(3)", -50, 50));
       fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+      fun[i]->SetParLimits(0, 1, 1E6);
       fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
       fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
       fun[i]->SetParLimits(2, 0, 50);
@@ -187,6 +203,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
       }
       else if(fiber.Contains("LYSO")){
         fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10);
+        fun[i]->SetParLimits(3, 1, 1E6);
         if(i<npoints/2)
           fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-2);
         else
@@ -196,6 +213,7 @@ bool SFTimingRes::AnalyzeNoECut(void){
       }
       else if(fiber.Contains("GAGG")){
         fun[i]->SetParameter(3, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin())/10);
+        fun[i]->SetParLimits(3, 1, 1E6);
         if(i<npoints/2)
           fun[i]->SetParameter(4, fT0Diff[i]->GetMean()-1);
         else
@@ -255,8 +273,12 @@ bool SFTimingRes::AnalyzeWithECut(void){
   
   if(fRatios.empty()) LoadRatios();
   
-  fSpecCh0 = fData->GetSpectra(0, SFSelectionType::PE, "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0");
-  fSpecCh1 = fData->GetSpectra(1, SFSelectionType::PE, "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0");
+  double s = SFTools::GetSigmaBL(sipm);
+  std::vector <double> cut_sigma = {s};
+  TString cutCh0 = SFDrawCommands::GetCut(SFCutType::SpecCh0, cut_sigma);
+  TString cutCh1 = SFDrawCommands::GetCut(SFCutType::SpecCh1, cut_sigma);
+  fSpecCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
+  fSpecCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
   std::vector <SFPeakFinder*> peakFin_ch0;
   std::vector <SFPeakFinder*> peakFin_ch1;
   TF1* fun = new TF1("fun", "gaus", -200, 200);
@@ -304,13 +326,17 @@ bool SFTimingRes::AnalyzeWithECut(void){
           parNo = 4;
       mean_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo);
       sigma_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);   //changed here for smaller cut
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f", center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio);   //changed here for smaller cut
+      std::vector <double> customNum = {s, s, center_ch0-delta_ch0, center_ch0+delta_ch0, center_ch1-delta_ch1, center_ch1+delta_ch1, mean_ratio-0.5*sigma_ratio, mean_ratio+0.5*sigma_ratio};
+      cut = SFDrawCommands::GetCut(SFCutType::T0DiffECut, customNum);
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
       parNo = 1;
       mean_ratio = fRatios[i]->GetFunction("fGauss")->GetParameter(parNo);
       sigma_ratio = fRatios[i]->GetFunction("fGauss")->GetParameter(parNo+1);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio);   //changed here for smaller cut
+      std::vector <double> customNum = {s, s, center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-3*sigma_ratio, mean_ratio+3*sigma_ratio};
+      cut = SFDrawCommands::GetCut(SFCutType::T0DiffECut, customNum);
     }
     else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
       const_1 = fRatios[i]->GetFunction("fDGauss")->GetParameter(0);
@@ -321,7 +347,9 @@ bool SFTimingRes::AnalyzeWithECut(void){
           parNo = 4;
       mean_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo);
       sigma_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo+1);
-      cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio, mean_ratio+2*sigma_ratio);
+      //cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f && log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio, mean_ratio+2*sigma_ratio);
+      std::vector <double> customNum = {s, s, center_ch0-3*delta_ch0, center_ch0+3*delta_ch0, center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio, mean_ratio+2*sigma_ratio};
+      cut = SFDrawCommands::GetCut(SFCutType::T0DiffECut, customNum);
     }
     
     fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::T0Difference, cut, measIDs[i]));

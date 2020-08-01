@@ -77,7 +77,6 @@ int main(int argc, char **argv){
   timeres->AnalyzeNoECut();
   timeres->AnalyzeWithECut();
   
-  
   DistributionContext ctx;
   ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -99,7 +98,7 @@ int main(int argc, char **argv){
   TGraphErrors *gTimeResECut    = timeres->GetTimingResGraph(1);
   
   //----- numerical results
-  TimingResResults results = timeres->GetResults();
+  SFTimingResResults results = timeres->GetResults();
   std::vector <double> timeResAll        = results.fTimeResAll; 
   std::vector <double> timeResAllErr     = results.fTimeResAllErr; 
   std::vector <double> timeResECutAll    = results.fTimeResECutAll;
@@ -160,7 +159,6 @@ int main(int argc, char **argv){
     gPad->SetGrid(1,1);
     string = Form("%.3f +/- %.3f ns", timeResAll[i], timeResAllErr[i]);
     T0diff[i]->SetTitle(title);
-    std::cout << "flag#1" << std::endl;
     T0diff[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
     T0diff[i]->Draw();
     text.DrawLatex(0.15, 0.8, string);
@@ -176,13 +174,15 @@ int main(int argc, char **argv){
       fT0thin->DrawClone("same");
       fT0thick->DrawClone("same");
     //}
-    T0diff[i]->GetXaxis()->SetRangeUser(-10,10);
+    if(sipm == "Hamamatsu")  
+      T0diff[i]->GetXaxis()->SetRangeUser(-10,10);
+    else if(sipm == "SensL")
+      T0diff[i]->GetXaxis()->SetRangeUser(-20, 20);
     
     canTDiffECut->cd(i+1);
     gPad->SetGrid(1,1);
     string = Form("%.3f +/- %.3f ns", timeResECutAll[i], timeResECutAllErr[i]);
     T0diffECut[i]->SetTitle(title);
-    std::cout << "flag#3" << std::endl;
     T0diffECut[i]->GetXaxis()->SetTitle("ch_0.fT0-ch_1.fT0 [ns]");
     T0diffECut[i]->GetXaxis()->SetRangeUser(-20, 20);
     T0diffECut[i]->Draw();
@@ -191,7 +191,6 @@ int main(int argc, char **argv){
     canRatio->cd(i+1);
     gPad->SetGrid(1,1);
     ratio[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
-    std::cout << "flag#4" << std::endl;
     ratio[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm",positions[i]));
     max = ratio[i]->GetBinContent(ratio[i]->GetMaximumBin());
     

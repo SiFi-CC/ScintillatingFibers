@@ -43,8 +43,10 @@ SFLightOutput::SFLightOutput(int seriesNo): fSeriesNo(seriesNo),
     std::cout << "Calculating light output for non-regular series!" << std::endl;
   }
   
-  TString cutCh0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
-  TString cutCh1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
+  double s = SFTools::GetSigmaBL(fData->GetSiPM());
+  std::vector <double> sigma = {s};
+  TString cutCh0 = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigma);
+  TString cutCh1 = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigma);
   fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
   fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
 
@@ -63,8 +65,7 @@ double SFLightOutput::GetCrossTalk(void){
   TString SiPM = fData->GetSiPM();
   double overvol = fData->GetOvervoltage();
   
-  TString fname = std::string(getenv("SFDATA")) + 
-                  "/DB/SiPMs_Data.root";
+  TString fname = std::string(getenv("SFDATA")) + "/DB/SiPMs_Data.root";
   TFile *file = new TFile(fname, "READ");
   TGraph *gCrossTalk;
   
@@ -281,7 +282,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   
   att->AttAveragedCh();
   
-  AttenuationResults results = att->GetResults();
+  SFAttenuationResults results = att->GetResults();
   
   for(int i=0; i<npoints; i++){
     if(ch==0)
@@ -304,7 +305,7 @@ bool SFLightOutput::CalculateLightOut(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  PeakParams parameters;
+  SFPeakParams parameters;
   double lightOut = 0;
   double lightOutErr = 0;
   double lightOutAv = 0;
@@ -419,7 +420,7 @@ bool SFLightOutput::CalculateLightCol(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  PeakParams peak_par;
+  SFPeakParams peak_par;
   double lightCol = 0;
   double lightColErr = 0;
   double lightColAv = 0;

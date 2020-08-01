@@ -19,9 +19,11 @@
 #include "SFAttenuation.hh"
 #include <iostream>
 
-/// Structure containing numerical results of energy resolution analysis.
-struct EnergyResResults{
-    
+/// Structure containing numerical results of the 
+/// energy resolution analysis.
+
+struct SFEnergyResResults
+{
     double fEnergyResCh0    = -1; ///< Energy resolution of channel 0
     double fEnergyResCh0Err = -1; ///< Uncertainty of energy resolution of channel 0
     
@@ -63,7 +65,8 @@ struct EnergyResResults{
 /// Numerical results of the anaylis are stored in fResults structure (EnergyResResults 
 /// type object) and are accesible via dedicated function. 
 
-class SFEnergyRes: public TObject{
+class SFEnergyRes: public TObject
+{
  
 private:
   int     fSeriesNo; ///< Number of experimental series to be analyzed
@@ -81,7 +84,7 @@ private:
   std::vector <TH1D*> fPeaksCh1;     ///< Vector containing spectra after background subtraction (currently not used)
   std::vector <TH1D*> fPeaksAve;     ///< Vector containing spectra after background subtraction (currently not used)
   
-  EnergyResResults fResults;         ///< Structure containing numerical results od analysis
+  SFEnergyResResults fResults;         ///< Structure containing numerical results od analysis
   
 public:
   SFEnergyRes(int seriesNo);
@@ -91,7 +94,7 @@ public:
   bool CalculateEnergyRes(void);
   
   /// Returns structure fResults numerical results of the energy resolution anaalysis 
-  EnergyResResults     GetResults(void) { return fResults; };
+  SFEnergyResResults   GetResults(void) { return fResults; };
   TGraphErrors*        GetEnergyResolutionGraph(void);
   TGraphErrors*        GetEnergyResolutionGraph(int ch);
   std::vector <TH1D*>  GetSpectra(int ch);

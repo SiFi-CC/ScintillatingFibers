@@ -17,14 +17,10 @@
 #include "SFTools.hh"
 #include <iostream>
 
-/// Class to determine timing resolution. Two methods available: "no cut" - cut imposed only
-/// on scattered events, "with cut" - cut imposed on scattered events and additional energy 
-/// cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions
-/// and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. 
-/// IMPORTANT: timing resolution is determined as FWHM of lorentzian and gaussian functions
-/// fitted to the ch_0.fT0-ch_1.fT0 distributions.
+/// Structure containig numerical results of the
+/// timing resolution analysis.
 
-struct TimingResResults{
+struct SFTimingResResults{
     
     double fTimeRes    = -1;
     double fTimeResErr = -1;
@@ -38,6 +34,13 @@ struct TimingResResults{
     std::vector <double> fTimeResECutAll;
     std::vector <double> fTimeResECutAllErr;
 };
+
+/// Class to determine timing resolution. Two methods available: "no cut" - cut imposed only
+/// on scattered events, "with cut" - cut imposed on scattered events and additional energy 
+/// cut on 511 keV peak. Results are returned as vectors containig numerical timing resolutions
+/// and in a form of graph: mean of ch_0.T0-ch_1.T0 distribution vs. source position. 
+/// IMPORTANT: timing resolution is determined as FWHM of lorentzian and gaussian functions
+/// fitted to the ch_0.fT0-ch_1.fT0 distributions.
 
 class SFTimingRes : public TObject{
  
@@ -54,7 +57,7 @@ private:
   TGraphErrors *fTResGraph;        
   TGraphErrors *fTResECutGraph;
   
-  TimingResResults fResults;
+  SFTimingResResults fResults;
 
   bool LoadRatios(void);
   
@@ -70,7 +73,7 @@ public:
   std::vector <TH1D*>  GetSpectra(int ch);
   std::vector <TH1D*>  GetT0Diff(bool type);
   TGraphErrors*        GetTimingResGraph(bool type);
-  TimingResResults     GetResults(void) { return fResults; };
+  SFTimingResResults   GetResults(void) { return fResults; };
 
   ClassDef(SFTimingRes,1)
 };

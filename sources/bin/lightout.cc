@@ -94,7 +94,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightOutCh0 = lout->GetLightOutputGraph(0);
   TGraphErrors *gLightOutCh1 = lout->GetLightOutputGraph(1);
   TGraphErrors *gLightOut    = lout->GetLightOutputGraph();
-  LightResults LOresults     = lout->GetLOResults();
+  SFLightResults LOresults   = lout->GetLOResults();
   std::vector <TH1D*>  specCh0 = lout->GetSpectra(0);
   std::vector <TH1D*>  specCh1 = lout->GetSpectra(1);
   
@@ -106,7 +106,7 @@ int main(int argc, char **argv){
   TGraphErrors *gLightColCh0 = lout->GetLightColGraph(0);
   TGraphErrors *gLightColCh1 = lout->GetLightColGraph(1);
   TGraphErrors *gLightCol    = lout->GetLightColGraph();
-  LightResults LCresults     = lout->GetLCResults();
+  SFLightResults LCresults   = lout->GetLCResults();
   
   //----- drawing
   TLatex text;

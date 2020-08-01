@@ -14,7 +14,7 @@
 #include "TGraphErrors.h"
 #include "TH1D.h"
 #include "TTree.h"
-#include "DDSignal.hh"
+#include "SDDSamples.h"
 #include "SFData.hh"
 #include "SFTools.hh"
 #include "SFPeakFinder.hh"

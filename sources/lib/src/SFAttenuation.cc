@@ -20,12 +20,14 @@ SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
                                             fAttnGraph(nullptr),
                                             fSigmaGraph(nullptr),
                                             fAttnGraphCh0(nullptr),
-                                            fAttnGraphCh1(nullptr) {
-  
-  try{
+                                            fAttnGraphCh1(nullptr) 
+{  
+  try
+  {
     fData = new SFData(fSeriesNo);
   }
-  catch(const char *message){
+  catch(const char *message)
+  {
     std::cerr << message << std::endl;
     throw "##### Exception in SFAttenuation constructor!";
   }
@@ -38,8 +40,8 @@ SFAttenuation::SFAttenuation(int seriesNo): fSeriesNo(seriesNo),
 }
 //------------------------------------------------------------------
 /// Default destructor.
-SFAttenuation::~SFAttenuation(){
-    
+SFAttenuation::~SFAttenuation()
+{
   if(fData!=nullptr) 
      delete fData;
 }
@@ -47,8 +49,8 @@ SFAttenuation::~SFAttenuation(){
 /// Method to determine attenuation length used in Pauwels et al., JINST 8 (2013) P09019.
 /// For both ends of the fiber one value is calculated, since combined signal from both channels
 /// is taken into account.
-bool SFAttenuation::AttAveragedCh(void){
- 
+bool SFAttenuation::AttAveragedCh(void)
+{
   std::cout << "\n----- Inside SFAttenuation::AttAveragedCh() for series " << fSeriesNo << std::endl;
   
   int npoints = fData->GetNpoints();
@@ -56,11 +58,12 @@ bool SFAttenuation::AttAveragedCh(void){
   TString testBench = fData->GetTestBench();
   TString sipm = fData->GetSiPM();
   std::vector <double> positions = fData->GetPositions();
-  TString cut =  "ch_0.fPE>0 && ch_1.fPE>0 && ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590";
+
+  double s = SFTools::GetSigmaBL(sipm);
+  std::vector <double> sigmas = {s, s};
+  TString cut = SFDrawCommands::GetCut(SFCutType::CombCh0Ch1, sigmas);
   fRatios = fData->GetCustomHistograms(SFSelectionType::LogSqrtPERatio, cut);
-  
-  double mean, sigma;
-  double fit_min, fit_max;
+
   std::vector <TF1*> fun;
   
   TString gname = Form("att_s%i", fSeriesNo);
@@ -84,9 +87,10 @@ bool SFAttenuation::AttAveragedCh(void){
   double const_2 = 0;
   TString fun_name = "";
   
-  for(int i=0; i<npoints; i++){
-      
-    if(collimator.Contains("Lead")){
+  for(int i=0; i<npoints; i++)
+  {
+    if(collimator.Contains("Lead"))
+    {
       SFTools::RatiosFitDoubleGauss(fRatios, 5);
       fun_name = "fDGauss";
       const_1 = fRatios[i]->GetFunction(fun_name)->GetParameter(0);
@@ -96,7 +100,8 @@ bool SFAttenuation::AttAveragedCh(void){
       else 
           parNo = 4;
     }
-    else if(collimator.Contains("Electronic") && sipm.Contains("SensL")){
+    else if(collimator.Contains("Electronic") && sipm.Contains("SensL"))
+    {
       SFTools::RatiosFitDoubleGauss(fRatios, 2);
       fun_name = "fDGauss";
       const_1 = fRatios[i]->GetFunction(fun_name)->GetParameter(0);
@@ -106,7 +111,8 @@ bool SFAttenuation::AttAveragedCh(void){
       else 
           parNo = 4;
     }
-    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu")){
+    else if(collimator.Contains("Electronic") && sipm.Contains("Hamamatsu"))
+    {
       SFTools::RatiosFitGauss(fRatios, 1);
       fun_name = "fGauss";
       parNo = 1;
@@ -136,16 +142,16 @@ bool SFAttenuation::AttAveragedCh(void){
   return true;
 }
 //------------------------------------------------------------------
-double myPol3(double *x, double *par){
-    
+double myPol3(double *x, double *par)
+{    
   //double xx = (x[0]-par[3]);  
   //double f = par[0] + par[1]*(xx + par[2]*pow(xx,3));
   double f = par[0] + par[1]*(x[0] + par[2]*pow(x[0],3)); 
   return f;  
 }
 //------------------------------------------------------------------
-bool SFAttenuation::Fit1stOrder(void){
-    
+bool SFAttenuation::Fit1stOrder(void)
+{    
   if(fAttnGraph==nullptr)
       AttAveragedCh();
   
@@ -161,8 +167,8 @@ bool SFAttenuation::Fit1stOrder(void){
     
 }
 //------------------------------------------------------------------
-bool SFAttenuation::Fit3rdOrder(void){
-    
+bool SFAttenuation::Fit3rdOrder(void)
+{    
   if(fAttnGraph==nullptr)
       AttAveragedCh();
   
@@ -193,16 +199,26 @@ bool SFAttenuation::Fit3rdOrder(void){
 /// series was measured with electronic collimator - FindPeakFit() method
 /// of the SFPeakFinder class is used.
 /// \param ch - channel number
-bool SFAttenuation::AttSeparateCh(int ch){
- 
+bool SFAttenuation::AttSeparateCh(int ch)
+{
   std::cout << "\n----- Inside SFAttenuation::AttSeparateCh() for series " << fSeriesNo << std::endl;
   std::cout << "----- Analyzing channel " << ch << std::endl;
   
   int npoints = fData->GetNpoints();
   TString collimator = fData->GetCollimator();
   TString testBench = fData->GetTestBench();
+  TString sipm = fData->GetSiPM();
   std::vector <double> positions = fData->GetPositions();
-  TString cut = Form("ch_%i.fT0>0 && ch_%i.fT0<590 && ch_%i.fPE>0", ch, ch, ch);
+  
+  TString cut = "";
+  double s = SFTools::GetSigmaBL(sipm);
+  std::vector <double> sigma = {s};
+  
+  if (ch==0)
+      cut = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigma);
+  else if (ch==1)
+      cut = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigma);
+  
   std::vector <TH1D*> spectra = fData->GetSpectra(ch, SFSelectionType::PE, cut);
   
   TString gname = Form("att_s%i_ch%i", fSeriesNo, ch);
@@ -214,12 +230,13 @@ bool SFAttenuation::AttSeparateCh(int ch){
   graph->SetMarkerStyle(4);
   
   std::vector <SFPeakFinder*> peakfin;
-  PeakParams peakParams;
+  SFPeakParams peakParams;
   
   //TString fname = Form("/home/kasia/S%ich%i.txt", fSeriesNo, ch);
   //std::ofstream output(fname);
   
-  for(int i=0; i<npoints; i++){
+  for(int i=0; i<npoints; i++)
+  {
     peakfin.push_back(new SFPeakFinder(spectra[i], false));
     peakfin[i]->FindPeakFit();
     peakParams = peakfin[i]->GetParameters();
@@ -239,13 +256,15 @@ bool SFAttenuation::AttSeparateCh(int ch){
   
   std::cout << "\n\tAttenuation for channel "<< ch << ": " << attenuation << " +/- " << att_error << " mm\n" << std::endl;
   
-  if(ch==0){
+  if(ch==0)
+  {
     fResults.fAttCh0    = attenuation;
     fResults.fAttCh0Err = att_error;
     fSpectraCh0   = spectra;
     fAttnGraphCh0 = graph;
   }
-  else if(ch==1){
+  else if(ch==1)
+  {
     fResults.fAttCh1    = attenuation;
     fResults.fAttCh1Err = att_error;
     fSpectraCh1   = spectra;
@@ -258,7 +277,8 @@ bool SFAttenuation::AttSeparateCh(int ch){
 ///Returns attenuation graph created in averaged channels method i.e. AttAveragedCh().
 TGraphErrors* SFAttenuation::GetAttGraph(void){
     
-  if(fAttnGraph==nullptr){
+  if(fAttnGraph==nullptr)
+  {
     std::cerr << "##### Error in SFAttenuation::GetAttGraph(). Empty pointer!" << std::endl;
     std::abort();
   }
@@ -267,8 +287,8 @@ TGraphErrors* SFAttenuation::GetAttGraph(void){
 //------------------------------------------------------------------
 ///Returns attenuation graph for requested channel ch. Graph produced 
 ///with separate channels method - AttSeparateCh().
-TGraphErrors* SFAttenuation::GetAttGraph(int ch){
-    
+TGraphErrors* SFAttenuation::GetAttGraph(int ch)
+{
    if((ch==0 && fAttnGraphCh0==nullptr) || (ch==1 && fAttnGraphCh1==nullptr)){
      std::cerr << "##### Error in SFAttenuation::GetAttnGraph(int). Empty pointer!" << std::endl;
      std::abort();
@@ -277,8 +297,8 @@ TGraphErrors* SFAttenuation::GetAttGraph(int ch){
    else if(ch==1) return fAttnGraphCh1;
 }
 //------------------------------------------------------------------
-TGraphErrors* SFAttenuation::GetSigmaGraph(void){
-    
+TGraphErrors* SFAttenuation::GetSigmaGraph(void)
+{
   if(fSigmaGraph==nullptr){
     std::cerr << "##### Error in SFAttenuation::GetSigmaGraph(). Empty pointer!" << std::endl;
     std::abort();
@@ -289,8 +309,8 @@ TGraphErrors* SFAttenuation::GetSigmaGraph(void){
 ///Returns vector containing PE spectra used in determination of attenuation
 ///length with separate channels method i.e. AttSeparateCh().
 ///\param ch - channel number
-std::vector <TH1D*> SFAttenuation::GetSpectra(int ch){
-    
+std::vector <TH1D*> SFAttenuation::GetSpectra(int ch)
+{
   if((ch==0 && fSpectraCh0.empty()) || (ch==1 && fSpectraCh1.empty())){
     std::cerr << "##### Error in SFAttenuation::GetSpectra(). Empty vector!" << std::endl;
     std::abort();
@@ -303,8 +323,8 @@ std::vector <TH1D*> SFAttenuation::GetSpectra(int ch){
 ///SFPeakFinder class) used in determination of attenuation length with separate
 ///channels method i.e. AttSeparateCh(). 
 ///\param ch - channel number.
-std::vector <TH1D*> SFAttenuation::GetPeaks(int ch){
-    
+std::vector <TH1D*> SFAttenuation::GetPeaks(int ch)
+{
   if((ch==0 && fPeaksCh0.empty()) || (ch==1 && fPeaksCh1.empty())){
     std::cerr << "##### Error in SFAttenuation::GetPeaks(). Empty vector!" << std::endl;
     std::abort();
@@ -315,8 +335,8 @@ std::vector <TH1D*> SFAttenuation::GetPeaks(int ch){
 //------------------------------------------------------------------
 ///Returns vector containing histograms with signal ratios from both channels. 
 ///Histograms are used during averaged channels analysis i.e. in AttAveragedCh().
-std::vector <TH1D*> SFAttenuation::GetRatios(void){
-    
+std::vector <TH1D*> SFAttenuation::GetRatios(void)
+{
   if(fRatios.empty()){
     std::cerr << "#### Error in SFAttenuation::GetRatios(). Empty vector!" << std::endl;
     std::abort();
@@ -325,7 +345,8 @@ std::vector <TH1D*> SFAttenuation::GetRatios(void){
 }
 //------------------------------------------------------------------
 ///Prints details of SFAttenuation class object.
-void SFAttenuation::Print(void){
+void SFAttenuation::Print(void)
+{
  std::cout << "\n-------------------------------------------" << std::endl;
  std::cout << "This is print out of SFAttenuation class object" << std::endl;
  std::cout << "Experimental series number " << fSeriesNo << std::endl;

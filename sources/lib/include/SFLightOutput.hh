@@ -23,16 +23,19 @@
 #include "SFAttenuation.hh"
 #include <iostream>
 
-struct LightResults{
+/// Structure containing numerical results of the 
+/// light output and light collection analysis.
+
+struct SFLightResults{
     
-    double fRes    = -1;
-    double fResErr = -1;
+    double fRes    = -1;     ///< Result (LO/LC) for summed channels
+    double fResErr = -1;     ///< Uncertainty of the result for summed channel
     
-    double fResCh0    = -1;
-    double fResCh0Err = -1;
-    
-    double fResCh1    = -1;
-    double fResCh1Err = -1;
+    double fResCh0    = -1;  ///< Result (LO/LC) for channel 0 
+    double fResCh0Err = -1;  ///< Uncertainty of the result for channel 0
+     
+    double fResCh1    = -1;  ///< Result (LO/LC) for channel 1
+    double fResCh1Err = -1;  ///< Uncertainty of the result for channel 1
 };
 
 class SFLightOutput : public TObject{
@@ -60,8 +63,8 @@ private:
     SFData        *fData;
     SFAttenuation *fAtt;
     
-    LightResults fLightOutResults;
-    LightResults fLightColResults;
+    SFLightResults fLightOutResults;
+    SFLightResults fLightColResults;
     
 public:
   SFLightOutput(int seriesNo);
@@ -76,9 +79,9 @@ public:
   double GetCrossTalk(void);
   double GetPDE(void);
   
-  LightResults GetLOResults(void) { return fLightOutResults; };
-  LightResults GetLCResults(void) { return fLightColResults; };
-  TCanvas*     GetInputData(void) { return fInputData; };
+  SFLightResults GetLOResults(void) { return fLightOutResults; };
+  SFLightResults GetLCResults(void) { return fLightColResults; };
+  TCanvas*       GetInputData(void) { return fInputData; };
   
   TGraphErrors*        GetLightOutputGraph(void);
   TGraphErrors*        GetLightOutputGraph(int ch);

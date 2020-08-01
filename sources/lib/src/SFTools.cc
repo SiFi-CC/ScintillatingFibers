@@ -220,6 +220,25 @@ double SFTools::GetPosError(TString collimator, TString testBench){
   return err;
 }
 //------------------------------------------------------------------
+double SFTools::GetSigmaBL(TString SiPM){
+    
+    double sigBL = -1.;
+    
+    if(SiPM == "Hamamatsu"){
+        sigBL = 5.; //for all materials
+    }
+    else if(SiPM == "SensL"){
+        sigBL = 12; // for LYSO:Ce 
+    }
+    else{
+        std::cerr << "##### Error in SFTools::GetSigmaBL()" << std::endl;
+        std::cerr << "Incorrect SiPM: " << SiPM << std::endl;
+        std::abort();
+    }
+    
+    return sigBL;
+}
+//------------------------------------------------------------------
 void SFTools::CheckDBStatus(int status, sqlite3 *database){
   
   if(!((status==SQLITE_OK) || (status==SQLITE_DONE))){
@@ -470,7 +489,7 @@ TString SFTools::FindData(TString directory){
   
   TString path_3 = "/media/kasia/Maxtor/data/" + directory;
   
-  if(! gSystem->AccessPathName(path_3+"/results.root")){
+  if(! gSystem->AccessPathName(path_3+"/sifi_results.root")){
     return path_3;
   }
   

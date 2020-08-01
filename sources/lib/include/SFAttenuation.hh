@@ -17,22 +17,22 @@
 #include "SFPeakFinder.hh"
 #include <iostream>
 
-/// Structure containing numerical results of attenuation
-/// length analysis.
+/// Structure containing numerical results of the
+/// attenuation length analysis.
 
-struct AttenuationResults{
+struct SFAttenuationResults
+{
+    double fAttCombPol1    = -1; ///< Attenuation length determined with combined channels method and 1st degree polynomial fit
+    double fAttCombPol1Err = -1; ///< Uncertainty of fAttCombPol1
     
-    double fAttCombPol1    = -1;   ///< Attenuation length determined with combined channels method and 1st degree polynomial fit
-    double fAttCombPol1Err = -1;   ///< Uncertainty of fAttCombPol1
+    double fAttCombPol3    = -1; ///< Attenuation length determined with combined channels method and 3rd degree polynomial fit
+    double fAttCombPol3Err = -1; ///< Uncertainty of fAttCombPol3
     
-    double fAttCombPol3    = -1;   ///< Attenuation length determined with combined channels method and 3rd degree polynomial fit
-    double fAttCombPol3Err = -1;   ///< Uncertainty of fAttCombPol3
+    double fAttCh0    = -1;      ///< Attenuation length of channel 0
+    double fAttCh0Err = -1;      ///< Uncertainty of fAttCh0
     
-    double fAttCh0    = -1;   ///< Attenuation length of channel 0
-    double fAttCh0Err = -1;   ///< Uncertainty of fAttCh0
-    
-    double fAttCh1    = -1;   ///< Attenuation length of channel 1
-    double fAttCh1Err = -1;   ///< Uncertainty of fAttCh1
+    double fAttCh1    = -1;      ///< Attenuation length of channel 1
+    double fAttCh1Err = -1;      ///< Uncertainty of fAttCh1
 };
 
 /// Class to determine attenuation length. This class is suitable only for experimental 
@@ -44,8 +44,8 @@ struct AttenuationResults{
 class SFAttenuation : public TObject{
  
 private:
-  int                 fSeriesNo;       ///< Number of experimental series to be analyzed
-  SFData*             fData;           ///< SFData object of the analyzed series
+  int                 fSeriesNo;    ///< Number of experimental series to be analyzed
+  SFData*             fData;        ///< SFData object of the analyzed series
   
   std::vector <TH1D*> fRatios;      ///< Vector containing histograms of ln(M_LR) distributions
   std::vector <TH1D*> fSpectraCh0;  ///< Vector containing charge spectra from channel 0
@@ -58,7 +58,7 @@ private:
   TGraphErrors *fAttnGraphCh0;      ///< Attenuation graph for channel 0
   TGraphErrors *fAttnGraphCh1;      ///< Attenuation graph for channel 1
   
-  AttenuationResults fResults;      ///< Results of attenuation analysis
+  SFAttenuationResults fResults;    ///< Results of attenuation analysis
   
   public:
   SFAttenuation(int seriesNo);
@@ -77,7 +77,7 @@ private:
   std::vector <TH1D*>  GetPeaks(int ch);
   std::vector <TH1D*>  GetRatios(void);
   
-  AttenuationResults   GetResults(void) { return fResults; };
+  SFAttenuationResults GetResults(void) { return fResults; };
   
   void Print(void);
   

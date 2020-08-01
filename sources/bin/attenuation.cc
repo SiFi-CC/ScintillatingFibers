@@ -20,8 +20,8 @@
 #include <sys/stat.h> 
 #include <sys/types.h> 
 
-int main(int argc, char **argv){
-    
+int main(int argc, char **argv)
+{
   TString outdir;
   TString dbase;
   int seriesNo = -1;
@@ -30,26 +30,30 @@ int main(int argc, char **argv){
   if(ret != 0) 
     exit(ret);
 
-  if(argc<2){
+  if(argc<2)
+  {
     std::cout << "to run type: ./attenuation seriesNo";
     std::cout << "-out path/to/output -db database" << std::endl;
     return 1;
   }
  
   SFData *data;
-  try{
+  try
+  {
     data = new SFData(seriesNo);
   }
-  catch(const char* message){
-   std::cerr << message << std::endl;
-   std::cerr << "##### Exception in attenuation.cc!" << std::endl;
-   return 1;
+  catch(const char* message)
+  {
+    std::cerr << message << std::endl;
+    std::cerr << "##### Exception in attenuation.cc!" << std::endl;
+    return 1;
   }
  
   data->Print();
  
   TString desc = data->GetDescription();
-  if(!desc.Contains("Regular series")){
+  if(!desc.Contains("Regular series"))
+  {
     std::cerr << "##### Error in attenuation.cc! This is not regular series!" << std::endl;
     std::cerr << "Series number: " << seriesNo << std::endl;
     std::cout << "Description: " << desc << std::endl;
@@ -64,10 +68,12 @@ int main(int argc, char **argv){
   data->Print();
   
   SFAttenuation *att;
-  try{
+  try
+  {
     att = new SFAttenuation(seriesNo);
   }
-  catch(const char* message){
+  catch(const char* message)
+  {
     std::cerr << message << std::endl;
     std::cerr << "##### Exception in attenuation.cc!" << std::endl;
     return 1;
@@ -99,7 +105,7 @@ int main(int argc, char **argv){
   std::vector <TH1D*> spectraCh1 = att->GetSpectra(1);
 
   //----- numeric results
-  AttenuationResults results = att->GetResults();
+  SFAttenuationResults results = att->GetResults();
   
   //-----drawing averaged channels
   TLatex text;
@@ -132,6 +138,7 @@ int main(int argc, char **argv){
   can_averaged_ch->cd(2);
   gPad->SetGrid(1,1);
   attGraphPol3->SetTitle(Form("Series %i, attenuation curve", seriesNo));
+  attGraphPol3->GetFunction("fpol1")->Delete();
   attGraphPol3->GetFunction("fpol1")->Delete();
   attGraphPol3->GetYaxis()->SetTitleOffset(1.2);
   attGraphPol3->Draw("AP");
@@ -167,7 +174,8 @@ int main(int argc, char **argv){
   TF1 *fthick = new TF1("fthick", "gaus", -1, 1);
   text.SetTextSize(0.045);
   
-  for(int i=0; i<npoints; i++){
+  for(int i=0; i<npoints; i++)
+  {
    can_ratios->cd(i+1);
    gPad->SetGrid(1,1);
    attRatios[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm", positions[i]));
@@ -175,7 +183,8 @@ int main(int argc, char **argv){
    attRatios[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
    attRatios[i]->Draw();
    if((collimator=="Lead") || 
-      (collimator=="Electronic" && sipm=="SensL")){
+      (collimator=="Electronic" && sipm=="SensL"))
+   {
      fun = attRatios[i]->GetFunction("fDGauss");
      fthin->SetParameters(fun->GetParameter(0),
                           fun->GetParameter(1),
@@ -191,7 +200,8 @@ int main(int argc, char **argv){
      text.DrawLatex(0.2, 0.75, Form("B = %.4f", fun->GetParameter(1)));
      text.DrawLatex(0.2, 0.70, Form("S = %.4f", fun->GetParameter(4)));
    }
-   else if(collimator=="Electronic" && sipm=="Hamamatsu"){
+   else if(collimator=="Electronic" && sipm=="Hamamatsu")
+   {
      fun = attRatios[i]->GetFunction("fGauss");
      fun_clone->SetParameters(fun->GetParameter(0),
                               fun->GetParameter(1),
@@ -243,7 +253,8 @@ int main(int argc, char **argv){
   TCanvas *can_spectra_ch1 = new TCanvas("att_spectra_ch1", "att_spectra_ch1", 2000, 1200);
   can_spectra_ch1->DivideSquare(npoints);
   
-  for(int i=0; i<npoints; i++){
+  for(int i=0; i<npoints; i++)
+  {
    can_spectra_ch0->cd(i+1);
    gPad->SetGrid(1,1);
    spectraCh0[i]->SetStats(false);
@@ -271,14 +282,14 @@ int main(int argc, char **argv){
   }
   
   //----- saving
-  
   TString fname = Form("attenuation_series%i.root", seriesNo);
   TString fname_full = outdir + "/" + fname;
   TString dbname_full = outdir + "/" + dbase;
   
   TFile *file = new TFile(fname_full, "RECREATE");
 
-  if(!file->IsOpen()){
+  if(!file->IsOpen())
+  {
     std::cerr << "##### Error in attenuation.cc!" << std::endl;
     std::cerr << "Couldn't open file: " << fname_full << std::endl;
     return 1;

@@ -36,8 +36,13 @@ SFStabilityMon::SFStabilityMon(int seriesNo): fSeriesNo(seriesNo),
     throw "##### Exception in SFStabilityMon constructor!";
   }
   
-  fSpecCh0 = fData->GetSpectra(0, SFSelectionType::PE, "ch_0.fPE>0 && ch_0.fT0>0");
-  fSpecCh1 = fData->GetSpectra(1, SFSelectionType::PE, "ch_1.fPE>0 && ch_1.fT0>0");
+  double s = SFTools::GetSigmaBL(fData->GetSiPM());
+  std::vector <double> sigma = {s};
+  TString cutCh0 = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigma);
+  TString cutCh1 = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigma);
+  
+  fSpecCh0 = fData->GetSpectra(0, SFSelectionType::PE, cutCh0);
+  fSpecCh1 = fData->GetSpectra(1, SFSelectionType::PE, cutCh1);
                                                   
 }
 //------------------------------------------------------------------
@@ -55,7 +60,7 @@ bool SFStabilityMon::AnalyzeStability(int ch){
     
   std::vector <SFPeakFinder*> peakFin;
   std::vector <TH1D*> spec;
-  PeakParams  peakParams;
+  SFPeakParams  peakParams;
   std::vector <double> peakPositions;
   
   if(ch==0)

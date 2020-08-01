@@ -19,12 +19,18 @@
 #include <TPaveStats.h>
 #include <TStyle.h>
 #include <TF1.h>
+#include <TApplication.h>
 
 #include <sys/stat.h> 
 #include <sys/types.h> 
 
+//extern const double ampMax;
+const double ampMax = 660;
+
 int main(int argc, char **argv){
     
+  TApplication app("app", &argc, argv);
+
   TString outdir;
   TString dbase;
   int seriesNo = -1;
@@ -77,32 +83,53 @@ int main(int argc, char **argv){
   //gStyle->SetPalette(53);
   
   //----- accessing spectra
-  std::vector <TH1D*> hAmpCh0 = data->GetSpectra(0, SFSelectionType::Amplitude, "");
-  std::vector <TH1D*> hAmpCh1 = data->GetSpectra(1, SFSelectionType::Amplitude, "");
+  double s = SFTools::GetSigmaBL(data->GetSiPM());
+  std::vector <double> sigma = {s, s};
   
-  std::vector <TH1D*> hChargeCh0 = data->GetSpectra(0, SFSelectionType::PE, "ch_0.fPE>0");
-  std::vector <TH1D*> hChargeCh1 = data->GetSpectra(1, SFSelectionType::PE, "ch_1.fPE>0");
+  TString cutCh0    = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigma);
+  TString cutCh1    = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigma);
+  TString cutCh2    = SFDrawCommands::GetCut(SFCutType::SpecCh2, sigma);
+  TString cutCh0Ch1 = SFDrawCommands::GetCut(SFCutType::CombCh0Ch1, sigma);
+  TString cutCh0A   = SFDrawCommands::GetCut(SFCutType::SpecCh0A, sigma);
+  TString cutCh1A   = SFDrawCommands::GetCut(SFCutType::SpecCh1A, sigma);
+  TString cutBLCh0  = SFDrawCommands::GetCut(SFCutType::BLCh0);
+  TString cutBLCh1  = SFDrawCommands::GetCut(SFCutType::BLCh1);
+  TString cutBLCh2  = SFDrawCommands::GetCut(SFCutType::BLCh2);
+  
+  std::vector <TH1D*> hAmpCh0 = data->GetSpectra(0, SFSelectionType::Amplitude, cutCh0A);
+  std::vector <TH1D*> hAmpCh1 = data->GetSpectra(1, SFSelectionType::Amplitude, cutCh1A);
+  
+  std::vector <TH1D*> hChargeCh0 = data->GetSpectra(0, SFSelectionType::PE, cutCh0);
+  std::vector <TH1D*> hChargeCh1 = data->GetSpectra(1, SFSelectionType::PE, cutCh1);
    
-  std::vector <TH1D*> hT0Ch0 = data->GetSpectra(0, SFSelectionType::T0, "ch_0.fT0>0");
-  std::vector <TH1D*> hT0Ch1 = data->GetSpectra(1, SFSelectionType::T0, "ch_1.fT0>0");
+  std::vector <TH1D*> hT0Ch0 = data->GetSpectra(0, SFSelectionType::T0, cutCh0);
+  std::vector <TH1D*> hT0Ch1 = data->GetSpectra(1, SFSelectionType::T0, cutCh1);
   
-  std::vector <TH1D*> hTOTCh0 = data->GetSpectra(0, SFSelectionType::TOT, "ch_0.fTOT>0");
-  std::vector <TH1D*> hTOTCh1 = data->GetSpectra(1, SFSelectionType::TOT, "ch_1.fTOT>0");
+  std::vector <TH1D*> hTOTCh0 = data->GetSpectra(0, SFSelectionType::TOT, cutCh0);
+  std::vector <TH1D*> hTOTCh1 = data->GetSpectra(1, SFSelectionType::TOT, cutCh1);
   
-  std::vector <TH2D*> hCorrAmp = data->GetCorrHistograms(SFSelectionType::AmplitudeCorrelation, "");
-  std::vector <TH2D*> hCorrPE  = data->GetCorrHistograms(SFSelectionType::PECorrelation, "ch_0.fPE>0 && ch_1.fPE>0");
-  std::vector <TH2D*> hCorrT0  = data->GetCorrHistograms(SFSelectionType::T0Correlation, "ch_0.fT0>0 && ch_1.fT0>0");
-  std::vector <TH2D*> hAmpPECh0 = data->GetCorrHistograms(SFSelectionType::AmpPECorrelation, "ch_0.fPE>0", 0);
-  std::vector <TH2D*> hAmpPECh1 = data->GetCorrHistograms(SFSelectionType::AmpPECorrelation, "ch_1.fPE>0", 1);
+  std::vector <TH1D*> hBLCh0 = data->GetSpectra(0, SFSelectionType::BL, cutBLCh0);
+  std::vector <TH1D*> hBLCh1 = data->GetSpectra(1, SFSelectionType::BL, cutBLCh1);
+  std::vector <TH1D*> hBLCh2 = data->GetSpectra(2, SFSelectionType::BL, cutBLCh2);
+  
+  std::vector <TH1D*> hBLSigmaCh0 = data->GetSpectra(0, SFSelectionType::BLSigma, cutBLCh0);
+  std::vector <TH1D*> hBLSigmaCh1 = data->GetSpectra(1, SFSelectionType::BLSigma, cutBLCh1);
+  std::vector <TH1D*> hBLSigmaCh2 = data->GetSpectra(2, SFSelectionType::BLSigma, cutBLCh2);
+  
+  std::vector <TH2D*> hCorrAmp = data->GetCorrHistograms(SFSelectionType::AmplitudeCorrelation, cutCh0Ch1);
+  std::vector <TH2D*> hCorrPE  = data->GetCorrHistograms(SFSelectionType::PECorrelation, cutCh0 + " && " + cutCh1);
+  std::vector <TH2D*> hCorrT0  = data->GetCorrHistograms(SFSelectionType::T0Correlation, cutCh0Ch1);
+  std::vector <TH2D*> hAmpPECh0 = data->GetCorrHistograms(SFSelectionType::AmpPECorrelation, cutCh0, 0);
+  std::vector <TH2D*> hAmpPECh1 = data->GetCorrHistograms(SFSelectionType::AmpPECorrelation, cutCh1, 1);
   
   std::vector <TH1D*> hChargeCh2;
   std::vector <TH2D*> hChargeCh0Ch2;
   std::vector <TH2D*> hChargeCh1Ch2;
   
   if(collimator.Contains("Electronic")){
-    hChargeCh2 = data->GetSpectra(2, SFSelectionType::Charge, "ch_2.fCharge>0"); 
-    hChargeCh0Ch2 = data->GetCorrHistograms(SFSelectionType::PEvsPEch2Correlation, "", 0);
-    hChargeCh1Ch2 = data->GetCorrHistograms(SFSelectionType::PEvsPEch2Correlation, "", 1);
+    hChargeCh2 = data->GetSpectra(2, SFSelectionType::Charge, cutCh2); 
+    hChargeCh0Ch2 = data->GetRefCorrHistograms(0);
+    hChargeCh1Ch2 = data->GetRefCorrHistograms(1);
   }
   
   //----- accessing signals
@@ -118,7 +145,7 @@ int main(int argc, char **argv){
     hSigCh1[i]          = data->GetSignal(1, measurementsIDs[2], "", number, true);
     hSigCh1[i+(nsig/2)] = data->GetSignal(1, measurementsIDs[npoints-1], "", number, true);
   }
-  
+
   const int nsigav = 3;
   std::vector <TProfile*> hSigAvCh0(nsigav);
   std::vector <TProfile*> hSigAvCh1(nsigav);
@@ -155,7 +182,7 @@ int main(int argc, char **argv){
                                         PE[1]-0.5, PE[1]+0.5), 20, true);
   hSigAvCh0[2] = data->GetSignalAverage(0, ID, Form("ch_0.fPE>%f && ch_0.fPE<%f", 
                                         PE[2]-0.5, PE[2]+0.5), 20, true); 
-  
+
   hSigAvCh1[0] = data->GetSignalAverage(1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
                                         PE[0]-0.5, PE[0]+0.5), 20, true);
   hSigAvCh1[1] = data->GetSignalAverage(1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", 
@@ -175,6 +202,12 @@ int main(int argc, char **argv){
   
   TCanvas *can_tot = new TCanvas("data_tot", "data_tot", 2000, 1200);
   can_tot->DivideSquare(npoints);
+  
+  TCanvas *can_bl = new TCanvas("data_bl", "can_bl", 2000, 1200);
+  can_bl->Divide(npoints, 3);
+  
+  TCanvas *can_bls = new TCanvas("data_bls", "data_bls", 2000, 1200);
+  can_bls->Divide(npoints, 3);
   
   TCanvas *can_ampl_corr = new TCanvas("data_ampl_corr", "data_ampl_corr", 2000, 1200);
   can_ampl_corr->DivideSquare(npoints);
@@ -233,6 +266,10 @@ int main(int argc, char **argv){
   
   TF1 *fdiag; 
   
+  TLine line;
+  line.SetLineColor(kRed);
+  line. SetLineStyle(9);
+  
   for(int i=0; i<npoints; i++){
     can_ampl->cd(i+1);
     gPad->SetGrid(1,1);
@@ -256,6 +293,7 @@ int main(int argc, char **argv){
     hAmpCh1[i]->SetStats(false);
     hAmpCh0[i]->Draw();
     hAmpCh1[i]->Draw("same");
+    line.DrawLine(ampMax, ctx.y.min, ampMax, ctx.y.max);
     textCh0.DrawLatex(0.3, 0.8, stringCh0);
     textCh1.DrawLatex(0.3, 0.75, stringCh1);
     
@@ -375,6 +413,38 @@ int main(int argc, char **argv){
     textCh0.DrawLatex(0.4, 0.8, stringCh0);
     textCh1.DrawLatex(0.4, 0.75, stringCh1);
     
+    can_bl->cd(i+1);
+    gPad->SetGrid(1,1);
+    hBLCh0[i]->Draw();
+    hBLCh0[i]->GetXaxis()->SetName("baseline [ADC channels]");
+    hBLCh0[i]->GetYaxis()->SetName("counts");
+    can_bl->cd(i+10);
+    gPad->SetGrid(1,1);
+    hBLCh1[i]->Draw();
+    hBLCh1[i]->GetXaxis()->SetName("baseline [ADC channels]");
+    hBLCh1[i]->GetYaxis()->SetName("counts");
+    can_bl->cd(i+19);
+    gPad->SetGrid(1,1);
+    hBLCh2[i]->Draw();
+    hBLCh2[i]->GetXaxis()->SetName("baseline [ADC channels]");
+    hBLCh2[i]->GetYaxis()->SetName("counts");
+    
+    can_bls->cd(i+1);
+    gPad->SetGrid(1,1);
+    hBLSigmaCh0[i]->Draw();
+    hBLSigmaCh0[i]->GetXaxis()->SetTitle("baseline sigma [ADC channels]");
+    hBLSigmaCh0[i]->GetYaxis()->SetTitle("counts");
+    can_bls->cd(i+10);
+    gPad->SetGrid(1,1);
+    hBLSigmaCh1[i]->Draw();
+    hBLSigmaCh1[i]->GetXaxis()->SetTitle("baseline sigma [ADC channels]");
+    hBLSigmaCh1[i]->GetYaxis()->SetTitle("counts");
+    can_bls->cd(i+19);
+    gPad->SetGrid(1,1);
+    hBLSigmaCh2[i]->Draw();
+    hBLSigmaCh2[i]->GetXaxis()->SetTitle("baseline sigma [ADC channels]");
+    hBLSigmaCh2[i]->GetYaxis()->SetTitle("counts");
+    
     can_ampl_corr->cd(i+1);
     gPad->SetGrid(1,1);
     string = hCorrAmp[i]->GetTitle();
@@ -447,12 +517,14 @@ int main(int argc, char **argv){
   double max = hSigAvCh0[0]->GetBinContent(hSigAvCh0[0]->GetMaximumBin());
   
   if(fabs(min)>max){
-      polarity = -1;
-      std::cout << "Signals are negative, am I right?" << std::endl;
+    polarity = -1;
+    std::cout << "min = " << min << "\t max = " << max << std::endl;
+    std::cout << "Signals are negative, am I right?" << std::endl;
   }
   else{
-      polarity = 1;
-      std::cout << "Signals are positive, am I right?" << std::endl;
+    polarity = 1;
+    std::cout << "min = " << min << "\t max = " << max << std::endl;
+    std::cout << "Signals are positive, am I right?" << std::endl;
   }
   
   for(int i=0; i<nsig; i++){
@@ -562,6 +634,8 @@ int main(int argc, char **argv){
   can_amp_pe_ch1->Write();
   can_sig->Write();
   can_sigav->Write();
+  can_bl->Write();
+  can_bls->Write();
   if(collimator.Contains("Electronic")){
     can_ref->Write();
     can_ref_ch0->Write();

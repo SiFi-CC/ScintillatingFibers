@@ -48,14 +48,19 @@ int main(int argc, char **argv){
   
   data->Print();
   
+  double s = SFTools::GetSigmaBL(data->GetSiPM());
+  std::vector <double> sigmas = {s, s};
+  TString cutCh0    = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigmas);
+  TString cutCh1    = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigmas);
+  TString cutCh0Ch1 = SFDrawCommands::GetCut(SFCutType::CombCh0Ch1, sigmas);
+  
   int npoints = data->GetNpoints();
   int anaGroup = data->GetAnalysisGroup();
   std::vector <double> positions = data->GetPositions();
   std::vector <int>    measurementsIDs = data->GetMeasurementsIDs();
-  std::vector <TH1D*> hSpecCh0 = data->GetSpectra(0, SFSelectionType::PE, "ch_0.fPE>0");
-  std::vector <TH1D*> hSpecCh1 = data->GetSpectra(1, SFSelectionType::PE, "ch_1.fPE>0");
-  std::vector <TH1D*> hSpecAv  = data->GetCustomHistograms(SFSelectionType::PEAverage, 
-                                 "ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>0 && ch_1.fPE>0");
+  std::vector <TH1D*> hSpecCh0 = data->GetSpectra(0, SFSelectionType::PE, cutCh0);
+  std::vector <TH1D*> hSpecCh1 = data->GetSpectra(1, SFSelectionType::PE, cutCh1);
+  std::vector <TH1D*> hSpecAv  = data->GetCustomHistograms(SFSelectionType::PEAverage,cutCh0Ch1);
   
   std::vector <TH1D*> hPeakCh0;
   std::vector <TH1D*> hPeakCh1;

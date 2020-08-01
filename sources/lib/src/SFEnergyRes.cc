@@ -39,12 +39,14 @@ SFEnergyRes::SFEnergyRes(int seriesNo): fSeriesNo(seriesNo),
   }
   
   //--- getting necessary PE spectra
-  TString cut_ch0 = "ch_0.fT0>0 && ch_0.fT0<590 && ch_0.fPE>0";
-  TString cut_ch1 = "ch_1.fT0>0 && ch_1.fT0<590 && ch_1.fPE>0";
+  double s = SFTools::GetSigmaBL(fData->GetSiPM());
+  std::vector <double> sigmas = {s, s};
+  TString cut_ch0    = SFDrawCommands::GetCut(SFCutType::SpecCh0, sigmas);
+  TString cut_ch1    = SFDrawCommands::GetCut(SFCutType::SpecCh1, sigmas);
+  TString cut_ch0ch1 = SFDrawCommands::GetCut(SFCutType::CombCh0Ch1, sigmas);
   fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::PE, cut_ch0);
   fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::PE, cut_ch1);
-  fSpectraAve = fData->GetCustomHistograms(SFSelectionType::PEAverage, 
-                                           "ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fPE>0 && ch_1.fPE>0");
+  fSpectraAve = fData->GetCustomHistograms(SFSelectionType::PEAverage, cut_ch0ch1);
    
 }
 //------------------------------------------------------------------
@@ -94,7 +96,7 @@ bool SFEnergyRes::CalculateEnergyRes(int ch){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  PeakParams parameters;
+  SFPeakParams parameters;
   double enRes = 0;
   double enResErr = 0;
   double enResAve = 0;
@@ -158,7 +160,7 @@ bool SFEnergyRes::CalculateEnergyRes(void){
   graph->SetName(gname);
   graph->SetMarkerStyle(4);
   
-  PeakParams parameters;
+  SFPeakParams parameters;
   double enRes, enResErr;
   double enResAve, enResAveErr;
   

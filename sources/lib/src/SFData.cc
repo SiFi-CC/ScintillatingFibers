@@ -9,6 +9,7 @@
 // *****************************************
 
 #include "SFData.hh"
+// #include <TROOT.h>
 
 ClassImp(SFData);
 
@@ -17,6 +18,7 @@ ClassImp(SFData);
 static const char  *gPath = getenv("SFDATA");  // path to the experimental data and data base
 static const int    gBaselineMax = 50;         // number of samples for base line determination
 static const double gmV          = 4.096;      // coefficient to calibrate ADC channels to mV
+const double ampMax = 660;
 //------------------------------------------------------------------
 /// Default constructor. If this constructor is used the series 
 /// number should be set via SetDetails(int seriesNo) function.
@@ -201,26 +203,67 @@ bool SFData::SetDetails(int seriesNo){
   return true;
 }
 //------------------------------------------------------------------
+SFSignal* SFData::ConvertSignal(DDSignal *sig){
+    
+    SFSignal *converted = new SFSignal();
+    converted->fAmp       = sig->GetAmplitude();
+    converted->fCharge    = sig->GetCharge();
+    converted->fPE        = sig->GetPE();
+    converted->fT0        = sig->GetT0();
+    converted->fTOT       = sig->GetTOT();
+    converted->fSDDSignal = false;
+    
+    return converted;
+}
+//------------------------------------------------------------------
+SFSignal* SFData::ConvertSignal(SDDSignal *sig){
+    
+    SFSignal *converted = new SFSignal();
+    converted->fAmp       = sig->GetAmplitude();
+    converted->fCharge    = sig->GetCharge();
+    converted->fPE        = sig->GetPE();
+    converted->fT0        = sig->GetT0();
+    converted->fTOT       = sig->GetTOT();
+    converted->fBL        = sig->GetBL();
+    converted->fBLsig     = sig->GetBLSigma();
+    converted->fPileUp    = sig->GetPileUp();
+    converted->fVeto      = sig->GetVeto();
+    converted->fSDDSignal = true;
+    
+    return converted;
+}
+//------------------------------------------------------------------
 /// Parses given cut and checks if signal fulfills conditions specified by it. 
 /// \param sig - currently analyzed signal, as read from the tree
 /// \param cut - a logic cut to select specific signals.
 ///
-/// The following syntax of the cut is acceptable: 
+/// For floating point variables (fAmp, fCharge, fPE, fT0, fTOT, fBL, fBL_sigma) 
+/// the following syntax of the cut is acceptable: 
 /// - inequality signs: '<' and '>'
 /// - single expressions, e.g. "fAmp>50", "ch_0.fPE>10", "fT0<100"
 /// - double expressions with &&, e.g. "fPE>10 && fPE<100", "ch_0.fT0>0 && ch_0.fT0<500" 
 ///
+/// For intiger variables (fPileUp and fVeto) the following syntax is acceptable:
+/// - equality sign '=='
+/// - single expressions, eg. "fVeto==1", "fPileUp==0"
+/// - double expressions, eg. "fVeto==0 && fPileUp==0"
+///
 /// If empty cut is passed returns true.
-bool SFData::InterpretCut(DDSignal *sig, TString cut){
- 
+bool SFData::InterpretCut(SFSignal *sig, TString cut){
+  
   bool result = true;
   if(cut=="" || cut==" ") return result;
-  
-  double amp = sig->GetAmplitude();
-  double charge = sig->GetCharge();
-  double pe = sig->GetPE();
-  double t0 = sig->GetT0();
-  double tot = sig->GetTOT();
+ 
+  double amp    = sig->fAmp;
+  double charge = sig->fCharge;
+  double pe     = sig->fPE;
+  double t0     = sig->fT0;
+  double tot    = sig->fTOT;
+  double bl     = sig->fBL;
+  double blsig  = sig->fBLsig;
+  int pileup    = sig->fPileUp;
+  int veto      = sig->fVeto;
+  bool SDDflag  = sig->fSDDSignal;  
   
   //convert TString into string and char[]
   std::string cut_str = std::string(cut);
@@ -264,6 +307,10 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
    for(int ii=nletters_expr; ii>0; ii--){
     if(letters_expr[ii]=='<' || letters_expr[ii]=='>'){
       istop = ii+1;
+      break;
+    }
+    else if(letters_expr[ii]=='='){
+      istop = ii+2;
       break;
     }
    }
@@ -324,11 +371,41 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
      else if(expression[i].find(">")!=std::string::npos){
        logic[i] = tot>number[i]; 
      }
+   }  
+   
+   else if(SDDflag && expression[i].find("fBL")!=std::string::npos){   //cut on fBL
+     if(expression[i].find("<")!=std::string::npos){
+       logic[i] = bl<number[i];
+     }
+     else if(expression[i].find(">")!=std::string::npos){
+       logic[i] = bl>number[i]; 
+     }
+   }
+   
+   else if(SDDflag && expression[i].find("fBL_sigma")!=std::string::npos){   //cut on fBL_sigma
+     if(expression[i].find("<")!=std::string::npos){
+       logic[i] = blsig<number[i];
+     }
+     else if(expression[i].find(">")!=std::string::npos){
+       logic[i] = blsig>number[i]; 
+     }
+   } 
+   
+   else if(SDDflag && expression[i].find("fPileUp")!=std::string::npos){   //cut on fPileUp
+     if(expression[i].find("==")!=std::string::npos){
+       logic[i] = pileup==number[i];
+     }
+   } 
+   
+   else if(SDDflag && expression[i].find("fVeto")!=std::string::npos){   //cut on fVeto
+     if(expression[i].find("==")!=std::string::npos){
+       logic[i] = veto==number[i];
+     }
    } 
    
    else{
     std::cerr << "#### Error in SFData::InterpretCut! Incorrect cut syntax!" << std::endl;
-    std::cerr << "Incorrect type. Available types are: fAmp, fCharge, fPE, fT0 and fTOT." << std::endl;
+    std::cerr << "Incorrect type. Available types are: fAmp, fCharge, fPE, fT0, fTOT, fBL, fBL_sigma, fPileUp and fVeto." << std::endl;
     return false;
    }
   }
@@ -341,21 +418,22 @@ bool SFData::InterpretCut(DDSignal *sig, TString cut){
 /// Accesses ROOT file and returns tree containing measured data for 
 /// the requested measurement.
 /// \param ID - measurement ID
-TTree* SFData::GetTree(int ID){
+SLoop* SFData::GetTree(int ID){
     
   int index = SFTools::GetIndex(fMeasureID, ID);
-  TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TString tname = std::string("tree_ft");
-  TTree *tree = (TTree*)file->Get(tname);
+  std::string fname = std::string(SFTools::FindData(fNames[index]))+"/sifi_results.root";
   
-  if(tree==nullptr){
+  SLoop * loop = new SLoop();
+  loop->addFile(fname);
+  loop->setInput({});
+  
+  if(loop==nullptr){
     std::cerr << "#### Error in SFData::GetTree!" << std::endl;
     std::cerr << "Requested tree doesn't exist!" << std::endl;
     std::abort();
   }
   
-  return tree;
+  return loop;
 }
 //------------------------------------------------------------------
 /// Returns single spectrum of requested type.
@@ -371,15 +449,17 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);  
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TString tname = std::string("tree_ft");
+  TFile *file = new TFile(fname+"/sifi_results.root", "READ");
+  TString tname = std::string("S");
   TTree *tree = (TTree*)file->Get(tname);
   
   gUnique+=1;
   TString selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
+
   tree->Draw(selection, cut);
-  TH1D *spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
-  TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID)+SFDrawCommands::GetSelectionName(sel_type);
+//   TH1D *spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D *spec = (TH1D*)gDirectory->FindObjectAny(Form("htemp%i", gUnique));
+  TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   spec->SetName(hname);
   spec->SetTitle(htitle);
@@ -415,15 +495,15 @@ TH1D* SFData::GetCustomHistogram(SFSelectionType sel_type, TString cut, int ID,
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TString tname = "tree_ft";
+  TFile *file = new TFile(fname+"/sifi_results.root", "READ");
+  TString tname = "S";
   TTree *tree = (TTree*)file->Get(tname);
   
   gUnique+=1;
   TString selection; 
   selection = SFDrawCommands::GetSelection(sel_type, gUnique, customNumbers);
   tree->Draw(selection, cut);
-  TH1D* hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D* hist = (TH1D*)gDirectory->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -459,18 +539,20 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TString tname = "tree_ft";
+  TFile *file = new TFile(fname+"/sifi_results.root", "READ");
+  TString tname = "S";
   TTree *tree = (TTree*)file->Get(tname);
   
   gUnique+=1;
+  
   TString selection;
   if(customNumbers.empty())
     selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
   else 
     selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch, customNumbers);
+  
   tree->Draw(selection, cut);
-  TH1D* hist = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
+  TH1D* hist = (TH1D*)gDirectory->FindObjectAny(Form("htemp%i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID)+ SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -489,18 +571,20 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, in
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
   TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TString tname = std::string("tree_ft");
+  TFile *file = new TFile(fname+"/sifi_results.root", "READ");
+  TString tname = std::string("S");
   TTree *tree = (TTree*)file->Get(tname);
   
   gUnique+=1;
+  
   TString selection;
   if(ch==-1)
       selection = SFDrawCommands::GetSelection(sel_type, gUnique);
   else 
       selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
+  
   tree->Draw(selection, cut, "colz");
-  TH2D* hist = (TH2D*)gROOT->FindObjectAny(Form("htemp%.i", gUnique));
+  TH2D* hist = (TH2D*)gDirectory->FindObjectAny(Form("htemp%.i", gUnique));
   TString hname = Form("S%i_pos%.1f_ID%i_", fSeriesNo, position, ID) + SFDrawCommands::GetSelectionName(sel_type);
   TString htitle = hname + " " + cut;
   hist->SetName(hname);
@@ -515,12 +599,117 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, in
 /// \param cut - cut for drawn events. Also TTree-style syntax.
 std::vector <TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut, int ch){
   
-    std::vector <TH2D*> hists;
+  std::vector <TH2D*> hists;
   for(int i=0; i<fNpoints; i++){
     hists.push_back(GetCorrHistogram(sel_type, cut, fMeasureID[i], ch));
   }
   
   return hists;
+}
+//------------------------------------------------------------------
+TH2D *SFData::GetRefCorrHistogram(int ID, int ch){
+    
+    const double BL_sigma_cut = SFTools::GetSigmaBL(fSiPM);
+    
+    int index = SFTools::GetIndex(fMeasureID, ID);
+    double position = fPositions[index];
+    std::string fname = std::string(SFTools::FindData(fNames[index]))+"/sifi_results.root";
+    
+    SLoop * loop = new SLoop();
+    loop->addFile(fname);
+    loop->setInput({});
+    SCategory *tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
+    SCategory *tCal = SCategoryManager::getCategory(SCategory::CatFibersStackCal);
+    
+    TString hname = Form("S%i_pos%.1f_ID%i_PE%ivsPE2Correlation", fSeriesNo, position, ID, ch);
+    TH2D *htemp = new TH2D(hname, hname, 1000, -100, 15E4, 2200, -150, 1500);
+    
+    int n = loop->getEntries();
+    
+    for(int i = 0; i < n; ++i){
+        
+        loop->nextEvent();
+        size_t tentries = tSig->getEntries();
+        
+        assert(tSig->getEntries() == tCal->getEntries());
+
+        uint coinc = 0;
+        
+        for (int j=0; j<tentries; ++j){
+
+            int m, l, f;
+            double mod0PE, mod1PE;
+            SDDSamples *samples    = (SDDSamples *)tSig->getObject(j);
+            SFibersStackCal *calib = (SFibersStackCal*)tCal->getObject(j); 
+            samples->getAddress(m, l, f);
+            
+            if (ch == 0) {
+                if(m == 0 &&
+                    calib->getTimeL()>0 && calib->getQDCL()>0 &&
+                    samples->getSignalL()->GetTOT()>0 &&
+                    samples->getSignalL()->GetAmplitude()<ampMax &&
+                    samples->getSignalL()->GetBLSigma() < BL_sigma_cut &&
+                    calib->getTimeR()>0 && calib->getQDCR()>0 &&
+                    samples->getSignalR()->GetTOT()>0 &&
+                    samples->getSignalR()->GetAmplitude()<ampMax &&
+                    samples->getSignalR()->GetBLSigma() < BL_sigma_cut)
+                {
+                    mod0PE = calib->getQDCL();
+                    coinc |= 0x1;
+                }
+                else if(m == 1 &&
+                    calib->getTimeL()>0 && calib->getQDCL()>0 &&
+                    samples->getSignalL()->GetTOT()>0 &&
+                    samples->getSignalL()->GetAmplitude()<ampMax &&
+                    samples->getSignalL()->GetBLSigma() < BL_sigma_cut)
+                  {
+                      mod1PE = calib->getQDCL();
+                      coinc |= 0x2;
+                  }
+                  if (coinc == 0x3)
+                      htemp->Fill(mod1PE, mod0PE);
+            }
+            else if (ch == 1) {
+                if(m == 0 &&
+                    calib->getTimeL()>0 && calib->getQDCL()>0 &&
+                    samples->getSignalL()->GetTOT()>0 &&
+                    samples->getSignalL()->GetAmplitude()<ampMax &&
+                    samples->getSignalL()->GetBLSigma() < BL_sigma_cut &&
+                    calib->getTimeR()>0 && calib->getQDCR()>0 &&
+                    samples->getSignalR()->GetTOT()>0 &&
+                    samples->getSignalR()->GetAmplitude()<ampMax &&
+                    samples->getSignalR()->GetBLSigma() < BL_sigma_cut)
+                {
+                    mod0PE = calib->getQDCR();
+                    coinc |= 0x1;
+                }
+                  else if(m == 1 &&
+                    calib->getTimeL()>0 && calib->getQDCL()>0 &&
+                    samples->getSignalL()->GetTOT()>0 &&
+                    samples->getSignalL()->GetAmplitude()<ampMax &&
+                    samples->getSignalL()->GetBLSigma() < BL_sigma_cut)
+                  {
+                      mod1PE = calib->getQDCL();
+                      coinc |= 0x2;
+                  }
+                if (coinc == 0x3)
+                    htemp->Fill(mod1PE, mod0PE);
+            }
+        }
+    }
+    
+    return htemp;
+}
+//------------------------------------------------------------------
+std::vector <TH2D*> SFData::GetRefCorrHistograms(int ch){
+    
+    std::vector <TH2D*> hists;
+    
+    for(int i=0; i<fNpoints; i++){
+        hists.push_back(GetRefCorrHistogram(fMeasureID[i], ch));
+    }
+    
+    return hists;
 }
 //------------------------------------------------------------------
 /// Returns averaged signal.
@@ -571,11 +760,14 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   const int ipoints = 1024;
   float x;
     
-  TString fname = SFTools::FindData(fNames[index]);
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TTree *tree = (TTree*)file->Get("tree_ft");
-  DDSignal *sig = new DDSignal();
-  tree->SetBranchAddress(Form("ch_%i", ch), &sig);
+  double BL_sigma_cut = SFTools::GetSigmaBL(fSiPM);
+  
+  std::string fname = std::string(SFTools::FindData(fNames[index]));
+  SLoop * loop = new SLoop();
+  loop->addFile(fname+"/sifi_results.root");
+  loop->setInput({});
+  SCategory *tSig = SCategoryManager::getCategory(SCategory::CatDDSamples); 
+  SCategory *tCal = SCategoryManager::getCategory(SCategory::CatFibersStackCal);
   
   TString iname = fname + Form("/wave_%i.dat", ch);
   std::ifstream input(iname, std::ios::binary);
@@ -590,36 +782,81 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   TString htitle = "sig_profile";
   TProfile *psig = new TProfile(hname, htitle, ipoints, 0, ipoints, "");
   
-  int nentries = tree->GetEntries();
-  double baseline = 0.;
+  int nloop = loop->getEntries();
+  float baseline = 0.;
   int counter = 0;
   int infile = 0;
   bool condition = true;
-  double firstT0 = 0.;
+  float firstT0 = 0.;
+  float PE, T0;
   
-  for(int i=0; i<nentries; i++){
-   tree->GetEntry(i);
-   condition = InterpretCut(sig, cut);
-   if(condition && fabs(firstT0)<1E-10) firstT0 = sig->GetT0();
-   if(condition && fabs(sig->GetT0()-firstT0)<1){
-     infile = sizeof(x)*ipoints*i;
-     if(bl){
-       input.seekg(infile);
-       baseline = 0.;
-       for(int ii=0; ii<gBaselineMax; ii++){
-         input.read(reinterpret_cast<char*>(&x), sizeof(float));
-         baseline += x/gmV;
-       }
-       baseline = baseline/gBaselineMax;
-     }
-     input.seekg(infile);
-     for(int ii=0; ii<ipoints; ii++){
-       input.read(reinterpret_cast<char*>(&x), sizeof(float));
-       if(bl) psig->Fill(ii, (x/gmV)-baseline);
-       else   psig->Fill(ii, (x/gmV));
-     }
-     if(counter<number) counter++;
-     else break;
+  for(int i = 0; i < nloop; ++i){
+        
+    //loop->nextEvent();
+    loop->getEvent(i);
+    size_t tentries = tSig->getEntries();
+        
+    assert(tSig->getEntries() == tCal->getEntries());
+    
+    for (int j=0; j<tentries; ++j){
+        
+      int m, l, f;
+      SDDSamples *samples    = (SDDSamples *)tSig->getObject(j);
+      SFibersStackCal *calib = (SFibersStackCal*)tCal->getObject(j);
+      SDDSignal *sigL = (SDDSignal*)samples->getSignalL();
+      SDDSignal *sigR = (SDDSignal*)samples->getSignalR();
+      samples->getAddress(m, l, f);
+
+      TProfile *hptr  = psig;
+      SDDSignal *sptr = nullptr;
+      
+      if (ch == 0 && m == 0) {
+          sptr = sigL;
+          PE = calib->getQDCL();
+          T0 = calib->getTimeL();
+      }
+      else if (ch == 1 && m == 0) {
+          sptr = sigR;
+          PE = calib->getQDCR();
+          T0 = calib->getTimeR();
+      }
+      else if (ch == 2 && m == 1) {
+          sptr = sigL;
+          PE = calib->getQDCL();
+          T0 = calib->getTimeL();
+      }
+      else {
+          hptr = nullptr;
+          PE = -100;
+          T0 = -100;
+      }
+
+      if (hptr) {
+        SFSignal *conv_sig = ConvertSignal(sptr); 
+        conv_sig->fPE = PE;
+        conv_sig->fT0 = T0;
+        condition = InterpretCut(conv_sig, cut);
+        if(condition && fabs(firstT0) < 1E-10 
+           && conv_sig->fBLsig < BL_sigma_cut) 
+            firstT0 = T0;
+        if(condition && fabs(T0-firstT0) < 1
+           && conv_sig->fBLsig< BL_sigma_cut){
+          infile = sizeof(x)*ipoints*i;
+          if(bl)  
+            baseline = sptr->GetBL();
+          input.seekg(infile);
+          for(int ii=1; ii<ipoints+1; ii++){
+            input.read(reinterpret_cast<char*>(&x), sizeof(float));
+            if(bl) hptr->Fill(ii, (x-baseline)/gmV);
+            else   hptr->Fill(ii, (x/gmV));
+          }
+          if(counter<number) 
+            counter++;
+          else 
+              break;
+          delete conv_sig;
+        }
+      }
     }
   }
   
@@ -635,7 +872,6 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
   }
   
   input.close();
-
   
   return psig;
 }
@@ -654,7 +890,6 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   int index = SFTools::GetIndex(fMeasureID, ID);
   double position = fPositions[index];
   const int ipoints = 1024;
-  float x;
   
   TString fname = SFTools::FindData(fNames[index]);
   TFile *file = new TFile(fname+"/results.root", "READ");
@@ -680,7 +915,8 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
   
   for(int i=0; i<nentries; i++){
    tree->GetEntry(i);
-   condition = InterpretCut(sig, cut);
+   SFSignal *conv_sig = ConvertSignal(sig);  
+   condition = InterpretCut(conv_sig, cut);
    if(condition && fabs(firstT0)<1E-10) firstT0 = sig->GetT0();
    if(condition && fabs(sig->GetT0()-firstT0)<1){
      iTree->GetEntry(i);
@@ -753,12 +989,16 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   const int ipoints = 1024;
   float x; 
   
-  TString fname = SFTools::FindData(fNames[index]);
+  double BL_sigma_cut = SFTools::GetSigmaBL(fSiPM);
+  
+  std::string fname = std::string(SFTools::FindData(fNames[index]));
   double position = fPositions[index];
-  TFile *file = new TFile(fname+"/results.root", "READ");
-  TTree *tree = (TTree*)file->Get("tree_ft");
-  DDSignal *sig = new DDSignal();
-  tree->SetBranchAddress(Form("ch_%i", ch), &sig);
+  
+  SLoop * loop = new SLoop();
+  loop->addFile(fname+"/sifi_results.root");
+  loop->setInput({});
+  SCategory *tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
+  SCategory *tCal = SCategoryManager::getCategory(SCategory::CatFibersStackCal);
   
   TString iname = fname + Form("/wave_%i.dat", ch);
   std::ifstream input(iname, std::ios::binary);
@@ -774,38 +1014,75 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl){
   
   TH1D *hsig = new TH1D(hname, htitle, ipoints, 0, ipoints);
   
-  int nentries = tree->GetEntries();
+  int nloop = loop->getEntries();
   double baseline = 0.;
   int infile = 0;
   int counter = 0;
   bool condition = true;
+  double PE, T0;
   
-  for(int i=0; i<nentries; i++){
-    tree->GetEntry(i);
-    condition = InterpretCut(sig, cut);
-   if(condition)
-    {
-      counter++;
-       if(counter!=number) continue;
-        infile = sizeof(x)*ipoints*i;
-        if(bl){
+  for(int i = 0; i < nloop; ++i){
+        
+    //loop->nextEvent();
+    loop->getEvent(i);
+    size_t tentries = tSig->getEntries();
+    
+    assert(tSig->getEntries() == tCal->getEntries());
+    
+    for (int j=0; j<tentries; ++j){
+        
+      int m, l, f;
+      SDDSamples *samples    = (SDDSamples *)tSig->getObject(j);
+      SFibersStackCal *calib = (SFibersStackCal*)tCal->getObject(j);
+      SDDSignal *sigL = (SDDSignal*)samples->getSignalL();
+      SDDSignal *sigR = (SDDSignal*)samples->getSignalR();
+      samples->getAddress(m, l, f);
+
+      TH1 * hptr = hsig;
+      SDDSignal * sptr = nullptr;
+      
+      if (ch == 0 && m == 0) {
+          sptr = sigL;
+          PE = calib->getQDCL();
+          T0 = calib->getTimeL();
+      }
+      else if (ch == 1 && m == 0) {
+          sptr = sigR;
+          PE = calib->getQDCR();
+          T0 = calib->getTimeR();
+      }
+      else if (ch == 2 && m == 1) {
+          sptr = sigL;
+          PE = calib->getQDCL();
+          T0 = calib->getTimeL();
+      }
+      else {
+          hptr = nullptr;
+          PE = -100;
+          T0 = -100;
+      }
+
+      if (hptr) {
+        SFSignal *conv_sig = ConvertSignal(sptr); 
+        conv_sig->fPE = PE;
+        conv_sig->fT0 = T0;
+        condition = InterpretCut(conv_sig, cut);
+        if(condition && conv_sig->fBLsig < BL_sigma_cut){
+          counter++;
+          if(counter!=number) continue;
+          infile = sizeof(x)*ipoints*i;
+          if(bl) baseline = sptr->GetBL();
           input.seekg(infile);
-          baseline = 0;
-          for(int ii=0; ii<gBaselineMax; ii++){
+          for(int ii=1; ii<ipoints+1; ii++){
             input.read(reinterpret_cast<char*>(&x), sizeof(float));
-            baseline += x/gmV;
+            if(bl) hptr->SetBinContent(ii, (x-baseline)/gmV);
+            else   hptr->SetBinContent(ii, (x/gmV));
           }
-          baseline = baseline/gBaselineMax;
-        }  
-        input.seekg(infile);
-        for(int ii=1; ii<ipoints+1; ii++){
-          input.read(reinterpret_cast<char*>(&x), sizeof(float));
-          if(bl) hsig->SetBinContent(ii, (x/gmV)-baseline);
-          else   hsig->SetBinContent(ii, (x/gmV));
         }
+      }
     }
   }
-
+      
   input.close();
   
   return hsig;
@@ -825,7 +1102,6 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
  
   int index = SFTools::GetIndex(fMeasureID, ID);
   const int ipoints = 1024;
-  float x;
   
   TString fname = SFTools::FindData(fNames[index]);
   double position = fPositions[index];
@@ -853,7 +1129,8 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number){
   for(int i=0; i<nentries; i++){
     tree->GetEntry(i);
     iTree->GetEntry(i);
-    condition = InterpretCut(sig, cut);
+    SFSignal *conv_sig = ConvertSignal(sig);  
+    condition = InterpretCut(conv_sig, cut);
     if(condition){
       counter++;
       if(counter!=number) continue;

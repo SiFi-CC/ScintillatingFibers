@@ -75,7 +75,7 @@ int main(int argc, char **argv){
   std::vector <TH1D*> specCh0   = enres->GetSpectra(0);
   std::vector <TH1D*> specCh1   = enres->GetSpectra(1);
 
-  EnergyResResults results = enres->GetResults();
+  SFEnergyResResults results = enres->GetResults();
   
   //----- accessing json file
   DistributionContext ctx;

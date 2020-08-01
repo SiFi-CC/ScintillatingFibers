@@ -16,11 +16,16 @@ set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs 2.0.0 REQUIRED)
 find_package(FitterFactory)
+find_package(SiFi)
 find_package(DesktopDigitizer6)
 
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${SIFI_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/lib/include)
+
+link_directories(${SIFI_LIBRARY_DIR})
+link_directories(${FITTERFACTORY_LIBRARY_DIR})
 
 set(DEF_CMAKE_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR})
@@ -73,7 +78,7 @@ install(FILES
 	DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
-find_package(Doxygen)
+#find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/sources/Doxyfile.in)

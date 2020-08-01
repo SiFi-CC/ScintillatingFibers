@@ -25,8 +25,9 @@
 
 /// Structure containing parameters of 511 keV peak, determined from 
 /// fit of gaussian function and background.
-struct PeakParams{
-  
+
+struct SFPeakParams
+{
     double fConst       = -1;   ///< Constant parameter 
     double fConstErr    = -1;   ///< Uncertainty of the constant parameter
     double fPosition    = -1;   ///< Mean parameter, i.e. position of the peak
@@ -51,15 +52,16 @@ struct PeakParams{
 /// f_{bg}(Q) = p_0 + p_1 \cdot e^{(Q-p_2) \cdot p_3}
 /// \f]
 
-class SFPeakFinder : public TObject{
+class SFPeakFinder : public TObject
+{
  
 private:
-  TH1D       *fSpectrum;  ///< Analyzed experimental spectrum
-  TH1D       *fPeak;      ///< Histogram with the chosen peak after background subtraction
-  TF1        *fFittedFun; ///< Function fitted to the analyzed spectrum: Gauss+background
-  bool       fVerbose;    ///< Print-outs level
-  bool       fTests;      ///< Flag for testing mode
-  PeakParams fParams;     ///< Structure containing parameters of 511 keV peak as determined by the fit
+  TH1D         *fSpectrum;  ///< Analyzed experimental spectrum
+  TH1D         *fPeak;      ///< Histogram with the chosen peak after background subtraction
+  TF1          *fFittedFun; ///< Function fitted to the analyzed spectrum: Gauss+background
+  bool         fVerbose;    ///< Print-outs level
+  bool         fTests;      ///< Flag for testing mode
+  SFPeakParams fParams;     ///< Structure containing parameters of 511 keV peak as determined by the fit
   
 public:
   SFPeakFinder();
@@ -76,7 +78,7 @@ public:
   void       Print(void);
   
   /// Returns structure containing parameters of the 511 keV peak.
-  PeakParams GetParameters(void)        { return fParams; }; 
+  SFPeakParams GetParameters(void)      { return fParams; }; 
   /// Sets print-outs level.
   void       SetVerbLevel(bool verbose) { fVerbose = verbose; };
   /// Sets testing mode.

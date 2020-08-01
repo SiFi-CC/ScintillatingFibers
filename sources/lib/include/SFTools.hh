@@ -19,8 +19,12 @@
 #include <iostream>
 #include <sqlite3.h>
 
-namespace SFTools{
-    
+/// Namespace containing functions useful for data analysis, e.g.
+/// getting details of the measurement series, accessing and modyfing 
+/// data bases and data, calculating statistical parameters, fitting, etc.
+
+namespace SFTools
+{
     int     GetIndex(std::vector <int> measurementsIDs, int id);
     int     GetSeriesNo(TString hname_tstr);
     int     GetChannel(TString hname_tstr);
@@ -28,6 +32,7 @@ namespace SFTools{
     int     GetMeasurementID(TString hname_tstr);
     int     GetMeasurementID(int seriesNo, double position);
     double  GetPosError(TString collimator, TString testBench);
+    double  GetSigmaBL(TString SiPM);
     void    CheckDBStatus(int status, sqlite3 *database); 
     bool    SaveResultsDB(TString database, TString table, 
                           TString query, int seriesNo);
@@ -37,9 +42,8 @@ namespace SFTools{
     double  GetStandardErr(std::vector <double> vec);
     bool    RatiosFitGauss(std::vector <TH1D*> & vec, float range_in_RMS=1);
     bool    RatiosFitDoubleGauss(std::vector <TH1D*> & vec, float range_in_RMS=1);
-    std::vector <double> GetFWHM(TH1D* h);
     TString FindData(TString directory);
-    
+    std::vector <double> GetFWHM(TH1D* h);
 };
 
 #endif
