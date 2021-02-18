@@ -11,8 +11,8 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOTSYS})
 
-find_package(ROOT REQUIRED COMPONENTS RIO Spectrum)
-set(ROOTSYS $ENV{ROOTSYS})
+find_package(ROOT REQUIRED COMPONENTS Core Spectrum)
+#set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs 2.0.0 REQUIRED)
 find_package(FitterFactory)
@@ -22,7 +22,7 @@ find_package(DesktopDigitizer6)
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${SIFI_INCLUDE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sources/lib/include)
+include_directories(BEFORE sources/lib/include)
 
 link_directories(${SIFI_LIBRARY_DIR})
 link_directories(${FITTERFACTORY_LIBRARY_DIR})
@@ -36,17 +36,17 @@ find_package(MultiDimensionalFactory REQUIRED)
 
 add_subdirectory(sources)
 	
-install(TARGETS ScintillatingFibers
-	EXPORT ${CMAKE_PROJECT_NAME}Targets
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+#install(TARGETS ScintillatingFibers
+#	EXPORT ${CMAKE_PROJECT_NAME}Targets
+#	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libScintillatingFibers_rdict.pcm
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libScintillatingFibers_rdict.pcm
+#	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#)
 	
-install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres 
+install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres reco  
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
