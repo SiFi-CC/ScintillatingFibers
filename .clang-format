@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+BreakBeforeBraces: Allman
+AllowShortBlocksOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+IndentCaseLabels: true
+ColumnLimit: 100
+PointerAlignment: Left
+TabWidth: 4
+AlignTrailingComments: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AlwaysBreakBeforeMultilineStrings: false
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
