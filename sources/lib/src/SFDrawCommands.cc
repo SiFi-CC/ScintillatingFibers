@@ -261,9 +261,8 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
                                    unique);
             break;
         case SFSelectionType::kPEAttCorrectedSum:
-            selectionString =
-                Form("SDDSamples.data.signal_l.fPE/exp(%f/%f) + SDDSamples.data.signal_r."
-                     "fPE/exp(%f/%f)>>htemp%i(1500, -150, 4000)",
+            selectionString = Form("SDDSamples.data.signal_l.fPE/exp(%f/%f) + SDDSamples.data."
+                     "signal_r.fPE/exp(%f/%f)>>htemp%i(1500, -150, 4000)",
                      customNum[0], customNum[1], customNum[2], customNum[3], unique);
             break;
         default:

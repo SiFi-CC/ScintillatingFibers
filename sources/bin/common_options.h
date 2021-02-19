@@ -5,16 +5,15 @@
 #include <iostream>
 #include <sys/stat.h>
 
-int parse_common_options(int argc, char** argv, TString& outdir, TString& dbase, Int_t& seriesno)
+int parse_common_options(int argc, char** argv, TString& outdir,
+                         TString& dbase, Int_t& seriesno)
 {
     // TString path = std::string(getenv("SFPATH"));
     TString path = std::string("./");
 
-    CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: ./",
-                             path);
+    CmdLineOption cmd_outdir("Output directory", "-out", "Output directory (string), default: ./", path);
 
-    CmdLineOption cmd_dbase("Database", "-db", "Data base name (string), default: ScintFibRes.db",
-                            "ScintFibRes.db");
+    CmdLineOption cmd_dbase("Database", "-db", "Data base name (string), default: ScintFibRes.db", "ScintFibRes.db");
 
     CmdLineArg serno("SeriesNo", "series number", CmdLineArg::kInt);
 
@@ -31,8 +30,7 @@ int parse_common_options(int argc, char** argv, TString& outdir, TString& dbase,
         int stat = mkdir(outdir, 0777);
         if (stat == -1)
         {
-            std::cerr << "##### Error in parse_common_options()! Unable to create new direcotry!"
-                      << std::endl;
+            std::cerr << "##### Error in parse_common_options()! Unable to create new direcotry!" << std::endl;
             return 1;
         }
     }
