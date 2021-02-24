@@ -10,70 +10,58 @@
 
 #ifndef __SFPositionRes_H_
 #define __SFPositionRes_H_ 1
-#include "TObject.h"
-#include "TGraphErrors.h"
-#include "TH1D.h"
-#include "TTree.h"
+
 #include "SDDSamples.h"
-#include "SFData.hh"
-#include "SFTools.hh"
-#include "SFPeakFinder.hh"
 #include "SFAttenuation.hh"
+#include "SFData.hh"
+#include "SFPeakFinder.hh"
+#include "SFResults.hh"
+#include "SFTools.hh"
+
+#include <TCanvas.h>
+#include <TGraphErrors.h>
+#include <TH1D.h>
+#include <TObject.h>
+#include <TTree.h>
+
 #include <iostream>
-#include "TCanvas.h"
 
-struct PositionResResults{
-    
-    double fPosRes    = -1;
-    double fPosResErr = -1;
-    
-    std::vector <double> fPosResAll;
-    std::vector <double> fPosResAllErr;
-    
-    std::vector <double> fPosReco;
-    std::vector <double> fPosRecoErr;    
-};
+class SFPositionRes : public TObject
+{
 
-class SFPositionRes : public TObject{
-    
-private:
-    int                  fSeriesNo;
-    SFData              *fData;
-    SFAttenuation       *fAtt;
-    
-    TGraphErrors        *fPosRecoVsPos;
-    TGraphErrors        *fPosResVsPos;
-    TGraphErrors        *fMLRvsPos;
-    TGraphErrors        *fResiduals;
-    
-    std::vector <TH1D*>  fQRatios;
-    std::vector <TH1D*>  fPosRecoDist;
-    std::vector <TH1D*>  fSpecAv;
-    
-    PositionResResults   fResults;
-    
+  private:
+    int            fSeriesNo;
+    SFData*        fData;
+    SFAttenuation* fAtt;
+
+    TGraphErrors* fPosRecoVsPosGraph;
+    TGraphErrors* fPosResVsPosGraph;
+    TGraphErrors* fMLRvsPosGraph;
+    TGraphErrors* fResidualGraph;
+
+    std::vector<TH1D*> fQRatios;
+    std::vector<TH1D*> fPosRecoDist;
+    std::vector<TH1D*> fSpecAv;
+
+    SFResults* fResults;
+
     bool LoadRatios(void);
-    
-public:
+
+  public:
     SFPositionRes(int seriesNo);
     ~SFPositionRes();
-    
-    bool          AnalyzePositionRes(void); 
-    
-    TGraphErrors *GetPositionRecoGraph(void);
-    TGraphErrors *GetPositionResGraph(void);
-    TGraphErrors *GetAttenuationCurve(void);
-    TGraphErrors *GetResiduals(void);
-    
-    std::vector <TH1D*>  GetRatios(void);
-    std::vector <TH1D*>  GetPositionRecoDist(void);
-    std::vector <TH1D*>  GetSpectra(void);
-    
-    PositionResResults   GetResults(void) { return fResults; };
-    
+
+    bool AnalyzePositionRes(void);
+
+    std::vector<TH1D*> GetRatios(void);
+    std::vector<TH1D*> GetPositionRecoDist(void);
+    std::vector<TH1D*> GetSpectra(void);
+
+    SFResults* GetResults(void) { return fResults; };
+
     void Print();
-    
-    ClassDef(SFPositionRes,1)
+
+    ClassDef(SFPositionRes, 1)
 };
 
 #endif

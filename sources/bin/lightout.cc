@@ -151,7 +151,7 @@ int main(int argc, char** argv)
     gLightOutCh1->GetYaxis()->SetTitleOffset(1.4);
     gLightOutCh1->Draw("AP");
     text.DrawLatex(0.2, 0.8, Form("LO = (%.2f +/- %.2f) PE/MeV", 
-                   LOresults[1]->GetValue(SFResultTypeNum:kLight),
+                   LOresults[1]->GetValue(SFResultTypeNum::kLight),
                    LOresults[1]->GetUncertainty(SFResultTypeNum::kLight)));
 
     //----- light output summed
@@ -283,7 +283,6 @@ int main(int argc, char** argv)
 
     do
     {
-
         std::cout << "----- lightout writing, try number " << (max_tries - i_try) + 1 << std::endl;
         stat = SFTools::SaveResultsDB(dbname_full, table, query, seriesNo);
 
