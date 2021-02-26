@@ -104,7 +104,7 @@ SFResults* SFTemperature::CalcAverageTempMeasure(TString sensor, TString name)
     double stdErr = SFTools::GetStandardErr(fTemperatures);
     std::cout << mean << "\t" << stdErr << std::endl;
 
-    SFResults* result = new SFResults(Form("TemperatureResults_S%i_%s_%s",
+    SFResults* result = new SFResults(Form("TemperatureResultsM_S%i_%s_%s",
                                       fSeriesNo, sensor.Data(), name.Data()));
 
     result->AddResult(SFResultTypeNum::kTemp, mean, stdErr);
@@ -119,7 +119,9 @@ bool SFTemperature::CalcAverageTempSeries(TString sensor)
     double mean  = SFTools::GetMean(fTemperatures);
     double stdDev = SFTools::GetStandardErr(fTemperatures);
 
-    SFResults* temp;
+    SFResults* temp = new SFResults(Form("TemperatureResultsS_S%i_%s",
+                                    fSeriesNo, sensor.Data()));
+    
     temp->AddResult(SFResultTypeNum::kTemp, mean, stdDev);
 
     fAvTemp.insert(std::pair<TString, SFResults*>(sensor, temp));

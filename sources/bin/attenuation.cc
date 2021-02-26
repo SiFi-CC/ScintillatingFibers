@@ -208,7 +208,7 @@ int main(int argc, char** argv)
     }
 
     //----- drawing separate channels
-    text.SetTextSize(0.025);
+    text.SetTextSize(0.035);
     TCanvas* can_separate_ch = new TCanvas("att_separate_ch", "att_separate_ch", 700, 500);
     gPad->SetGrid(1, 1);
 
@@ -219,10 +219,10 @@ int main(int argc, char** argv)
     attGraphCh0->Draw("AP");
     attGraphCh0->GetFunction("funCh0")->SetLineColor(kPink - 8);
     text.SetTextColor(kPink - 8);
-    text.DrawLatex(0.3, 0.8,Form("L_{att Ch0} = (%.2f +/- %.2f) mm",
+    text.DrawLatex(0.3, 0.8, Form("L_{att Ch0} = (%.2f +/- %.2f) mm",
                    results[0]->GetValue(SFResultTypeNum::kLambda),
                    results[0]->GetUncertainty(SFResultTypeNum::kLambda)));
-    text.DrawLatex(0.3, 65,Form("chi^{2}/NDF_{0} = %.2f", 
+    text.DrawLatex(0.3, 0.65, Form("#chi^{2}/NDF_{0} = %.2f", 
                    results[0]->GetValue(SFResultTypeNum::kChi2NDF)));
 
     attGraphCh1->SetTitle(Form("Series %i channel 1, attenuation curve", seriesNo));
@@ -235,7 +235,7 @@ int main(int argc, char** argv)
     text.DrawLatex(0.3, 0.75, Form("L_{att Ch1} = (%.2f +/- %.2f) mm",
                    results[1]->GetValue(SFResultTypeNum::kLambda),
                    results[1]->GetUncertainty(SFResultTypeNum::kLambda)));
-    text.DrawLatex(0.3, 0.60, Form("chi^{2}/NDF_{1} = %.2f", 
+    text.DrawLatex(0.3, 0.60, Form("#chi^{2}/NDF_{1} = %.2f", 
                    results[1]->GetValue(SFResultTypeNum::kChi2NDF)));
 
     double* yCh0    = attGraphCh0->GetY();

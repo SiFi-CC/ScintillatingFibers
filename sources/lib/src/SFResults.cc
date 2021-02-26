@@ -184,8 +184,8 @@ TObject* SFResults::GetObject(SFResultTypeObj id)
 void SFResults::Print(void)
 {
     
-    if(fValues.empty() ||
-       fUncert.empty() ||
+    if(fValues.empty() &&
+       fUncert.empty() &&
        fObjects.empty())
     {
         std::cerr << "##### Error in SFResults::Print()!" << std::endl;

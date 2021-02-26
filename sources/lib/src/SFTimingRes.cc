@@ -506,10 +506,14 @@ std::vector<TH1D*> SFTimingRes::GetT0Diff(bool type)
         std::cerr << "No spectra available!" << std::endl;
     }
 
+    std::vector<TH1D*> hist;
+    
     if (type == 0)
-        return fT0Diff;
+        hist = fT0Diff;
     else if (type == 1)
-        return fT0DiffECut;
+        hist = fT0DiffECut;
+    
+    return hist;
 }
 //------------------------------------------------------------------
 /// Returns vector of ratio histograms used for cut on scattered events.
@@ -536,16 +540,20 @@ std::vector<TH1D*> SFTimingRes::GetSpectra(int ch)
         std::abort();
     }
 
+    std::vector<TH1D*> spectra;
+    
     if (ch == 0)
-        return fSpecCh0;
+        spectra = fSpecCh0;
     else if (ch == 1)
-        return fSpecCh1;
+        spectra = fSpecCh1;
     else
     {
         std::cerr << "##### Error in SFTimingRes::GetSpectra()" << std::endl;
         std::cerr << "Incorrect channel number!" << std::endl;
         std::abort();
     }
+    
+    return spectra;
 }
 //------------------------------------------------------------------
 std::vector<SFResults*> SFTimingRes::GetResults(void)

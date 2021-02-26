@@ -208,10 +208,19 @@ bool SFPeakFinder::FindPeakRange(double& min, double& max)
     double pos = fResults->GetValue(SFResultTypeNum::kPeakPosition);
     double sig = fResults->GetValue(SFResultTypeNum::kPeakSigma);
 
-    if (fabs(sig + 1) < delta || fabs(pos + 1) < delta) { FindPeakFit(); }
-
-    pos = fResults->GetValue(SFResultTypeNum::kPeakPosition);
-    sig = fResults->GetValue(SFResultTypeNum::kPeakSigma);
+    if (fabs(sig + 1) < delta || fabs(pos + 1) < delta) 
+    {
+        std::cout << "##### Warning in SFPeakFinder::FindPeakRange(): peak_pos = "
+                  << pos << "\t peak_sigma = " << sig << std::endl; 
+        std::cout << "Fitting peak... " << std::endl;
+        
+        FindPeakFit();
+        pos = fResults->GetValue(SFResultTypeNum::kPeakPosition);
+        sig = fResults->GetValue(SFResultTypeNum::kPeakSigma);
+        
+        std::cout << "After fitting: peak_pos = " << pos 
+                  << "\t peak_sig = " << sig << std::endl;
+    }
 
     if (type == "Lead")
     {

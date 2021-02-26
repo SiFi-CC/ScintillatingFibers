@@ -229,7 +229,7 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
                      unique);
             break;
         case SFSelectionType::kT0Difference:
-            selectionString = Form("(SDDSamples.data.signal_l.T0-SDDSamples.data.signal_r.fT0)>>"
+            selectionString = Form("(SDDSamples.data.signal_l.fT0-SDDSamples.data.signal_r.fT0)>>"
                                    "htemp%i(2500, -50, 50)",
                                    unique);
             break;
@@ -287,106 +287,106 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
     switch (cut)
     {
         case SFCutType::kSpecCh0:
-            cutString = Form("SDDSamples.data.module==0 &&"
-                             "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_l.fPE>0 &&"
-                             "SDDSignal.data.signal_l.fT0>0 &&"
-                             "SDDSamples.data.signal_l.fT0<590 &&"
-                             "SDDSamples.data.signal_l.fTOT>0 &&"
+            cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_l.fPE>0 && "
+                             "SDDSamples.data.signal_l.fT0>0 && "
+                             "SDDSamples.data.signal_l.fT0<590 && "
+                             "SDDSamples.data.signal_l.fTOT>0 && "
                              "SDDSamples.data.signal_l.fAmp<%f",
                              customNum[0], ampMax);
             break;
         case SFCutType::kSpecCh0A:
-            cutString = Form("SDDSamples.data.module==0 &&"
-                             "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                             "SDDsamples.data.signal_l.fPE>0 &&"
-                             "SDDSamples.data.signal_l.fT0>0 &&"
-                             "SDDSamples.data.signal_l.fT0<590 &&"
+            cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_l.fPE>0 && "
+                             "SDDSamples.data.signal_l.fT0>0 && "
+                             "SDDSamples.data.signal_l.fT0<590 && "
                              "SDDSamples.data.signal_l.fTOT>0",
                              customNum[0]);
             break;
         case SFCutType::kSpecCh1:
-            cutString = Form("SDDSamples.data.module==0 &&"
-                             "SDDSamples.data.signal_r.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_r.fPE>0 &&"
-                             "SDDsamples.data.signal_r.fT0>0 &&"
-                             "SDDSamples.data.Signal_r.fT0<590 &&"
-                             "SDDSamples.data.signal_r.fTOT>0 &&"
+            cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_r.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_r.fPE>0 && "
+                             "SDDSamples.data.signal_r.fT0>0 && "
+                             "SDDSamples.data.signal_r.fT0<590 && "
+                             "SDDSamples.data.signal_r.fTOT>0 && "
                              "SDDSamples.data.signal_r.fAmp<%f",
                              customNum[0], ampMax);
             break;
         case SFCutType::kSpecCh1A:
-            cutString = Form("SDDSamples.data.module==0 &&"
-                             "SDDSamples.data.signal_r.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_r.fPE>0 &&"
-                             "SDDSamples.data.signal_r.fT0>0 &&"
-                             "SDDSamples.data.signal_r.fT0<590 &&"
+            cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_r.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_r.fPE>0 && "
+                             "SDDSamples.data.signal_r.fT0>0 && "
+                             "SDDSamples.data.signal_r.fT0<590 && "
                              "SDDSamples.data.signal_r.fTOT>0",
                              customNum[0]);
             break;
         case SFCutType::kSpecCh2:
-            cutString = Form("SDDSamples.data.module==1 &&"
-                             "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_l.fPE>0 &&"
-                             "SDDSamples.data.signal_l.fT0>0 &&"
-                             "SDDSamples.data.signal_l.fT0<590 &&"
+            cutString = Form("SDDSamples.data.module==1 && "
+                             "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_l.fPE>0 && "
+                             "SDDSamples.data.signal_l.fT0>0 && "
+                             "SDDSamples.data.signal_l.fT0<590 && "
                              "SDDSamples.data.signal_l.fTOT>0",
                              customNum[0]);
             break;
         case SFCutType::kCombCh0Ch1:
-            cutString = Form("SDDSamples.data.module==0 &&"
-                             "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_r.fBL_sigma<%f &&"
-                             "SDDSamples.data.signal_l.fPE>0 &&"
-                             "SDDSamples.data.signal_l.fT0>0 &&"
-                             "SDDSamples.data.signal_l.fT0<590 &&"
-                             "SDDSamples.data.signal_l.fTOT>0 &&"
-                             "SDDSamples.data.signal_r.fPE>0 &&"
-                             "SDDSamples.data.signal_r.fT0>0 &&"
-                             "SDDSamples.data.signal_r.fT0<590 &&"
-                             "SDDSamples.data.signal_r.fTOT>0 &&"
-                             "SDDSamples.data.signal_l.fAmp<%f &&"
+            cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_r.fBL_sigma<%f && "
+                             "SDDSamples.data.signal_l.fPE>0 && "
+                             "SDDSamples.data.signal_l.fT0>0 && "
+                             "SDDSamples.data.signal_l.fT0<590 && "
+                             "SDDSamples.data.signal_l.fTOT>0 && "
+                             "SDDSamples.data.signal_r.fPE>0 && "
+                             "SDDSamples.data.signal_r.fT0>0 && "
+                             "SDDSamples.data.signal_r.fT0<590 && "
+                             "SDDSamples.data.signal_r.fTOT>0 && "
+                             "SDDSamples.data.signal_l.fAmp<%f && "
                              "SDDSamples.data.signal_r.fAmp<%f",
                              customNum[0], customNum[1], ampMax, ampMax);
             break;
         case SFCutType::kT0Diff:
             cutString =
-                Form("SDDSamples.data.module==0 &&"
-                     "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                     "SDDSamples.data.signal_r.fBL_sigma<%f &&"
-                     "SDDSamples.data.signal_l.fPE>%f &&"
-                     "SDDSamples.data.signal_l.fT0>0 &&"
-                     "SDDSamples.data.signal_l.fT0<590 &&"
-                     "SDDSamples.data.signal_l.fTOT>0 &&"
-                     "SDDSamples.data.signal_r.fPE>%f &&"
-                     "SDDSamples.data.signal_r.fT0>0 &&"
-                     "SDDSamples.data.signal_r.fT0<590 &&"
-                     "SDDSamples.data.signal_r.fTOT>0 &&"
-                     "SDDSamples.data.signal_l.fAmp<%f &&"
-                     "SDDSamples.data.signal_r.fAmp<%f &&"
-                     "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>%f &&"
+                Form("SDDSamples.data.module==0 && "
+                     "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                     "SDDSamples.data.signal_r.fBL_sigma<%f && "
+                     "SDDSamples.data.signal_l.fPE>%f && "
+                     "SDDSamples.data.signal_l.fT0>0 && "
+                     "SDDSamples.data.signal_l.fT0<590 && "
+                     "SDDSamples.data.signal_l.fTOT>0 && "
+                     "SDDSamples.data.signal_r.fPE>%f && "
+                     "SDDSamples.data.signal_r.fT0>0 && "
+                     "SDDSamples.data.signal_r.fT0<590 && "
+                     "SDDSamples.data.signal_r.fTOT>0 && "
+                     "SDDSamples.data.signal_l.fAmp<%f && "
+                     "SDDSamples.data.signal_r.fAmp<%f && "
+                     "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>%f && "
                      "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))<%f",
                      customNum[0], customNum[1], customNum[2], customNum[3], ampMax, ampMax,
                      customNum[4], customNum[5]);
             break;
         case SFCutType::kT0DiffECut:
             cutString =
-                Form("SDDSamples.data.module==0 &&"
-                     "SDDSamples.data.signal_l.fAmp<%f &&"
-                     "SDDSamples.data.signal_r.fAmp<%f &&"
-                     "SDDSamples.data.signal_l.fBL_sigma<%f &&"
-                     "SDDSamples.data.signal_r.fBL_sigma<%f &&"
-                     "SDDSamples.data.signal_l.fPE>%f &&"
-                     "SDDSamples.data.signal_l.fPE<%f &&"
-                     "SDDSamples.data.signal_l.fT0>0 &&"
-                     "SDDSamples.data.signal_l.fT0<590 &&"
-                     "SDDSamples.data.signal_l.fTOT>0 &&"
-                     "SDDSamples.data.signal_r.fPE>%f &&"
-                     "SDDSamples.data.signal_r.fPE<%f &&"
-                     "SDDSamples.data.signal_r.fT0>0 &&"
-                     "SDDSamples.data.signal_r.fT0<590 &&"
-                     "SDDSamples.data.signal_r.fTOT>0 &&"
-                     "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>%f &&"
+                Form("SDDSamples.data.module==0 && "
+                     "SDDSamples.data.signal_l.fAmp<%f && "
+                     "SDDSamples.data.signal_r.fAmp<%f && "
+                     "SDDSamples.data.signal_l.fBL_sigma<%f && "
+                     "SDDSamples.data.signal_r.fBL_sigma<%f && "
+                     "SDDSamples.data.signal_l.fPE>%f && "
+                     "SDDSamples.data.signal_l.fPE<%f && "
+                     "SDDSamples.data.signal_l.fT0>0 && "
+                     "SDDSamples.data.signal_l.fT0<590 && "
+                     "SDDSamples.data.signal_l.fTOT>0 && "
+                     "SDDSamples.data.signal_r.fPE>%f && "
+                     "SDDSamples.data.signal_r.fPE<%f && "
+                     "SDDSamples.data.signal_r.fT0>0 && "
+                     "SDDSamples.data.signal_r.fT0<590 && "
+                     "SDDSamples.data.signal_r.fTOT>0 && "
+                     "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>%f && "
                      "log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))<%f",
                      ampMax, ampMax, customNum[0], customNum[1], customNum[2], customNum[3],
                      customNum[4], customNum[5], customNum[6], customNum[7]);

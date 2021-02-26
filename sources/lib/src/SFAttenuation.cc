@@ -174,6 +174,8 @@ bool SFAttenuation::Fit1stOrder(void)
     std::cout << "Attenuation lenght from pol1 fit is: " << att << " +/- " << err << " mm"
               << std::endl;
     std::cout << "Chi2/NDF = " << Chi2NDF << std::endl << std::endl;
+    
+    return true;
 }
 //------------------------------------------------------------------
 bool SFAttenuation::Fit3rdOrder(void)
@@ -294,7 +296,7 @@ bool SFAttenuation::AttSeparateCh(int ch)
         fResultsCh0->AddResult(SFResultTypeNum::kChi2NDF, Chi2NDF, -1);
         fSpectraCh0  = spectra;
         fAttCh0Graph = graph;
-        fResultsCh1->AddObject(SFResultTypeObj::kAttGraph, fAttCh0Graph);
+        fResultsCh0->AddObject(SFResultTypeObj::kAttGraph, fAttCh0Graph);
     }
     else if (ch == 1)
     {
@@ -318,10 +320,15 @@ std::vector<TH1D*> SFAttenuation::GetSpectra(int ch)
         std::cerr << "##### Error in SFAttenuation::GetSpectra(). Empty vector!" << std::endl;
         std::abort();
     }
+    
+    std::vector<TH1D*> spectra;
+    
     if (ch == 0)
-        return fSpectraCh0;
+        spectra = fSpectraCh0;
     else if (ch == 1)
-        return fSpectraCh1;
+        spectra = fSpectraCh1;
+    
+    return spectra;
 }
 //------------------------------------------------------------------
 /// Returns vector containing peaks (spectra after background subtraction with
@@ -335,10 +342,15 @@ std::vector<TH1D*> SFAttenuation::GetPeaks(int ch)
         std::cerr << "##### Error in SFAttenuation::GetPeaks(). Empty vector!" << std::endl;
         std::abort();
     }
+    
+    std::vector<TH1D*> peaks;
+    
     if (ch == 0)
-        return fPeaksCh0;
+        peaks = fPeaksCh0;
     else if (ch == 1)
-        return fPeaksCh1;
+        peaks = fPeaksCh1;
+    
+    return peaks;
 }
 //------------------------------------------------------------------
 /// Returns vector containing histograms with signal ratios from both channels.

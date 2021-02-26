@@ -56,13 +56,23 @@ int main(int argc, char** argv)
     }
 
     int                 npoints   = data->GetNpoints();
+    TString             testBench = data->GetTestBench();
+    TString             sipm      = data->GetSiPM();
     std::vector<double> positions = data->GetPositions();
+    
     data->Print();
+    
+    double nPE = 400.;
+    
+    if (testBench == "PL" && sipm == "SensL")
+        nPE = 150;
+    else if (testBench == "PL" && sipm == "Hamamatsu")
+        nPE = 500;
 
     SFTimeConst* tconst;
     try
     {
-        tconst = new SFTimeConst(seriesNo, 400, false);
+        tconst = new SFTimeConst(seriesNo, nPE, false);
     }
     catch (const char* message)
     {
