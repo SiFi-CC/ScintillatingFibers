@@ -25,8 +25,14 @@ target_link_libraries(temp ${FITTERFACTORY_LIBRARIES} ScintillatingFibers SiFi F
 add_executable(peakfin peakfin.cc)
 target_link_libraries(peakfin ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)
 
-add_executable(reco reco.cc)
-target_link_libraries(reco ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)
+add_executable(model model.cc)
+target_link_libraries(model ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)
+
+add_executable(energyreco energyreco.cc)
+target_link_libraries(energyreco ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)
+
+add_executable(posreco posreco.cc)
+target_link_libraries(posreco ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)
 
 add_executable(stability stability.cc)
 target_link_libraries(stability ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi FibersStack)

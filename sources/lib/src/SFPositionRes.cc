@@ -161,7 +161,6 @@ bool SFPositionRes::AnalyzePositionRes(void)
         //----- filling histogram
         for (int nloop = 0; nloop < nloopMax; ++nloop)
         {
-
             trees[npoint]->nextEvent();
             size_t tentriesMax = tSig->getEntries();
 

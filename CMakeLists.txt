@@ -46,7 +46,7 @@ add_subdirectory(sources)
 #	DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #)
 	
-install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres reco  
+install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres model energyreco posreco  
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

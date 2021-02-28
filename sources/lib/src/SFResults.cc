@@ -23,7 +23,7 @@ TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeak
                            "kPositionRes", //SFPositionRes
                            "kFastDecay", "kSlowDecay", "kIFast", "kISlow", //SFTimeConst
                            "kS0", "kMLambda", "kEtaR", "kEtaL", "kKsi", "kLength", //SFReconstrunction - model
-                           "kAlpha", "kEnergyDiffSigma", //SFReconstruction - energy reco
+                           "kAlpha", //SFReconstruction - energy reco
                            "kMLRSlope", "kMLROffset" //SFReconstruction - position reco
                            };
                        

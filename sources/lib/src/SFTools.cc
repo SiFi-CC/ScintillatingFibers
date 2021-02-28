@@ -231,14 +231,14 @@ int SFTools::GetMeasurementID(int seriesNo, double position)
 double SFTools::GetPosError(TString collimator, TString testBench)
 {
 
-    double err = -1;
+    double err = -1; //TODO check values
 
     if (collimator.Contains("Lead"))
         err = 2.0; // mm
     else if (collimator.Contains("Electronic") && testBench.Contains("DE"))
         err = 1.5; // mm
     else if (collimator.Contains("Electronic") && testBench.Contains("PL"))
-        err = 1.0; // mm
+        err = 0.5; // mm
 
     if (fabs(err + 1) < 1E-10)
     {
@@ -467,12 +467,11 @@ bool SFTools::CreateTable(TString database, TString table)
                 "'ETAR' NUMERIC, 'ETAR_ERR' NUMERIC, 'ETAL' NUMERIC, 'ETAL_ERR' NUMERIC, 'KSI' "
                 "NUMERIC, 'KSI_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
-    else if (table == "RECONSTRUCTION")
+    else if (table == "ENERGY_RECONSTRUCTION")
     {
-        query = "CREATE TABLE 'RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
-                "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
-                "TEXT, 'POS_SLOPE' NUMERIC, 'POS_SLOPE_ERR' NUMERIC, 'POS_OFF' NUMERIC, 'POS_OFF_ERR' NUMERIC "
-                "'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+        query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
+        "NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else
     {
@@ -663,6 +662,28 @@ TString SFTools::FindData(TString directory)
     std::cerr << "##### Error in SFTools::FindData()! Requested file doesn't exist!" << std::endl;
     std::cerr << "##### File path: " << path_1 << std::endl;
     std::abort();
+}
+//------------------------------------------------------------------
+bool SFTools::FitGaussSingle(TH1D* h, float range_in_RMS)
+{
+
+    float mean    = h->GetMean();
+    float rms     = h->GetRMS();
+    float fit_min = mean - (range_in_RMS * rms);
+    float fit_max = mean + (range_in_RMS * rms);
+    
+    TF1* fun = new TF1("fGauss", "gaus", fit_min, fit_max);
+    fun->SetParameters(h->GetBinContent(h->GetMaximumBin()), mean, rms);
+    h->Fit(fun, "RQ+");
+
+    std::cout << "\tFitting histogram " << h->GetName() << " ..." << std::endl;
+    std::cout << "\t\tConst = " << fun->GetParameter(0) << " +/- "
+              << fun->GetParError(0) << "\tMean = " << fun->GetParameter(1)
+              << " +/- " << fun->GetParError(1)
+              << "\tSigma = " << fun->GetParameter(2) << " +/- "
+              << fun->GetParError(2) << "\n" << std::endl;
+    
+    return true;
 }
 //------------------------------------------------------------------
 bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)

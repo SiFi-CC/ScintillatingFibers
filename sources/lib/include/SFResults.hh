@@ -64,7 +64,6 @@ enum SFResultTypeNum
 
     //----- energy reconstruction
     kAlpha,
-    kEnergyDiffSigma,
 
     //----- position reconstruction
     kMLRSlope,
