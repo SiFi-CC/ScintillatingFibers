@@ -68,6 +68,8 @@ enum SFResultTypeNum
     //----- position reconstruction
     kMLRSlope,
     kMLROffset,
+    kACoeff,
+    kBCoeff
 };
 
 enum SFResultTypeObj
@@ -98,7 +100,7 @@ enum SFResultTypeObj
     kPosRecoVsPosGraph,
     kPosResVsPosGraph,
     kMLRvsPosGraph,
-    kPRResidualGraph,
+    kResidualGraph,
 
     //----- SFReconstruction
     //----- light attenuation model
@@ -116,8 +118,6 @@ enum SFResultTypeObj
     kSrVsPosGraph,
     kPlVsPosGraph,
     kPrVsPosGraph,
-    kSMLRVsPosGraph,
-    kPMLRVsPosGraph,
 
     //----- energy reconstruction
     kAlphaGraph,
@@ -126,7 +126,7 @@ enum SFResultTypeObj
     kEnergyDiffGraph,
 
     //----- position reconstruction
-    kMPosRecoVsPosGraph
+    kAGraph
 };
 
 class SFResults : public TObject

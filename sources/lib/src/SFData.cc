@@ -10,6 +10,8 @@
 
 #include "SFData.hh"
 
+#include <memory>
+
 ClassImp(SFData);
 
 //------------------------------------------------------------------
@@ -685,13 +687,13 @@ TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
     double      position = fPositions[index];
     std::string fname    = std::string(SFTools::FindData(fNames[index])) + "/sifi_results.root";
 
+    TString hname = Form("S%i_pos%.1f_ID%i_PE%ivsPE2Correlation", fSeriesNo, position, ID, ch);
+    TH2D*   htemp = new TH2D(hname, hname, 1000, -100, 15E4, 2200, -150, 1500);
+
     SLoop* loop = new SLoop();
     loop->addFile(fname);
     loop->setInput({});
     SCategory* tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
-
-    TString hname = Form("S%i_pos%.1f_ID%i_PE%ivsPE2Correlation", fSeriesNo, position, ID, ch);
-    TH2D*   htemp = new TH2D(hname, hname, 1000, -100, 15E4, 2200, -150, 1500);
 
     int n = loop->getEntries();
 
@@ -772,6 +774,7 @@ TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
         }
     }
 
+    delete loop;
     return htemp;
 }
 //------------------------------------------------------------------
@@ -867,25 +870,30 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
     int   infile    = 0;
     bool  condition = true;
     float firstT0   = 0.;
-
+    
+//     SDDSamples* samples = nullptr;
+//     SDDSignal*  sigL    = nullptr;
+//     SDDSignal*  sigR    = nullptr;
+    
+    TProfile*  hptr = nullptr;
+    SDDSignal* sptr = nullptr;
+    
     for (int i = 0; i < nloop; ++i)
     {
 
-        // loop->nextEvent();
         loop->getEvent(i);
         size_t tentries = tSig->getEntries();
 
         for (int j = 0; j < tentries; ++j)
         {
-
             int              m, l, f;
-            SDDSamples*      samples = (SDDSamples*)tSig->getObject(j);
-            SDDSignal*       sigL    = (SDDSignal*)samples->getSignalL();
-            SDDSignal*       sigR    = (SDDSignal*)samples->getSignalR();
+            SDDSamples* samples = (SDDSamples*)tSig->getObject(j);
+            SDDSignal*  sigL    = (SDDSignal*)samples->getSignalL();
+            SDDSignal*  sigR    = (SDDSignal*)samples->getSignalR();
             samples->getAddress(m, l, f);
 
-            TProfile*  hptr = psig;
-            SDDSignal* sptr = nullptr;
+            /*TProfile**/  hptr = psig;
+            /*SDDSignal**/ sptr = nullptr;
 
             if (ch == 0 && m == 0)
             {
@@ -906,8 +914,8 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
             
             if (hptr)
             {
-                SFSignal* conv_sig = ConvertSignal(sptr);
-                condition = InterpretCut(conv_sig, cut);
+                auto conv_sig = std::unique_ptr<SFSignal>(ConvertSignal(sptr));
+                condition = InterpretCut(conv_sig.get(), cut);
                 if (condition &&
                     fabs(firstT0) < 1E-10 &&
                     conv_sig->fBLsig < BL_sigma_cut)
@@ -931,7 +939,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
                         counter++;
                     else
                         break;
-                    delete conv_sig;
+//                     delete conv_sig;
                 }
             }
         }
@@ -949,6 +957,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
         std::cout << "Position: " << position << "\t channel: " << ch << std::endl;
     }
 
+    delete loop;
     input.close();
 
     return psig;
@@ -1108,24 +1117,29 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
     int    counter   = 0;
     bool   condition = true;
 
+    //SDDSamples* samples = nullptr;
+    //SDDSignal*  sigL    = nullptr;
+    //SDDSignal*  sigR    = nullptr;
+    
+    TH1*       hptr = nullptr;
+    SDDSignal* sptr = nullptr;
+    
     for (int i = 0; i < nloop; ++i)
     {
 
-        // loop->nextEvent();
         loop->getEvent(i);
         size_t tentries = tSig->getEntries();
 
         for (int j = 0; j < tentries; ++j)
         {
-
             int              m, l, f;
-            SDDSamples*      samples = (SDDSamples*)tSig->getObject(j);
-            SDDSignal*       sigL    = (SDDSignal*)samples->getSignalL();
-            SDDSignal*       sigR    = (SDDSignal*)samples->getSignalR();
+            SDDSamples* samples = (SDDSamples*)tSig->getObject(j);
+            SDDSignal*  sigL    = (SDDSignal*)samples->getSignalL();
+            SDDSignal*  sigR    = (SDDSignal*)samples->getSignalR();
             samples->getAddress(m, l, f);
 
-            TH1*       hptr = hsig;
-            SDDSignal* sptr = nullptr;
+            /*TH1**/       hptr = hsig;
+            /*SDDSignal**/ sptr = nullptr;
 
             if (ch == 0 && m == 0)
             {
@@ -1146,8 +1160,9 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
 
             if (hptr)
             {
-                SFSignal* conv_sig = ConvertSignal(sptr);
-                condition          = InterpretCut(conv_sig, cut);
+//                 SFSignal* conv_sig = ConvertSignal(sptr);
+                auto conv_sig = std::unique_ptr<SFSignal>(ConvertSignal(sptr));
+                condition          = InterpretCut(conv_sig.get(), cut);
                 if (condition && conv_sig->fBLsig < BL_sigma_cut)
                 {
                     counter++;
@@ -1164,10 +1179,12 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
                             hptr->SetBinContent(ii, (x / gmV));
                     }
                 }
+//                 delete conv_sig;
             }
         }
     }
 
+    delete loop;
     input.close();
 
     return hsig;

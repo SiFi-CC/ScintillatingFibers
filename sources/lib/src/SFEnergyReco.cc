@@ -85,7 +85,8 @@ SFEnergyReco::SFEnergyReco(int seriesNo) : fSeriesNo(seriesNo),
 //------------------------------------------------------------------
 SFEnergyReco::~SFEnergyReco()
 {
-    if (fData != nullptr) delete fData;
+    if (fData != nullptr) 
+        delete fData;
 };
 //------------------------------------------------------------------
 bool SFEnergyReco::CalculateAlpha(void)
@@ -329,8 +330,8 @@ bool SFEnergyReco::EnergyRecoByEvent(void)
                         peCh0 > 0 && peCh1 >0)
                     {
                         double e_reco      = alpha * sqrt(peCh0 * peCh1);
-                        double e_corr_reco = alpha_corr * sqrt(fPlRecoFun->Eval(peCh0, peCh1) *
-                                                               fPrRecoFun->Eval(peCh0, peCh1));
+                        double e_corr_reco = alpha_corr * sqrt(fPlRecoFun->Eval(peCh1, peCh0) *
+                                                               fPrRecoFun->Eval(peCh1, peCh0));
                         
                         fEnergyRecoHist[npoint]->Fill(e_reco);
                         fEnergyRecoCorrHist[npoint]->Fill(e_corr_reco);

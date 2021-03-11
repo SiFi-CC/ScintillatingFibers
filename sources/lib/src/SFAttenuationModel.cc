@@ -230,7 +230,7 @@ bool SFAttenuationModel::FitModel(void)
 
     fitter.Config().SetParamsSettings(npar, par0);
 
-    fitter.Config().ParSettings(0).SetLimits(0, 500);
+    fitter.Config().ParSettings(0).SetLimits(0, 1500);
     fitter.Config().ParSettings(1).SetLimits(0, 500);
     fitter.Config().ParSettings(2).SetLimits(0, 1);
     fitter.Config().ParSettings(3).SetLimits(0, 1);

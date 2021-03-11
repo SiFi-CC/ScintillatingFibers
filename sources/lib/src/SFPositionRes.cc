@@ -80,8 +80,6 @@ bool SFPositionRes::AnalyzePositionRes(void)
     TString             testBench       = fData->GetTestBench();
     TString             sipm            = fData->GetSiPM();
 
-    std::vector<SFPeakFinder*> peakFinAv;
-
     fPosRecoVsPosGraph = new TGraphErrors(npointsMax);
     fPosRecoVsPosGraph->SetMarkerStyle(4);
     fPosRecoVsPosGraph->GetXaxis()->SetTitle("source position [mm]");
@@ -135,7 +133,6 @@ bool SFPositionRes::AnalyzePositionRes(void)
     }
 
     std::vector<TF1*>   funGaus;
-    std::vector<SLoop*> trees;
     std::vector<double> FWHM;
 
     double BL_sigma_cut = SFTools::GetSigmaBL(sipm);
@@ -146,14 +143,16 @@ bool SFPositionRes::AnalyzePositionRes(void)
         std::cout << "\t Analyzing position " << positions[npoint] << " mm..." << std::endl;
 
         //----- geting tree
-        trees.push_back(fData->GetTree(measurementsIDs[npoint]));
-        int        nloopMax = trees[npoint]->getEntries();
+        SLoop* loop = fData->GetTree(measurementsIDs[npoint]);
+        int        nloopMax = loop->getEntries();
         SCategory* tSig     = SCategoryManager::getCategory(SCategory::CatDDSamples);
 
         //----- setting energy cut
-        peakFinAv.push_back(new SFPeakFinder(fSpecAv[npoint], false));
-        peakFinAv[npoint]->FindPeakRange(xmin, xmax);
-
+        //peakFinAv.push_back(new SFPeakFinder(fSpecAv[npoint], false));
+        //peakFinAv[npoint]->FindPeakRange(xmin, xmax);
+        auto peakFinAv = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(fSpecAv[npoint], false));
+        peakFinAv->FindPeakRange(xmin, xmax);
+        
         //----- setting histogram
         TString hname = Form("hPosReco_S%i_pos%.1f", fSeriesNo, positions[npoint]);
         fPosRecoDist.push_back(new TH1D(hname, hname, 500, -50, 150));
@@ -161,7 +160,7 @@ bool SFPositionRes::AnalyzePositionRes(void)
         //----- filling histogram
         for (int nloop = 0; nloop < nloopMax; ++nloop)
         {
-            trees[npoint]->nextEvent();
+            loop->getEvent(nloop);
             size_t tentriesMax = tSig->getEntries();
 
             for (int tentries = 0; tentries < tentriesMax; ++tentries)
@@ -194,6 +193,8 @@ bool SFPositionRes::AnalyzePositionRes(void)
                 }
             }
         }
+
+        delete loop;
 
         //----- fitting histogram and calculating position resolution
         mean        = fPosRecoDist[npoint]->GetMean();
@@ -244,15 +245,15 @@ bool SFPositionRes::AnalyzePositionRes(void)
     fResidualGraph->GetXaxis()->SetTitle("source position [mm]");
     fResidualGraph->GetYaxis()->SetTitle("residual [mm]");
     fResidualGraph->SetMarkerStyle(4);
-    std::cout << "flag#6" << std::endl;
+
     double res;
     double point_x, point_y;
 
     for (int npoint = 0; npoint < npointsMax; npoint++)
     {
         fPosRecoVsPosGraph->GetPoint(npoint, point_x, point_y);
-        res = point_y - funpol1->Eval(point_x);
-        fResidualGraph->SetPoint(npoint, point_x, res);
+        res = point_y - positions[npoint];
+        fResidualGraph->SetPoint(npoint, positions[npoint], res);
     }
 
     std::cout << "Average position resolution for this series is: ";
@@ -262,7 +263,7 @@ bool SFPositionRes::AnalyzePositionRes(void)
     fResults->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoVsPosGraph);
     fResults->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResVsPosGraph);
     fResults->AddObject(SFResultTypeObj::kMLRvsPosGraph, fMLRvsPosGraph);
-    fResults->AddObject(SFResultTypeObj::kPRResidualGraph, fResidualGraph);
+    fResults->AddObject(SFResultTypeObj::kResidualGraph, fResidualGraph);
 
     return true;
 }

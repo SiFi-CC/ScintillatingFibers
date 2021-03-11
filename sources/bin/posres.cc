@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     TGraphErrors* gPosRecoVsPos = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
     TGraphErrors* gPosResVsPos = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPosResVsPosGraph);
     TGraphErrors* gAttenuation = (TGraphErrors*)results->GetObject(SFResultTypeObj::kMLRvsPosGraph);
-    TGraphErrors* gResiduals   = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPRResidualGraph);
+    TGraphErrors* gResiduals   = (TGraphErrors*)results->GetObject(SFResultTypeObj::kResidualGraph);
 
     double* posResAll    = gPosResVsPos->GetY();
     double* posResAllErr = gPosResVsPos->GetEY();
@@ -104,16 +104,15 @@ int main(int argc, char** argv)
     std::vector<TH1D*> spec     = posres->GetSpectra();
     std::vector<TH1D*> hPosReco = posres->GetPositionRecoDist();
 
-    std::vector<SFPeakFinder*> peakFinCh0;
-    std::vector<SFPeakFinder*> peakFinCh1;
+    std::vector<SFPeakFinder*> peakFinAv;
 
     std::vector<double> xmin(npoints);
     std::vector<double> xmax(npoints);
 
     for (int i = 0; i < npoints; i++)
     {
-        peakFinCh0.push_back(new SFPeakFinder(spec[i], 0));
-        peakFinCh0[i]->FindPeakRange(xmin[i], xmax[i]);
+        peakFinAv.push_back(new SFPeakFinder(spec[i], 0));
+        peakFinAv[i]->FindPeakRange(xmin[i], xmax[i]);
     }
 
     TLatex text;
@@ -152,7 +151,7 @@ int main(int argc, char** argv)
     TPad*    pad_posreco = new TPad("pad_posreco", "pad_posreco", 0, 0.3, 1, 1, 10, 0);
     TPad*    pad_res     = new TPad("pad_res", "pad_res", 0, 0, 1, 0.3, 10, 0);
 
-    can_posreco->cd(0);
+    can_posreco->cd(1);
     pad_posreco->Draw();
     pad_posreco->cd();
     pad_posreco->SetGrid(1, 1);
@@ -272,6 +271,15 @@ int main(int argc, char** argv)
         sleep(wait);
     } while (i_try > 0);
 
+    for (auto h : hPosReco)
+        delete h;
+    
+    for (auto h : spec)
+        delete h;
+    
+    for (auto pf : peakFinAv)
+        delete pf;
+    
     delete data;
     delete posres;
 

@@ -43,7 +43,6 @@ SFTimeConst::SFTimeConst(int seriesNo, double PE, bool verb) : fSeriesNo(seriesN
 /// Default destructor.
 SFTimeConst::~SFTimeConst()
 {
-    
     if (fData != nullptr) delete fData;
 }
 //------------------------------------------------------------------

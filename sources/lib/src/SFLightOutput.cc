@@ -224,9 +224,7 @@ double SFLightOutput::GetPDE(void)
 /// Default destructor.
 SFLightOutput::~SFLightOutput()
 {
-
     if (fData != nullptr) delete fData;
-
     if (fAtt != nullptr) delete fAtt;
 }
 //------------------------------------------------------------------

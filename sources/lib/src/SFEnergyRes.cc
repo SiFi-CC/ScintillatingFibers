@@ -63,7 +63,6 @@ SFEnergyRes::SFEnergyRes(int seriesNo) : fSeriesNo(seriesNo),
 /// Default destructor.
 SFEnergyRes::~SFEnergyRes()
 {
-
     if (fData != nullptr) delete fData;
 }
 //------------------------------------------------------------------

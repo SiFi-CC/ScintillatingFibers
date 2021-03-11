@@ -91,12 +91,12 @@ int main(int argc, char** argv)
     //----- getting energy reconstruction results
     TGraphErrors* gEnReco = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoGraph);
     TGraphErrors* gAlpha  = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAlphaGraph);
-    TGraphErrors* gEnDiff = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
+    //TGraphErrors* gEnDiff = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
     TF1*          fEnReco = (TF1*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoFun);
     
     TGraphErrors* gEnRecoCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoGraph);
     TGraphErrors* gAlphaCorr  = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAlphaGraph);
-    TGraphErrors* gEnDiffCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
+    //TGraphErrors* gEnDiffCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
     TF1*          fEnRecoCor  = (TF1*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoFun); 
     
     std::vector <TH1D*> hEnReco     = reco->GetEnergyRecoHistograms("experimental");
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     int col_corr = kAzure - 5;
     
     //----- drawing energy reconstruction results
-    TCanvas* can_energy_reco = new TCanvas("can_energy_reco", "can_energy_reco", 700, 500);
+    TCanvas* can_energy_reco = new TCanvas("ereco", "ereco", 700, 500);
     gPad->SetGrid(1, 1);
 
     gEnReco->SetMarkerColor(col_exp);
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 
     gEnReco->GetYaxis()->SetRangeUser(xmin-0.05*xmin, xmax+0.05*xmax);
 
-    TCanvas *can_alpha = new TCanvas("can_alpha", "can_alpha", 700, 500);
+    TCanvas *can_alpha = new TCanvas("ereco_alpha", "ereco_alpha", 700, 500);
     gPad->SetGrid(1, 1);
     
     gAlpha->SetMarkerColor(col_exp);
@@ -170,42 +170,34 @@ int main(int argc, char** argv)
                    results[1]->GetValue(SFResultTypeNum::kAlpha),
                    results[1]->GetUncertainty(SFResultTypeNum::kAlpha)));
     
-    TCanvas* can_energy_diff = new TCanvas("can_energy_diff", "can_energy_diff", 700, 500);
-    can_energy_diff->SetGrid(1, 1);
-    
-    gEnDiff->SetMarkerColor(col_exp);
-    gEnDiff->SetLineColor(col_exp);
-    gEnDiff->Draw("AP");
-    
-    gEnDiffCorr->SetMarkerColor(col_corr);
-    gEnDiffCorr->SetLineColor(col_corr);
-    gEnDiffCorr->Draw("P");
-    
-    TLegend *leg_4 = new TLegend(0.5, 0.75, 0.9, 0.9);
-    leg_4->AddEntry(gEnDiff, "energy difference", "PE");
-    leg_4->AddEntry(gEnDiffCorr, "energy difference (corrected)", "PE");
-    leg_4->Draw();
-    
-    text.SetTextColor(col_exp);
-    text.DrawLatex(0.2, 0.8, Form("#sigma_{E diff} = %.3f", 
-                   results[0]->GetValue(SFResultTypeNum::kEnergyDiffSigma)));
-    
-    text.SetTextColor(col_corr);
-    text.DrawLatex(0.2, 0.75, Form("#sigma_{E diff corr} = %.3f",
-                   results[1]->GetValue(SFResultTypeNum::kEnergyDiffSigma)));
-    
-    TLine line;
-    line.SetLineColor(kGray + 2);
-    line.SetLineStyle(9);
-    line.DrawLine(positions[0], 0, positions[npoints - 1], 0);
+//     TCanvas* can_energy_diff = new TCanvas("ereco_energy_diff", "ereco_energy_diff", 700, 500);
+//     can_energy_diff->SetGrid(1, 1);
+//     
+//     gEnDiff->SetMarkerColor(col_exp);
+//     gEnDiff->SetLineColor(col_exp);
+//     gEnDiff->Draw("AP");
+//     
+//     gEnDiffCorr->SetMarkerColor(col_corr);
+//     gEnDiffCorr->SetLineColor(col_corr);
+//     gEnDiffCorr->Draw("P");
+//     
+//     TLegend *leg_4 = new TLegend(0.5, 0.75, 0.9, 0.9);
+//     leg_4->AddEntry(gEnDiff, "energy difference", "PE");
+//     leg_4->AddEntry(gEnDiffCorr, "energy difference (corrected)", "PE");
+//     leg_4->Draw();
+//     
+//     TLine line;
+//     line.SetLineColor(kGray + 2);
+//     line.SetLineStyle(9);
+//     line.DrawLine(positions[0], 0, positions[npoints - 1], 0);
     //-----
     
     //----- drawing energy reconstruction event by event
-    TCanvas *can_ereco_byevent_exp = new TCanvas("can_ereco_byevent_exp", "ereco_byevent_exp",
+    TCanvas *can_ereco_byevent_exp = new TCanvas("ereco_byevent_exp", "ereco_byevent_exp",
                                                  2000, 1200);
     can_ereco_byevent_exp->DivideSquare(npoints);
     
-    TCanvas *can_ereco_byevent_corr = new TCanvas("can_ereco_byevent_corr", "can_ereco_byevent_corr",
+    TCanvas *can_ereco_byevent_corr = new TCanvas("ereco_byevent_corr", "ereco_byevent_corr",
                                                   2000, 1200);
     can_ereco_byevent_corr->DivideSquare(npoints);
     
@@ -258,7 +250,7 @@ int main(int argc, char** argv)
 
     can_energy_reco->Write();
     can_alpha->Write();
-    can_energy_diff->Write();
+    //can_energy_diff->Write();
     can_ereco_byevent_corr->Write();
     can_ereco_byevent_exp->Write();
     file->Close();

@@ -57,6 +57,7 @@ int SFTools::GetSeriesNo(TString hname_tstr)
     {
         std::cerr << "##### Error in SFTools::GetSeriesNo()!" << std::endl;
         std::cerr << "Cannot interpret spectrum name!" << std::endl;
+        std::cerr << hname_tstr << std::endl;
         std::abort();
     }
 
@@ -470,8 +471,17 @@ bool SFTools::CreateTable(TString database, TString table)
     else if (table == "ENERGY_RECONSTRUCTION")
     {
         query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
-        "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
-        "NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
+                "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
+                "NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
+    }
+    else if (table == "POSITION_RECONSTRUCTION")
+    {
+        query = "CREATE TABLE 'POSITION_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+                "TEXT, 'A_COEFF' NUMERIC, 'A_COEFF_ERR' NUMERIC, 'B_COEFF' NUMERIC, 'MLR_SLOPE' NUMERIC, "
+                "'MLR_SLOPE_ERR' NUMERIC, 'MLR_OFFSET' NUMERIC, 'MLR_OFFSET_ERR' NUMERIC, 'MLR_SLOPE_EXP' "
+                "NUMERIC, 'MLR_SLOPE_EXP_ERR' NUMERIC, 'MLR_OFFSET_EXP' NUMERIC, 'MLR_OFFSET_EXP_ERR' "
+                "NUMERIC, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' INTEGER, "
+                "PRIMARY KEY ('SERIES_ID'))";
     }
     else
     {
@@ -750,6 +760,7 @@ bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
         else
             fDGauss[i]->SetParameter(4, mean + rms);
         fDGauss[i]->SetParameter(5, 6E-1);
+        fDGauss[i]->SetParLimits(5, 0, 1);
         vec[i]->Fit(fDGauss[i], "QR+");
 
         std::cout << "\tFitting histogram " << vec[i]->GetName() << " ..." << std::endl;

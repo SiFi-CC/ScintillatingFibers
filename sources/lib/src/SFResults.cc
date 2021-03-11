@@ -24,7 +24,7 @@ TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeak
                            "kFastDecay", "kSlowDecay", "kIFast", "kISlow", //SFTimeConst
                            "kS0", "kMLambda", "kEtaR", "kEtaL", "kKsi", "kLength", //SFReconstrunction - model
                            "kAlpha", //SFReconstruction - energy reco
-                           "kMLRSlope", "kMLROffset" //SFReconstruction - position reco
+                           "kMLRSlope", "kMLROffset", "kACoeff", "kBCoeff" //SFReconstruction - position reco
                            };
                        
 TString gEnumNamesObj[] = {"kSpectrum", "kPeak", //SFPeakFinder
@@ -33,12 +33,12 @@ TString gEnumNamesObj[] = {"kSpectrum", "kPeak", //SFPeakFinder
                            "kEnergyResGraph", //SFEnergyRes
                            "kLightGraph", //SFLightOutput
                            "kTimeResGraph", "kTimeSigGraph", //SFTimingRes
-                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kMLRvsPosGraph", "kPRResidualGraph", //SFPositionRes
+                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kMLRvsPosGraph", "kResidualGraph", //SFPositionRes
                            "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun" //SFReconstrunction - model
-                           "kPlRecoFun", "kPrRecoFun", "kSlVsPosGraph", "kSrVsPosGraph", "kPlVsPosGraph",
-                           "kPrVsPosGraph", "kSMLRVsPosGraph", "kPMLRVsPosGraph", // SFReconstruction - components
+                           "kPlRecoFun", "kPrRecoFun", "kSlVsPosGraph", "kSrVsPosGraph",
+                           "kPlVsPosGraph", "kPrVsPosGraph", // SFReconstruction - components
                            "kAlphaGraph", "kEnergyRecoGraph", "kEnergyRecoFun", "kEnergyDiffGraph", //SFReconstruction - energy reco
-                           "kMPosRecoVsPosGraph" //SFReconstruction - position reco
+                           "kAGraph" //SFReconstruction - position reco
                        };
 //------------------------------------------------------------------
 SFResults::SFResults(TString name) : fName(name)

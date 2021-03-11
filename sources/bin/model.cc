@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     //-----
 
     //----- drawing model results
-    TCanvas* can_mod_ch = new TCanvas("can_mod_ch", "can_mod_ch", 1400, 500);
+    TCanvas* can_mod_ch = new TCanvas("mod_ch", "mod_ch", 1400, 500);
     can_mod_ch->Divide(2, 1);
     can_mod_ch->cd(1);
     gPad->SetGrid(1, 1);

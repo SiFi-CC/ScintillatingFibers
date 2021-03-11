@@ -605,7 +605,8 @@ int main(int argc, char** argv)
         delete can_ref_ch1;
     }
 
-    //----- accessing signals
+    /*********/
+    
     const int          nsig   = 6;
     int                number = 0;
     std::vector<TH1D*> hSigCh0(nsig);
@@ -622,6 +623,71 @@ int main(int argc, char** argv)
             data->GetSignal(1, measurementsIDs[npoints - 1], "", number, true);
     }
 
+    TCanvas* can_sig = new TCanvas("data_sig", "data_sig", 1800, 800);
+    can_sig->Divide(3, 2);
+
+    int    polarity = 0;
+    double min      = hSigCh0[0]->GetBinContent(hSigCh0[0]->GetMinimumBin());
+    double max      = hSigCh0[0]->GetBinContent(hSigCh0[0]->GetMaximumBin());
+
+    if (fabs(min) > max)
+    {
+        polarity = -1;
+        std::cout << "min = " << min << "\t max = " << max << std::endl;
+        std::cout << "Signals are negative, am I right?" << std::endl;
+    }
+    else
+    {
+        polarity = 1;
+        std::cout << "min = " << min << "\t max = " << max << std::endl;
+        std::cout << "Signals are positive, am I right?" << std::endl;
+    }
+
+    for (int i = 0; i < nsig; i++)
+    {
+        can_sig->cd(i + 1);
+        gPad->SetGrid(1, 1);
+
+        stringCh0 = hSigCh0[i]->GetTitle();
+        stringCh1 = hSigCh1[i]->GetTitle();
+        hSigCh0[i]->SetLineColor(colCh0);
+        hSigCh0[i]->SetTitle(" ");
+        hSigCh0[i]->GetXaxis()->SetTitle("time [ns]");
+        hSigCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
+        hSigCh0[i]->SetStats(false);
+        hSigCh1[i]->SetLineColor(colCh1);
+        hSigCh1[i]->SetStats(false);
+        hSigCh0[i]->Draw();
+        hSigCh1[i]->Draw("same");
+        if (polarity == 1)
+        {
+            double maxCh0   = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMaximumBin());
+            double maxCh1   = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMaximumBin());
+            double maxYaxis = std::max(maxCh0, maxCh1) + 10.;
+            hSigCh0[i]->GetYaxis()->SetRangeUser(-2, maxYaxis);
+        }
+        else if (polarity == -1)
+        {
+            double minCh0   = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMinimumBin());
+            double minCh1   = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMinimumBin());
+            double minYaxis = std::min(minCh0, minCh1) - 10.;
+            hSigCh0[i]->GetYaxis()->SetRangeUser(minYaxis, 20);
+        }
+        textCh0.DrawLatex(0.5, 0.6, stringCh0);
+        textCh1.DrawLatex(0.5, 0.55, stringCh1);
+    }
+    
+    file->cd();
+    can_sig->Write();
+    
+    for (auto h : hSigCh0)
+        delete h;
+    for (auto h : hSigCh1)
+        delete h;
+    delete can_sig;
+    
+    /*********/
+    
     const int              nsigav = 3;
     std::vector<TProfile*> hSigAvCh0(nsigav);
     std::vector<TProfile*> hSigAvCh1(nsigav);
@@ -670,62 +736,7 @@ int main(int argc, char** argv)
         1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", PE[1] - 0.5, PE[1] + 0.5), 20, true);
     hSigAvCh1[2] = data->GetSignalAverage(
         1, ID, Form("ch_1.fPE>%f && ch_1.fPE<%f", PE[2] - 0.5, PE[2] + 0.5), 20, true);
-
-    //----- drawing signals
-    TCanvas* can_sig = new TCanvas("data_sig", "data_sig", 1800, 800);
-    can_sig->Divide(3, 2);
-
-    int    polarity = 0;
-    double min      = hSigAvCh0[0]->GetBinContent(hSigAvCh0[0]->GetMinimumBin());
-    double max      = hSigAvCh0[0]->GetBinContent(hSigAvCh0[0]->GetMaximumBin());
-
-    if (fabs(min) > max)
-    {
-        polarity = -1;
-        std::cout << "min = " << min << "\t max = " << max << std::endl;
-        std::cout << "Signals are negative, am I right?" << std::endl;
-    }
-    else
-    {
-        polarity = 1;
-        std::cout << "min = " << min << "\t max = " << max << std::endl;
-        std::cout << "Signals are positive, am I right?" << std::endl;
-    }
-
-    for (int i = 0; i < nsig; i++)
-    {
-        can_sig->cd(i + 1);
-        gPad->SetGrid(1, 1);
-
-        stringCh0 = hSigCh0[i]->GetTitle();
-        stringCh1 = hSigCh1[i]->GetTitle();
-        hSigCh0[i]->SetLineColor(colCh0);
-        hSigCh0[i]->SetTitle(" ");
-        hSigCh0[i]->GetXaxis()->SetTitle("time [ns]");
-        hSigCh0[i]->GetYaxis()->SetTitle("amplitude [mV]");
-        hSigCh0[i]->SetStats(false);
-        hSigCh1[i]->SetLineColor(colCh1);
-        hSigCh1[i]->SetStats(false);
-        hSigCh0[i]->Draw();
-        hSigCh1[i]->Draw("same");
-        if (polarity == 1)
-        {
-            double maxCh0   = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMaximumBin());
-            double maxCh1   = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMaximumBin());
-            double maxYaxis = std::max(maxCh0, maxCh1) + 10.;
-            hSigCh0[i]->GetYaxis()->SetRangeUser(-2, maxYaxis);
-        }
-        else if (polarity == -1)
-        {
-            double minCh0   = hSigCh0[i]->GetBinContent(hSigCh0[i]->GetMinimumBin());
-            double minCh1   = hSigCh1[i]->GetBinContent(hSigCh1[i]->GetMinimumBin());
-            double minYaxis = std::min(minCh0, minCh1) - 10.;
-            hSigCh0[i]->GetYaxis()->SetRangeUser(minYaxis, 20);
-        }
-        textCh0.DrawLatex(0.5, 0.6, stringCh0);
-        textCh1.DrawLatex(0.5, 0.55, stringCh1);
-    }
-
+    
     TCanvas* can_sigav = new TCanvas("data_sigav", "data_sigav", 1800, 800);
     can_sigav->Divide(3, 2);
 
@@ -782,17 +793,12 @@ int main(int argc, char** argv)
     }
 
     file->cd();
-    can_sig->Write();
     can_sigav->Write();
-    for (auto h : hSigCh0)
-        delete h;
-    for (auto h : hSigCh1)
-        delete h;
+
     for (auto h : hSigAvCh0)
         delete h;
     for (auto h : hSigAvCh1)
         delete h;
-    delete can_sig;
     delete can_sigav;
 
     file->Close();

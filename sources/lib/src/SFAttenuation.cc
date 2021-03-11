@@ -74,7 +74,7 @@ bool SFAttenuation::AttCombinedCh(void)
     std::vector<double> sigmas = {s, s};
     TString             cut    = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
     fRatios                    = fData->GetCustomHistograms(SFSelectionType::kLogSqrtPERatio, cut);
-
+    
     std::vector<TF1*> fun;
 
     TString gname = Form("att_s%i", fSeriesNo);
@@ -272,13 +272,13 @@ bool SFAttenuation::AttSeparateCh(int ch)
     if (ch == 0)
     {
         fexp = new TF1("funCh0", "[0]*exp(-x/[1])", positions[0], positions[npoints - 1]);
-        fexp->SetParameters(500, 200);
+        fexp->SetParameters(1000, 100);
     }
     else if (ch == 1)
     {
         fexp = new TF1("funCh1", "[0]*exp(-([2]-x)/[1])", positions[0], positions[npoints - 1]);
-        fexp->SetParameter(0, 500);
-        fexp->SetParameter(1, 200);
+        fexp->SetParameter(0, 1000);
+        fexp->SetParameter(1, 100);
         fexp->FixParameter(2, fiberLen);
     }
 
