@@ -472,6 +472,7 @@ bool SFTools::CreateTable(TString database, TString table)
     {
         query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
+                "NUMERIC, 'ERES_EXP' NUMERIC, 'ERES_EXP_ERR' NUMERIC, 'ERES_CORR' NUMERIC, 'ERES_CORR_ERR' " 
                 "NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "POSITION_RECONSTRUCTION")
@@ -760,7 +761,7 @@ bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
         else
             fDGauss[i]->SetParameter(4, mean + rms);
         fDGauss[i]->SetParameter(5, 6E-1);
-        fDGauss[i]->SetParLimits(5, 0, 1);
+        fDGauss[i]->SetParLimits(5, 0, 0.5);
         vec[i]->Fit(fDGauss[i], "QR+");
 
         std::cout << "\tFitting histogram " << vec[i]->GetName() << " ..." << std::endl;

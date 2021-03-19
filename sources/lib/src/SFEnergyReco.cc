@@ -19,16 +19,16 @@ SFEnergyReco::SFEnergyReco(int seriesNo) : fSeriesNo(seriesNo),
                                            fMAttCh1Graph(nullptr),
                                            fMAttCh0CorrGraph(nullptr),
                                            fMAttCh1CorrGraph(nullptr),
-                                           fSlFun(nullptr),
-                                           fSrFun(nullptr),
                                            fPlRecoFun(nullptr),
                                            fPrRecoFun(nullptr),
                                            fEnergyRecoGraph(nullptr),
                                            fEnergyRecoCorrGraph(nullptr),
                                            fEnergyAlphaGraph(nullptr),
                                            fEnergyAlphaCorrGraph(nullptr),
-                                           fEnergyDiffGraph(nullptr),
-                                           fEnergyDiffCorrGraph(nullptr),
+                                           fEnergyRecoSpecGraph(nullptr),
+                                           fEnergyRecoSpecCorrGraph(nullptr),
+                                           fEnergyResGraph(nullptr),
+                                           fEnergyResCorrGraph(nullptr),
                                            fResultsExp(nullptr),
                                            fResultsCorr(nullptr),
                                            fEref(511.0)
@@ -72,9 +72,6 @@ SFEnergyReco::SFEnergyReco(int seriesNo) : fSeriesNo(seriesNo),
     fMAttCh1Graph     = (TGraphErrors*)model_res->GetObject(SFResultTypeObj::kSrVsPosGraph);
     fMAttCh0CorrGraph = (TGraphErrors*)model_res->GetObject(SFResultTypeObj::kPlVsPosGraph);
     fMAttCh1CorrGraph = (TGraphErrors*)model_res->GetObject(SFResultTypeObj::kPrVsPosGraph);
-    
-    fSlFun = (TF1*)model_res->GetObject(SFResultTypeObj::kSlFun);
-    fSrFun = (TF1*)model_res->GetObject(SFResultTypeObj::kSrFun);
 
     fPlRecoFun = (TF2*)model_res->GetObject(SFResultTypeObj::kPlRecoFun);
     fPrRecoFun = (TF2*)model_res->GetObject(SFResultTypeObj::kPrRecoFun);
@@ -259,49 +256,66 @@ bool SFEnergyReco::EnergyRecoByEvent(void)
     std::vector<int>    measurementsIDs = fData->GetMeasurementsIDs();
 
     //----- setting up graphs start
-    fEnergyDiffGraph = new TGraphErrors(npointsMax);
-    fEnergyDiffGraph->SetName("fEnergyDiffGraph");
-    fEnergyDiffGraph->SetTitle("(E_{reco} - E_{ref}) vs. position");
-    fEnergyDiffGraph->GetXaxis()->SetTitle("source position [mm]");
-    fEnergyDiffGraph->GetYaxis()->SetTitle("E_{reco}-E_{ref} [keV]");
-    fEnergyDiffGraph->SetMarkerStyle(4);
+    fEnergyRecoSpecGraph = new TGraphErrors(npointsMax);
+    fEnergyRecoSpecGraph->SetName("fEnergyRecoSpecGraph");
+    fEnergyRecoSpecGraph->SetTitle("(E_{reco} - E_{ref}) vs. position");
+    fEnergyRecoSpecGraph->GetXaxis()->SetTitle("source position [mm]");
+    fEnergyRecoSpecGraph->GetYaxis()->SetTitle("E_{reco}-E_{ref} [keV]");
+    fEnergyRecoSpecGraph->SetMarkerStyle(4);
     
-    fEnergyDiffCorrGraph = new TGraphErrors(npointsMax);
-    fEnergyDiffCorrGraph->SetName("fEnergyDiffCorrGraph");
-    fEnergyDiffCorrGraph->SetTitle("(E_{reco corr} - E_{ref}) vs. position");
-    fEnergyDiffCorrGraph->GetXaxis()->SetTitle("source position [mm]");
-    fEnergyDiffCorrGraph->GetYaxis()->SetTitle("E_{reco corr}-E_{ref} [keV]");
-    fEnergyDiffCorrGraph->SetMarkerStyle(8);
+    fEnergyRecoSpecCorrGraph = new TGraphErrors(npointsMax);
+    fEnergyRecoSpecCorrGraph->SetName("fEnergyRecoSpecCorrGraph");
+    fEnergyRecoSpecCorrGraph->SetTitle("(E_{reco corr} - E_{ref}) vs. position");
+    fEnergyRecoSpecCorrGraph->GetXaxis()->SetTitle("source position [mm]");
+    fEnergyRecoSpecCorrGraph->GetYaxis()->SetTitle("E_{reco corr}-E_{ref} [keV]");
+    fEnergyRecoSpecCorrGraph->SetMarkerStyle(8);
+    
+    fEnergyResGraph = new TGraphErrors(npointsMax);
+    fEnergyResGraph->SetName("fEnergyRes");
+    fEnergyResGraph->SetTitle("Energy resolution");
+    fEnergyResGraph->GetXaxis()->SetTitle("source position [mm]");
+    fEnergyResGraph->GetYaxis()->SetTitle("energy resolution [%]");
+    fEnergyResGraph->SetMarkerStyle(4);
+    
+    fEnergyResCorrGraph = new TGraphErrors(npointsMax);
+    fEnergyResCorrGraph->SetName("fEnergyRes");
+    fEnergyResCorrGraph->SetTitle("Energy resolution (corrected)");
+    fEnergyResCorrGraph->GetXaxis()->SetTitle("source position [mm]");
+    fEnergyResCorrGraph->GetYaxis()->SetTitle("energy resolution [%]");
+    fEnergyResCorrGraph->SetMarkerStyle(8);
     //----- setting up graphs end
     
     //----- energy reconstruction event by event start
     double BL_sigma_cut = SFTools::GetSigmaBL(sipm);
-    
-    std::vector<SLoop*> trees; 
 
     double alpha          = fResultsExp->GetValue(SFResultTypeNum::kAlpha);
     double alpha_corr     = fResultsCorr->GetValue(SFResultTypeNum::kAlpha);
+    
+    double eres_exp_sum    = 0;
+    double eres_exp_sumerr = 0;
+    double eres_cor_sum    = 0;
+    double eres_cor_sumerr = 0;
     
     for (int npoint = 0; npoint < npointsMax; npoint++)
     {
         std::cout << "\t Analyzing position " << positions[npoint] << " mm..." << std::endl;
         
         //----- getting tree
-        trees.push_back(fData->GetTree(measurementsIDs[npoint]));
-        int        nloopMax = trees[npoint]->getEntries();
+        SLoop*     loop     = fData->GetTree(measurementsIDs[npoint]);
+        int        nloopMax = loop->getEntries();
         SCategory* tSig     = SCategoryManager::getCategory(SCategory::CatDDSamples);
         
         //----- setting histograms
         TString hname_e = Form("hEnergyRecoExp_S%i_pos%.1f", fSeriesNo, positions[npoint]);
         TString hname_c = Form("hEnergyRecoCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
         
-        fEnergyRecoHist.push_back(new TH1D(hname_e, hname_e, 500, 0, 1000));
-        fEnergyRecoCorrHist.push_back(new TH1D(hname_c, hname_c, 500, 0, 1000));
+        fEnergySpectra.push_back(new TH1D(hname_e, hname_e, 500, 0, 1000));
+        fEnergySpectraCorr.push_back(new TH1D(hname_c, hname_c, 500, 0, 1000));
         
         //----- filling histograms
         for (int nloop = 0; nloop < nloopMax; nloop++)
         {
-            trees[npoint]->nextEvent();
+            loop->getEvent(nloop);
             size_t tentriesMax = tSig->getEntries();
             
             for (int tentries = 0; tentries < tentriesMax; tentries++)
@@ -333,38 +347,71 @@ bool SFEnergyReco::EnergyRecoByEvent(void)
                         double e_corr_reco = alpha_corr * sqrt(fPlRecoFun->Eval(peCh1, peCh0) *
                                                                fPrRecoFun->Eval(peCh1, peCh0));
                         
-                        fEnergyRecoHist[npoint]->Fill(e_reco);
-                        fEnergyRecoCorrHist[npoint]->Fill(e_corr_reco);
+                        fEnergySpectra[npoint]->Fill(e_reco);
+                        fEnergySpectraCorr[npoint]->Fill(e_corr_reco);
                     }
                     
                 }
             }
         }
         
-        double mean, sigma;
+        double mean, mean_err;
+        double sigma, sigma_err;
         
-        //TODO fitting of energy-reconstructed spectra
+        auto pf_exp = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(fEnergySpectra[npoint], false));
+        pf_exp->FindPeakFit();
         
-        //SFTools::FitGaussSingle(fEnergyRecoHist[npoint], 5);
-        //mean  = fEnergyRecoHist[npoint]->GetFunction("fGauss")->GetParameter(1);
-        //sigma = fEnergyRecoHist[npoint]->GetFunction("fGauss")->GetParameter(2);
-        mean = 1;
-        sigma = 0;
-        fEnergyDiffGraph->SetPoint(npoint, positions[npoint], mean / fEref);
-        fEnergyDiffGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), sigma / fEref);
+        mean      = pf_exp->GetResults()->GetValue(SFResultTypeNum::kPeakPosition);
+        mean_err  = pf_exp->GetResults()->GetUncertainty(SFResultTypeNum::kPeakPosition);
+        sigma     = pf_exp->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
+        sigma_err = pf_exp->GetResults()->GetUncertainty(SFResultTypeNum::kPeakSigma);
+        double eres_exp = sigma / mean;
+        double eres_exp_err = eres_exp * sqrt(pow((mean_err / mean), 2) 
+                                       + pow((sigma_err / sigma), 2));
         
-        //SFTools::FitGaussSingle(fEnergyRecoCorrHist[npoint], 5);
-        //mean  = fEnergyRecoCorrHist[npoint]->GetFunction("fGauss")->GetParameter(1);
-        //sigma = fEnergyRecoCorrHist[npoint]->GetFunction("fGauss")->GetParameter(2);
-        fEnergyDiffCorrGraph->SetPoint(npoint, positions[npoint], mean / fEref);
-        fEnergyDiffCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), sigma / fEref);
+        fEnergyRecoSpecGraph->SetPoint(npoint, positions[npoint], mean / fEref);
+        fEnergyRecoSpecGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), sigma / fEref);
+        fEnergyResGraph->SetPoint(npoint, positions[npoint], eres_exp);
+        fEnergyResGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), eres_exp_err);
+        
+        eres_exp_sum += eres_exp * (1. / pow(eres_exp_err, 2));
+        eres_exp_sumerr += (1. / pow(eres_exp_err, 2));
+        
+        auto pf_corr = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(fEnergySpectraCorr[npoint], false));
+        pf_corr->FindPeakFit();
+        
+        mean      = pf_corr->GetResults()->GetValue(SFResultTypeNum::kPeakPosition);
+        mean_err  = pf_corr->GetResults()->GetUncertainty(SFResultTypeNum::kPeakPosition);
+        sigma     = pf_corr->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
+        sigma_err = pf_corr->GetResults()->GetUncertainty(SFResultTypeNum::kPeakSigma);
+        double eres_cor = sigma / mean;
+        double eres_cor_err = eres_cor * sqrt(pow((mean_err / mean), 2) 
+                                       + pow((sigma_err / sigma), 2));
+        
+        fEnergyRecoSpecCorrGraph->SetPoint(npoint, positions[npoint], mean / fEref);
+        fEnergyRecoSpecCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), sigma / fEref);
+        fEnergyResCorrGraph->SetPoint(npoint, positions[npoint], eres_cor);
+        fEnergyResCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), eres_cor_err);
+        
+        eres_cor_sum += eres_cor * (1. / pow(eres_cor_err, 2));
+        eres_cor_sumerr += (1. / pow(eres_cor_err, 2));
     }
     //----- energy reconstruction end
     
-    //----- setting results start
-    fResultsCorr->AddObject(SFResultTypeObj::kEnergyDiffGraph, fEnergyDiffCorrGraph);
+    double eres_exp_av    = eres_exp_sum / eres_exp_sumerr; 
+    double eres_exp_averr = sqrt(1. / eres_exp_sumerr);
     
-    fResultsExp->AddObject(SFResultTypeObj::kEnergyDiffGraph, fEnergyDiffGraph);
+    double eres_cor_av    = eres_cor_sum / eres_cor_sumerr;
+    double eres_cor_averr = sqrt(1. / eres_cor_sumerr);
+    
+    //----- setting results start
+    fResultsCorr->AddObject(SFResultTypeObj::kEnergyRecoSpecGraph, fEnergyRecoSpecCorrGraph);
+    fResultsCorr->AddObject(SFResultTypeObj::kEnergyResGraph, fEnergyResGraph);
+    fResultsCorr->AddResult(SFResultTypeNum::kEnergyRes, eres_cor_av, eres_cor_averr);
+    
+    fResultsExp->AddObject(SFResultTypeObj::kEnergyRecoSpecGraph, fEnergyRecoSpecGraph);
+    fResultsExp->AddObject(SFResultTypeObj::kEnergyResGraph, fEnergyResCorrGraph);
+    fResultsExp->AddResult(SFResultTypeNum::kEnergyRes, eres_exp_av, eres_exp_averr);
     //----- setting results end
     
     return true;
@@ -395,10 +442,10 @@ std::vector<SFResults*> SFEnergyReco::GetResults(void)
     return results;
 }
 //------------------------------------------------------------------
-std::vector<TH1D*> SFEnergyReco::GetEnergyRecoHistograms(TString type)
+std::vector<TH1D*> SFEnergyReco::GetEnergySpectra(TString type)
 {
-    if ((type == "experimental" && fEnergyRecoHist.empty()) || 
-        (type == "corrected" && fEnergyRecoCorrHist.empty()))
+    if ((type == "experimental" && fEnergySpectra.empty()) || 
+        (type == "corrected" && fEnergySpectraCorr.empty()))
     {
         std::cerr << "##### Error in SFEnergyReco::GetEnergyRecoHistograms(). Empty vector!" << std::endl;
         std::abort();
@@ -407,9 +454,9 @@ std::vector<TH1D*> SFEnergyReco::GetEnergyRecoHistograms(TString type)
     std::vector<TH1D*> hist;
     
     if (type == "experimental")
-        hist = fEnergyRecoHist;
+        hist = fEnergySpectra;
     else if (type == "corrected")
-        hist = fEnergyRecoCorrHist;
+        hist = fEnergySpectraCorr;
     else
     {
         std::cerr << "##### Error in SFEnergyReco::GetEnergyRecoHistograms()!" << std::endl;

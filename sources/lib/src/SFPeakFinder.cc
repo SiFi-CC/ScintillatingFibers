@@ -116,9 +116,11 @@ TString SFPeakFinder::Init(void)
     TString conf_name = "/fitconfig.txt";
 
     TString functions = "gaus(0) pol0(3)+[4]*TMath::Exp((x-[5])*[6])";
-    TString hnames[3] = {Form("S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[index], ID),
+    TString hnames[5] = {Form("S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[index], ID),
                          Form("S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[index], ID),
-                         Form("S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[index], ID)};
+                         Form("S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[index], ID),
+                         Form("hEnergyRecoExp_S%i_pos%.1f", seriesNo, positions[index]),
+                         Form("hEnergyRecoCorr_S%i_pos%.1f", seriesNo, positions[index])};
 
     std::fstream test(full_path + conf_name, std::ios::in);
 
@@ -166,6 +168,24 @@ TString SFPeakFinder::Init(void)
                    << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
                    << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
         }
+        
+        par0 = 200;
+        par1 = 511;
+        par2 = 30;
+        par3 = 10;
+        par4 = 500;
+        par5 = 100;
+        par6 = -0.02;
+        xmin = par0 - (par2 * 3.5);
+        xmax = par0 + (par2 * 4.5);
+        
+        for (int i = 3; i < 5; i++)
+        {
+            config << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
+                   << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
+                   << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
+        }
+        
         config.close();
     }
     else
@@ -262,7 +282,7 @@ bool SFPeakFinder::FindPeakFit(void)
     fitter.updateParams(fSpectrum, histFP);
     fitter.exportFactoryToFile();
     fFittedFun = (TF1*)histFP.funSum->Clone();
-    fFittedFun->Print();
+    //fFittedFun->Print();
 
     if (fFittedFun == nullptr)
     {

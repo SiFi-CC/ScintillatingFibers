@@ -207,8 +207,8 @@ bool SFPositionRes::AnalyzePositionRes(void)
         mean    = funGaus[npoint]->GetParameter(1);
         meanErr = funGaus[npoint]->GetParError(1);
         if (npoint == 0) FWHM.resize(2);
-        FWHM[0] = 2.35 * funGaus[npoint]->GetParameter(2);
-        FWHM[1] = 2.35 * funGaus[npoint]->GetParError(2);
+        FWHM[0] = 2 * sqrt(2 * log(2)) * funGaus[npoint]->GetParameter(2);
+        FWHM[1] = 2 * sqrt(2 * log(2)) * funGaus[npoint]->GetParError(2);
         // }
         // else
         // {

@@ -375,22 +375,22 @@ bool SFPositionReco::PositionReco(void)
 
         delete loop;
 
-        double mean, mean_err, sigma, sigma_err;
+        double mean, mean_err, fwhm, fwhm_err;
         
         SFTools::FitGaussSingle(fRecoPositionsCorrHist[npoint], 5);
-        mean      = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(1);
-        mean_err  = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(1);
-        sigma     = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(2);
-        sigma_err = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(2);
+        mean     = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(1);
+        mean_err = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(1);
+        fwhm     = 2 * sqrt(2 * log(2)) *fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(2);
+        fwhm_err = 2 * sqrt(2 * log(2)) * fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(2);
 
         fPosRecoCorrGraph->SetPoint(npoint, positions[npoint], mean);
         fPosRecoCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), mean_err);
         
-        fPosResCorrGraph->SetPoint(npoint, positions[npoint], sigma);
-        fPosResCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), sigma_err);
+        fPosResCorrGraph->SetPoint(npoint, positions[npoint], fwhm);
+        fPosResCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), fwhm_err);
         
-        posResSum    += sigma * (1. / pow(sigma_err, 2));
-        posResSumErr += 1. / pow(sigma_err, 2);
+        posResSum    += fwhm * (1. / pow(fwhm_err, 2));
+        posResSumErr += 1. / pow(fwhm_err, 2);
     }
 
     double posResAv    = posResSum / posResSumErr;

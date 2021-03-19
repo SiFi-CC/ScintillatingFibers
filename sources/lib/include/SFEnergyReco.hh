@@ -32,20 +32,23 @@ class SFEnergyReco : public TObject
     TGraphErrors* fMAttCh0CorrGraph;
     TGraphErrors* fMAttCh1CorrGraph;
     
-    TF1* fSlFun;
-    TF1* fSrFun;
     TF2* fPlRecoFun;
     TF2* fPrRecoFun;
 
     TGraphErrors* fEnergyRecoGraph;
     TGraphErrors* fEnergyRecoCorrGraph;
+    
     TGraphErrors* fEnergyAlphaGraph;
     TGraphErrors* fEnergyAlphaCorrGraph;
-    TGraphErrors* fEnergyDiffGraph;
-    TGraphErrors* fEnergyDiffCorrGraph;
     
-    std::vector<TH1D*> fEnergyRecoHist;
-    std::vector<TH1D*> fEnergyRecoCorrHist;
+    TGraphErrors* fEnergyRecoSpecGraph;
+    TGraphErrors* fEnergyRecoSpecCorrGraph;
+    
+    TGraphErrors* fEnergyResGraph;
+    TGraphErrors* fEnergyResCorrGraph;
+    
+    std::vector<TH1D*> fEnergySpectra;
+    std::vector<TH1D*> fEnergySpectraCorr;
     
     SFResults* fResultsExp;
     SFResults* fResultsCorr;
@@ -61,7 +64,7 @@ class SFEnergyReco : public TObject
     bool EnergyRecoByEvent(void);
 
     std::vector<SFResults*> GetResults(void);
-    std::vector<TH1D*>      GetEnergyRecoHistograms(TString type);
+    std::vector<TH1D*>      GetEnergySpectra(TString type);
 
     void Print(void);
 

@@ -90,17 +90,19 @@ int main(int argc, char** argv)
 
     //----- getting energy reconstruction results
     TGraphErrors* gEnReco = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoGraph);
-    TGraphErrors* gAlpha  = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAlphaGraph);
-    //TGraphErrors* gEnDiff = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
+    TGraphErrors* gAlpha = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAlphaGraph);
+    TGraphErrors* gEnRecoSpec = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoSpecGraph);
+    TGraphErrors* gEnRes = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyResGraph);
     TF1*          fEnReco = (TF1*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoFun);
     
     TGraphErrors* gEnRecoCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoGraph);
     TGraphErrors* gAlphaCorr  = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAlphaGraph);
-    //TGraphErrors* gEnDiffCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyDiffGraph);
+    TGraphErrors* gEnRecoSpecCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoSpecGraph);
+    TGraphErrors* gEnResCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyResGraph);
     TF1*          fEnRecoCor  = (TF1*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoFun); 
     
-    std::vector <TH1D*> hEnReco     = reco->GetEnergyRecoHistograms("experimental");
-    std::vector <TH1D*> hEnRecoCorr = reco->GetEnergyRecoHistograms("corrected");
+    std::vector <TH1D*> hEnReco     = reco->GetEnergySpectra("experimental");
+    std::vector <TH1D*> hEnRecoCorr = reco->GetEnergySpectra("corrected");
     //-----
 
     int col_exp  = kMagenta -3;
@@ -121,10 +123,10 @@ int main(int argc, char** argv)
     gEnRecoCorr->Draw("P");
     gEnRecoCorr->GetFunction("funPol0")->SetLineColor(col_corr);
 
-    TLegend* leg_2 = new TLegend(0.5, 0.75, 0.9, 0.9);
-    leg_2->AddEntry(gEnReco, "reconstructed energy", "PE");
-    leg_2->AddEntry(gEnRecoCorr, "reconstructed energy (corrected)", "PE");
-    leg_2->Draw();
+    TLegend* leg_1 = new TLegend(0.5, 0.75, 0.9, 0.9);
+    leg_1->AddEntry(gEnReco, "reconstructed energy", "PE");
+    leg_1->AddEntry(gEnRecoCorr, "reconstructed energy (corrected)", "PE");
+    leg_1->Draw();
 
     double xmin = TMath::Min(TMath::MinElement(npoints, gEnReco->GetY()),
                              TMath::MinElement(npoints, gEnRecoCorr->GetY()));
@@ -146,10 +148,10 @@ int main(int argc, char** argv)
     gAlphaCorr->Draw("P");
     gAlphaCorr->GetFunction("fun_alpha_corr")->SetLineColor(col_corr);
     
-    TLegend* leg_3 = new TLegend(0.5, 0.5, 0.90, 0.6);
-    leg_3->AddEntry(gAlpha, "#alpha coefficient", "PE");
-    leg_3->AddEntry(gAlphaCorr, "#alpha coefficient (corrected)", "PE");
-    leg_3->Draw();
+    TLegend* leg_2 = new TLegend(0.5, 0.5, 0.90, 0.6);
+    leg_2->AddEntry(gAlpha, "#alpha coefficient", "PE");
+    leg_2->AddEntry(gAlphaCorr, "#alpha coefficient (corrected)", "PE");
+    leg_2->Draw();
     
     xmin = TMath::Min(TMath::MinElement(npoints, gAlpha->GetY()),
                       TMath::MinElement(npoints, gAlphaCorr->GetY()));
@@ -170,26 +172,57 @@ int main(int argc, char** argv)
                    results[1]->GetValue(SFResultTypeNum::kAlpha),
                    results[1]->GetUncertainty(SFResultTypeNum::kAlpha)));
     
-//     TCanvas* can_energy_diff = new TCanvas("ereco_energy_diff", "ereco_energy_diff", 700, 500);
-//     can_energy_diff->SetGrid(1, 1);
-//     
-//     gEnDiff->SetMarkerColor(col_exp);
-//     gEnDiff->SetLineColor(col_exp);
-//     gEnDiff->Draw("AP");
-//     
-//     gEnDiffCorr->SetMarkerColor(col_corr);
-//     gEnDiffCorr->SetLineColor(col_corr);
-//     gEnDiffCorr->Draw("P");
-//     
-//     TLegend *leg_4 = new TLegend(0.5, 0.75, 0.9, 0.9);
-//     leg_4->AddEntry(gEnDiff, "energy difference", "PE");
-//     leg_4->AddEntry(gEnDiffCorr, "energy difference (corrected)", "PE");
-//     leg_4->Draw();
-//     
-//     TLine line;
-//     line.SetLineColor(kGray + 2);
-//     line.SetLineStyle(9);
-//     line.DrawLine(positions[0], 0, positions[npoints - 1], 0);
+    TCanvas* can_erecospec = new TCanvas("ereco_erecospec", "ereco_erecospec", 700, 500);
+    can_erecospec->SetGrid(1, 1);
+    
+    gEnRecoSpec->SetMarkerColor(col_exp);
+    gEnRecoSpec->SetLineColor(col_exp);
+    gEnRecoSpec->Draw("AP");
+    
+    gEnRecoSpecCorr->SetMarkerColor(col_corr);
+    gEnRecoSpecCorr->SetLineColor(col_corr);
+    gEnRecoSpecCorr->Draw("P");
+    
+    xmin = TMath::Min(TMath::MinElement(npoints, gEnRecoSpec->GetY()),
+                      TMath::MinElement(npoints, gEnRecoSpecCorr->GetY()));
+    xmax = TMath::Max(TMath::MaxElement(npoints, gEnRecoSpec->GetY()),
+                      TMath::MaxElement(npoints, gEnRecoSpecCorr->GetY()));
+    
+    gEnRecoSpec->GetYaxis()->SetRangeUser(xmin-0.05*xmin, xmax+0.05*xmax);
+    
+    TLegend *leg_3 = new TLegend(0.5, 0.75, 0.9, 0.9);
+    leg_3->AddEntry(gEnRecoSpec, "from experimental data", "PE");
+    leg_3->AddEntry(gEnRecoSpecCorr, "from corrected data", "PE");
+    leg_3->Draw();
+    
+    TCanvas* can_eres = new TCanvas("ereco_eres", "ereco_eres", 1200, 600);
+    can_eres->Divide(2, 1);
+    
+    can_eres->cd(1);
+    gPad->SetGrid(1, 1);
+    
+    gEnRes->SetTitle(Form("Energy Resolution S%i (from experimental data)", seriesNo));
+    gEnRes->SetMarkerColor(col_exp);
+    gEnRes->SetLineColor(col_exp);
+    gEnRes->Draw("AP");
+    
+    text.SetTextColor(col_exp);
+    text.DrawLatex(0.75, 0.75, Form("ER = (%.3f +/- %.3f) %%",
+                   results[0]->GetValue(SFResultTypeNum::kEnergyRes),
+                   results[0]->GetUncertainty(SFResultTypeNum::kEnergyRes)));
+    
+    can_eres->cd(2);
+    gPad->SetGrid(1, 1);
+    
+    gEnResCorr->SetTitle(Form("Energy Resolution S%i (from corrected data)", seriesNo));
+    gEnResCorr->SetMarkerColor(col_corr);
+    gEnRecoCorr->SetLineColor(col_corr);
+    gEnRecoCorr->Draw("P");
+    
+    text.SetTextColor(col_exp);
+    text.DrawLatex(0.75, 0.75, Form("ER = (%.3f +/- %.3f) %%",
+                   results[1]->GetValue(SFResultTypeNum::kEnergyRes),
+                   results[1]->GetUncertainty(SFResultTypeNum::kEnergyRes)));
     //-----
     
     //----- drawing energy reconstruction event by event
@@ -203,6 +236,10 @@ int main(int argc, char** argv)
     
     text.SetTextColor(kBlack);
     
+    TLine line;
+    line.SetLineColor(kRed);
+    line.SetLineStyle(9);
+    
     for (int i = 0; i < npoints; i++)
     {
         can_ereco_byevent_exp->cd(i + 1);
@@ -211,6 +248,7 @@ int main(int argc, char** argv)
         hEnReco[i]->GetXaxis()->SetTitle("reconstructed energy [keV]");
         hEnReco[i]->GetYaxis()->SetTitle("counts");
         hEnReco[i]->SetStats(0);
+        line.DrawLine(511, 0, 511, 350);
         //text.DrawLatex(0.2, 0.8, Form("#mu_{Ereco} = %.2f +/- %.2f", 
         //               hEnReco[i]->GetFunction("fGauss")->GetParameter(1),
         //               hEnReco[i]->GetFunction("fGauss")->GetParError(1)));
@@ -224,6 +262,7 @@ int main(int argc, char** argv)
         hEnRecoCorr[i]->GetXaxis()->SetTitle("reconstructed energy [keV]");
         hEnRecoCorr[i]->GetYaxis()->SetTitle("counts");
         hEnRecoCorr[i]->SetStats(0);
+        line.DrawLine(511, 0, 511, 350);
         //text.DrawLatex(0.2, 0.8, Form("#mu_{Ereco} = %.2f +/- %.2f", 
         //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParameter(1),
         //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParError(1)));
@@ -250,20 +289,25 @@ int main(int argc, char** argv)
 
     can_energy_reco->Write();
     can_alpha->Write();
-    //can_energy_diff->Write();
+    can_erecospec->Write();
+    can_eres->Write();
     can_ereco_byevent_corr->Write();
     can_ereco_byevent_exp->Write();
     file->Close();
 
     //-----writing results to the data base
     TString table = "ENERGY_RECONSTRUCTION";
-    TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ALPHA_EXP, ALPHA_EXP_ERR, "
-                           "ALPHA_CORR, ALPHA_CORR_ERR) VALUES (%i, '%s', %f, %f, %f, %f)",
-                           table.Data(), seriesNo, fname_full.Data(),
-                           results[0]->GetValue(SFResultTypeNum::kAlpha),
-                           results[0]->GetUncertainty(SFResultTypeNum::kAlpha),
-                           results[1]->GetValue(SFResultTypeNum::kAlpha),
-                           results[1]->GetUncertainty(SFResultTypeNum::kAlpha));
+    TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ALPHA_EXP, "
+                         "ALPHA_EXP_ERR, ALPHA_CORR, ALPHA_CORR_ERR, ERES_EXP, ERES_EXP_ERR, "
+                         "ERES_CORR, ERES_CORR_ERR) VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, " "%f, %f)", table.Data(), seriesNo, fname_full.Data(),
+                         results[0]->GetValue(SFResultTypeNum::kAlpha),
+                         results[0]->GetUncertainty(SFResultTypeNum::kAlpha),
+                         results[1]->GetValue(SFResultTypeNum::kAlpha),
+                         results[1]->GetUncertainty(SFResultTypeNum::kAlpha),
+                         results[0]->GetValue(SFResultTypeNum::kEnergyRes),
+                         results[0]->GetUncertainty(SFResultTypeNum::kEnergyRes),
+                         results[1]->GetValue(SFResultTypeNum::kEnergyRes),
+                         results[1]->GetUncertainty(SFResultTypeNum::kEnergyRes));
     
     const int max_tries = 20;
     int       i_try     = max_tries;
@@ -283,6 +327,12 @@ int main(int argc, char** argv)
         std::cout << "----- waiting " << wait << " s" << std::endl;
         sleep(wait);
     } while (i_try > 0);
+    
+    for (auto h : hEnReco)
+        delete h;
+    
+    for (auto h : hEnRecoCorr)
+        delete h;
     
     delete data;
     delete reco;

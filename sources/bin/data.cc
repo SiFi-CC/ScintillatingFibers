@@ -720,6 +720,7 @@ int main(int argc, char** argv)
         PE[2] = 400.;
     }
 
+    //int ID = SFTools::GetMeasurementID(seriesNo, 45.0);
     int ID = SFTools::GetMeasurementID(seriesNo, 50.0);
     // int ID = SFTools::GetMeasurementID(seriesNo, 12.0);
 

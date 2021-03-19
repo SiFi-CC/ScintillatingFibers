@@ -123,7 +123,7 @@ enum SFResultTypeObj
     kAlphaGraph,
     kEnergyRecoGraph,
     kEnergyRecoFun,
-    kEnergyDiffGraph,
+    kEnergyRecoSpecGraph,
 
     //----- position reconstruction
     kAGraph
