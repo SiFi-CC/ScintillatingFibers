@@ -12,8 +12,6 @@
 #include "SFAttenuationModel.hh"
 #include "common_options.h"
 
-#include <DistributionContext.h>
-
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLegend.h>
@@ -101,6 +99,13 @@ int main(int argc, char** argv)
     can_mod_ch->cd(1);
     gPad->SetGrid(1, 1);
 
+    TString hname = Form("Series %i, channels 0 & 1 attenuation curves", seriesNo);
+    TH1D *h = new TH1D("h", hname, 100, 0, 100);
+    h->GetXaxis()->SetTitle("source position [mm]");
+    h->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
+    h->SetStats(false);
+    h->Draw();
+    
     gCh0->SetMarkerColor(kBlue - 3);
     gCh0->SetLineColor(kBlue - 3);
     gCh0Corr->SetMarkerColor(kBlue - 3);
@@ -121,13 +126,12 @@ int main(int argc, char** argv)
     funRr->SetLineStyle(9);
     funSr->SetLineColor(kTeal - 7);
 
-    gCh0->Draw("AP");
+    gCh0->Draw("P");
     gCh1->Draw("P");
     gCh0Corr->Draw("P");
     gCh1Corr->Draw("P");
 
-    gCh0->GetYaxis()->SetRangeUser(0, funPl->Eval(0) + (0.3 * funPl->Eval(0)));
-    gCh0->SetTitle("");
+    h->GetYaxis()->SetRangeUser(0, funPl->Eval(0) + (0.3 * funPl->Eval(0)));
 
     funPl->Draw("same");
     funPr->Draw("same");

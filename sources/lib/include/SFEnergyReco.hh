@@ -34,18 +34,6 @@ class SFEnergyReco : public TObject
     
     TF2* fPlRecoFun;
     TF2* fPrRecoFun;
-
-    TGraphErrors* fEnergyRecoGraph;
-    TGraphErrors* fEnergyRecoCorrGraph;
-    
-    TGraphErrors* fEnergyAlphaGraph;
-    TGraphErrors* fEnergyAlphaCorrGraph;
-    
-    TGraphErrors* fEnergyRecoSpecGraph;
-    TGraphErrors* fEnergyRecoSpecCorrGraph;
-    
-    TGraphErrors* fEnergyResGraph;
-    TGraphErrors* fEnergyResCorrGraph;
     
     std::vector<TH1D*> fEnergySpectra;
     std::vector<TH1D*> fEnergySpectraCorr;

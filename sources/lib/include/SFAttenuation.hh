@@ -43,9 +43,6 @@ class SFAttenuation : public TObject
                                     ///< [not used at the moment]
 
     TGraphErrors* fAttGraph;    ///< Attenuation graph i.e. ln(M_LR) vs. source position
-    TGraphErrors* fSigmaGraph;  ///< Graph sigma of ln(M_LR) vs. source position
-    TGraphErrors* fAttCh0Graph; ///< Attenuation graph for channel 0
-    TGraphErrors* fAttCh1Graph; ///< Attenuation graph for channel 1
 
     SFResults* fResultsCh0;      ///< Results of attenuation analysis for channel 0
     SFResults* fResultsCh1;      ///< Results of attenuation analysis for channel 1

@@ -12,7 +12,7 @@
 #include "SFData.hh"
 #include "common_options.h"
 
-#include <DistributionContext.h>
+//#include <DistributionContext.h>
 
 #include <TCanvas.h>
 #include <TLatex.h>
@@ -60,10 +60,11 @@ int main(int argc, char** argv)
     }
 
     int                 npoints    = data->GetNpoints();
-    int                 anaGroup   = data->GetAnalysisGroup();
+    //int               anaGroup   = data->GetAnalysisGroup();
     TString             collimator = data->GetCollimator();
     TString             sipm       = data->GetSiPM();
     std::vector<double> positions  = data->GetPositions();
+    std::vector<int>    ID         = data->GetMeasurementsIDs();
 
     SFAttenuation* att;
     try
@@ -76,7 +77,7 @@ int main(int argc, char** argv)
         std::cerr << "##### Exception in attenuation.cc!" << std::endl;
         return 1;
     }
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     //----- analysis
     att->AttCombinedCh();
     att->AttSeparateCh(0);
@@ -170,9 +171,9 @@ int main(int argc, char** argv)
     text.SetTextSize(0.02);
 
     TF1* fun;
-    TF1* fun_clone = new TF1("fun_clone", "gaus", -1, 1);
-    TF1* fthin     = new TF1("fthin", "gaus", -1, 1);
-    TF1* fthick    = new TF1("fthick", "gaus", -1, 1);
+    TF1* fun_clone = new TF1("fun_clone", "gaus", -1.5, 1.5);
+    TF1* fthin     = new TF1("fthin", "gaus", -1.5, 1.5);
+    TF1* fthick    = new TF1("fthick", "gaus", -1.5, 1.5);
     text.SetTextSize(0.045);
 
     for (int i = 0; i < npoints; i++)
@@ -212,11 +213,18 @@ int main(int argc, char** argv)
     TCanvas* can_separate_ch = new TCanvas("att_separate_ch", "att_separate_ch", 700, 500);
     gPad->SetGrid(1, 1);
 
+    TString hname = Form("Series %i, channels 0 & 1 attenuation curves", seriesNo);
+    TH1D *h = new TH1D("h", hname, 100, 0, 100);
+    h->GetXaxis()->SetTitle("source position [mm]");
+    h->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
+    h->SetStats(false);
+    h->Draw();
+    
     attGraphCh0->SetTitle(Form("Series %i channel 0, attenuation curve", seriesNo));
     attGraphCh0->GetYaxis()->SetTitleSize(0.03);
     attGraphCh0->SetMarkerColor(kPink - 8);
     attGraphCh0->SetLineColor(kPink - 8);
-    attGraphCh0->Draw("AP");
+    attGraphCh0->Draw("P");
     attGraphCh0->GetFunction("funCh0")->SetLineColor(kPink - 8);
     text.SetTextColor(kPink - 8);
     text.DrawLatex(0.3, 0.8, Form("L_{att Ch0} = (%.2f +/- %.2f) mm",
@@ -247,43 +255,92 @@ int main(int argc, char** argv)
     double  ymaxCh1 = TMath::MaxElement(npoints, yCh1);
     double  ymax    = TMath::Max(ymaxCh0, ymaxCh1);
 
-    attGraphCh0->GetYaxis()->SetRangeUser(ymin - 0.2 * ymin, ymax + 0.1 * ymax);
-
+    h->GetYaxis()->SetRangeUser(ymin - 0.2 * ymin, ymax + 0.1 * ymax);
+    
     TCanvas* can_spectra_ch0 = new TCanvas("att_spectra_ch0", "att_spectra_ch0", 2000, 1200);
     can_spectra_ch0->DivideSquare(npoints);
 
     TCanvas* can_spectra_ch1 = new TCanvas("att_spectra_ch1", "att_spectra_ch1", 2000, 1200);
     can_spectra_ch1->DivideSquare(npoints);
 
+    double min_yaxis = 0.;
+    double max_yaxis_0 =  SFTools::FindMaxYaxis(spectraCh0[npoints-1]);
+    double max_yaxis_1 =  SFTools::FindMaxYaxis(spectraCh1[0]);
+    
+    double min_xaxis = 10.;
+    double max_xaxis = SFTools::FindMaxXaxis(spectraCh0[0]);
+    
+    text.SetTextColor(kBlack);
+    text.SetTextSize(0.040);
+    TString fun_name;
+    
     for (int i = 0; i < npoints; i++)
     {
         can_spectra_ch0->cd(i + 1);
         gPad->SetGrid(1, 1);
         spectraCh0[i]->SetStats(false);
         spectraCh0[i]->GetXaxis()->SetRangeUser(0, 1200);
-        spectraCh0[i]->SetTitle(
-            Form("PE spectrum S%i Ch0, source position %.2f mm", seriesNo, positions[i]));
-        spectraCh0[i]->GetXaxis()->SetTitle("P.E.");
+        spectraCh0[i]->SetTitle(Form("PE spectrum S%i Ch0, source position %.2f mm",
+                                     seriesNo, positions[i]));
+        spectraCh0[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        spectraCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
+        spectraCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
         spectraCh0[i]->GetYaxis()->SetTitle("counts");
-        ctx.configureFromJson("hSpec");
-        //    ctx.print();
-        spectraCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        spectraCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //ctx.configureFromJson("hSpec");
+        //ctx.print();
+        //spectraCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //spectraCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         spectraCh0[i]->GetYaxis()->SetMaxDigits(2);
         spectraCh0[i]->Draw();
+        
+        fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
+        TF1 *fun_tmp_ch0 = spectraCh0[i]->GetFunction(fun_name);
+        
+        if (fun_tmp_ch0)
+        {
+            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
+                           fun_tmp_ch0->GetChisquare() / fun_tmp_ch0->GetNDF()));
+            text.DrawLatex(0.65, 0.70, Form("c = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(0), fun_tmp_ch0->GetParError(0)));
+            text.DrawLatex(0.65, 0.65, Form("#mu = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(1), fun_tmp_ch0->GetParError(1)));
+            text.DrawLatex(0.65, 0.60, Form("#sigma = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(2), fun_tmp_ch0->GetParError(2)));
+        }
+        else 
+            gPad->SetFillColor(kGray);
 
         can_spectra_ch1->cd(i + 1);
         gPad->SetGrid(1, 1);
         spectraCh1[i]->SetStats(false);
         spectraCh1[i]->GetXaxis()->SetRangeUser(0, 1200);
-        spectraCh1[i]->SetTitle(
-            Form("PE spectrum S%i Ch1, source position %.2f mm", seriesNo, positions[i]));
-        spectraCh1[i]->GetXaxis()->SetTitle("P.E.");
+        spectraCh1[i]->SetTitle(Form("PE spectrum S%i Ch1, source position %.2f mm",
+                                     seriesNo, positions[i]));
+        spectraCh1[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        spectraCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
+        spectraCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
         spectraCh1[i]->GetYaxis()->SetTitle("counts");
-        spectraCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        spectraCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //spectraCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //spectraCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         spectraCh1[i]->GetYaxis()->SetMaxDigits(2);
         spectraCh1[i]->Draw();
+        
+        fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
+        TF1* fun_tmp_ch1 = spectraCh0[i]->GetFunction(fun_name);
+        
+        if (fun_tmp_ch1)
+        {
+            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
+                           fun_tmp_ch1->GetChisquare() / fun_tmp_ch1->GetNDF()));
+            text.DrawLatex(0.65, 0.70, Form("c = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(0), fun_tmp_ch0->GetParError(0)));
+            text.DrawLatex(0.65, 0.65, Form("#mu = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(1), fun_tmp_ch0->GetParError(1)));
+            text.DrawLatex(0.65, 0.60, Form("#sigma = %.3f +/- %.3f", 
+                           fun_tmp_ch0->GetParameter(2), fun_tmp_ch0->GetParError(2)));
+        }
+        else 
+            gPad->SetFillColor(kGray);
     }
 
     //----- saving
@@ -310,20 +367,19 @@ int main(int argc, char** argv)
 
     //----- writing results to the data base
     TString table = "ATTENUATION_LENGTH";
-    TString query = Form(
-        "INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, "
-        "ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, "
-        "ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f,"
-        "%f, %f, %f, %f, %f, %f)",
-        table.Data(), seriesNo, fname_full.Data(), 
-        results[0]->GetValue(SFResultTypeNum::kLambda),
-        results[0]->GetUncertainty(SFResultTypeNum::kLambda), 
-        results[1]->GetValue(SFResultTypeNum::kLambda),
-        results[1]->GetUncertainty(SFResultTypeNum::kLambda),
-        results[2]->GetValue(SFResultTypeNum::kLambda),
-        results[2]->GetUncertainty(SFResultTypeNum::kLambda),
-        results[3]->GetValue(SFResultTypeNum::kLambda),
-        results[3]->GetValue(SFResultTypeNum::kLambda));
+    TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, "
+                         "ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, "
+                         "ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f,"
+                         "%f, %f, %f, %f, %f, %f)",
+                         table.Data(), seriesNo, fname_full.Data(), 
+                         results[0]->GetValue(SFResultTypeNum::kLambda),
+                         results[0]->GetUncertainty(SFResultTypeNum::kLambda), 
+                         results[1]->GetValue(SFResultTypeNum::kLambda),
+                         results[1]->GetUncertainty(SFResultTypeNum::kLambda),
+                         results[2]->GetValue(SFResultTypeNum::kLambda),
+                         results[2]->GetUncertainty(SFResultTypeNum::kLambda),
+                         results[3]->GetValue(SFResultTypeNum::kLambda),
+                         results[3]->GetValue(SFResultTypeNum::kLambda));
 
     const int max_tries = 20;
     int       i_try     = max_tries;

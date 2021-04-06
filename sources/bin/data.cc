@@ -12,7 +12,7 @@
 #include "SFDrawCommands.hh"
 #include "common_options.h"
 
-#include <DistributionContext.h>
+// #include <DistributionContext.h>
 
 #include <TCanvas.h>
 #include <TF1.h>
@@ -67,13 +67,13 @@ int main(int argc, char** argv)
     }
 
     int                 npoints         = data->GetNpoints();
-    int                 anaGroup        = data->GetAnalysisGroup();
+//     int                 anaGroup        = data->GetAnalysisGroup();
     std::vector<double> positions       = data->GetPositions();
     std::vector<int>    measurementsIDs = data->GetMeasurementsIDs();
     TString             collimator      = data->GetCollimator();
     TString             fiber           = data->GetFiber();
     data->Print();
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     // gStyle->SetPalette(53);
     int colCh0 = kPink - 8;
     int colCh1 = kAzure - 6;
@@ -150,14 +150,22 @@ int main(int argc, char** argv)
     TCanvas* can_ampl = new TCanvas("data_ampl", "data_ampl", 2000, 1200);
     can_ampl->DivideSquare(npoints);
 
+    double amp_min_yaxis = 0.;
+    double amp_max_yaxis =  SFTools::FindMaxYaxis(hAmpCh1[0]);
+    
     for (int i = 0; i < npoints; i++)
     {
         can_ampl->cd(i + 1);
         gPad->SetGrid(1, 1);
         stringCh0 = hAmpCh0[i]->GetTitle();
         stringCh1 = hAmpCh1[i]->GetTitle();
-        ctx.configureFromJson("hAmpCh0");
-        hAmpCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //ctx.configureFromJson("hAmpCh0");
+        //hAmpCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //maxCh0 = hAmpCh0[i]->GetBinContent(hAmpCh0[i]->GetMaximumBin());
+        //maxCh1 = hAmpCh1[i]->GetBinContent(hAmpCh1[i]->GetMaximumBin());
+        //max_tmp = std::max(maxCh0, maxCh1);
+        //hAmpCh0[i]->GetYaxis()->SetRangeUser(0, max_tmp + 0.1 * max_tmp);
+        hAmpCh0[i]->GetYaxis()->SetRangeUser(amp_min_yaxis, amp_max_yaxis);
         hAmpCh0[i]->SetTitle(Form("Amplitude spectrum, source position %.2f mm", positions[i]));
         hAmpCh0[i]->GetXaxis()->SetTitle("signal amplitude [mV]");
         hAmpCh0[i]->GetYaxis()->SetTitle("counts");
@@ -168,7 +176,8 @@ int main(int argc, char** argv)
         hAmpCh1[i]->SetStats(false);
         hAmpCh0[i]->Draw();
         hAmpCh1[i]->Draw("same");
-        line.DrawLine(ampMax, ctx.y.min, ampMax, ctx.y.max);
+        //line.DrawLine(ampMax, ctx.y.min, ampMax, ctx.y.max);
+        line.DrawLine(ampMax, amp_min_yaxis, ampMax, amp_max_yaxis);
         textCh0.DrawLatex(0.3, 0.8, stringCh0);
         textCh1.DrawLatex(0.3, 0.75, stringCh1);
     }
@@ -188,15 +197,27 @@ int main(int argc, char** argv)
     TCanvas* can_charge = new TCanvas("data_charge", "data_charge", 2000, 1200);
     can_charge->DivideSquare(npoints);
 
+    double q_min_yaxis = 0.;
+    double q_max_yaxis =  SFTools::FindMaxYaxis(hChargeCh1[0]);
+    
+    double q_min_xaxis = 10.;
+    double q_max_xaxis = SFTools::FindMaxXaxis(hChargeCh0[0]);
+
     for (int i = 0; i < npoints; i++)
     {
         can_charge->cd(i + 1);
         gPad->SetGrid(1, 1);
         stringCh0 = hChargeCh0[i]->GetTitle();
         stringCh1 = hChargeCh1[i]->GetTitle();
-        ctx.configureFromJson("hChargeCh0");
-        hChargeCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
-        hChargeCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //ctx.configureFromJson("hChargeCh0");
+        //hChargeCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //hChargeCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //maxCh0 = hChargeCh0[i]->GetBinContent(hChargeCh0[i]->GetMaximumBin());
+        //maxCh1 = hChargeCh1[i]->GetBinContent(hChargeCh1[i]->GetMaximumBin());
+        //max_q = std::max(maxCh0, maxCh1);
+        //hChargeCh0[i]->GetYaxis()->SetRangeUser(0, max_q + max_q * 0.1);
+        hChargeCh0[i]->GetYaxis()->SetRangeUser(q_min_yaxis, q_max_yaxis);
+        hChargeCh0[i]->GetXaxis()->SetRangeUser(q_min_xaxis, q_max_xaxis);
         hChargeCh0[i]->SetTitle(Form("Charge spectrum, source position %.2f mm", positions[i]));
         hChargeCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
         hChargeCh0[i]->GetYaxis()->SetTitle("counts");
@@ -220,11 +241,50 @@ int main(int argc, char** argv)
 
     /*********/
 
+    std::vector<TH2D*> hCorrPE =
+        data->GetCorrHistograms(SFSelectionType::kPECorrelation, cutCh0 + " && " + cutCh1);
+
+    TCanvas* can_charge_corr = new TCanvas("data_charge_corr", "data_charge_corr", 2000, 1200);
+    can_charge_corr->DivideSquare(npoints);
+
+    for (int i = 0; i < npoints; i++)
+    {
+        can_charge_corr->cd(i + 1);
+        gPad->SetGrid(1, 1);
+        string = hCorrPE[i]->GetTitle();
+        hCorrPE[i]->SetTitle(Form("Charge correlation spectrum, source "
+                             "position %.2f mm", positions[i]));
+        hCorrPE[i]->GetXaxis()->SetTitle("Ch1 charge [P.E.]");
+        hCorrPE[i]->GetYaxis()->SetTitle("Ch0 charge [P.E.]");
+        //ctx.configureFromJson("hCorrPE");
+        //hCorrPE[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //hCorrPE[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //hCorrPE[i]->GetXaxis()->SetRangeUser(0, max_q + 0.1 * max_q);
+        //hCorrPE[i]->GetYaxis()->SetRangeUser(0, max_q + 0.1 * max_q);
+        hCorrPE[i]->GetXaxis()->SetRangeUser(0, q_max_xaxis);
+        hCorrPE[i]->GetYaxis()->SetRangeUser(0, q_max_xaxis);
+        hCorrPE[i]->SetStats(false);
+        hCorrPE[i]->Draw("colz");
+        fdiag = new TF1("fdiag", "x[0]", q_min_xaxis, q_max_xaxis);
+        fdiag->Draw("same");
+        text.DrawLatex(0.15, 0.85, string);
+    }
+    file->cd();
+    can_charge_corr->Write();
+    for (auto h : hCorrPE)
+        delete h;
+    delete can_charge_corr;
+
+    /*********/
+
     std::vector<TH1D*> hT0Ch0 = data->GetSpectra(0, SFSelectionType::kT0, cutCh0);
     std::vector<TH1D*> hT0Ch1 = data->GetSpectra(1, SFSelectionType::kT0, cutCh1);
 
     TCanvas* can_t0 = new TCanvas("data_t0", "data_t0", 2000, 1200);
     can_t0->DivideSquare(npoints);
+
+    double t0_min_yaxis = 0.;
+    double t0_max_yaxis =  SFTools::FindMaxYaxis(hT0Ch0[4]);
 
     for (int i = 0; i < npoints; i++)
     {
@@ -232,11 +292,12 @@ int main(int argc, char** argv)
         gPad->SetGrid(1, 1);
         stringCh0       = hT0Ch0[i]->GetTitle();
         stringCh1       = hT0Ch0[i]->GetTitle();
-        double maxCh0   = hT0Ch0[i]->GetBinContent(hT0Ch0[i]->GetMaximumBin());
-        double maxCh1   = hT0Ch1[i]->GetBinContent(hT0Ch1[i]->GetMaximumBin());
-        double maxYaxis = std::max(maxCh0, maxCh1);
-        maxYaxis += maxYaxis * 0.1;
-        hT0Ch0[i]->GetYaxis()->SetRangeUser(0, maxYaxis);
+        //double maxCh0   = hT0Ch0[i]->GetBinContent(hT0Ch0[i]->GetMaximumBin());
+        //double maxCh1   = hT0Ch1[i]->GetBinContent(hT0Ch1[i]->GetMaximumBin());
+        //double maxYaxis = std::max(maxCh0, maxCh1);
+        //maxYaxis += maxYaxis * 0.1;
+        //hT0Ch0[i]->GetYaxis()->SetRangeUser(0, maxYaxis);
+        hT0Ch0[i]->GetYaxis()->SetRangeUser(t0_min_yaxis, t0_max_yaxis);
         hT0Ch0[i]->SetTitle(Form("T_{0} spectrum, source position %.2f mm", positions[i]));
         hT0Ch0[i]->GetXaxis()->SetTitle("time [ns]");
         hT0Ch0[i]->GetYaxis()->SetTitle("counts");
@@ -270,15 +331,27 @@ int main(int argc, char** argv)
     TCanvas* can_tot = new TCanvas("data_tot", "data_tot", 2000, 1200);
     can_tot->DivideSquare(npoints);
 
+    double tot_min_yaxis = 0.;
+    double tot_max_yaxis =  SFTools::FindMaxYaxis(hTOTCh0[4]);
+    
+    double tot_min_xaxis = 10.;
+    double tot_max_xaxis = SFTools::FindMaxXaxis(hTOTCh0[4]);
+
     for (int i = 0; i < npoints; i++)
     {
         can_tot->cd(i + 1);
         gPad->SetGrid(1, 1);
         stringCh0 = hTOTCh0[i]->GetTitle();
         stringCh1 = hTOTCh1[i]->GetTitle();
-        ctx.configureFromJson("hTOTCh0");
-        hTOTCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
-        hTOTCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //ctx.configureFromJson("hTOTCh0");
+        //hTOTCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //hTOTCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //maxCh0 = hTOTCh0[i]->GetBinContent(hTOTCh0[i]->GetMaximumBin());
+        //maxCh1 = hTOTCh1[i]->GetBinContent(hTOTCh1[i]->GetMaximumBin());
+        //max_tmp = std::max(maxCh0, maxCh1);
+        //hTOTCh0[i]->GetYaxis()->SetRangeUser(0, max_tmp + 0.1 * max_tmp);
+        hTOTCh0[i]->GetYaxis()->SetRangeUser(tot_min_yaxis, tot_max_yaxis);
+        hTOTCh0[i]->GetXaxis()->SetRangeUser(tot_min_xaxis, tot_max_xaxis);
         hTOTCh0[i]->SetTitle(Form("TOT spectrum, source position %.2f mm", positions[i]));
         hTOTCh0[i]->GetXaxis()->SetTitle("time [ns]");
         hTOTCh0[i]->GetYaxis()->SetTitle("counts");
@@ -402,38 +475,6 @@ int main(int argc, char** argv)
 
     /*********/
 
-    std::vector<TH2D*> hCorrPE =
-        data->GetCorrHistograms(SFSelectionType::kPECorrelation, cutCh0 + " && " + cutCh1);
-
-    TCanvas* can_charge_corr = new TCanvas("data_charge_corr", "data_charge_corr", 2000, 1200);
-    can_charge_corr->DivideSquare(npoints);
-
-    for (int i = 0; i < npoints; i++)
-    {
-        can_charge_corr->cd(i + 1);
-        gPad->SetGrid(1, 1);
-        string = hCorrPE[i]->GetTitle();
-        hCorrPE[i]->SetTitle(Form("Charge correlation spectrum, source "
-                             "position %.2f mm", positions[i]));
-        hCorrPE[i]->GetXaxis()->SetTitle("Ch1 charge [P.E.]");
-        hCorrPE[i]->GetYaxis()->SetTitle("Ch0 charge [P.E.]");
-        ctx.configureFromJson("hCorrPE");
-        hCorrPE[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        hCorrPE[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
-        hCorrPE[i]->SetStats(false);
-        hCorrPE[i]->Draw("colz");
-        fdiag = new TF1("fdiag", "x[0]", 0, ctx.x.max);
-        fdiag->Draw("same");
-        text.DrawLatex(0.15, 0.85, string);
-    }
-    file->cd();
-    can_charge_corr->Write();
-    for (auto h : hCorrPE)
-        delete h;
-    delete can_charge_corr;
-
-    /*********/
-
     std::vector<TH2D*> hCorrT0 =
         data->GetCorrHistograms(SFSelectionType::kT0Correlation, cutCh0Ch1);
 
@@ -478,8 +519,9 @@ int main(int argc, char** argv)
                                     "position %.2f mm", positions[i]));
         hAmpPECh0[i]->GetXaxis()->SetTitle("Charge [PE]");
         hAmpPECh0[i]->GetYaxis()->SetTitle("Amplitude [mV]");
-        hAmpPECh0[i]->GetXaxis()->SetRangeUser(-10, ctx.x.max);
-        hAmpPECh0[i]->GetYaxis()->SetRangeUser(-10, 800);
+        //hAmpPECh0[i]->GetXaxis()->SetRangeUser(-10, ctx.x.max);
+        //hAmpPECh0[i]->GetXaxis()->SetRangeUser(-10, max_q + 0.1 * max_q);
+        hAmpPECh0[i]->GetXaxis()->SetRangeUser(0, q_max_xaxis);
         hAmpPECh0[i]->SetStats(false);
         hAmpPECh0[i]->Draw("colz");
         text.DrawLatex(0.15, 0.85, string);
@@ -507,7 +549,9 @@ int main(int argc, char** argv)
                                     "position %.2f mm", positions[i]));
         hAmpPECh1[i]->GetXaxis()->SetTitle("Charge [PE]");
         hAmpPECh1[i]->GetYaxis()->SetTitle("Amplitude [mV]");
-        hAmpPECh1[i]->GetXaxis()->SetRangeUser(-10, ctx.x.max);
+        //hAmpPECh1[i]->GetXaxis()->SetRangeUser(-10, ctx.x.max);
+        //hAmpPECh1[i]->GetXaxis()->SetRangeUser(-10, max_q + 0.1 * max_q);
+        hAmpPECh1[i]->GetXaxis()->SetRangeUser(0, q_max_xaxis);
         hAmpPECh1[i]->GetYaxis()->SetRangeUser(-10, 800);
         hAmpPECh1[i]->SetStats(false);
         hAmpPECh1[i]->Draw("colz");
@@ -564,9 +608,10 @@ int main(int argc, char** argv)
                                             "position %.2f mm", positions[i]));
             hChargeCh0Ch2[i]->GetXaxis()->SetTitle("Ch2 charge [PE]");
             hChargeCh0Ch2[i]->GetYaxis()->SetTitle("Ch0 charge [a.u.]");
-            ctx.configureFromJson("hChargeChXCh2");
+            //ctx.configureFromJson("hChargeChXCh2");
             hChargeCh0Ch2[i]->GetXaxis()->SetRangeUser(0, 120E3);
-            hChargeCh0Ch2[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+            //hChargeCh0Ch2[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+            hChargeCh0Ch2[i]->GetYaxis()->SetRangeUser(0, q_max_xaxis);
             hChargeCh0Ch2[i]->SetStats(false);
             hChargeCh0Ch2[i]->Draw("colz");
             text.DrawLatex(0.15, 0.85, string);
@@ -593,7 +638,8 @@ int main(int argc, char** argv)
             hChargeCh1Ch2[i]->GetXaxis()->SetTitle("Ch2 charge [PE]");
             hChargeCh1Ch2[i]->GetYaxis()->SetTitle("Ch1 charge [a.u.]");
             hChargeCh1Ch2[i]->GetXaxis()->SetRangeUser(0, 120E3);
-            hChargeCh1Ch2[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+//             hChargeCh1Ch2[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+            hChargeCh1Ch2[i]->GetYaxis()->SetRangeUser(0, q_max_xaxis);
             hChargeCh1Ch2[i]->SetStats(false);
             hChargeCh1Ch2[i]->Draw("colz");
             text.DrawLatex(0.15, 0.85, string);

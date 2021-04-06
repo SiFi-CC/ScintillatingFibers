@@ -288,6 +288,7 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
     {
         case SFCutType::kSpecCh0:
             cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fVeto == 0 && "
                              "SDDSamples.data.signal_l.fBL_sigma<%f && "
                              "SDDSamples.data.signal_l.fPE>0 && "
                              "SDDSamples.data.signal_l.fT0>0 && "
@@ -298,6 +299,7 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
             break;
         case SFCutType::kSpecCh0A:
             cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fVeto == 0 && "
                              "SDDSamples.data.signal_l.fBL_sigma<%f && "
                              "SDDSamples.data.signal_l.fPE>0 && "
                              "SDDSamples.data.signal_l.fT0>0 && "
@@ -307,6 +309,7 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
             break;
         case SFCutType::kSpecCh1:
             cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_r.fVeto == 0 && "
                              "SDDSamples.data.signal_r.fBL_sigma<%f && "
                              "SDDSamples.data.signal_r.fPE>0 && "
                              "SDDSamples.data.signal_r.fT0>0 && "
@@ -317,6 +320,7 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
             break;
         case SFCutType::kSpecCh1A:
             cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_r.fVeto == 0 && "
                              "SDDSamples.data.signal_r.fBL_sigma<%f && "
                              "SDDSamples.data.signal_r.fPE>0 && "
                              "SDDSamples.data.signal_r.fT0>0 && "
@@ -326,6 +330,7 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
             break;
         case SFCutType::kSpecCh2:
             cutString = Form("SDDSamples.data.module==1 && "
+                             "SDDSamples.data.signal_l.fVeto == 0 && "
                              "SDDSamples.data.signal_l.fBL_sigma<%f && "
                              "SDDSamples.data.signal_l.fPE>0 && "
                              "SDDSamples.data.signal_l.fT0>0 && "
@@ -335,6 +340,8 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
             break;
         case SFCutType::kCombCh0Ch1:
             cutString = Form("SDDSamples.data.module==0 && "
+                             "SDDSamples.data.signal_l.fVeto == 0 && "
+                             "SDDSamples.data.signal_r.fVeto == 0 && "
                              "SDDSamples.data.signal_l.fBL_sigma<%f && "
                              "SDDSamples.data.signal_r.fBL_sigma<%f && "
                              "SDDSamples.data.signal_l.fPE>0 && "
@@ -352,6 +359,8 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
         case SFCutType::kT0Diff:
             cutString =
                 Form("SDDSamples.data.module==0 && "
+                     "SDDSamples.data.signal_l.fVeto == 0 && "
+                     "SDDSamples.data.signal_r.fVeto == 0 && "
                      "SDDSamples.data.signal_l.fBL_sigma<%f && "
                      "SDDSamples.data.signal_r.fBL_sigma<%f && "
                      "SDDSamples.data.signal_l.fPE>%f && "
@@ -372,6 +381,8 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
         case SFCutType::kT0DiffECut:
             cutString =
                 Form("SDDSamples.data.module==0 && "
+                     "SDDSamples.data.signal_l.fVeto == 0 && "
+                     "SDDSamples.data.signal_r.fVeto == 0 && "
                      "SDDSamples.data.signal_l.fAmp<%f && "
                      "SDDSamples.data.signal_r.fAmp<%f && "
                      "SDDSamples.data.signal_l.fBL_sigma<%f && "

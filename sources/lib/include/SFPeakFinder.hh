@@ -50,17 +50,21 @@ class SFPeakFinder : public TObject
     TH1D*      fSpectrum;  ///< Analyzed experimental spectrum
     TH1D*      fPeak;      ///< Histogram with the chosen peak after background subtraction
     TF1*       fFittedFun; ///< Function fitted to the analyzed spectrum: Gauss+background
+    int        fID;
     bool       fVerbose;   ///< Print-outs level
     bool       fTests;     ///< Flag for testing mode
     SFResults* fResults; ///< Object containing parameters of 511 keV peak as determined by the fit
 
   public:
     SFPeakFinder();
+    SFPeakFinder(TH1D* spectrum, int ID, bool verbose, bool tests);
     SFPeakFinder(TH1D* spectrum, bool verbose, bool tests);
     SFPeakFinder(TH1D* spectrum, bool verbose);
     SFPeakFinder(TH1D* spectrum);
     ~SFPeakFinder();
-
+    
+    TString InitSpectrumPerPosition(int seriesNo);
+    TString InitSpectrumPerSeries(int seriesNo);
     TString Init(void);
     bool    FindPeakRange(double& min, double& max);
     bool    FindPeakFit(void);

@@ -36,7 +36,7 @@ class SFPositionRes : public TObject
 
     TGraphErrors* fPosRecoVsPosGraph;
     TGraphErrors* fPosResVsPosGraph;
-    TGraphErrors* fMLRvsPosGraph;
+    TGraphErrors* fPosVsMLRGraph;
     TGraphErrors* fResidualGraph;
 
     std::vector<TH1D*> fQRatios;

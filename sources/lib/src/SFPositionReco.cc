@@ -127,7 +127,7 @@ SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo),
     fRecoPositionsHist = posres->GetPositionRecoDist();
     
     fResultsExp->AddResult(SFResultTypeNum::kPositionRes, posres_results->GetValue(SFResultTypeNum::kPositionRes),
-                                                          posres_results->GetUncertainty(SFResultTypeNum::kPositionRes));
+                           posres_results->GetUncertainty(SFResultTypeNum::kPositionRes));
     delete posres;
     delete posres_results;
     //-----
@@ -160,6 +160,13 @@ bool SFPositionReco::CalculateMLR(void)
     fMLRCorrGraph->GetYaxis()->SetTitle("M_{LR} corrected");
     fMLRCorrGraph->SetMarkerStyle(8);
 
+    TGraphErrors *gRevMLRCorr = new TGraphErrors(npoints);
+    gRevMLRCorr->SetName("gRevMLRCorr");
+    gRevMLRCorr->SetTitle("position vs. M_{LR} (corrected)");
+    gRevMLRCorr->GetXaxis()->SetTitle("M_{LR}");
+    gRevMLRCorr->GetYaxis()->SetTitle("source position [mm]");
+    gRevMLRCorr->SetMarkerStyle(8);
+    
     if (fMAttCh0CorrGraph == nullptr || fMAttCh1CorrGraph == nullptr)
     {
         std::cerr << "##### Error in SFPositionReco::CalculateMLR()" << std::endl;
@@ -178,18 +185,25 @@ bool SFPositionReco::CalculateMLR(void)
                               pow(- vCh0err / (2 * vCh0), 2));
         fMLRCorrGraph->SetPoint(i, positions[i], MLR);
         fMLRCorrGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), MLRerr);
+        
+        gRevMLRCorr->SetPoint(i, MLR, positions[i]);
+        gRevMLRCorr->SetPointError(i, MLRerr, SFTools::GetPosError(collimator, testBench));
     }
     
     TF1 *fpol1 = new TF1("fpol1", "pol1", positions[0], positions[npoints-1]); 
     TFitResultPtr ptr = fMLRCorrGraph->Fit(fpol1, "SQR+");
     
-    double Chi2NDF = ptr->Chi2() / ptr->Ndf();
+    TF1 *fpol1_rev = new TF1("fpol1", "pol1", -1, 1);
+    TFitResultPtr ptr_rev = gRevMLRCorr->Fit(fpol1_rev, "SQR+");
     
-    fResultsCorr->AddObject(SFResultTypeObj::kMLRvsPosGraph, fMLRCorrGraph);
+    fResultsCorr->AddObject(SFResultTypeObj::kAttGraph, fMLRCorrGraph);
     fResultsCorr->AddResult(SFResultTypeNum::kMLRSlope, fpol1->GetParameter(1), fpol1->GetParError(1));
     fResultsCorr->AddResult(SFResultTypeNum::kMLROffset, fpol1->GetParameter(0), fpol1->GetParError(0));
+    fResultsCorr->AddObject(SFResultTypeObj::kPosVsMLRGraph, gRevMLRCorr);
+    fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(0), fpol1_rev->GetParError(0));
+    fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(1), fpol1_rev->GetParError(1));
     
-    fResultsExp->AddObject(SFResultTypeObj::kMLRvsPosGraph, fMLRGraph);
+    fResultsExp->AddObject(SFResultTypeObj::kAttGraph, fMLRGraph);
     fResultsExp->AddResult(SFResultTypeNum::kMLRSlope, fMLRGraph->GetFunction("fpol1")->GetParameter(1),
                            fMLRGraph->GetFunction("fpol1")->GetParError(1));
     fResultsExp->AddResult(SFResultTypeNum::kMLROffset, fMLRGraph->GetFunction("fpol1")->GetParameter(0),
@@ -355,13 +369,16 @@ bool SFPositionReco::PositionReco(void)
                     double totCh1 = samples->getSignalR()->GetTOT();
                     double ampCh0 = samples->getSignalL()->GetAmplitude();
                     double ampCh1 = samples->getSignalR()->GetAmplitude();
+                    bool   vetoCh0 = samples->getSignalL()->GetVeto();
+                    bool   vetoCh1 = samples->getSignalR()->GetVeto();
                     
                     if (t0Ch0 > 0 && t0Ch1 > 0 &&
                         totCh0 > 0 && totCh1 > 0 &&
                         blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
                         ampCh0 < ampMax && ampCh1 < ampMax &&
                         sqrt(peCh0 * peCh1) > xmin &&
-                        sqrt(peCh0 * peCh1) < xmax)
+                        sqrt(peCh0 * peCh1) < xmax &&
+                        vetoCh0 == 0 && vetoCh1 == 0)
                     {
                         double pos = A * log(sqrt(fPrRecoFun->Eval(peCh1, peCh0) /
                         fPlRecoFun->Eval(peCh1, peCh0))) + B;

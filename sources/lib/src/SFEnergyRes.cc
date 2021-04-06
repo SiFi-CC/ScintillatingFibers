@@ -82,9 +82,17 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     int                        npoints    = fData->GetNpoints();
     TString                    collimator = fData->GetCollimator();
     TString                    testBench  = fData->GetTestBench();
+    TString                    desc       = fData->GetDescription();
     std::vector<double>        positions  = fData->GetPositions();
     std::vector<SFPeakFinder*> peakFin;
 
+    int npoints_graph = 0;
+    
+    if(desc.Contains("BaSO4"))
+        npoints_graph = npoints - 3;
+    else 
+        npoints_graph = npoints;
+    
     for (int i = 0; i < npoints; i++)
     {
         if (ch == 0)
@@ -101,7 +109,7 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     }
 
     TString       gname = Form("ER_s%i_ch%i", fSeriesNo, ch);
-    TGraphErrors* graph = new TGraphErrors(npoints);
+    TGraphErrors* graph = new TGraphErrors(npoints_graph);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("energy resolution [%]");
     graph->SetTitle(gname);
@@ -114,8 +122,16 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     double     enResAve    = 0;
     double     enResAveErr = 0;
 
+    int counter = -1;
+
     for (int i = 0; i < npoints; i++)
     {
+        if ((desc.Contains("BaSO4") && ch == 0 && positions[i] > 68) ||
+            (desc.Contains("BaSO4") && ch == 1 && positions[i] < 32))
+            continue;
+        
+        counter++; 
+        
         peakFin[i]->FindPeakFit();
         parameters = peakFin[i]->GetResults();
         enRes      = parameters->GetValue(SFResultTypeNum::kPeakSigma) /
@@ -126,8 +142,8 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
                                   pow(parameters->GetValue(SFResultTypeNum::kPeakSigma), 2));
         enRes    = enRes * 100;
         enResErr = enResErr * 100;
-        graph->SetPoint(i, positions[i], enRes);
-        graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), enResErr);
+        graph->SetPoint(counter, positions[i], enRes);
+        graph->SetPointError(counter, SFTools::GetPosError(collimator, testBench), enResErr);
         enResAve += enRes * (1. / pow(enResErr, 2));
         enResAveErr += (1. / pow(enResErr, 2));
     }

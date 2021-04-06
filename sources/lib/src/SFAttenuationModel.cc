@@ -231,9 +231,9 @@ bool SFAttenuationModel::FitModel(void)
     fitter.Config().SetParamsSettings(npar, par0);
 
     fitter.Config().ParSettings(0).SetLimits(0, 1500);
-    fitter.Config().ParSettings(1).SetLimits(0, 500);
-    fitter.Config().ParSettings(2).SetLimits(0, 1);
-    fitter.Config().ParSettings(3).SetLimits(0, 1);
+    fitter.Config().ParSettings(1).SetLimits(0, 800);
+    fitter.Config().ParSettings(2).SetLimits(-1, 10);
+    fitter.Config().ParSettings(3).SetLimits(-1, 10);
     fitter.Config().ParSettings(4).SetLimits(0, 5);
     fitter.Config().ParSettings(5).Fix();
 
@@ -289,6 +289,7 @@ bool SFAttenuationModel::FitModel(void)
     std::vector<double> positions  = fData->GetPositions();
     TString             collimator = fData->GetCollimator();
     TString             testBench  = fData->GetTestBench();
+    TString             desc       = fData->GetDescription();
 
     fMAttCh0CorrGraph = new TGraphErrors(npoints);
     fMAttCh0CorrGraph->SetName("fMAttCh0CorrGraph");
@@ -346,11 +347,28 @@ bool SFAttenuationModel::FitModel(void)
 
     for (int i = 0; i < npoints; i++)
     {
-        double SR = fMAttCh1Graph->GetPointY(i);
-        double SL = fMAttCh0Graph->GetPointY(i);
+        double SR = 0;//fMAttCh1Graph->GetPointY(i);
+        double SL = 0;//fMAttCh0Graph->GetPointY(i);
 
-        double sigmaSL = fMAttCh0Graph->GetErrorY(i);
-        double sigmaSR = fMAttCh1Graph->GetErrorY(i);
+        double sigmaSL = 0;//fMAttCh0Graph->GetErrorY(i);
+        double sigmaSR = 0;//fMAttCh1Graph->GetErrorY(i);
+        
+        if (desc.Contains("BaSO4"))
+        {
+            SL = fun_Sl->Eval(positions[i]);
+            SR = fun_Sr->Eval(positions[i]);
+            
+            sigmaSL = 1.; //TODO calculate uncert
+            sigmaSR = 1.; //TODO calculate uncert
+        }
+        else
+        {
+            SR = fMAttCh1Graph->GetPointY(i);
+            SL = fMAttCh0Graph->GetPointY(i);
+
+            sigmaSL = fMAttCh0Graph->GetErrorY(i);
+            sigmaSR = fMAttCh1Graph->GetErrorY(i);
+        }
 
         double signalLCh0 = fun_PlReco->Eval(SR, SL);
 

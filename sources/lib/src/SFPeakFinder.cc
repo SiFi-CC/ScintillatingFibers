@@ -17,6 +17,7 @@ ClassImp(SFPeakFinder);
 SFPeakFinder::SFPeakFinder() : fSpectrum(nullptr),
                                fPeak(nullptr),
                                fFittedFun(nullptr),
+                               fID(-1),
                                fVerbose(false),
                                fTests(false),
                                fResults(new SFResults("PeakFinderResults_tmp"))
@@ -33,9 +34,21 @@ SFPeakFinder::SFPeakFinder() : fSpectrum(nullptr),
 SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose, bool tests) : fSpectrum(spectrum),
                                                                        fPeak(nullptr),
                                                                        fFittedFun(nullptr),
+                                                                       fID(-1),
                                                                        fVerbose(verbose),
                                                                        fTests(tests),
                                                                        fResults(new SFResults("PeakFinderResults_tmp"))
+{
+}
+//------------------------------------------------------------------
+/// Standard constructor.
+SFPeakFinder::SFPeakFinder(TH1D* spectrum, int ID, bool verbose, bool tests) : fSpectrum(spectrum),
+                                                                               fPeak(nullptr),
+                                                                               fFittedFun(nullptr),
+                                                                               fID(ID),
+                                                                               fVerbose(verbose),
+                                                                               fTests(tests),
+                                                                               fResults(new SFResults("PeakFinderResults_tmp"))
 {
 }
 //------------------------------------------------------------------
@@ -45,6 +58,7 @@ SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose, bool tests) : fSpectrum
 SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose) : fSpectrum(spectrum),
                                                            fPeak(nullptr),
                                                            fFittedFun(nullptr),
+                                                           fID(-1),
                                                            fVerbose(verbose),
                                                            fTests(false),
                                                            fResults(new SFResults("PeakFinderResults_tmp"))
@@ -57,6 +71,7 @@ SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose) : fSpectrum(spectrum),
 SFPeakFinder::SFPeakFinder(TH1D* spectrum) : fSpectrum(spectrum),
                                              fPeak(nullptr),
                                              fFittedFun(nullptr),
+                                             fID(-1),
                                              fVerbose(false),
                                              fTests(false),
                                              fResults(new SFResults("PeakFinderResults_tmp"))
@@ -86,15 +101,11 @@ void SFPeakFinder::SetSpectrum(TH1D* spectrum)
     return;
 }
 //------------------------------------------------------------------
-TString SFPeakFinder::Init(void)
+TString SFPeakFinder::InitSpectrumPerPosition(int seriesNo)
 {
-
-    TString hname    = fSpectrum->GetName();
-    int     ID       = SFTools::GetMeasurementID(hname);
-    int     seriesNo = SFTools::GetSeriesNo(hname);
-
-    fResults->SetName(Form("PeakFinderResults_%i", ID));
-
+    if (fID == -1)
+        fID = SFTools::GetMeasurementID(fSpectrum->GetName());
+    
     SFData* data;
     try
     {
@@ -105,22 +116,22 @@ TString SFPeakFinder::Init(void)
         std::cerr << message << std::endl;
         std::cerr << "##### Error in SFPeakFinder::Init()!" << std::endl;
     }
-
+    
     std::vector<TString> names     = data->GetNames();
     std::vector<int>     measureID = data->GetMeasurementsIDs();
     std::vector<double>  positions = data->GetPositions();
-    int                  index     = SFTools::GetIndex(measureID, ID);
+    int                  index     = SFTools::GetIndex(measureID, fID);
     TString              dir_name  = names[index];
     TString              full_path = SFTools::FindData(dir_name);
 
     TString conf_name = "/fitconfig.txt";
-
+    
     TString functions = "gaus(0) pol0(3)+[4]*TMath::Exp((x-[5])*[6])";
-    TString hnames[5] = {Form("S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[index], ID),
-                         Form("S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[index], ID),
-                         Form("S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[index], ID),
-                         Form("hEnergyRecoExp_S%i_pos%.1f", seriesNo, positions[index]),
-                         Form("hEnergyRecoCorr_S%i_pos%.1f", seriesNo, positions[index])};
+    TString hnames[5] = {Form("S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[index], fID),
+                         Form("S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[index], fID),
+                         Form("S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[index], fID),
+                         Form("S%i_hEnergyRecoExp_pos%.1f", seriesNo, positions[index]),
+                         Form("S%i_hEnergyRecoCorr_pos%.1f", seriesNo, positions[index])};
 
     std::fstream test(full_path + conf_name, std::ios::in);
 
@@ -130,7 +141,7 @@ TString SFPeakFinder::Init(void)
         std::cout << "Creating new config file..." << std::endl;
 
         TSpectrum* spec   = new TSpectrum(10);
-        int        npeaks = spec->Search(fSpectrum, 10, "goff", 0.1);
+        int        npeaks = spec->Search(fSpectrum, 10, "goff", 0.5);
         double*    peaksX = spec->GetPositionX();
         double     peak   = TMath::MaxElement(npeaks, peaksX);
 
@@ -169,21 +180,26 @@ TString SFPeakFinder::Init(void)
                    << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
         }
         
-        par0 = 200;
-        par1 = 511;
-        par2 = 30;
-        par3 = 10;
-        par4 = 500;
-        par5 = 100;
-        par6 = -0.02;
-        xmin = par0 - (par2 * 3.5);
-        xmax = par0 + (par2 * 4.5);
+        TString desc = data->GetDescription();
         
-        for (int i = 3; i < 5; i++)
+        if(desc.Contains("Regular series"))
         {
-            config << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
-                   << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
-                   << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
+            par0 = 200;
+            par1 = 511;
+            par2 = 30;
+            par3 = 10;
+            par4 = 500;
+            par5 = 100;
+            par6 = -0.02;
+            xmin = 340;
+            xmax = 750;
+        
+            for (int i = 3; i < 5; i++)
+            {
+                config << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
+                << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
+                << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
+            }
         }
         
         config.close();
@@ -193,6 +209,95 @@ TString SFPeakFinder::Init(void)
         std::cout << "Fitting config for " << full_path << " exists!" << std::endl;
         test.close();
     }
+    
+    return full_path;
+}
+//------------------------------------------------------------------
+TString SFPeakFinder::InitSpectrumPerSeries(int seriesNo)
+{
+    TString data_path = std::getenv("SFDATA"); 
+    TString full_path = std::string(data_path) + "DB/"; 
+    
+    std::fstream params(full_path + "fitparams.out", std::ios::in);
+    
+    std::string line;
+    bool flag = false;
+    
+    while (params.good())
+    {
+        getline(params, line);
+        TString tstr = line;
+        
+        if (tstr.Contains(Form("S%i_hEnergyRecoAll", seriesNo)))
+        {
+            flag = true;
+            params.close();
+            break;
+        }
+        else
+        {
+            flag = false;
+        }
+    }
+    
+    params.close();
+    
+    if (!flag)
+    {
+        std::fstream params(full_path + "fitparams.out", std::ios::app);
+        
+        TString functions = "gaus(0) pol0(3)+[4]*TMath::Exp((x-[5])*[6])";
+        TString hnames[2] = {Form("S%i_hEnergyRecoAllExp", seriesNo),
+                            Form("S%i_hEnergyRecoAllCorr", seriesNo)};
+        float par0 = 1800;
+        float par1 = 511;
+        float par2 = 30;
+        float par3 = 10;
+        float par4 = 500;
+        float par5 = 100;
+        float par6 = -0.02;
+        float par2_min = 0;
+        float par2_max = 300;
+        float xmin = 340;//par1 - (par2 * 4.5);
+        float xmax = 750;//par1 + (par2 * 5.5);
+        
+        for (int i = 0; i < 2; i++)
+        {
+            params << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
+            << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
+            << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
+        }
+        params.close();
+    }
+    
+    return full_path;
+}
+//------------------------------------------------------------------
+TString SFPeakFinder::Init(void)
+{
+    
+    TString full_path; 
+    TString hname    = fSpectrum->GetName();
+    int     seriesNo = SFTools::GetSeriesNo(hname);
+    
+    if (hname.Contains("EnergyRecoAll"))
+    {
+        std::cout << "Spectrum per series: " << hname << std::endl;
+        full_path = InitSpectrumPerSeries(seriesNo);
+    }
+    else if (hname.Contains("PE") || hname.Contains("pos"))
+    {
+        std::cout << "Spectrum per position: " << hname << std::endl;
+        full_path = InitSpectrumPerPosition(seriesNo);
+    }
+    else
+    {
+        std::cerr << "##### Error in SFPeakFinder::Init()" << std::endl;
+        std::cerr << "Unknown histogram name: " << hname << std::endl;
+        std::abort();
+    }
+    
+    fResults->SetName(Form("PeakFinderResults_%i", fID));
 
     return full_path;
 }
@@ -271,11 +376,13 @@ bool SFPeakFinder::FindPeakFit(void)
 {
 
     TString data_path = Init();
-
+    
+    fSpectrum->Print();
+    
     FitterFactory fitter;
     fitter.initFactoryFromFile((data_path + "/fitconfig.txt").Data(),
                                (data_path + "/fitparams.out").Data());
-    HistFitParams             histFP;
+    HistFitParams histFP;
     FitterFactory::FIND_FLAGS fl = fitter.findParams(fSpectrum->GetName(), histFP);
     printf("fl = %d for %s\n", fl, fSpectrum->GetName());
     fitter.fit(histFP, fSpectrum);
@@ -291,12 +398,16 @@ bool SFPeakFinder::FindPeakFit(void)
         std::abort();
     }
 
+    TF1 *tmpfun = fSpectrum->GetFunction(fFittedFun->GetName());
+    double chi2NDF = tmpfun->GetChisquare() / tmpfun->GetNDF();
+    
     fResults->AddResult(SFResultTypeNum::kPeakConst, fFittedFun->GetParameter(0),
                         fFittedFun->GetParError(0));
     fResults->AddResult(SFResultTypeNum::kPeakPosition, fFittedFun->GetParameter(1),
                         fFittedFun->GetParError(1));
     fResults->AddResult(SFResultTypeNum::kPeakSigma, fFittedFun->GetParameter(2),
                         fFittedFun->GetParError(2));
+    fResults->AddResult(SFResultTypeNum::kChi2NDF, chi2NDF, -1);
 
     // for tests
     if (fTests)
@@ -355,9 +466,7 @@ bool SFPeakFinder::FindPeakFit(void)
     if (fResults->GetValue(SFResultTypeNum::kPeakPosition) < 0 ||
         fResults->GetValue(SFResultTypeNum::kPeakSigma) < 0)
     {
-        std::cerr
-            << "##### Error in SFPeakFinder::FitPeak(). Position and Sigma cannot be negative!"
-            << std::endl;
+        std::cerr << "##### Error in SFPeakFinder::FitPeak(). Position and Sigma cannot be negative!" << std::endl;
         std::cerr << "fPosition = " << fResults->GetValue(SFResultTypeNum::kPeakPosition)
                   << "\t fSigma = " << fResults->GetValue(SFResultTypeNum::kPeakSigma) << std::endl;
         return false;
@@ -407,7 +516,10 @@ bool SFPeakFinder::SubtractBackground(void)
     for (int i = 1; i < fSpectrum->GetNbinsX() + 1; i++)
     {
         x = fSpectrum->GetBinCenter(i);
-        if (x > peak_min && x < peak_max) { y = fSpectrum->GetBinContent(i) - fun_bg->Eval(x); }
+        if (x > peak_min && x < peak_max)
+        { 
+            y = fSpectrum->GetBinContent(i) - fun_bg->Eval(x);
+        }
         else
             y = 0;
         fPeak->SetBinContent(i, y);

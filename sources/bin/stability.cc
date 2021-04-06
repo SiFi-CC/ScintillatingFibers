@@ -16,7 +16,7 @@
 #include <TCanvas.h>
 #include <TLatex.h>
 
-#include <DistributionContext.h>
+// #include <DistributionContext.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
     data->Print();
     int                 npoints   = data->GetNpoints();
-    int                 anaGroup  = data->GetAnalysisGroup();
+    //int                 anaGroup  = data->GetAnalysisGroup();
     std::vector<double> positions = data->GetPositions();
 
     TString desc = data->GetDescription();
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
         std::cerr << "##### Error in stability.cc" << std::endl;
         return 1;
     }
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     //----- stability analysis
     stab->AnalyzeStability(0);
     stab->AnalyzeStability(1);
@@ -172,6 +172,13 @@ int main(int argc, char** argv)
     TCanvas* can_ch1 = new TCanvas("stab_ch1", "stab_ch1", 2000, 1200);
     can_ch1->DivideSquare(npoints);
 
+    double min_yaxis = 0.;
+    double max_yaxis_0 =  SFTools::FindMaxYaxis(specCh0[npoints-1]);
+    double max_yaxis_1 =  SFTools::FindMaxYaxis(specCh1[0]);
+    
+    double min_xaxis = 10.;
+    double max_xaxis = SFTools::FindMaxXaxis(specCh0[0]);
+
     for (int i = 0; i < npoints; i++)
     {
         can_ch0->cd(i + 1);
@@ -179,10 +186,12 @@ int main(int argc, char** argv)
         specCh0[i]->SetTitle(Form("PE spectrum, ch0, position %.2f", positions[i]));
         specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
         specCh0[i]->GetYaxis()->SetTitle("counts");
-        ctx.configureFromJson("hSpec");
-        //     ctx.print();
-        specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        specCh0[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
+        //ctx.configureFromJson("hSpec");
+        //ctx.print();
+        //specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         specCh0[i]->Draw();
 
         can_ch1->cd(i + 1);
@@ -190,8 +199,10 @@ int main(int argc, char** argv)
         specCh1[i]->SetTitle(Form("PE spectrum, ch1, position %.2f", positions[i]));
         specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
         specCh1[i]->GetYaxis()->SetTitle("counts");
-        specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        specCh1[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
+        //specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         specCh1[i]->Draw();
     }
 

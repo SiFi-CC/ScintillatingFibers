@@ -18,9 +18,6 @@ ClassImp(SFAttenuation);
 SFAttenuation::SFAttenuation(int seriesNo) : fSeriesNo(seriesNo),
                                              fData(nullptr),
                                              fAttGraph(nullptr),
-                                             fSigmaGraph(nullptr),
-                                             fAttCh0Graph(nullptr),
-                                             fAttCh1Graph(nullptr),
                                              fResultsCh0(nullptr),
                                              fResultsCh1(nullptr),
                                              fResultsCombPol1(nullptr),
@@ -69,7 +66,7 @@ bool SFAttenuation::AttCombinedCh(void)
     TString             testBench  = fData->GetTestBench();
     TString             sipm       = fData->GetSiPM();
     std::vector<double> positions  = fData->GetPositions();
-
+    
     double              s      = SFTools::GetSigmaBL(sipm);
     std::vector<double> sigmas = {s, s};
     TString             cut    = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
@@ -85,13 +82,13 @@ bool SFAttenuation::AttCombinedCh(void)
     fAttGraph->SetName(gname);
     fAttGraph->SetMarkerStyle(4);
 
-    gname       = Form("sigmas_s%i", fSeriesNo);
-    fSigmaGraph = new TGraphErrors(npoints);
-    fSigmaGraph->GetXaxis()->SetTitle("source position [mm]");
-    fSigmaGraph->GetYaxis()->SetTitle("#sigma M_{LR}");
-    fSigmaGraph->SetTitle(gname);
-    fSigmaGraph->SetName(gname);
-    fSigmaGraph->SetMarkerStyle(4);
+    gname = Form("sigmas_s%i", fSeriesNo);
+    TGraphErrors *sigmaGraph = new TGraphErrors(npoints);
+    sigmaGraph->GetXaxis()->SetTitle("source position [mm]");
+    sigmaGraph->GetYaxis()->SetTitle("#sigma M_{LR}");
+    sigmaGraph->SetTitle(gname);
+    sigmaGraph->SetName(gname);
+    sigmaGraph->SetMarkerStyle(4);
 
     int     parNo    = 1;
     double  const_1  = 0;
@@ -124,7 +121,7 @@ bool SFAttenuation::AttCombinedCh(void)
         }
         else if (collimator.Contains("Electronic") && sipm.Contains("Hamamatsu"))
         {
-            SFTools::RatiosFitGauss(fRatios, 1);
+            SFTools::RatiosFitGauss(fRatios, 2);
             fun_name = "fGauss";
             parNo    = 1;
         }
@@ -133,9 +130,9 @@ bool SFAttenuation::AttCombinedCh(void)
                             fRatios[i]->GetFunction(fun_name)->GetParameter(parNo));
         fAttGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench),
                                  fRatios[i]->GetFunction(fun_name)->GetParError(parNo));
-        fSigmaGraph->SetPoint(i, positions[i],
+        sigmaGraph->SetPoint(i, positions[i],
                               fRatios[i]->GetFunction(fun_name)->GetParameter(parNo + 1));
-        fSigmaGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench),
+        sigmaGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench),
                                    fRatios[i]->GetFunction(fun_name)->GetParError(parNo + 1));
     }
 
@@ -143,7 +140,7 @@ bool SFAttenuation::AttCombinedCh(void)
     Fit3rdOrder();
 
     fResultsCombPol1->AddObject(SFResultTypeObj::kAttGraph, fAttGraph);
-    fResultsCombPol1->AddObject(SFResultTypeObj::kMLRSigmaGraph, fSigmaGraph);
+    fResultsCombPol1->AddObject(SFResultTypeObj::kMLRSigmaGraph, sigmaGraph);
 
     return true;
 }
@@ -226,7 +223,15 @@ bool SFAttenuation::AttSeparateCh(int ch)
     TString             collimator = fData->GetCollimator();
     TString             testBench  = fData->GetTestBench();
     TString             sipm       = fData->GetSiPM();
+    TString             desc       = fData->GetDescription();
     std::vector<double> positions  = fData->GetPositions();
+
+    int npoints_graph = 0;
+    
+    if(desc.Contains("BaSO4"))
+        npoints_graph = npoints - 3;
+    else 
+        npoints_graph = npoints;
 
     TString             cut   = "";
     double              s     = SFTools::GetSigmaBL(sipm);
@@ -240,26 +245,32 @@ bool SFAttenuation::AttSeparateCh(int ch)
     std::vector<TH1D*> spectra = fData->GetSpectra(ch, SFSelectionType::kPE, cut);
 
     TString       gname = Form("att_s%i_ch%i", fSeriesNo, ch);
-    TGraphErrors* graph = new TGraphErrors(npoints);
+    TGraphErrors* graph = new TGraphErrors(npoints_graph);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
     graph->SetTitle(gname);
     graph->SetName(gname);
     graph->SetMarkerStyle(4);
 
-    std::vector<SFPeakFinder*> peakfin;
-    SFResults*                 peakParams;
+    SFResults* peakParams = nullptr;
 
     // TString fname = Form("/home/kasia/S%ich%i.txt", fSeriesNo, ch);
     // std::ofstream output(fname);
 
+    int counter = -1;
+    
     for (int i = 0; i < npoints; i++)
     {
-        peakfin.push_back(new SFPeakFinder(spectra[i], false));
-        peakfin[i]->FindPeakFit();
-        peakParams = peakfin[i]->GetResults();
-        graph->SetPoint(i, positions[i], peakParams->GetValue(SFResultTypeNum::kPeakPosition));
-        graph->SetPointError(i, SFTools::GetPosError(collimator, testBench),
+        if ((desc.Contains("BaSO4") && ch == 0 && positions[i] > 68) ||
+            (desc.Contains("BaSO4") && ch == 1 && positions[i] < 32))
+            continue;
+        
+        counter++; 
+        auto pf = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(spectra[i], false));
+        pf->FindPeakFit();
+        peakParams = pf->GetResults();
+        graph->SetPoint(counter, positions[i], peakParams->GetValue(SFResultTypeNum::kPeakPosition));
+        graph->SetPointError(counter, SFTools::GetPosError(collimator, testBench),
                              peakParams->GetUncertainty(SFResultTypeNum::kPeakPosition));
         // output << positions[i] << "\t" << fResults->GetValue(SFResultType::fPeakPosition)
         //       << "\t" << fResults->GetUncertainty(SFResultType::fPeakPosition) << "\t"
@@ -295,16 +306,14 @@ bool SFAttenuation::AttSeparateCh(int ch)
         fResultsCh0->AddResult(SFResultTypeNum::kLambda, fexp->GetParameter(1), fexp->GetParError(1));
         fResultsCh0->AddResult(SFResultTypeNum::kChi2NDF, Chi2NDF, -1);
         fSpectraCh0  = spectra;
-        fAttCh0Graph = graph;
-        fResultsCh0->AddObject(SFResultTypeObj::kAttGraph, fAttCh0Graph);
+        fResultsCh0->AddObject(SFResultTypeObj::kAttGraph, graph);
     }
     else if (ch == 1)
     {
         fResultsCh1->AddResult(SFResultTypeNum::kLambda, fexp->GetParameter(1), fexp->GetParError(1));
         fResultsCh1->AddResult(SFResultTypeNum::kChi2NDF, Chi2NDF, -1);
         fSpectraCh1  = spectra;
-        fAttCh1Graph = graph;
-        fResultsCh1->AddObject(SFResultTypeObj::kAttGraph, fAttCh1Graph);
+        fResultsCh1->AddObject(SFResultTypeObj::kAttGraph, graph);
     }
 
     return true;

@@ -561,6 +561,51 @@ double SFTools::GetStandardErr(std::vector<double> vec)
     return stdErr;
 }
 //------------------------------------------------------------------
+double SFTools::FindMaxXaxis(TH1D *h)
+{
+    int nbins = h->GetNbinsX();
+    int bin_stop = -1;
+    
+    
+    for(int i = nbins; i > 0; i--)
+    {
+        if(h->GetBinContent(i) > 1) 
+        {
+            bin_stop = i;
+            break;
+        }
+    }
+    
+    double max_xaxis = h->GetBinCenter(bin_stop) + (0.1 * h->GetBinCenter(bin_stop));
+    
+    return max_xaxis;
+}
+//------------------------------------------------------------------
+double SFTools::FindMaxYaxis(TH1D *h)
+{
+    int nbinsx = h->GetNbinsX();
+    
+    double y_max = -1;
+    double y_current = -1;
+    
+    for (int i = 0; i < nbinsx; i++)
+    {
+        double x = h->GetBinCenter(i);
+        
+        if (x < 10.)
+            continue;
+        
+        y_current = h->GetBinContent(i);
+        
+        if (y_current > y_max)
+            y_max = y_current;
+    }
+    
+    double max_yaxis = y_max + (y_max * 0.1);
+    
+    return max_yaxis;
+}
+//------------------------------------------------------------------
 std::vector<double> SFTools::GetFWHM(TH1D* h)
 {
 

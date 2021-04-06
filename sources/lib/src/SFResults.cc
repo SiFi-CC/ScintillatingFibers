@@ -33,11 +33,11 @@ TString gEnumNamesObj[] = {"kSpectrum", "kPeak", //SFPeakFinder
                            "kEnergyResGraph", //SFEnergyRes
                            "kLightGraph", //SFLightOutput
                            "kTimeResGraph", "kTimeSigGraph", //SFTimingRes
-                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kMLRvsPosGraph", "kResidualGraph", //SFPositionRes
-                           "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun" //SFReconstrunction - model
+                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kPosVsMLRGraph", "kResidualGraph", //SFPositionRes
+                           "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun", //SFReconstrunction - model
                            "kPlRecoFun", "kPrRecoFun", "kSlVsPosGraph", "kSrVsPosGraph",
                            "kPlVsPosGraph", "kPrVsPosGraph", // SFReconstruction - components
-                           "kAlphaGraph", "kEnergyRecoGraph", "kEnergyRecoFun", "kEnergyRecoSpecGraph", //SFReconstruction - energy reco
+                           "kAlphaGraph", "kEnergyRecoGraph", "kEnergyRecoFun", "kEnergyRecoSpecGraph", "kEnergyAllHist",//SFReconstruction - energy reco
                            "kAGraph" //SFReconstruction - position reco
                        };
 //------------------------------------------------------------------

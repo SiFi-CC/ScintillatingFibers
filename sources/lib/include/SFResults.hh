@@ -99,7 +99,7 @@ enum SFResultTypeObj
     //----- SFPositionRes
     kPosRecoVsPosGraph,
     kPosResVsPosGraph,
-    kMLRvsPosGraph,
+    kPosVsMLRGraph,
     kResidualGraph,
 
     //----- SFReconstruction
@@ -124,6 +124,7 @@ enum SFResultTypeObj
     kEnergyRecoGraph,
     kEnergyRecoFun,
     kEnergyRecoSpecGraph,
+    kEnergyAllHist,
 
     //----- position reconstruction
     kAGraph

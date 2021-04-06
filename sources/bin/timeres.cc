@@ -16,7 +16,7 @@
 #include <TLine.h>
 #include <TSystem.h>
 
-#include <DistributionContext.h>
+// #include <DistributionContext.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     }
 
     int                 npoints    = data->GetNpoints();
-    int                 anaGroup   = data->GetAnalysisGroup();
+    //int                 anaGroup   = data->GetAnalysisGroup();
     TString             collimator = data->GetCollimator();
     TString             sipm       = data->GetSiPM();
     std::vector<double> positions  = data->GetPositions();
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     timeres->Print();
     timeres->AnalyzeNoECut();
     timeres->AnalyzeWithECut();
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     //----- timing resolution, no enery cut
     std::vector<TH1D*> T0diff   = timeres->GetT0Diff(0);
     std::vector<TH1D*> ratio    = timeres->GetRatios();
@@ -279,10 +279,10 @@ int main(int argc, char** argv)
         delta = (xmax - xmin) / 6;          //
         max   = specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin());
         specCh0[i]->Draw();
-        ctx.configureFromJson("hSpecAv");
-        //     ctx.print();
-        specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //ctx.configureFromJson("hSpecAv");
+        //ctx.print();
+        //specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         if (collimator == "Lead")
         {
             line.DrawLine(center - delta, 0, center - delta, max); // changed here for smaller cut
@@ -292,9 +292,15 @@ int main(int argc, char** argv)
         {
             // line.DrawLine(center-3*delta, 0, center-3*delta, max);  //changed here for smaller
             // cut line.DrawLine(center+3*delta, 0, center+3*delta, max);  //
-            line.DrawLine(center - 3 * delta, ctx.y.min, center - 3 * delta,
-                          ctx.y.max); // changed here for smaller cut
-            line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
+            
+            //line.DrawLine(center - 3 * delta, ctx.y.min, center - 3 * delta,
+            //              ctx.y.max); // changed here for smaller cut
+            //line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
+            
+            line.DrawLine(center - 3 * delta, 0, center - 3 * delta,
+                          specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin())); // changed here for smaller cut
+            line.DrawLine(center + 3 * delta, 0, center + 3 * delta, 
+                          specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin())); //
         }
 
         canSpecCh1->cd(i + 1);
@@ -311,8 +317,8 @@ int main(int argc, char** argv)
         delta = (xmax - xmin) / 6;          //
         max   = specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin());
         specCh1[i]->Draw();
-        specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         if (collimator == "Lead")
         {
             line.DrawLine(center - delta, 0, center - delta, max); // changed here for smaller cut
@@ -322,9 +328,15 @@ int main(int argc, char** argv)
         {
             // line.DrawLine(center-3*delta, 0, center-3*delta, max);  //changed here for smaller
             // cut line.DrawLine(center+3*delta, 0, center+3*delta, max);  //
-            line.DrawLine(center - 3 * delta, ctx.y.min, center - 3 * delta,
-                          ctx.y.max); // changed here for smaller cut
-            line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
+            
+            //line.DrawLine(center - 3 * delta, ctx.y.min, center - 3 * delta,
+            //              ctx.y.max); // changed here for smaller cut
+            //line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
+            
+            line.DrawLine(center - 3 * delta, 0, center - 3 * delta,
+                          specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin())); // changed here for smaller cut
+            line.DrawLine(center + 3 * delta, 0, center + 3 * delta, 
+                          specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin())); //
         }
     }
 

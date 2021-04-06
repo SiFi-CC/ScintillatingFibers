@@ -245,6 +245,7 @@ bool SFLightOutput::CalculateLightOut(void)
     int                 npoints    = fData->GetNpoints();
     TString             collimator = fData->GetCollimator();
     TString             testBench  = fData->GetTestBench();
+    TString             desc       = fData->GetDescription();
     std::vector<double> positions  = fData->GetPositions();
 
     TString       gname = Form("LightOutSum_S%i", fSeriesNo);
@@ -259,15 +260,30 @@ bool SFLightOutput::CalculateLightOut(void)
     double lightOutErr   = 0;
     double lightOutAv    = 0;
     double lightOutAvErr = 0;
-    double x, yCh0, yCh1;
+    double xCh0, xCh1, yCh0, yCh1;
 
     for (int i = 0; i < npoints; i++)
     {
-        fLightOutCh0Graph->GetPoint(i, x, yCh0);
-        fLightOutCh1Graph->GetPoint(i, x, yCh1);
-        lightOut = yCh0 + yCh1;
-        lightOutErr = sqrt(pow(fLightOutCh0Graph->GetErrorY(i), 2) + 
-                           pow(fLightOutCh1Graph->GetErrorY(i), 2));
+        if (desc.Contains("BaSO4") && positions[i] < 32)
+        {
+            fLightOutCh0Graph->GetPoint(i, xCh0, yCh0);
+            lightOut = yCh0;
+            lightOutErr = fLightOutCh0Graph->GetErrorY(i);
+        }
+        else if (desc.Contains("BaSO4") && positions[i] > 68)
+        {
+            fLightOutCh1Graph->GetPoint(i - 3, xCh1, yCh1);
+            lightOut = yCh1;
+            lightOutErr = fLightOutCh1Graph->GetErrorY(i - 3);
+        }
+        else
+        {
+            fLightOutCh0Graph->GetPoint(i, xCh0, yCh0);
+            fLightOutCh1Graph->GetPoint(i, xCh1, yCh1);
+            lightOut = yCh0 + yCh1;
+            lightOutErr = sqrt(pow(fLightOutCh0Graph->GetErrorY(i), 2) + 
+                               pow(fLightOutCh1Graph->GetErrorY(i), 2));
+        }
         graph->SetPoint(i, positions[i], lightOut);
         graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
         lightOutAv += lightOut * (1. / pow(lightOutErr, 2));
@@ -297,8 +313,16 @@ bool SFLightOutput::CalculateLightOut(int ch)
     double                     fiberLen   = fData->GetFiberLength();
     TString                    collimator = fData->GetCollimator();
     TString                    testBench  = fData->GetTestBench();
+    TString                    desc       = fData->GetDescription();
     std::vector<double>        positions  = fData->GetPositions();
     std::vector<SFPeakFinder*> peakFin;
+
+    int npoints_graph = 0;
+    
+    if(desc.Contains("BaSO4"))
+        npoints_graph = npoints - 3;
+    else 
+        npoints_graph = npoints;
 
     SFAttenuation* att;
 
@@ -334,7 +358,7 @@ bool SFLightOutput::CalculateLightOut(int ch)
 
     TString gname = Form("LightOut_S%i_Ch%i", fSeriesNo, ch);
 
-    TGraphErrors* graph = new TGraphErrors(npoints);
+    TGraphErrors* graph = new TGraphErrors(npoints_graph);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("light output [PE/MeV]");
     graph->SetTitle(gname);
@@ -348,8 +372,15 @@ bool SFLightOutput::CalculateLightOut(int ch)
     double     lightOutAvErr = 0;
     double     distance      = 0;
 
+    int counter = -1;
+
     for (int i = 0; i < npoints; i++)
     {
+        if ((desc.Contains("BaSO4") && ch == 0 && positions[i] > 68) ||
+            (desc.Contains("BaSO4") && ch == 1 && positions[i] < 32))
+            continue;
+        
+        counter++;
         peakFin[i]->FindPeakFit();
         if (ch == 0) distance = positions[i];
         if (ch == 1) distance = fiberLen - positions[i];
@@ -361,8 +392,8 @@ bool SFLightOutput::CalculateLightOut(int ch)
                       pow(parameters->GetValue(SFResultTypeNum::kPeakPosition), 2)) +
                       (pow(lightOut, 2) * pow(results->GetUncertainty(SFResultTypeNum::kLambda), 2) /
                        pow(results->GetValue(SFResultTypeNum::kLambda), 4)));
-        graph->SetPoint(i, positions[i], lightOut);
-        graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightOutErr);
+        graph->SetPoint(counter, positions[i], lightOut);
+        graph->SetPointError(counter, SFTools::GetPosError(collimator, testBench), lightOutErr);
         lightOutAv += lightOut * (1. / pow(lightOutErr, 2));
         lightOutAvErr += (1. / pow(lightOutErr, 2));
     }
@@ -407,6 +438,7 @@ bool SFLightOutput::CalculateLightCol(void)
     int                 npoints    = fData->GetNpoints();
     TString             collimator = fData->GetCollimator();
     TString             testBench  = fData->GetTestBench();
+    TString             desc       = fData->GetDescription();
     std::vector<double> positions  = fData->GetPositions();
 
     TString       gname = Form("LCol_s%i_sum", fSeriesNo);
@@ -421,15 +453,30 @@ bool SFLightOutput::CalculateLightCol(void)
     double lightColErr   = 0;
     double lightColAv    = 0;
     double lightColAvErr = 0;
-    double x, yCh0, yCh1;
-
+    double xCh0, xCh1, yCh0, yCh1;
+    
     for (int i = 0; i < npoints; i++)
     {
-        fLightColCh0Graph->GetPoint(i, x, yCh0);
-        fLightColCh1Graph->GetPoint(i, x, yCh1);
-        lightCol = yCh0 + yCh1;
-        lightColErr = sqrt(pow(fLightColCh0Graph->GetErrorY(i), 2) + 
-                           pow(fLightColCh1Graph->GetErrorY(i), 2));
+        if (desc.Contains("BaSO4") && positions[i] < 32)
+        {
+            fLightColCh0Graph->GetPoint(i, xCh0, yCh0);
+            lightCol = yCh0;
+            lightColErr = fLightColCh0Graph->GetErrorY(i);
+        }
+        else if (desc.Contains("BaSO4") && positions[i] > 68)
+        {
+            fLightColCh1Graph->GetPoint(i-3, xCh1, yCh1);
+            lightCol = yCh1;
+            lightColErr = fLightColCh1Graph->GetErrorY(i-3);
+        }
+        else
+        {
+            fLightColCh0Graph->GetPoint(i, xCh0, yCh0);
+            fLightColCh1Graph->GetPoint(i, xCh1, yCh1);
+            lightCol = yCh0 + yCh1;
+            lightColErr = sqrt(pow(fLightColCh0Graph->GetErrorY(i), 2) + 
+                               pow(fLightColCh1Graph->GetErrorY(i), 2));
+        }
         graph->SetPoint(i, positions[i], lightCol);
         graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
         lightColAv += lightCol * (1. / pow(lightColErr, 2));
@@ -459,16 +506,35 @@ bool SFLightOutput::CalculateLightCol(int ch)
     int                        npoints    = fData->GetNpoints();
     TString                    collimator = fData->GetCollimator();
     TString                    testBench  = fData->GetTestBench();
+    TString                    desc       = fData->GetDescription();
     std::vector<double>        positions  = fData->GetPositions();
     std::vector<SFPeakFinder*> tempPF;
 
+    int npoints_graph = 0;
+    
+    if(desc.Contains("BaSO4"))
+        npoints_graph = npoints - 3;
+    else 
+        npoints_graph = npoints;
+
     TString       gname = Form("LCol_s%i_ch%i", fSeriesNo, ch);
-    TGraphErrors* graph = new TGraphErrors(npoints);
+    TGraphErrors* graph = new TGraphErrors(npoints_graph);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("collected light [PE/MeV]");
     graph->SetTitle(gname);
     graph->SetName(gname);
     graph->SetMarkerStyle(4);
+        
+    if (ch == 0)
+        tempPF = fPFCh0;
+    else if (ch == 1)
+        tempPF = fPFCh1;
+    else
+    {
+         std::cerr << "##### Error in SFLightOutput::CalculateLightCol()!" << std::endl;
+         std::cerr << "Incorrect channel number! Please check!" << std::endl;
+         return false;
+    }
 
     SFResults* peak_par;
     double     lightCol      = 0;
@@ -476,24 +542,21 @@ bool SFLightOutput::CalculateLightCol(int ch)
     double     lightColAv    = 0;
     double     lightColAvErr = 0;
 
+    int counter = -1;
+    
     for (int i = 0; i < npoints; i++)
     {
-        if (ch == 0)
-            tempPF = fPFCh0;
-        else if (ch == 1)
-            tempPF = fPFCh1;
-        else
-        {
-            std::cerr << "##### Error in SFLightOutput::CalculateLightCol()!" << std::endl;
-            std::cerr << "Incorrect channel number! Please check!" << std::endl;
-            return false;
-        }
+        if ((desc.Contains("BaSO4") && ch == 0 && positions[i] > 68) ||
+            (desc.Contains("BaSO4") && ch == 1 && positions[i] < 32))
+            continue;
+        
+        counter++;
 
         peak_par    = tempPF[i]->GetResults();
         lightCol    = peak_par->GetValue(SFResultTypeNum::kPeakPosition) / 0.511;
         lightColErr = peak_par->GetValue(SFResultTypeNum::kPeakSigma) / 0.511;
-        graph->SetPoint(i, positions[i], lightCol);
-        graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), lightColErr);
+        graph->SetPoint(counter, positions[i], lightCol);
+        graph->SetPointError(counter, SFTools::GetPosError(collimator, testBench), lightColErr);
 
         lightColAv += lightCol * (1. / pow(lightColErr, 2));
         lightColAvErr += (1. / pow(lightColErr, 2));

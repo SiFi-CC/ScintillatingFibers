@@ -16,7 +16,7 @@
 #include <TLatex.h>
 #include <TLine.h>
 
-#include <DistributionContext.h>
+// #include <DistributionContext.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     }
 
     int npoints  = data->GetNpoints();
-    int anaGroup = data->GetAnalysisGroup();
+    //int anaGroup = data->GetAnalysisGroup();
 
     SFPositionRes* posres;
 
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
         std::cerr << "##### Exception in posres.cc!" << std::endl;
         return 1;
     }
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     posres->AnalyzePositionRes();
 
     SFResults* results = posres->GetResults();
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 
     TGraphErrors* gPosRecoVsPos = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
     TGraphErrors* gPosResVsPos = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPosResVsPosGraph);
-    TGraphErrors* gAttenuation = (TGraphErrors*)results->GetObject(SFResultTypeObj::kMLRvsPosGraph);
+    TGraphErrors* gAttenuation = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPosVsMLRGraph);
     TGraphErrors* gResiduals   = (TGraphErrors*)results->GetObject(SFResultTypeObj::kResidualGraph);
 
     double* posResAll    = gPosResVsPos->GetY();
@@ -127,6 +127,12 @@ int main(int argc, char** argv)
 
     TCanvas* can_spec = new TCanvas("pr_spec", "pr_spec", 2000, 1200);
     can_spec->DivideSquare(npoints);
+    
+    double min_yaxis = 0.;
+    double max_yaxis =  SFTools::FindMaxYaxis(spec[4]);
+    
+    double min_xaxis = 10.;
+    double max_xaxis = SFTools::FindMaxXaxis(spec[0]);
 
     for (int i = 0; i < npoints; i++)
     {
@@ -139,12 +145,16 @@ int main(int argc, char** argv)
         can_spec->cd(i + 1);
         gPad->SetGrid(1, 1);
         spec[i]->Draw();
-        ctx.configureFromJson("hSpecAv");
-        //     ctx.print();
-        spec[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        spec[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
-        line.DrawLine(xmin[i], ctx.y.min, xmin[i], ctx.y.max);
-        line.DrawLine(xmax[i], ctx.y.min, xmax[i], ctx.y.max);
+        //ctx.configureFromJson("hSpecAv");
+        //ctx.print();
+        //spec[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //spec[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //line.DrawLine(xmin[i], ctx.y.min, xmin[i], ctx.y.max);
+        //line.DrawLine(xmax[i], ctx.y.min, xmax[i], ctx.y.max);
+        spec[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        spec[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis);
+        line.DrawLine(xmin[i], min_yaxis, xmin[i], max_yaxis);
+        line.DrawLine(xmax[i], min_yaxis, xmax[i], max_yaxis);
     }
 
     TCanvas* can_posreco = new TCanvas("pr_posreco", "pr_posreco", 1000, 700);

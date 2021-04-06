@@ -12,8 +12,6 @@
 #include "SFPositionReco.hh"
 #include "common_options.h"
 
-#include <DistributionContext.h>
-
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLegend.h>
@@ -56,6 +54,7 @@ int main(int argc, char** argv)
 
     TString desc     = data->GetDescription();
     int     npoints  = data->GetNpoints();
+    double  fiberLen = data->GetFiberLength();
 
     if (!desc.Contains("Regular series"))
     {
@@ -88,18 +87,19 @@ int main(int argc, char** argv)
     results[1]->Print(); // corrected
 
     //----- getting position reconstruction results
-    TGraphErrors* gMLRExp = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kMLRvsPosGraph);
+    TGraphErrors* gMLRExp = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAttGraph);
     TGraphErrors* gPRecoExp = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
     TGraphErrors* gPResExp = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kPosResVsPosGraph);
     TGraphErrors* gResidualExp = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kResidualGraph);
     
     std::vector<TH1D*> hPosDistExp = reco->GetPositionDistributions("experimental");
     
-    TGraphErrors* gMLRCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kMLRvsPosGraph);
+    TGraphErrors* gMLRCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAttGraph);
     TGraphErrors* gPRecoCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
     TGraphErrors* gPResCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kPosResVsPosGraph);
     TGraphErrors* gResidualCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kResidualGraph);
     TGraphErrors* gACoeff = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAGraph);
+    TGraphErrors* gRevMLR = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kPosVsMLRGraph);
     
     std::vector<TH1D*> hPosDistCorr = reco->GetPositionDistributions("corrected");
     //-----
@@ -149,10 +149,12 @@ int main(int argc, char** argv)
     leg_1->Draw();
     //-----
     
-    //----- drawing A graph
-    TCanvas *can_a = new TCanvas("preco_a", "preco_a", 700, 500);
-    gPad->SetGrid(1, 1);
+    //----- drawing A graph and reversed MLR
+    TCanvas *can_a = new TCanvas("preco_a", "preco_a", 1200, 600);
+    can_a->Divide(2, 1);
     
+    can_a->cd(1);
+    gPad->SetGrid(1, 1);
     gACoeff->SetMarkerColor(col_corr);
     gACoeff->SetLineColor(col_corr);
     gACoeff->Draw("AP");
@@ -161,10 +163,25 @@ int main(int argc, char** argv)
     
     text.SetTextColor(col_corr);
     text.DrawLatex(0.15, 0.75, Form("A = %.3f +/- %.3f",
+                   gACoeff->GetFunction("fpol0")->GetParameter(0),
+                   gACoeff->GetFunction("fpol0")->GetParError(0)));
+    text.DrawLatex(0.15, 0.70, Form("B = %.3f", fiberLen / 2.));
+    
+    can_a->cd(2);
+    gPad->SetGrid(1, 1);
+    gRevMLR->SetMarkerColor(col_corr);
+    gRevMLR->SetLineColor(col_corr);
+    gRevMLR->Draw("AP");
+    
+    gRevMLR->GetFunction("fpol1")->SetLineColor(col_corr);
+    
+    text.SetTextColor(col_corr);
+    text.DrawLatex(0.2, 0.75, Form("A = %.3f +/- %.3f",
                    results[1]->GetValue(SFResultTypeNum::kACoeff),
                    results[1]->GetUncertainty(SFResultTypeNum::kACoeff)));
-    text.DrawLatex(0.15, 0.70, Form("B = %.3f",
-                   results[1]->GetValue(SFResultTypeNum::kBCoeff)));
+    text.DrawLatex(0.2, 0.70, Form("B = %.3f +/- %.3f",
+                   results[1]->GetValue(SFResultTypeNum::kBCoeff),
+                   results[1]->GetUncertainty(SFResultTypeNum::kBCoeff)));
     //-----
     
     //----- drawing position resolution

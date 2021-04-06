@@ -12,12 +12,11 @@
 #include "SFEnergyReco.hh"
 #include "common_options.h"
 
-#include <DistributionContext.h>
-
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLegend.h>
 #include <TLine.h>
+#include <TMarker.h>
 #include <TMathBase.h>
 
 #include <sys/stat.h>
@@ -55,7 +54,6 @@ int main(int argc, char** argv)
     data->Print();
 
     TString             desc      = data->GetDescription();
-    double              fiberLen  = data->GetFiberLength();
     int                 npoints   = data->GetNpoints();
     std::vector<double> positions = data->GetPositions();
 
@@ -93,16 +91,41 @@ int main(int argc, char** argv)
     TGraphErrors* gAlpha = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAlphaGraph);
     TGraphErrors* gEnRecoSpec = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoSpecGraph);
     TGraphErrors* gEnRes = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kEnergyResGraph);
-    TF1*          fEnReco = (TF1*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoFun);
+    TF1*  fEnReco = (TF1*)results[0]->GetObject(SFResultTypeObj::kEnergyRecoFun);
     
     TGraphErrors* gEnRecoCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoGraph);
     TGraphErrors* gAlphaCorr  = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAlphaGraph);
     TGraphErrors* gEnRecoSpecCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoSpecGraph);
     TGraphErrors* gEnResCorr = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kEnergyResGraph);
-    TF1*          fEnRecoCor  = (TF1*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoFun); 
+    TF1*  fEnRecoCor  = (TF1*)results[1]->GetObject(SFResultTypeObj::kEnergyRecoFun);
     
     std::vector <TH1D*> hEnReco     = reco->GetEnergySpectra("experimental");
     std::vector <TH1D*> hEnRecoCorr = reco->GetEnergySpectra("corrected");
+    //-----
+    
+    //----- collective reconstructed energy histograms
+    TH1D* hEnRecoAllSpec = (TH1D*)results[0]->GetObject(SFResultTypeObj::kEnergyAllHist);
+    TH1D* hEnRecoAllCorrSpec = (TH1D*)results[1]->GetObject(SFResultTypeObj::kEnergyAllHist);
+    
+    SFPeakFinder *pf_ereco_all = new SFPeakFinder(hEnRecoAllSpec, false, true);
+    pf_ereco_all->FindPeakFit();
+    SFResults *results_ereco_all = pf_ereco_all->GetResults();
+    double eres_all = results_ereco_all->GetValue(SFResultTypeNum::kPeakSigma) / 
+                      results_ereco_all->GetValue(SFResultTypeNum::kPeakPosition) * 100;
+    double eres_all_err = eres_all * 
+                          sqrt(pow((results_ereco_all->GetUncertainty(SFResultTypeNum::kPeakPosition) /
+                          results_ereco_all->GetValue(SFResultTypeNum::kPeakPosition)), 2) + pow((results_ereco_all->GetUncertainty(SFResultTypeNum::kPeakSigma) /
+                          results_ereco_all->GetValue(SFResultTypeNum::kPeakSigma)), 2));
+    
+    SFPeakFinder *pf_ereco_corr_all = new SFPeakFinder(hEnRecoAllCorrSpec, false, true);
+    pf_ereco_corr_all->FindPeakFit();
+    SFResults *results_ereco_corr_all = pf_ereco_corr_all->GetResults();
+    double eres_corr_all = results_ereco_corr_all->GetValue(SFResultTypeNum::kPeakSigma) / 
+                           results_ereco_corr_all->GetValue(SFResultTypeNum::kPeakPosition) * 100;
+    double eres_corr_all_err = eres_corr_all *
+                               sqrt(pow((results_ereco_corr_all->GetUncertainty(SFResultTypeNum::kPeakPosition) /
+                               results_ereco_corr_all->GetValue(SFResultTypeNum::kPeakPosition)), 2) + pow((results_ereco_corr_all->GetUncertainty(SFResultTypeNum::kPeakSigma) /
+                               results_ereco_corr_all->GetValue(SFResultTypeNum::kPeakSigma)), 2));
     //-----
 
     int col_exp  = kMagenta -3;
@@ -177,6 +200,7 @@ int main(int argc, char** argv)
     
     gEnRecoSpec->SetMarkerColor(col_exp);
     gEnRecoSpec->SetLineColor(col_exp);
+    gEnRecoSpec->GetYaxis()->SetRangeUser(0.8, 1.2);
     gEnRecoSpec->Draw("AP");
     
     gEnRecoSpecCorr->SetMarkerColor(col_corr);
@@ -207,7 +231,7 @@ int main(int argc, char** argv)
     gEnRes->Draw("AP");
     
     text.SetTextColor(col_exp);
-    text.DrawLatex(0.75, 0.75, Form("ER = (%.3f +/- %.3f) %%",
+    text.DrawLatex(0.5, 0.75, Form("ER = (%.3f +/- %.3f) %%",
                    results[0]->GetValue(SFResultTypeNum::kEnergyRes),
                    results[0]->GetUncertainty(SFResultTypeNum::kEnergyRes)));
     
@@ -216,11 +240,11 @@ int main(int argc, char** argv)
     
     gEnResCorr->SetTitle(Form("Energy Resolution S%i (from corrected data)", seriesNo));
     gEnResCorr->SetMarkerColor(col_corr);
-    gEnRecoCorr->SetLineColor(col_corr);
-    gEnRecoCorr->Draw("P");
+    gEnResCorr->SetLineColor(col_corr);
+    gEnResCorr->Draw("AP");
     
-    text.SetTextColor(col_exp);
-    text.DrawLatex(0.75, 0.75, Form("ER = (%.3f +/- %.3f) %%",
+    text.SetTextColor(col_corr);
+    text.DrawLatex(0.5, 0.75, Form("ER = (%.3f +/- %.3f) %%",
                    results[1]->GetValue(SFResultTypeNum::kEnergyRes),
                    results[1]->GetUncertainty(SFResultTypeNum::kEnergyRes)));
     //-----
@@ -228,17 +252,18 @@ int main(int argc, char** argv)
     //----- drawing energy reconstruction event by event
     TCanvas *can_ereco_byevent_exp = new TCanvas("ereco_byevent_exp", "ereco_byevent_exp",
                                                  2000, 1200);
-    can_ereco_byevent_exp->DivideSquare(npoints);
+    can_ereco_byevent_exp->DivideSquare(npoints + 1);
     
     TCanvas *can_ereco_byevent_corr = new TCanvas("ereco_byevent_corr", "ereco_byevent_corr",
                                                   2000, 1200);
-    can_ereco_byevent_corr->DivideSquare(npoints);
+    can_ereco_byevent_corr->DivideSquare(npoints + 1);
     
     text.SetTextColor(kBlack);
+
+    TString fun_name;
     
-    TLine line;
-    line.SetLineColor(kRed);
-    line.SetLineStyle(9);
+    double miny = 0.;
+    double maxy = maxy = SFTools::FindMaxYaxis(hEnReco[4]);
     
     for (int i = 0; i < npoints; i++)
     {
@@ -248,13 +273,16 @@ int main(int argc, char** argv)
         hEnReco[i]->GetXaxis()->SetTitle("reconstructed energy [keV]");
         hEnReco[i]->GetYaxis()->SetTitle("counts");
         hEnReco[i]->SetStats(0);
-        line.DrawLine(511, 0, 511, 350);
-        //text.DrawLatex(0.2, 0.8, Form("#mu_{Ereco} = %.2f +/- %.2f", 
-        //               hEnReco[i]->GetFunction("fGauss")->GetParameter(1),
-        //               hEnReco[i]->GetFunction("fGauss")->GetParError(1)));
-        //text.DrawLatex(0.2, 0.75, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
-        //               hEnReco[i]->GetFunction("fGauss")->GetParameter(2),
-        //               hEnReco[i]->GetFunction("fGauss")->GetParError(2)));
+        fun_name = Form("f_S%i_hEnergyRecoExp_pos%.1f", seriesNo, positions[i]);
+        text.DrawLatex(0.5, 0.80, Form("ER = (%.2f +/- %.2f) %%", 
+                       gEnRes->GetPointY(i), gEnRes->GetErrorY(i)));
+        text.DrawLatex(0.5, 0.75, Form("#mu_{Ereco} = %.2f +/- %.2f", 
+                       hEnReco[i]->GetFunction(fun_name)->GetParameter(1),
+                       hEnReco[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.5, 0.70, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
+                       hEnReco[i]->GetFunction(fun_name)->GetParameter(2),
+                       hEnReco[i]->GetFunction(fun_name)->GetParError(2)));
+        hEnReco[i]->GetYaxis()->SetRangeUser(miny, maxy);
         
         can_ereco_byevent_corr->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -262,15 +290,51 @@ int main(int argc, char** argv)
         hEnRecoCorr[i]->GetXaxis()->SetTitle("reconstructed energy [keV]");
         hEnRecoCorr[i]->GetYaxis()->SetTitle("counts");
         hEnRecoCorr[i]->SetStats(0);
-        line.DrawLine(511, 0, 511, 350);
-        //text.DrawLatex(0.2, 0.8, Form("#mu_{Ereco} = %.2f +/- %.2f", 
-        //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParameter(1),
-        //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParError(1)));
-        //text.DrawLatex(0.2, 0.75, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
-        //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParameter(2),
-        //               hEnRecoCorr[i]->GetFunction("fGauss")->GetParError(2)));
+        fun_name = Form("f_S%i_hEnergyRecoCorr_pos%.1f", seriesNo, positions[i]);
+        text.DrawLatex(0.5, 0.80, Form("ER = (%.2f +/- %.2f) %%", 
+                       gEnResCorr->GetPointY(i), gEnResCorr->GetErrorY(i)));
+        text.DrawLatex(0.5, 0.75, Form("#mu_{Ereco} = %.2f +/- %.2f", 
+                       hEnRecoCorr[i]->GetFunction(fun_name)->GetParameter(1),
+                       hEnRecoCorr[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.5, 0.70, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
+                       hEnRecoCorr[i]->GetFunction(fun_name)->GetParameter(2),
+                       hEnRecoCorr[i]->GetFunction(fun_name)->GetParError(2)));
+        hEnRecoCorr[i]->GetYaxis()->SetRangeUser(miny, maxy);
     }
     
+    can_ereco_byevent_exp->cd(npoints + 1);
+    gPad->SetGrid(1, 1);
+    gPad->SetFillColor(kGreen - 10);
+    hEnRecoAllSpec->Draw();
+    hEnRecoAllSpec->SetLineColor(kBlack);
+    hEnRecoAllSpec->SetStats(0);
+    fun_name = Form("f_S%i_hEnergyRecoAllExp", seriesNo);
+    text.DrawLatex(0.5, 0.80, Form("ER = (%.2f +/- %.2f) %%", eres_all, eres_all_err));
+    text.DrawLatex(0.5, 0.75, Form("#mu_{Ereco} = %.2f +/- %.2f", 
+                   hEnRecoAllSpec->GetFunction(fun_name)->GetParameter(1),
+                   hEnRecoAllSpec->GetFunction(fun_name)->GetParError(1)));
+    text.DrawLatex(0.5, 0.70, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
+                   hEnRecoAllSpec->GetFunction(fun_name)->GetParameter(2),
+                   hEnRecoAllSpec->GetFunction(fun_name)->GetParError(2)));
+    maxy = SFTools::FindMaxYaxis(hEnRecoAllSpec);
+    hEnRecoAllSpec->GetYaxis()->SetRangeUser(miny, maxy);
+    
+    can_ereco_byevent_corr->cd(npoints + 1);
+    gPad->SetGrid(1, 1);
+    gPad->SetFillColor(kGreen - 10);
+    hEnRecoAllCorrSpec->Draw();
+    hEnRecoAllCorrSpec->SetLineColor(kBlack);
+    hEnRecoAllCorrSpec->SetStats(0);
+    fun_name = Form("f_S%i_hEnergyRecoAllCorr", seriesNo);
+    text.DrawLatex(0.5, 0.8, Form("ER = (%.2f +/- %.2f) %%", eres_corr_all, eres_corr_all_err));
+    text.DrawLatex(0.5, 0.75, Form("#mu_{Ereco} = %.2f +/- %.2f", 
+                   hEnRecoAllCorrSpec->GetFunction(fun_name)->GetParameter(1),
+                   hEnRecoAllCorrSpec->GetFunction(fun_name)->GetParError(1)));
+    text.DrawLatex(0.5, 0.70, Form("#sigma_{Ereco} = %.2f +/- %.2f", 
+                   hEnRecoAllCorrSpec->GetFunction(fun_name)->GetParameter(2),
+                   hEnRecoAllCorrSpec->GetFunction(fun_name)->GetParError(2)));
+    maxy = SFTools::FindMaxYaxis(hEnRecoAllCorrSpec);
+    hEnRecoAllCorrSpec->GetYaxis()->SetRangeUser(miny, maxy);
     //----- 
 
     //----- saving

@@ -19,7 +19,9 @@ SFPositionRes::SFPositionRes(int seriesNo) : fSeriesNo(seriesNo),
                                              fData(nullptr),
                                              fAtt(nullptr),
                                              fPosRecoVsPosGraph(nullptr),
-                                             fPosResVsPosGraph(nullptr), fMLRvsPosGraph(nullptr), fResidualGraph(nullptr),
+                                             fPosResVsPosGraph(nullptr),
+                                             fPosVsMLRGraph(nullptr),
+                                             fResidualGraph(nullptr),
                                              fResults(nullptr)
 {
 
@@ -79,6 +81,7 @@ bool SFPositionRes::AnalyzePositionRes(void)
     TString             collimator      = fData->GetCollimator();
     TString             testBench       = fData->GetTestBench();
     TString             sipm            = fData->GetSiPM();
+    TString             desc            = fData->GetDescription();
 
     fPosRecoVsPosGraph = new TGraphErrors(npointsMax);
     fPosRecoVsPosGraph->SetMarkerStyle(4);
@@ -111,17 +114,17 @@ bool SFPositionRes::AnalyzePositionRes(void)
     double* y  = tmp->GetY();
     double* ey = tmp->GetEY();
 
-    fMLRvsPosGraph = new TGraphErrors(npointsMax, y, x, ey, ex);
-    fMLRvsPosGraph->SetName("PosVsMLR");
-    fMLRvsPosGraph->SetTitle(Form("Source position vs. ln(M_{LR}) S%i", fSeriesNo));
-    fMLRvsPosGraph->GetXaxis()->SetTitle("ln(M_{LR})");
-    fMLRvsPosGraph->GetYaxis()->SetTitle("source position [mm]");
-    fMLRvsPosGraph->SetMarkerStyle(4);
-    fMLRvsPosGraph->GetXaxis()->SetRangeUser(-1, 1);
+    fPosVsMLRGraph = new TGraphErrors(npointsMax, y, x, ey, ex);
+    fPosVsMLRGraph->SetName("PosVsMLR");
+    fPosVsMLRGraph->SetTitle(Form("Source position vs. ln(M_{LR}) S%i", fSeriesNo));
+    fPosVsMLRGraph->GetXaxis()->SetTitle("ln(M_{LR})");
+    fPosVsMLRGraph->GetYaxis()->SetTitle("source position [mm]");
+    fPosVsMLRGraph->SetMarkerStyle(4);
+    fPosVsMLRGraph->GetXaxis()->SetRangeUser(-1, 1);
 
     TF1* funPol3 = new TF1("funpol3", "pol3", -1, 1);
     funPol3->SetParLimits(3, 0, 100000);
-    fMLRvsPosGraph->Fit(funPol3, "QR");
+    fPosVsMLRGraph->Fit(funPol3, "QR");
 
     //-----
 
@@ -182,9 +185,15 @@ bool SFPositionRes::AnalyzePositionRes(void)
                     double totCh1 = samples->getSignalR()->GetTOT();
                     double ampCh0 = samples->getSignalL()->GetAmplitude();
                     double ampCh1 = samples->getSignalR()->GetAmplitude();
-                    if (t0Ch0 > 0 && t0Ch1 > 0 && totCh0 > 0 && totCh1 > 0 &&
-                        blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut && ampCh0 < ampMax &&
-                        ampCh1 < ampMax && sqrt(peCh0 * peCh1) > xmin && sqrt(peCh0 * peCh1) < xmax)
+                    bool   vetoCh0 = samples->getSignalL()->GetVeto();
+                    bool   vetoCh1 = samples->getSignalR()->GetVeto();
+                    
+                    if (t0Ch0 > 0 && t0Ch1 > 0 && 
+                        totCh0 > 0 && totCh1 > 0 &&
+                        blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
+                        ampCh0 < ampMax && ampCh1 < ampMax && 
+                        sqrt(peCh0 * peCh1) > xmin && sqrt(peCh0 * peCh1) < xmax &&
+                        vetoCh0 == 0 && vetoCh1 == 0)
                     {
                         MLR = log(sqrt(peCh1 / peCh0));
                         pos = funPol3->Eval(MLR);
@@ -262,7 +271,7 @@ bool SFPositionRes::AnalyzePositionRes(void)
     fResults->AddResult(SFResultTypeNum::kPositionRes, posResAv, posResAvErr);
     fResults->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoVsPosGraph);
     fResults->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResVsPosGraph);
-    fResults->AddObject(SFResultTypeObj::kMLRvsPosGraph, fMLRvsPosGraph);
+    fResults->AddObject(SFResultTypeObj::kPosVsMLRGraph, fPosVsMLRGraph);
     fResults->AddObject(SFResultTypeObj::kResidualGraph, fResidualGraph);
 
     return true;

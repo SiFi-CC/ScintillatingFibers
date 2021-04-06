@@ -19,7 +19,7 @@
 #include <TLatex.h>
 #include <TSystem.h>
 
-#include <DistributionContext.h>
+// #include <DistributionContext.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -64,9 +64,10 @@ int main(int argc, char** argv)
     }
 
     int                 npoints    = data->GetNpoints();
-    int                 anaGroup   = data->GetAnalysisGroup();
+    //int                 anaGroup   = data->GetAnalysisGroup();
     TString             collimator = data->GetCollimator();
     std::vector<double> positions  = data->GetPositions();
+    std::vector<int>    ID         = data->GetMeasurementsIDs();
     data->Print();
 
     SFLightOutput* lout;
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
         std::cerr << "##### Exception in lightout.cc!" << std::endl;
         return 1;
     }
-
+/*
     DistributionContext ctx;
     ctx.findJsonFile("./", Form(".configAG%i.json", anaGroup));
 
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
     ctx.x.max = 100;
     ctx.y.min = 0;
     ctx.y.max = 1000;
-
+*/
     TCanvas* can = lout->GetInputData();
 
     //----- light output
@@ -204,7 +205,14 @@ int main(int argc, char** argv)
 
     TCanvas* can_spec_ch1 = new TCanvas("lo_spec_ch1", "lo_spec_ch1", 2000, 1200);
     can_spec_ch1->DivideSquare(npoints);
-
+    
+    double min_yaxis = 0.;
+    double max_yaxis_0 =  SFTools::FindMaxYaxis(specCh0[npoints-1]);
+    double max_yaxis_1 =  SFTools::FindMaxYaxis(specCh1[0]);
+    
+    double min_xaxis = 10.;
+    double max_xaxis = SFTools::FindMaxXaxis(specCh0[0]);
+    
     for (int i = 0; i < npoints; i++)
     {
         can_spec_ch0->cd(i + 1);
@@ -213,11 +221,19 @@ int main(int argc, char** argv)
         specCh0[i]->GetXaxis()->SetTitle("charge [P.E.]");
         specCh0[i]->GetYaxis()->SetTitle("counts");
         specCh0[i]->SetTitle(Form("Cherge spectrum Ch0, position %.2f mm", positions[i]));
-        ctx.configureFromJson("hSpec");
-        //     ctx.print();
-        specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //ctx.configureFromJson("hSpec");
+        //ctx.print();
+        //specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        specCh0[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
         specCh0[i]->Draw();
+        
+        TString fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
+        TF1 *fun_tmp_ch0 = specCh0[i]->GetFunction(fun_name);
+        
+        if (!fun_tmp_ch0)
+            gPad->SetFillColor(kGray);
 
         can_spec_ch1->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -225,9 +241,17 @@ int main(int argc, char** argv)
         specCh1[i]->GetXaxis()->SetTitle("charge [P.E.]");
         specCh1[i]->GetYaxis()->SetTitle("counts");
         specCh1[i]->SetTitle(Form("Cherge spectrum Ch1, position %.2f mm", positions[i]));
-        specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
-        specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        //specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
+        //specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
+        specCh1[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
         specCh1[i]->Draw();
+        
+        fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
+        TF1 *fun_tmp_ch1 = specCh1[i]->GetFunction(fun_name);
+        
+        if (!fun_tmp_ch1)
+            gPad->SetFillColor(kGray);
     }
 
     //----- saving
