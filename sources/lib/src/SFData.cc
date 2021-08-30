@@ -16,10 +16,11 @@ ClassImp(SFData);
 
 //------------------------------------------------------------------
 // constants
-static const char*  gPath        = getenv("SFDATA"); // path to the experimental data and data base
-static const int    gBaselineMax = 50;    // number of samples for base line determination
-static const double gmV          = 4.096; // coefficient to calibrate ADC channels to mV
-const double        ampMax       = 660;
+static const char*  gPath  = getenv("SFDATA"); // path to the experimental data and data base
+static const int    gBLMax = 50;               // number of samples for base line determination
+static const double gmV    = 4.096;            // coefficient to calibrate ADC channels to mV
+const double        ampMax = 660;              // maximal valid amplitude in the measurements 
+                                               // with the Desktop Digitizer
 //------------------------------------------------------------------
 /// Default constructor. If this constructor is used the series
 /// number should be set via SetDetails(int seriesNo) function.
@@ -86,6 +87,8 @@ bool SFData::OpenDataBase(TString name)
     TString db_name = std::string(gPath) + "/DB/" + name;
     int     status  = sqlite3_open(db_name, &fDB);
 
+    std::cout << db_name << std::endl;
+    
     if (status != 0)
     {
         std::cerr << "##### Error in SFData::OpenDataBase()!" << std::endl;
@@ -221,6 +224,9 @@ bool SFData::SetDetails(int seriesNo)
     return true;
 }
 //------------------------------------------------------------------
+/// Converts DDSignal object (DesktopDigitizer6-based signal) into 
+/// universal SFSignal object. 
+/// \param sig - signal (DDSignal object)
 SFSignal* SFData::ConvertSignal(DDSignal* sig)
 {
 
@@ -235,6 +241,9 @@ SFSignal* SFData::ConvertSignal(DDSignal* sig)
     return converted;
 }
 //------------------------------------------------------------------
+/// Converts DDSignal object (sifi-framework-based signal) into 
+/// universal SFSignal object. 
+/// \param sig - signal (SDDSignal object)
 SFSignal* SFData::ConvertSignal(SDDSignal* sig)
 {
 
@@ -253,6 +262,8 @@ SFSignal* SFData::ConvertSignal(SDDSignal* sig)
     return converted;
 }
 //------------------------------------------------------------------
+/// Opens ROOT files containing experimental data for the analyzed
+/// experimental series. 
 bool SFData::OpenFiles(void)
 {
 
@@ -467,7 +478,7 @@ bool SFData::InterpretCut(SFSignal* sig, TString cut)
     return result;
 }
 //------------------------------------------------------------------
-/// Accesses ROOT file and returns tree containing measured data for
+/// Accesses ROOT file and returns tree containing registered data for
 /// the requested measurement.
 /// \param ID - measurement ID
 SLoop* SFData::GetTree(int ID)
@@ -513,7 +524,6 @@ TH1D* SFData::GetSpectrum(int ch, SFSelectionType sel_type, TString cut, int ID)
     TString selection = SFDrawCommands::GetSelection(sel_type, gUnique, ch);
 
     tree->Draw(selection, cut);
-    //   TH1D *spec = (TH1D*)gROOT->FindObjectAny(Form("htemp%i", gUnique));
     TH1D*   spec  = (TH1D*)gDirectory->FindObjectAny(Form("htemp%i", gUnique));
     TString hname = Form("S%i_ch%i_pos%.1f_ID%i_", fSeriesNo, ch, position, ID) +
                     SFDrawCommands::GetSelectionName(sel_type);
@@ -632,6 +642,7 @@ TH1D* SFData::GetCustomHistogram(int ch, SFSelectionType sel_type, TString cut, 
 /// \param sel_type - predefined selection type (see SFDrawCommands)
 /// \param cut - cut for drawn events. Also TTree-style syntax
 /// \param ID - ID of requested measurement
+/// \param ch - channel number
 TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, int ch)
 {
 
@@ -665,7 +676,8 @@ TH2D* SFData::GetCorrHistogram(SFSelectionType sel_type, TString cut, int ID, in
 /// Returns a vector of requested 2D correlation histograms for all measurements in
 /// this series.
 /// \param sel_type - predefined selection type (see SFDrawCommands)
-/// \param cut - cut for drawn events. Also TTree-style syntax.
+/// \param cut - cut for drawn events. Also TTree-style syntax
+/// \param ch - channel number
 std::vector<TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString cut, int ch)
 {
 
@@ -678,11 +690,15 @@ std::vector<TH2D*> SFData::GetCorrHistograms(SFSelectionType sel_type, TString c
     return hists;
 }
 //------------------------------------------------------------------
+/// Creates a histogram of charge correlation between the chosen channel
+/// the reference detector.
+/// \param ID - measurement ID
+/// \param ch - channel number
 TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
 {
 
     const double BL_sigma_cut = SFTools::GetSigmaBL(fSiPM);
-
+    
     int         index    = SFTools::GetIndex(fMeasureID, ID);
     double      position = fPositions[index];
     std::string fname    = std::string(SFTools::FindData(fNames[index])) + "/sifi_results.root";
@@ -778,6 +794,10 @@ TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
     return htemp;
 }
 //------------------------------------------------------------------
+/// Creates histograms of charge correlation between the chosen channel
+/// the reference detector for all measurements in the experimental series.
+/// Histograms are returned in the std::vector.
+/// \param ch - channel number
 std::vector<TH2D*> SFData::GetRefCorrHistograms(int ch)
 {
 

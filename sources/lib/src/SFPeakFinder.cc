@@ -258,8 +258,8 @@ TString SFPeakFinder::InitSpectrumPerSeries(int seriesNo)
         float par6 = -0.02;
         float par2_min = 0;
         float par2_max = 300;
-        float xmin = 340;//par1 - (par2 * 4.5);
-        float xmax = 750;//par1 + (par2 * 5.5);
+        float xmin = 370;//par1 - (par2 * 4.5);
+        float xmax = 800;//par1 + (par2 * 5.5);
         
         for (int i = 0; i < 2; i++)
         {
@@ -304,8 +304,8 @@ TString SFPeakFinder::Init(void)
 //------------------------------------------------------------------
 /// Finds range of the 511 keV peak. Range is returned as references.
 /// For measurements with lead collimator range is defined as position
-/// +/- sigma and for measurements with electronic collimator range is
-/// defined as position +/- 2 sigma.
+/// +/- 1.5 sigma and for measurements with electronic collimator range 
+/// is defined as position +/- 2 sigma.
 bool SFPeakFinder::FindPeakRange(double& min, double& max)
 {
 

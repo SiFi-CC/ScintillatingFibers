@@ -10,10 +10,14 @@
 
 #include "SFAttenuationModel.hh"
 
-int iparSl[] = {0, 1, 2, 3, 4, 5, 6};
-int iparSr[] = {0, 1, 2, 3, 4, 5, 6};
+int iparSl[] = {0, 1, 2, 3, 4, 5};
+int iparSr[] = {0, 1, 2, 3, 4, 5};
+
+ClassImp(SFAttenuationModel);
 
 //------------------------------------------------------------------
+/// Standard constructor.
+/// \param seriesNo - number of the experimental series.
 SFAttenuationModel::SFAttenuationModel(int seriesNo) : fSeriesNo(seriesNo), 
                                                        fData(nullptr),
                                                        fMAttCh0Graph(nullptr),
@@ -34,7 +38,6 @@ SFAttenuationModel::SFAttenuationModel(int seriesNo) : fSeriesNo(seriesNo),
     }
 
     TString desc = fData->GetDescription();
-
     if (!desc.Contains("Regular series"))
     {
         std::cout << "##### Error in SFAttenuationModel constructor! Non-regular series!"
@@ -43,7 +46,6 @@ SFAttenuationModel::SFAttenuationModel(int seriesNo) : fSeriesNo(seriesNo),
     }
 
     SFAttenuation* att;
-    
     try
     {
         att = new SFAttenuation(fSeriesNo);
@@ -64,11 +66,17 @@ SFAttenuationModel::SFAttenuationModel(int seriesNo) : fSeriesNo(seriesNo),
     fResults = new SFResults(Form("ReconstructionResults_S%i_Mod", fSeriesNo));
 }
 //------------------------------------------------------------------
+/// Destructor.
 SFAttenuationModel::~SFAttenuationModel()
 {
     if (fData != nullptr) delete fData;
 };
 //------------------------------------------------------------------
+/// Calculates partial derivatives of the reconstructed primary components
+/// for requested side: L (left) or R (right). Calculated values are returned
+/// in an array. Order in the array is the following: [0] - lambda, [1] - 
+/// etha right, [2] - etha left, [3] - ksi, [4] - L, [5] - S left, [6] -
+/// S right.
 double* ConstructDerivativesMatrix(std::vector<double> par, TString side)
 {
     /*-----
@@ -98,10 +106,9 @@ double* ConstructDerivativesMatrix(std::vector<double> par, TString side)
 
     if (side == "L")
     {
-        dPdLambda =
-            -(e * par[4] * par[1] *
-              (-2 * e * par[3] * par[5] * par[2] + par[6] * (pow(e, 2) + par[1] * par[2]))) /
-            (pow(par[0], 2) * par[3] * pow((pow(e, 2) - par[1] * par[2]), 2));
+        dPdLambda = -(e * par[4] * par[1] *
+                     (-2 * e * par[3] * par[5] * par[2] + par[6] * (pow(e, 2) + par[1] * par[2]))) /
+                     (pow(par[0], 2) * par[3] * pow((pow(e, 2) - par[1] * par[2]), 2));
 
         dPdEtaR = (pow(e, 2) * (-e * par[6] + par[3] * par[5] * par[2])) /
                   (par[3] * (pow((pow(e, 2) - par[1] * par[2]), 2)));
@@ -113,10 +120,9 @@ double* ConstructDerivativesMatrix(std::vector<double> par, TString side)
     }
     else if (side == "R")
     {
-        dPdLambda =
-            -(e * par[4] * par[2] *
-              (-2 * e * par[6] * par[1] + par[3] * par[5] * (pow(e, 2) + par[1] * par[2]))) /
-            (pow(par[0], 2) * par[3] * (pow((pow(e, 2) - par[1] * par[2]), 2)));
+        dPdLambda = -(e * par[4] * par[2] *
+                     (-2 * e * par[6] * par[1] + par[3] * par[5] * (pow(e, 2) + par[1] * par[2]))) /
+                     (pow(par[0], 2) * par[3] * (pow((pow(e, 2) - par[1] * par[2]), 2)));
 
         dPdEtaR = (e * par[2] * (e * par[6] - par[3] * par[5] * par[2])) /
                   (par[3] * (pow((pow(e, 2) - par[1] * par[2]), 2)));
@@ -138,6 +144,9 @@ double* ConstructDerivativesMatrix(std::vector<double> par, TString side)
     return matrix;
 }
 //------------------------------------------------------------------
+/// Multiplies an array containing partial derivatives of the 
+/// reconstructed primary components with the covariance matrix. 
+/// Returns final value of the multiplication. 
 double Multiply(double* deriv, TMatrixD cov)
 {
     // cov - covariance matrix: 6 rows & 6 columns
@@ -165,6 +174,77 @@ double Multiply(double* deriv, TMatrixD cov)
     return var;
 }
 //------------------------------------------------------------------
+/// Calculates uncertainty of the reconstructed primary component.
+double SFAttenuationModel::CalculateUncertainty(std::vector<double> params, TString side)
+{
+    double uncert = 0;
+    
+    std::vector<double> parsForDerivatives(7);
+    parsForDerivatives[0] = params[0]; //fResults->GetValue(SFResultTypeNum::kLambda);
+    parsForDerivatives[1] = params[1]; //fResults->GetValue(SFResultTypeNum::kEtaR);
+    parsForDerivatives[2] = params[2]; //fResults->GetValue(SFResultTypeNum::kEtaL);
+    parsForDerivatives[3] = params[3]; //fResults->GetValue(SFResultTypeNum::kKsi);
+    parsForDerivatives[4] = params[4]; //fResults->GetValue(SFResultTypeNum::kLength);
+    parsForDerivatives[5] = params[5]; //SL
+    parsForDerivatives[6] = params[6]; //SR
+    // params[7] - sigma_SL
+    // params[8] - sigma_SR 
+    
+    double* derivativesL;
+    double* derivativesR;
+    
+    if (side == "L")
+    {
+        derivativesL = ConstructDerivativesMatrix(parsForDerivatives, "L");
+
+        double sigma_fSL = Multiply(derivativesL, fCovMatrix);
+
+        double dPLdSL = (exp(2 * params[4] / params[0])) /
+                        (exp(2 * params[5] / params[0]) -
+                        params[1] * params[2]);
+        double dPLdSR = (exp(params[4] / params[0]) *
+                        params[1]) / (params[3] *
+                        (exp(2 * params[4] / params[0]) -
+                        params[1] * params[2]));
+
+        double signalLCh0Err = sqrt(sigma_fSL + pow(dPLdSL * params[7], 2) + pow(dPLdSR * params[8], 2));
+        uncert = signalLCh0Err;
+    }
+    else if (side == "R")
+    {
+        derivativesR = ConstructDerivativesMatrix(parsForDerivatives, "R");
+        
+        double sigma_fSR = Multiply(derivativesR, fCovMatrix);
+
+        double dPRdSL = (-exp(params[4] / params[0]) *
+                        params[2]) / (exp(2 * params[4] /
+                        params[0]) - params[1] *
+                        params[2]);
+        double dPRdSR = (exp(2 * params[4] / params[0])) /
+                        (params[3] * (exp(2 * params[4] /
+                        params[0]) - params[1] *
+                        params[2]));
+                        
+        double signalRCh1Err = sqrt(sigma_fSR + pow(dPRdSL * params[7], 2) + pow(dPRdSR * params[8], 2));
+        uncert = signalRCh1Err;
+    }
+    else 
+    {
+        std::cerr << "Error in SFAttenuationModel::CalculateUncertainty()" << std::endl;
+        std::cerr << "Incorrect side. Possible optios are: L and R" << std::endl;
+        std::abort();
+    }
+    
+    //delete[] derivativesL;
+    //delete[] derivativesR;
+    
+    return uncert;
+}
+//------------------------------------------------------------------
+/// Fits exponential attenuation model with light reflection to the
+/// experimental data. Model equations are fitted simultaneously to
+/// data sets for left and right side of the fiber. Additionally,
+/// primary component is reconstructed and presented in graphs.
 bool SFAttenuationModel::FitModel(void)
 {
     std::cout << "\n\n----- Inside SFAttenuationModel::FitModel() for series " << fSeriesNo << "\n"
@@ -184,7 +264,7 @@ bool SFAttenuationModel::FitModel(void)
 
     TF1* fun_Rl = new TF1("fun_Rl", "Rl(x)", 0, fiberLen);
     TF1* fun_Rr = new TF1("fun_Rr", "Rr(x)", 0, fiberLen);
-
+    
     TFormula* form_Sl = new TFormula("Sl", "(Pl(x)+Rl(x))");
     TFormula* form_Sr = new TFormula("Sr", "[4]*(Pr(x)+Rr(x))");
 
@@ -221,19 +301,19 @@ bool SFAttenuationModel::FitModel(void)
     ROOT::Fit::Chi2Function chi2_Sl(dataSl, wfSl);
     ROOT::Fit::Chi2Function chi2_Sr(dataSr, wfSr);
 
-    GlobalChi2 globalChi2(chi2_Sl, chi2_Sr);
+    GlobalChi2Model globalChi2(chi2_Sl, chi2_Sr);
 
     ROOT::Fit::Fitter fitter;
 
     const int npar       = 6;
-    double    par0[npar] = {150, 150, 0.5, 0.5, 0.5, fiberLen};
+    double    par0[npar] = {500, 150, 0.5, 0.5, 1, fiberLen};
 
     fitter.Config().SetParamsSettings(npar, par0);
 
-    fitter.Config().ParSettings(0).SetLimits(0, 1500);
-    fitter.Config().ParSettings(1).SetLimits(0, 800);
-    fitter.Config().ParSettings(2).SetLimits(-1, 10);
-    fitter.Config().ParSettings(3).SetLimits(-1, 10);
+    fitter.Config().ParSettings(0).SetLimits(0, 1E6);
+    fitter.Config().ParSettings(1).SetLimits(0, 1E4);
+    fitter.Config().ParSettings(2).SetLimits(-1, 3);
+    fitter.Config().ParSettings(3).SetLimits(-1, 3);
     fitter.Config().ParSettings(4).SetLimits(0, 5);
     fitter.Config().ParSettings(5).Fix();
 
@@ -246,6 +326,8 @@ bool SFAttenuationModel::FitModel(void)
 
     fitter.Config().MinimizerOptions().SetPrintLevel(1);
     fitter.Config().SetMinimizer("Minuit2", "Migrad");
+    fitter.Config().MinimizerOptions().SetMaxIterations(1e6);
+    fitter.Config().MinimizerOptions().SetMaxFunctionCalls(1e6);
 
     fitter.FitFCN(npar, globalChi2, 0, dataSl.Size() + dataSr.Size(), true);
     fFitterResults = new ROOT::Fit::FitResult(fitter.Result());
@@ -289,7 +371,6 @@ bool SFAttenuationModel::FitModel(void)
     std::vector<double> positions  = fData->GetPositions();
     TString             collimator = fData->GetCollimator();
     TString             testBench  = fData->GetTestBench();
-    TString             desc       = fData->GetDescription();
 
     fMAttCh0CorrGraph = new TGraphErrors(npoints);
     fMAttCh0CorrGraph->SetName("fMAttCh0CorrGraph");
@@ -308,7 +389,7 @@ bool SFAttenuationModel::FitModel(void)
     // x - Sr - 1
     // y - Sl - 0
 
-    TFormula* form_PlReco = new TFormula("PlReco", "(exp([5]/[1])*(exp([5]/[1])*[4]*y - x*[2]))/([4]*exp(2*[5]/[1]) - [3]*[2]) + [0]*0");
+    TFormula* form_PlReco = new TFormula("PlReco", "(exp([5]/[1])*(exp([5]/[1])*[4]*y - x*[2]))/([4]*(exp(2*[5]/[1]) - [3]*[2])) + [0]*0");
 
     TF2* fun_PlReco = new TF2("fun_PlReco", "PlReco(x,y)", 0, 1000, 0, 1000);
     fun_PlReco->FixParameter(0, 0);
@@ -318,7 +399,7 @@ bool SFAttenuationModel::FitModel(void)
     fun_PlReco->FixParameter(4, fResults->GetValue(SFResultTypeNum::kKsi));
     fun_PlReco->FixParameter(5, fResults->GetValue(SFResultTypeNum::kLength));
 
-    TFormula* form_PrReco = new TFormula("PrReco", "-(exp([5]/[1])*(-exp([5]/[1])*x + [4]*y*[3]))/([4]*exp(2*[5]/[1]) - [3]*[2]) + [0]*0");
+    TFormula* form_PrReco = new TFormula("PrReco", "-(exp([5]/[1])*(-exp([5]/[1])*x + [4]*y*[3]))/([4]*(exp(2*[5]/[1]) - [3]*[2])) + [0]*0");
 
     TF2* fun_PrReco = new TF2("fun_PrReco", "PrReco(x,y)", 0, 1000, 0, 1000);
 
@@ -332,82 +413,80 @@ bool SFAttenuationModel::FitModel(void)
     fPlRecoFun = fun_PlReco;
     fPrRecoFun = fun_PrReco;
 
-    TMatrixD covMatrix(6, 6);
-    fFitterResults->GetCovarianceMatrix(covMatrix);
+//  TMatrixD covMatrix(6, 6);
+    fCovMatrix.ResizeTo(6, 6);
+    fFitterResults->GetCovarianceMatrix(fCovMatrix);
 
-    double* derivativesL;
-    double* derivativesR;
+//     double* derivativesL;
+//     double* derivativesR;
 
-    std::vector<double> parsForDerivatives(7);
-    parsForDerivatives[0] = fResults->GetValue(SFResultTypeNum::kLambda);
-    parsForDerivatives[1] = fResults->GetValue(SFResultTypeNum::kEtaR);
-    parsForDerivatives[2] = fResults->GetValue(SFResultTypeNum::kEtaL);
-    parsForDerivatives[3] = fResults->GetValue(SFResultTypeNum::kKsi);
-    parsForDerivatives[4] = fResults->GetValue(SFResultTypeNum::kLength);
+    std::vector<double> parsForErrors(9);
+    parsForErrors[0] = fResults->GetValue(SFResultTypeNum::kLambda);
+    parsForErrors[1] = fResults->GetValue(SFResultTypeNum::kEtaR);
+    parsForErrors[2] = fResults->GetValue(SFResultTypeNum::kEtaL);
+    parsForErrors[3] = fResults->GetValue(SFResultTypeNum::kKsi);
+    parsForErrors[4] = fResults->GetValue(SFResultTypeNum::kLength);
+    
+    //std::vector<double> parsForDerivatives(7);
+    //parsForDerivatives[0] = fResults->GetValue(SFResultTypeNum::kLambda);
+    //parsForDerivatives[1] = fResults->GetValue(SFResultTypeNum::kEtaR);
+    //parsForDerivatives[2] = fResults->GetValue(SFResultTypeNum::kEtaL);
+    //parsForDerivatives[3] = fResults->GetValue(SFResultTypeNum::kKsi);
+    //parsForDerivatives[4] = fResults->GetValue(SFResultTypeNum::kLength);
 
     for (int i = 0; i < npoints; i++)
     {
-        double SR = 0;//fMAttCh1Graph->GetPointY(i);
-        double SL = 0;//fMAttCh0Graph->GetPointY(i);
+        double SR = fMAttCh1Graph->GetPointY(i);
+        double SL = fMAttCh0Graph->GetPointY(i);
 
-        double sigmaSL = 0;//fMAttCh0Graph->GetErrorY(i);
-        double sigmaSR = 0;//fMAttCh1Graph->GetErrorY(i);
+        double sigmaSL = fMAttCh0Graph->GetErrorY(i);
+        double sigmaSR = fMAttCh1Graph->GetErrorY(i);
+
+        parsForErrors[5] = SL;
+        parsForErrors[6] = SR;
+        parsForErrors[7] = sigmaSL;
+        parsForErrors[8] = sigmaSR;
         
-        if (desc.Contains("BaSO4"))
-        {
-            SL = fun_Sl->Eval(positions[i]);
-            SR = fun_Sr->Eval(positions[i]);
-            
-            sigmaSL = 1.; //TODO calculate uncert
-            sigmaSR = 1.; //TODO calculate uncert
-        }
-        else
-        {
-            SR = fMAttCh1Graph->GetPointY(i);
-            SL = fMAttCh0Graph->GetPointY(i);
-
-            sigmaSL = fMAttCh0Graph->GetErrorY(i);
-            sigmaSR = fMAttCh1Graph->GetErrorY(i);
-        }
-
         double signalLCh0 = fun_PlReco->Eval(SR, SL);
+        double signalLCh0Err = CalculateUncertainty(parsForErrors, "L");
 
-        parsForDerivatives[5] = SL;
-        parsForDerivatives[6] = SR;
+        //parsForDerivatives[5] = SL;
+        //parsForDerivatives[6] = SR;
 
-        derivativesL = ConstructDerivativesMatrix(parsForDerivatives, "L");
-        derivativesR = ConstructDerivativesMatrix(parsForDerivatives, "R");
+        //derivativesL = ConstructDerivativesMatrix(parsForDerivatives, "L");
+        //derivativesR = ConstructDerivativesMatrix(parsForDerivatives, "R");
 
-        double sigma_fSL = Multiply(derivativesL, covMatrix);
+        //double sigma_fSL = Multiply(derivativesL, covMatrix);
 
-        double dPLdSL = (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1))) /
-                        (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) -
-                        fun_PlReco->GetParameter(2) * fun_PlReco->GetParameter(3));
-        double dPLdSR = (exp(fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) *
-                        fun_PlReco->GetParameter(2)) / (fun_PlReco->GetParameter(4) *
-                        (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) -
-                        fun_PlReco->GetParameter(2) * fun_PlReco->GetParameter(3)));
+        //double dPLdSL = (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1))) /
+        //                (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) -
+        //                fun_PlReco->GetParameter(2) * fun_PlReco->GetParameter(3));
+        //double dPLdSR = (exp(fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) *
+        //                fun_PlReco->GetParameter(2)) / (fun_PlReco->GetParameter(4) *
+        //                (exp(2 * fun_PlReco->GetParameter(5) / fun_PlReco->GetParameter(1)) -
+        //                fun_PlReco->GetParameter(2) * fun_PlReco->GetParameter(3)));
 
-        double signalLCh0Err = sqrt(sigma_fSL + pow(dPLdSL * sigmaSL, 2) + pow(dPLdSR * sigmaSR, 2));
+        //double signalLCh0Err = sqrt(sigma_fSL + pow(dPLdSL * sigmaSL, 2) + pow(dPLdSR * sigmaSR, 2));
 
         fMAttCh0CorrGraph->SetPoint(i, positions[i], signalLCh0);
         fMAttCh0CorrGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), signalLCh0Err);
 
         double signalRCh1 = fun_PrReco->Eval(SR, SL);
+        double signalRCh1Err = CalculateUncertainty(parsForErrors, "R");
 
-        double sigma_fSR = Multiply(derivativesR, covMatrix);
+        //double sigma_fSR = Multiply(derivativesR, covMatrix);
 
-        double dPRdSL = (-exp(fun_PrReco->GetParameter(5) / fun_PrReco->GetParameter(1)) *
-                        fun_PrReco->GetParameter(3)) / (exp(2 * fun_PrReco->GetParameter(5) /
-                        fun_PrReco->GetParameter(1)) * fun_PrReco->GetParameter(2) *
-                        fun_PrReco->GetParameter(3));
+        //double dPRdSL = (-exp(fun_PrReco->GetParameter(5) / fun_PrReco->GetParameter(1)) *
+        //                fun_PrReco->GetParameter(3)) / (exp(2 * fun_PrReco->GetParameter(5) /
+        //                fun_PrReco->GetParameter(1)) * fun_PrReco->GetParameter(2) *
+        //                fun_PrReco->GetParameter(3));
 
-        double dPRdSR = (exp(2 * fun_PrReco->GetParameter(5) / fun_PrReco->GetParameter(1))) /
-                        (fun_PrReco->GetParameter(4) * (exp(2 * fun_PrReco->GetParameter(5) /
-                        fun_PrReco->GetParameter(1)) - fun_PrReco->GetParameter(2) *
-                        fun_PrReco->GetParameter(3)));
+        //double dPRdSR = (exp(2 * fun_PrReco->GetParameter(5) / fun_PrReco->GetParameter(1))) /
+        //                (fun_PrReco->GetParameter(4) * (exp(2 * fun_PrReco->GetParameter(5) /
+        //                fun_PrReco->GetParameter(1)) - fun_PrReco->GetParameter(2) *
+        //                fun_PrReco->GetParameter(3)));
 
-        double signalRCh1Err = sqrt(sigma_fSR + pow(dPRdSL * sigmaSL, 2) + pow(dPRdSR * sigmaSR, 2));
+        //double signalRCh1Err = sqrt(sigma_fSR + pow(dPRdSL * sigmaSL, 2) + pow(dPRdSR * sigmaSR, 2));
 
         fMAttCh1CorrGraph->SetPoint(i, positions[i], signalRCh1);
         fMAttCh1CorrGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), signalRCh1Err);
@@ -431,12 +510,13 @@ bool SFAttenuationModel::FitModel(void)
     fResults->AddObject(SFResultTypeObj::kPrRecoFun, fun_PrReco);
     //----- setting objects end
 
-    delete[] derivativesL;
-    delete[] derivativesR;
+//     delete[] derivativesL;
+//     delete[] derivativesR;
 
     return true;
 }
 //------------------------------------------------------------------
+/// Prints details of the SFAttenuationModel class object.
 void SFAttenuationModel::Print(void)
 {
     std::cout << "\n-------------------------------------------" << std::endl;
@@ -445,9 +525,3 @@ void SFAttenuationModel::Print(void)
     std::cout << "-------------------------------------------\n" << std::endl;
 }
 //------------------------------------------------------------------
-
-//    std::cout << "Chi2: " << fFitterResults.Chi2() << std::endl;
-//    std::cout << "NDF: " << fFitterResults.Ndf() << std::endl;
-//    std::cout << "EDM: " << fFitterResults.Edm() << std::endl;
-//    std::cout << "N calls: " << fFitterResults.NCalls() << std::endl;
-//    fFitterResults.PrintCovMatrix(std::cout);

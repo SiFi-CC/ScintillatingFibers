@@ -102,7 +102,7 @@ bool SFStabilityMon::AnalyzeStability(int ch)
         peakFin.push_back(new SFPeakFinder(spec[i], false));
         peakFin[i]->FindPeakFit();
         peakParams = peakFin[i]->GetResults();
-        gPeakPos->SetPoint(i, i, peakParams->GetValue(SFResultTypeNum::kPeakPosition));
+        gPeakPos->SetPoint(i, i+1, peakParams->GetValue(SFResultTypeNum::kPeakPosition));
         gPeakPos->SetPointError(i, 0, peakParams->GetUncertainty(SFResultTypeNum::kPeakPosition));
         peakPositions.push_back(peakParams->GetValue(SFResultTypeNum::kPeakPosition));
     }
@@ -123,7 +123,7 @@ bool SFStabilityMon::AnalyzeStability(int ch)
     {
         gPeakPos->GetPoint(i, x, y);
         res = y - mean;
-        gResiduals->SetPoint(i, i, res);
+        gResiduals->SetPoint(i, i+1, res);
     }
 
     if (ch == 0)

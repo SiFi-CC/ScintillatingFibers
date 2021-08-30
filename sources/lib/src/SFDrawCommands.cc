@@ -12,7 +12,8 @@
 
 ClassImp(SFDrawCommands);
 
-const double ampMax = 660; // maximum valid amplitude [mV]; signals with the amplitude
+const double ampMax = 660; // maximum valid amplitude [mV] in measurements 
+                           // with the Desktop Digitizer; signals with the amplitude
                            // above this value are saturated and need to be discarded
 
 //------------------------------------------------------------------
@@ -136,6 +137,34 @@ TString SFDrawCommands::GetSelectionName(SFSelectionType selection)
         case SFSelectionType::kBLSigma:
             selectionName = "BLSigma";
             break;
+        //----- selections for PMI measurements
+        case SFSelectionType::kPMICharge:
+            selectionName = "kPMICharge";
+            break;
+        case SFSelectionType::kPMIChargeAverage:
+            selectionName = "kPMITChargeAverage";
+            break;
+        case SFSelectionType::kPMIT0:
+            selectionName = "kPMIT0";
+            break;
+        case SFSelectionType::kPMIChargeCorrelation:
+            selectionName = "kPMIChargeCorrelation";
+            break;
+        case SFSelectionType::kPMIT0Correlation:
+            selectionName = "kPMIT0Correlation";
+            break;
+        case SFSelectionType::kPMIT0Difference:
+            selectionName = "kPMIT0Difference";
+            break;
+        case SFSelectionType::kPMILogSqrtChargeRatio:
+            selectionName = "kPMILogSqrtChargeRatio";
+            break;
+        case SFSelectionType::kPMIChargeAttCorrected:
+            selectionName = "kPMIChargeAttCorrected";
+            break;
+        case SFSelectionType::kPMIChargeAttCorrectedSum:
+            selectionName = "kPMIChargeAttCorrectedSum";
+            break;
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelectionName()!" << std::endl;
             std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -161,44 +190,44 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
     switch (selection)
     {
         case SFSelectionType::kPE:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fPE>>htemp%i(2200, -150, 1500)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fPE>>htemp%i(2200, -150, 1500)", side, unique);
             break;
         case SFSelectionType::kCharge:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fCharge>>htemp%i(1000, -1E4, 2.5E5)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fCharge>>htemp%i(1000, -1E4, 2.5E5)", side, unique);
             break;
         case SFSelectionType::kAmplitude:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fAmp>>htemp%i(800, 0, 800)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fAmp>>htemp%i(800, 0, 800)", side, unique);
             break;
         case SFSelectionType::kT0:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fT0>>htemp%i(1210, -110, 1100)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fT0>>htemp%i(1210, -110, 1100)", side, unique);
             break;
         case SFSelectionType::kTOT:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fTOT>>htemp%i(1210, -110, 1100)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fTOT>>htemp%i(1210, -110, 1100)", side, unique);
             break;
         case SFSelectionType::kPEAttCorrected:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fPE/exp(%f/%f)>>htemp%i(1300, -150, 1600)", side,
-                     customNum[0], customNum[1], unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fPE/exp(%f/%f)>>htemp%i(1300, -150, 1600)",
+                                   side, customNum[0], customNum[1], unique);
             break;
         case SFSelectionType::kAmpPECorrelation:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fAmp:SDDSamples.data.signal_%c.fPE>>htemp%i"
-                     "(2200, -150, 1500, 1000, -10, 800)",
-                     side, side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fAmp:SDDSamples.data.signal_%c.fPE>>htemp%i"
+                                   "(2200, -150, 1500, 1000, -10, 800)", side, side, unique);
             break;
         case SFSelectionType::kBL:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fBL>>htemp%i(2500, 1000, 3500)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fBL>>htemp%i(2500, 1000, 3500)", side, unique);
             break;
         case SFSelectionType::kBLSigma:
-            selectionString =
-                Form("SDDSamples.data.signal_%c.fBL_sigma>>htemp%i(200, 0, 50)", side, unique);
+            selectionString = Form("SDDSamples.data.signal_%c.fBL_sigma>>htemp%i(200, 0, 50)", side, unique);
             break;
+        //----- selections for PMI measurements
+        case SFSelectionType::kPMICharge:
+            selectionString = Form("SFibersRaw.data.qdc_%c>>htemp%i(440, 0, 1500)", side, unique);
+            break;
+        case SFSelectionType::kPMIT0:
+            selectionString = Form("SFibersRaw.data.time_%c>>htemp%i(300, -50, 100)", side, unique);
+            break;
+        case SFSelectionType::kPMIChargeAttCorrected:
+            selectionString = Form("SFibersRaw.data.qdc_%c/exp(%f/%f)>>htemp%i(500, 0, 1600)",
+                                   side, customNum[0], customNum[1], unique);
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;
             std::cerr << "Unknown selection type! Please check!" << std::endl;
@@ -223,47 +252,63 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
     switch (selection)
     {
         case SFSelectionType::kLogSqrtPERatio:
-            selectionString =
-                Form("log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>>"
-                     "htemp%i(500, -2, 2)",
-                     unique);
+            selectionString = Form("log(sqrt(SDDSamples.data.signal_r.fPE/SDDSamples.data.signal_l.fPE))>>"
+                                   "htemp%i(500, -2, 2)", unique);
             break;
         case SFSelectionType::kT0Difference:
             selectionString = Form("(SDDSamples.data.signal_l.fT0-SDDSamples.data.signal_r.fT0)>>"
-                                   "htemp%i(2500, -50, 50)",
-                                   unique);
+                                   "htemp%i(2500, -50, 50)", unique);
             break;
         case SFSelectionType::kPEAverage:
-            selectionString =
-                Form("sqrt(SDDSamples.data.signal_l.fPE*SDDSamples.data.signal_r.fPE)>>"
-                     "htemp%i(1350, -150, 1200)",
-                     unique);
+            selectionString = Form("sqrt(SDDSamples.data.signal_l.fPE*SDDSamples.data.signal_r.fPE)>>"
+                                   "htemp%i(1350, -150, 1200)", unique);
             break;
         case SFSelectionType::kAmplitudeAverage:
-            selectionString =
-                Form("sqrt(SDDSamples.data.signal_l.fAmp*SDDSamples.data.signal_r.fAmp)>>"
-                     "htemp%i(800, 0, 800)",
-                     unique);
+            selectionString = Form("sqrt(SDDSamples.data.signal_l.fAmp*SDDSamples.data.signal_r.fAmp)>>"
+                                   "htemp%i(800, 0, 800)", unique);
             break;
         case SFSelectionType::kPECorrelation:
             selectionString = Form("SDDSamples.data.signal_l.fPE:SDDSamples.data.signal_r.fPE>>"
-                                   "htemp%i(3300, -150, 1500, 3300, -150, 1500)",
-                                   unique);
+                                   "htemp%i(3300, -150, 1500, 3300, -150, 1500)", unique);
             break;
         case SFSelectionType::kAmplitudeCorrelation:
             selectionString = Form("SDDSamples.data.signal_l.fAmp:SDDSamples.data.signal_r.fAmp>>"
-                                   "htemp%i(800, 0, 800, 800, 0, 800)",
-                                   unique);
+                                   "htemp%i(800, 0, 800, 800, 0, 800)", unique);
             break;
         case SFSelectionType::kT0Correlation:
             selectionString = Form("SDDSamples.data.signal_l.fT0:SDDSamples.data.signal_r.fT0>>"
-                                   "htemp%i(2420, -110, 1100, 2420, -110, 1100",
-                                   unique);
+                                   "htemp%i(2420, -110, 1100, 2420, -110, 1100", unique);
             break;
         case SFSelectionType::kPEAttCorrectedSum:
             selectionString = Form("SDDSamples.data.signal_l.fPE/exp(%f/%f) + SDDSamples.data."
-                     "signal_r.fPE/exp(%f/%f)>>htemp%i(1500, -150, 4000)",
-                     customNum[0], customNum[1], customNum[2], customNum[3], unique);
+                                   "signal_r.fPE/exp(%f/%f)>>htemp%i(1500, -150, 4000)",
+                                   customNum[0], customNum[1], customNum[2], customNum[3], unique);
+            break;
+        //----- selections for PMI measurements
+        case SFSelectionType::kPMIChargeAverage:
+            selectionString = Form("sqrt(SFibersRaw.data.qdc_l*SFibersRaw.data.qdc_r)>>"
+                                   "htemp%i(440, 0, 1500)", unique);
+            break;
+        case SFSelectionType::kPMIChargeCorrelation:
+            selectionString = Form("SFibersRaw.data.qdc_l:SFibersRaw.data.qdc_r>>"
+                                   "htemp%i(440, 0, 1500, 440, 0, 1500)", unique);
+            break;
+        case SFSelectionType::kPMIT0Correlation:
+            selectionString = Form("SFibersRaw.data.time_l.:SFibersRaw.data.time_r>>"
+                                   "htemp%i(300, -50, 50, 600, -50, 50", unique);
+            break;
+        case SFSelectionType::kPMIT0Difference:
+            selectionString = Form("(SFibersRaw.data.time_l-SFibersRaw.data.time_r)>>"
+                                   "htemp%i(500, -50, 50)", unique);
+            break;
+        case SFSelectionType::kPMILogSqrtChargeRatio:
+            selectionString = Form("log(sqrt(SFibersRaw.data.qdc_r/SFibersRaw.data.qdc_l))>>"
+                                   "htemp%i(200, -2, 2)", unique);
+            break;
+        case SFSelectionType::kPMIChargeAttCorrectedSum:
+            selectionString = Form("SFibersRaw.data.qdc_l/exp(%f/%f) + SFibersRaw.data."
+                                   "qdc_r/exp(%f/%f)>>htemp%i(500, 0, 4000)",
+                                   customNum[0], customNum[1], customNum[2], customNum[3], unique);
             break;
         default:
             std::cerr << "##### Error in SFDrawCommands::GetSelection()!" << std::endl;
@@ -286,6 +331,32 @@ TString SFDrawCommands::GetCut(SFCutType cut, std::vector<double> customNum)
 
     switch (cut)
     {
+        case SFCutType::kPMISpecCh0:
+            cutString = "SFibersRaw.data.module==0";
+            break;
+        case SFCutType::kPMISpecCh1:
+            cutString = "SFibersRaw.data.module==0";
+            break;
+        case SFCutType::kPMICombCh0Ch1:
+            cutString = "SFibersRaw.data.module==0";
+            break;
+        case SFCutType::kPMIT0Diff:
+            cutString = Form("SFibersRaw.data.module==0 && "
+                             "log(sqrt(SFibersRaw.data.qdc_r/SFibersRaw.data.qdc_l))>%f && "
+                             "log(sqrt(SFibersRaw.data.qdc_r/SFibersRaw.data.qdc_l))<%f", 
+                             customNum[0], customNum[1]);
+            break;
+        case SFCutType::kPMIT0DiffECut:
+            cutString = Form("SFibersRaw.data.module==0 && "
+                             "SFibersRaw.data.qdc_l>%f && "
+                             "SFibersRaw.data.qdc_l<%f && "
+                             "SFibersRaw.data.qdc_r>%f && "
+                             "SFibersRaw.data.qdc_r<%f && "
+                             "log(sqrt(SFibersRaw.data.qdc_r/SFibersRaw.data.qdc_l))>%f && " 
+                             "log(sqrt(SFibersRaw.data.qdc_r/SFibersRaw.data.qdc_l))<%f",
+                             customNum[0], customNum[1], customNum[2], 
+                             customNum[3], customNum[4], customNum[5]);
+            break;
         case SFCutType::kSpecCh0:
             cutString = Form("SDDSamples.data.module==0 && "
                              "SDDSamples.data.signal_l.fVeto == 0 && "

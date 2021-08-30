@@ -23,24 +23,37 @@
 #include <string>
 #include <vector>
 
+/// This class prepares temperature plots and calculates average
+/// temperature for the experimental series. Temperature data is 
+/// read from the data base. Plots of temperature per minute and 
+/// average temperature during the measurement are prepared. Plots
+/// and calculations of average temeratures are done for requested 
+/// temperature sensors, identified by their ID.
+
 class SFTemperature : public TObject
 {
 
   private:
-    int     fSeriesNo;
-    SFData* fData;
+    int     fSeriesNo; ///< Series number
+    SFData* fData;     ///< Analyzed experimental series
 
-    std::map<TString, TGraphErrors*> fTempPlot;
-    std::map<TString, TGraphErrors*> fTempPlotAv;
-    std::map<TString, SFResults*>    fAvTemp;
+    std::map<TString, TGraphErrors*> fTempPlot;   ///< Map containing temperature plots
+                                                  ///< (key - sensor ID)
+    std::map<TString, TGraphErrors*> fTempPlotAv; ///< Map containing plots of average
+                                                  ///< temperature during measurement
+                                                  ///< (key - sensor ID)
+    std::map<TString, SFResults*>    fAvTemp;     ///< Map containing average temperature 
+                                                  ///< for experimental series (key - 
+                                                  ///< sensor ID)
 
-    std::vector<int>    fTime;
-    std::vector<double> fTemperatures;
+    std::vector<int>    fTime;         ///< Vector containing timestamp of
+                                       ///< the temperature measurement
+    std::vector<double> fTemperatures; ///< Vector containing temperature values
 
-    sqlite3* fDB;
+    sqlite3* fDB;                      ///< SQLite3 data base
 
     bool       OpenDataBase(void);
-    bool       LoadFromDB(TString sensor, TString name = "none");
+    bool       LoadFromDB(TString sensor, TString name = "all");
     SFResults* CalcAverageTempMeasure(TString sensor, TString name);
 
   public:
@@ -57,7 +70,7 @@ class SFTemperature : public TObject
 
     void Print(void);
 
-    ClassDef(SFTemperature, 1);
+    ClassDef(SFTemperature, 1)
 };
 
 #endif

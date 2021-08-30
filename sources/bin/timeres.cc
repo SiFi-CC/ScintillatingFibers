@@ -64,6 +64,7 @@ int main(int argc, char** argv)
     TString             collimator = data->GetCollimator();
     TString             sipm       = data->GetSiPM();
     std::vector<double> positions  = data->GetPositions();
+    std::vector<int>    ID         = data->GetMeasurementsIDs();
     data->Print();
 
     SFTimingRes* timeres;
@@ -152,21 +153,30 @@ int main(int argc, char** argv)
     fT0thin->SetLineColor(kMagenta);
     fT0thick->SetLineColor(kMagenta - 10);
 
-    TF1* fRthin  = new TF1("fRthin", "gaus", -1, 1);
-    TF1* fRthick = new TF1("fRthick", "gaus", -1, 1);
-    TF1* fClone  = new TF1("fColone", "gaus", -1, 1);
+    TF1* fRthin  = new TF1("fRthin", "gaus", -50, 50);
+    TF1* fRthick = new TF1("fRthick", "gaus", -50, 50);
+    TF1* fClone  = new TF1("fColone", "gaus", -50, 50);
     fRthin->SetLineColor(kMagenta);
     fRthick->SetLineColor(kMagenta - 10);
     fClone->SetLineColor(kRed);
 
+    double min_yaxis = 0.;
+    double max_yaxis_0 =  SFTools::FindMaxYaxis(specCh0[npoints-1]);
+    double max_yaxis_1 =  SFTools::FindMaxYaxis(specCh1[0]);
+    
+    double min_xaxis = 10.;
+    double max_xaxis = SFTools::FindMaxXaxis(specCh0[0]);
+    
+    TString fun_name;
+
     for (int i = 0; i < npoints; i++)
     {
-        title = Form("ch_0.fT0 - ch_1.fT0, series %i, source position %.2f mm", 
+        title = Form("ch_0.fT0 - ch_1.fT0, S%i Source Position %.2f mm", 
                      seriesNo, positions[i]);
 
         canTDiff->cd(i + 1);
         gPad->SetGrid(1, 1);
-        string = Form("%.3f +/- %.3f ns",
+        string = Form("TR = (%.3f +/- %.3f) ns",
                       gTimeSig->GetPointY(i),
                       gTimeSig->GetErrorY(i));
         T0diff[i]->SetTitle(title);
@@ -192,7 +202,7 @@ int main(int argc, char** argv)
 
         canTDiffECut->cd(i + 1);
         gPad->SetGrid(1, 1);
-        string = Form("%.3f +/- %.3f ns",
+        string = Form("TR = (%.3f +/- %.3f) ns",
                       gTimeSigECut->GetPointY(i),
                       gTimeSigECut->GetErrorY(i));
         T0diffECut[i]->SetTitle(title);
@@ -204,7 +214,7 @@ int main(int argc, char** argv)
         canRatio->cd(i + 1);
         gPad->SetGrid(1, 1);
         ratio[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
-        ratio[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm", positions[i]));
+        ratio[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), Source Position %.2f mm", positions[i]));
         max = ratio[i]->GetBinContent(ratio[i]->GetMaximumBin());
 
         int parNo = -1;
@@ -270,23 +280,36 @@ int main(int argc, char** argv)
         specCh0[i]->GetXaxis()->SetTitle("charge P.E.");
         specCh0[i]->GetYaxis()->SetTitle("counts");
         specCh0[i]->SetTitle(
-            Form("PE spectrum S%i Ch0, source position %.2f mm", seriesNo, positions[i]));
+            Form("PE spectrum S%i Ch0, Source Position %.2f mm", seriesNo, positions[i]));
         specCh0[i]->SetStats(false);
         specCh0[i]->GetYaxis()->SetMaxDigits(2);
         peakfinCh0.push_back(new SFPeakFinder(specCh0[i], 0, 0));
         peakfinCh0[i]->FindPeakRange(xmin, xmax);
         center = xmin + (xmax - xmin) / 2.; // changed here for smaller cut
         delta = (xmax - xmin) / 6;          //
-        max   = specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin());
+        //max   = specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin());
+        specCh0[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
         specCh0[i]->Draw();
+        
+        fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
+        text.DrawLatex(0.6, 0.75, Form("#mu = %.2f +/- %.2f", 
+                       specCh0[i]->GetFunction(fun_name)->GetParameter(1),
+                       specCh0[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.6, 0.70, Form("#sigma = %.2f +/- %.2f", 
+                       specCh0[i]->GetFunction(fun_name)->GetParameter(2),
+                       specCh0[i]->GetFunction(fun_name)->GetParError(2)));
+        text.DrawLatex(0.6, 0.60, Form("#chi^{2}/NDF = %.3f",
+                       specCh0[i]->GetFunction(fun_name)->GetChisquare() / 
+                       specCh0[i]->GetFunction(fun_name)->GetNDF()));
         //ctx.configureFromJson("hSpecAv");
         //ctx.print();
         //specCh0[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
         //specCh0[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         if (collimator == "Lead")
         {
-            line.DrawLine(center - delta, 0, center - delta, max); // changed here for smaller cut
-            line.DrawLine(center + delta, 0, center + delta, max); //
+            line.DrawLine(center - delta, min_yaxis, center - delta, max_yaxis_0); // changed here for smaller cut
+            line.DrawLine(center + delta, min_yaxis, center + delta, max_yaxis_0); //
         }
         else if (collimator == "Electronic")
         {
@@ -297,10 +320,8 @@ int main(int argc, char** argv)
             //              ctx.y.max); // changed here for smaller cut
             //line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
             
-            line.DrawLine(center - 3 * delta, 0, center - 3 * delta,
-                          specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin())); // changed here for smaller cut
-            line.DrawLine(center + 3 * delta, 0, center + 3 * delta, 
-                          specCh0[i]->GetBinContent(specCh0[i]->GetMaximumBin())); //
+            line.DrawLine(center - 3 * delta, min_yaxis, center - 3 * delta, max_yaxis_0); // changed here for smaller cut
+            line.DrawLine(center + 3 * delta, min_yaxis, center + 3 * delta, max_yaxis_0); //
         }
 
         canSpecCh1->cd(i + 1);
@@ -308,21 +329,34 @@ int main(int argc, char** argv)
         specCh1[i]->GetXaxis()->SetTitle("charge P.E.");
         specCh1[i]->GetYaxis()->SetTitle("counts");
         specCh1[i]->SetTitle(
-            Form("PE spectrum S%i Ch1, source position %.2f mm", seriesNo, positions[i]));
+            Form("PE spectrum S%i Ch1, Source Position %.2f mm", seriesNo, positions[i]));
         specCh1[i]->SetStats(false);
         specCh1[i]->GetYaxis()->SetMaxDigits(2);
         peakfinCh1.push_back(new SFPeakFinder(specCh1[i], 0, 0));
         peakfinCh1[i]->FindPeakRange(xmin, xmax);
         center = xmin + (xmax - xmin) / 2.; // changed here for smaller cut
         delta = (xmax - xmin) / 6;          //
-        max   = specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin());
+        //max   = specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin());
+        specCh1[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
+        specCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
         specCh1[i]->Draw();
+        
+        fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
+        text.DrawLatex(0.6, 0.75, Form("#mu = %.2f +/- %.2f", 
+                       specCh1[i]->GetFunction(fun_name)->GetParameter(1),
+                       specCh1[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.6, 0.70, Form("#sigma = %.2f +/- %.2f", 
+                       specCh1[i]->GetFunction(fun_name)->GetParameter(2),
+                       specCh1[i]->GetFunction(fun_name)->GetParError(2)));
+        text.DrawLatex(0.6, 0.60, Form("#chi^{2}/NDF = %.3f",
+                       specCh1[i]->GetFunction(fun_name)->GetChisquare() / 
+                       specCh1[i]->GetFunction(fun_name)->GetNDF()));
         //specCh1[i]->GetXaxis()->SetRangeUser(ctx.x.min, ctx.x.max);
         //specCh1[i]->GetYaxis()->SetRangeUser(ctx.y.min, ctx.y.max);
         if (collimator == "Lead")
         {
-            line.DrawLine(center - delta, 0, center - delta, max); // changed here for smaller cut
-            line.DrawLine(center + delta, 0, center + delta, max); //
+            line.DrawLine(center - delta, min_yaxis, center - delta, max_yaxis_1); // changed here for smaller cut
+            line.DrawLine(center + delta, min_yaxis, center + delta, max_yaxis_1); //
         }
         else if (collimator == "Electronic")
         {
@@ -333,10 +367,8 @@ int main(int argc, char** argv)
             //              ctx.y.max); // changed here for smaller cut
             //line.DrawLine(center + 3 * delta, ctx.y.min, center + 3 * delta, ctx.y.max); //
             
-            line.DrawLine(center - 3 * delta, 0, center - 3 * delta,
-                          specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin())); // changed here for smaller cut
-            line.DrawLine(center + 3 * delta, 0, center + 3 * delta, 
-                          specCh1[i]->GetBinContent(specCh1[i]->GetMaximumBin())); //
+            line.DrawLine(center - 3 * delta, min_yaxis, center - 3 * delta, max_yaxis_1); // changed here for smaller cut
+            line.DrawLine(center + 3 * delta, min_yaxis, center + 3 * delta, max_yaxis_1); //
         }
     }
 
@@ -372,6 +404,9 @@ int main(int argc, char** argv)
     gTimeSig->GetXaxis()->SetLabelSize(0.035);
     gTimeSig->GetYaxis()->SetLabelSize(0.035);
     gTimeSig->GetYaxis()->SetTitleOffset(1.4);
+    text.DrawLatex(0.15, 0.8, Form("TR = (%.4f +/- %.4f) ns", 
+                   results[0]->GetValue(SFResultTypeNum::kTimeRes),
+                   results[1]->GetUncertainty(SFResultTypeNum::kTimeRes)));
     
     canTimeSig->cd(2);
     gPad->SetGrid(1, 1);
@@ -379,6 +414,9 @@ int main(int argc, char** argv)
     gTimeSigECut->GetXaxis()->SetLabelSize(0.035);
     gTimeSigECut->GetYaxis()->SetLabelSize(0.035);
     gTimeSigECut->GetYaxis()->SetTitleOffset(1.4);
+    text.DrawLatex(0.15, 0.8, Form("TR = (%.4f +/- %.4f) ns",
+                   results[1]->GetValue(SFResultTypeNum::kTimeRes),
+                   results[1]->GetUncertainty(SFResultTypeNum::kTimeRes)));
     
     //----- saving
     TString fname       = Form("timeres_series%i.root", seriesNo);

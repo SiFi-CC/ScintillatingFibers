@@ -81,6 +81,9 @@ int main(int argc, char** argv)
     //----- getting model results
     TGraphErrors* gCh0 = (TGraphErrors*)results->GetObject(SFResultTypeObj::kSlVsPosGraph);
     TGraphErrors* gCh1 = (TGraphErrors*)results->GetObject(SFResultTypeObj::kSrVsPosGraph);
+    
+    gCh0->GetFunction("funCh0")->Delete();
+    gCh1->GetFunction("funCh1")->Delete();
 
     TGraphErrors* gCh0Corr = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPlVsPosGraph);
     TGraphErrors* gCh1Corr = (TGraphErrors*)results->GetObject(SFResultTypeObj::kPrVsPosGraph);
@@ -98,13 +101,6 @@ int main(int argc, char** argv)
     can_mod_ch->Divide(2, 1);
     can_mod_ch->cd(1);
     gPad->SetGrid(1, 1);
-
-    TString hname = Form("Series %i, channels 0 & 1 attenuation curves", seriesNo);
-    TH1D *h = new TH1D("h", hname, 100, 0, 100);
-    h->GetXaxis()->SetTitle("source position [mm]");
-    h->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
-    h->SetStats(false);
-    h->Draw();
     
     gCh0->SetMarkerColor(kBlue - 3);
     gCh0->SetLineColor(kBlue - 3);
@@ -126,12 +122,14 @@ int main(int argc, char** argv)
     funRr->SetLineStyle(9);
     funSr->SetLineColor(kTeal - 7);
 
-    gCh0->Draw("P");
+    gCh0->Draw("AP");
     gCh1->Draw("P");
     gCh0Corr->Draw("P");
     gCh1Corr->Draw("P");
 
-    h->GetYaxis()->SetRangeUser(0, funPl->Eval(0) + (0.3 * funPl->Eval(0)));
+    TString hname = Form("Channels 0 & 1 Attenuation Curves S%i", seriesNo);
+    gCh0->GetYaxis()->SetRangeUser(0, funPl->Eval(0) + (0.3 * funPl->Eval(0)));
+    gCh0->SetTitle(hname);
 
     funPl->Draw("same");
     funPr->Draw("same");
@@ -159,20 +157,36 @@ int main(int argc, char** argv)
     text.DrawLatex(0.2, 0.35, Form("S_{0} = %.2f +/- %.2f",
                    results->GetValue(SFResultTypeNum::kS0),
                    results->GetUncertainty(SFResultTypeNum::kS0)));
+    
     text.DrawLatex(0.2, 0.30, Form("#lambda = %.2f +/- %.2f mm", 
                    results->GetValue(SFResultTypeNum::kLambda),
                    results->GetUncertainty(SFResultTypeNum::kLambda)));
+    
+    if (results->GetValue(SFResultTypeNum::kEtaR) < 0 ||
+        results->GetValue(SFResultTypeNum::kEtaR) > 1)
+        text.SetTextColor(kRed);
+    
     text.DrawLatex(0.2, 0.25, Form("#eta_{R} = %.3f +/- %.3f", 
                    results->GetValue(SFResultTypeNum::kEtaR),
                    results->GetUncertainty(SFResultTypeNum::kEtaR)));
+    text.SetTextColor(kBlack);
+    
+    if (results->GetValue(SFResultTypeNum::kEtaL) < 0 ||
+        results->GetValue(SFResultTypeNum::kEtaL) > 1)
+        text.SetTextColor(kRed);
+    
     text.DrawLatex(0.2, 0.20, Form("#eta_{L} = %.3f +/- %.3f",
                    results->GetValue(SFResultTypeNum::kEtaL),
                    results->GetUncertainty(SFResultTypeNum::kEtaL)));
+    text.SetTextColor(kBlack);
+    
     text.DrawLatex(0.2, 0.15, Form("#xi = %.3f +/- %.3f",
                    results->GetValue(SFResultTypeNum::kKsi),
                    results->GetUncertainty(SFResultTypeNum::kKsi)));
+    
     text.DrawLatex(0.2, 0.10, Form("L = %.2f mm (fixed)",
                    results->GetValue(SFResultTypeNum::kLength)));
+    
     text.DrawLatex(0.2, 0.05, Form("#chi^{2}/NDF = %.3f",
                    results->GetValue(SFResultTypeNum::kChi2NDF)));
     //-----
@@ -197,8 +211,8 @@ int main(int argc, char** argv)
     //-----writing results to the data base
     TString table = "ATTENUATION_MODEL";
     TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, S0, S0_ERR, "
-                           "LAMBDA, LAMBDA_ERR, ETAR, ETAR_ERR, ETAL, ETAL_ERR, KSI, KSI_ERR) "
-                           "VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)",
+                           "LAMBDA, LAMBDA_ERR, ETAR, ETAR_ERR, ETAL, ETAL_ERR, KSI, KSI_ERR, CHI2NDF) "
+                           "VALUES (%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)",
                            table.Data(), seriesNo, fname_full.Data(),
                            results->GetValue(SFResultTypeNum::kS0),
                            results->GetUncertainty(SFResultTypeNum::kS0),
@@ -209,7 +223,8 @@ int main(int argc, char** argv)
                            results->GetValue(SFResultTypeNum::kEtaL),
                            results->GetUncertainty(SFResultTypeNum::kEtaL),
                            results->GetValue(SFResultTypeNum::kKsi),
-                           results->GetUncertainty(SFResultTypeNum::kKsi));
+                           results->GetUncertainty(SFResultTypeNum::kKsi),
+                           results->GetValue(SFResultTypeNum::kChi2NDF));
     
     const int max_tries = 20;
     int       i_try     = max_tries;

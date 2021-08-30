@@ -46,6 +46,7 @@ SFFitResults::SFFitResults() : fComponents(-1),
 }
 //------------------------------------------------------------------
 /// Standard constructor (recommended).
+/// \param name - name of the object
 SFFitResults::SFFitResults(TString name) : fComponents(-1),
                                            fStat(100),
                                            fNpar(-1),
@@ -56,7 +57,8 @@ SFFitResults::SFFitResults(TString name) : fComponents(-1),
                                            fSlowDecTime(-1),
                                            fSlowDecTimeErr(-1),
                                            fAmp(-1),
-                                           fAmpErr(-1),                              fAmpFast(-1),
+                                           fAmpErr(-1),
+                                           fAmpFast(-1),
                                            fAmpFastErr(-1),
                                            fAmpSlow(-1),
                                            fAmpSlowErr(-1),
@@ -76,6 +78,8 @@ SFFitResults::SFFitResults(TString name) : fComponents(-1),
 }
 //------------------------------------------------------------------
 /// Standard constructor (recommended).
+/// \param name - name of the object
+/// \param fun - pointer to the fitted function
 SFFitResults::SFFitResults(TString name, TF1* fun) : fComponents(-1),
                                                      fStat(100),
                                                      fNpar(-1),
@@ -237,8 +241,8 @@ bool SFFitResults::SetFromFunction(TF1* fun)
 }
 //------------------------------------------------------------------
 /// Sets decay time and its uncertainty (single decay mode).
-///\param t - decay time [ns]
-///\param err - uncertainty
+/// \param t - decay time [ns]
+/// \param err - uncertainty
 void SFFitResults::SetDecTime(double t, double err)
 {
     fDecTime    = t;
@@ -247,8 +251,8 @@ void SFFitResults::SetDecTime(double t, double err)
 }
 //------------------------------------------------------------------
 /// Sets fast decay time and its uncertainty.
-///\param t - fast decay time [ns]
-///\param err - uncertainty
+/// \param t - fast decay time [ns]
+/// \param err - uncertainty
 void SFFitResults::SetFastDecTime(double t, double err)
 {
     fFastDecTime    = t;
@@ -257,8 +261,8 @@ void SFFitResults::SetFastDecTime(double t, double err)
 }
 //------------------------------------------------------------------
 /// Sets slow decay time and its uncertainty.
-///\param t - slow decay time [ns]
-///\param err - uncertainty
+/// \param t - slow decay time [ns]
+/// \param err - uncertainty
 void SFFitResults::SetSlowDecTime(double t, double err)
 {
     fSlowDecTime    = t;
@@ -267,8 +271,8 @@ void SFFitResults::SetSlowDecTime(double t, double err)
 }
 //------------------------------------------------------------------
 /// Sets amplitude of the decay function (single decay mode).
-///\param amp - amplitude
-///\param err - uncertainty
+/// \param amp - amplitude
+/// \param err - uncertainty
 void SFFitResults::SetAmp(double amp, double err)
 {
     fAmp    = amp;
@@ -278,8 +282,8 @@ void SFFitResults::SetAmp(double amp, double err)
 //------------------------------------------------------------------
 /// Sets amplitude of the of the fast decay component and its
 /// uncertainty.
-///\param amp - amplitude
-///\param err - uncertainty
+/// \param amp - amplitude
+/// \param err - uncertainty
 void SFFitResults::SetAmpFast(double amp, double err)
 {
     fAmpFast    = amp;
@@ -289,8 +293,8 @@ void SFFitResults::SetAmpFast(double amp, double err)
 //------------------------------------------------------------------
 /// Sets amplitude of the slow decay component and its
 /// uncertainty.
-///\param amp - amplitude
-///\param err - uncertainty
+/// \param amp - amplitude
+/// \param err - uncertainty
 void SFFitResults::SetAmpSlow(double amp, double err)
 {
     fAmpSlow    = amp;
@@ -299,8 +303,8 @@ void SFFitResults::SetAmpSlow(double amp, double err)
 }
 //------------------------------------------------------------------
 /// Sets time offset and its uncertainty.
-///\param t0 - time offset [ns]
-///\param err - uncertainty
+/// \param t0 - time offset [ns]
+/// \param err - uncertainty
 void SFFitResults::SetT0(double t0, double err)
 {
     fT0    = t0;
@@ -309,8 +313,8 @@ void SFFitResults::SetT0(double t0, double err)
 }
 //------------------------------------------------------------------
 /// Sets intensities of decay components.
-///\param iSlow - intensity of the slow component [%]
-///\param iFast - intensity of the fast component [%]
+/// \param iSlow - intensity of the slow component [%]
+/// \param iFast - intensity of the fast component [%]
 void SFFitResults::SetIntensities(double iSlow, double iFast)
 {
     fIslow = iSlow;
@@ -319,8 +323,8 @@ void SFFitResults::SetIntensities(double iSlow, double iFast)
 }
 //------------------------------------------------------------------
 /// Sets fitting range.
-///\param xmin - lower fitting range
-///\param xmax - upper fitting range
+/// \param xmin - lower fitting range
+/// \param xmax - upper fitting range
 void SFFitResults::SetFitRange(double xmin, double xmax)
 {
     fFitXmin = xmin;
@@ -329,7 +333,7 @@ void SFFitResults::SetFitRange(double xmin, double xmax)
 }
 //------------------------------------------------------------------
 /// Fills vector fParameters containing fitted parameters.
-///\param par - vector of parameters
+/// \param par - vector of parameters
 bool SFFitResults::SetParameters(std::vector<double> par)
 {
     if (par.empty()) return false;
@@ -342,7 +346,7 @@ bool SFFitResults::SetParameters(std::vector<double> par)
 }
 //------------------------------------------------------------------
 /// Fills vector fParErrors containing errors of parameters.
-///\param parErr - vector of parameters errors
+/// \param parErr - vector of parameters errors
 bool SFFitResults::SetParErrors(std::vector<double> parErr)
 {
     if (parErr.empty()) return false;
@@ -355,8 +359,8 @@ bool SFFitResults::SetParErrors(std::vector<double> parErr)
 }
 //------------------------------------------------------------------
 /// Returns references to the decay time and its uncertainty (single decay mode)
-///\param t - decay time [ns]
-///\param err - uncertainty
+/// \param t - decay time [ns]
+/// \param err - uncertainty
 bool SFFitResults::GetDecTime(double& t, double& err)
 {
     if (fDecTime == -1 || fDecTimeErr == -1)
@@ -370,8 +374,8 @@ bool SFFitResults::GetDecTime(double& t, double& err)
 }
 //------------------------------------------------------------------
 /// Returns references to the fast decay time and its uncertainty.
-///\param t - fast decay time [ns]
-///\param err - uncertainty
+/// \param t - fast decay time [ns]
+/// \param err - uncertainty
 bool SFFitResults::GetFastDecTime(double& t, double& err)
 {
     if (fFastDecTime == -1 || fFastDecTimeErr == -1)
@@ -385,8 +389,8 @@ bool SFFitResults::GetFastDecTime(double& t, double& err)
 }
 //------------------------------------------------------------------
 /// Returns references to the slow decay time and its uncertainty.
-///\param t - slow decay time [ns]
-///\param err - uncertainty
+/// \param t - slow decay time [ns]
+/// \param err - uncertainty
 bool SFFitResults::GetSlowDecTime(double& t, double& err)
 {
     if (fSlowDecTime == -1 || fSlowDecTimeErr == 1)
@@ -400,9 +404,9 @@ bool SFFitResults::GetSlowDecTime(double& t, double& err)
 }
 //------------------------------------------------------------------
 /// Returns references to the decay amplitude and its uncertainty
-///(single decay mode).
-///\param amp - amplitude
-///\param ampErr - uncertainty
+/// (single decay mode).
+/// \param amp - amplitude
+/// \param ampErr - uncertainty
 bool SFFitResults::GetAmp(double& amp, double& ampErr)
 {
     if (fAmp == -1 || fAmpErr == -1)
@@ -416,8 +420,8 @@ bool SFFitResults::GetAmp(double& amp, double& ampErr)
 }
 //------------------------------------------------------------------
 /// Returns references to the amplitude of the fast decay component.
-///\param ampFast - amplitude
-///\param ampFastErr - uncertainty
+/// \param ampFast - amplitude
+/// \param ampFastErr - uncertainty
 bool SFFitResults::GetAmpFast(double& ampFast, double& ampFastErr)
 {
     if (fAmpFast == -1 || fAmpFastErr == -1)
@@ -431,8 +435,8 @@ bool SFFitResults::GetAmpFast(double& ampFast, double& ampFastErr)
 }
 //------------------------------------------------------------------
 /// Returns references to the amplitude of the slow decay component.
-///\param ampSlow - amplitude
-///\param ampSlowErr - uncertainty
+/// \param ampSlow - amplitude
+/// \param ampSlowErr - uncertainty
 bool SFFitResults::GetAmpSlow(double& ampSlow, double& ampSlowErr)
 {
     if (fAmpSlow == -1 || fAmpSlowErr == -1)
@@ -446,8 +450,8 @@ bool SFFitResults::GetAmpSlow(double& ampSlow, double& ampSlowErr)
 }
 //------------------------------------------------------------------
 /// Returns references to the time offset and its uncertainty.
-///\param t0 - time offset
-///\param t0Err - uncertainty
+/// \param t0 - time offset
+/// \param t0Err - uncertainty
 bool SFFitResults::GetT0(double& t0, double& t0Err)
 {
     if (fT0 == -1 || fT0Err == -1)
@@ -461,8 +465,8 @@ bool SFFitResults::GetT0(double& t0, double& t0Err)
 }
 //------------------------------------------------------------------
 /// Returns references to the intensities of decay components.
-///\param iSlow - intensity of slow component [%]
-///\param iFast - intensity of fast component [%]
+/// \param iSlow - intensity of slow component [%]
+/// \param iFast - intensity of fast component [%]
 bool SFFitResults::GetIntensities(double& iSlow, double& iFast)
 {
     if (fIslow == -1 || fIfast == -1)
@@ -476,8 +480,8 @@ bool SFFitResults::GetIntensities(double& iSlow, double& iFast)
 }
 //------------------------------------------------------------------
 /// Returns references to the fitting range.
-///\param xmin - lower fitting range
-///\param xmax - upper fitting range
+/// \param xmin - lower fitting range
+/// \param xmax - upper fitting range
 bool SFFitResults::GetFitRange(double& xmin, double& xmax)
 {
     if (fFitXmin == -1 || fFitXmax == -1)

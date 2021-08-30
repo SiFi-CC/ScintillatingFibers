@@ -13,6 +13,7 @@
 ClassImp(SFResults);
 
 //------------------------------------------------------------------
+/// Table storing names of SFResultTypeNum enumerators.
 TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeakFinder
                            "kAveragePeakPos", //SFStability
                            "kTemp", //SFTemperature
@@ -22,33 +23,42 @@ TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeak
                            "kTimeRes", //SFTimingRes
                            "kPositionRes", //SFPositionRes
                            "kFastDecay", "kSlowDecay", "kIFast", "kISlow", //SFTimeConst
-                           "kS0", "kMLambda", "kEtaR", "kEtaL", "kKsi", "kLength", //SFReconstrunction - model
-                           "kAlpha", //SFReconstruction - energy reco
-                           "kMLRSlope", "kMLROffset", "kACoeff", "kBCoeff" //SFReconstruction - position reco
-                           };
-                       
+                           "kS0", "kEtaR", "kEtaL", "kKsi", "kLength", //SFAttenuationModel
+                           "kAlpha", //SFEnergyreco
+                           "kMLRSlope", "kMLROffset", "kACoeff", "kBCoeff", //SFPositionReco
+                           "kCounts", "kCountsStdDev" //SFCountsMap
+                          };
+                           
+/// Table storing names of SFResultTypeObj enumerators.                       
 TString gEnumNamesObj[] = {"kSpectrum", "kPeak", //SFPeakFinder
                            "kPeakPosGraph", "kSMResidualGraph", //SFStability
                            "kAttGraph", "kMLRSigmaGraph", //SFAttenuation
                            "kEnergyResGraph", //SFEnergyRes
                            "kLightGraph", //SFLightOutput
                            "kTimeResGraph", "kTimeSigGraph", //SFTimingRes
-                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kPosVsMLRGraph", "kResidualGraph", //SFPositionRes
-                           "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun", //SFReconstrunction - model
+                           "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kPosVsMLRGraph", //SFPositionRes
+                           "kResidualGraph", "kPositionAllHist",
+                           "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun", //SFAttenuationModel
                            "kPlRecoFun", "kPrRecoFun", "kSlVsPosGraph", "kSrVsPosGraph",
-                           "kPlVsPosGraph", "kPrVsPosGraph", // SFReconstruction - components
-                           "kAlphaGraph", "kEnergyRecoGraph", "kEnergyRecoFun", "kEnergyRecoSpecGraph", "kEnergyAllHist",//SFReconstruction - energy reco
-                           "kAGraph" //SFReconstruction - position reco
-                       };
+                           "kPlVsPosGraph", "kPrVsPosGraph", 
+                           "kAlphaGraph", "kEnergyRecoGraph", "kEnergyRecoFun", //SFEnergyReco
+                           "kEnergyRecoSpecGraph", "kEnergyAllHist",
+                           "kAGraph", //SFPositionreco
+                           "kCountsGraph" //SFCountsMap
+                          };
 //------------------------------------------------------------------
+/// Standard constructor.
+/// \param name - name of the object
 SFResults::SFResults(TString name) : fName(name)
 {
 }
 //------------------------------------------------------------------
+/// Default constructor. 
 SFResults::SFResults() : fName("results")
 {
 }
 //------------------------------------------------------------------
+/// Default destructor.
 SFResults::~SFResults()
 {
     fValues.clear();
@@ -56,18 +66,26 @@ SFResults::~SFResults()
     fObjects.clear();
 }
 //------------------------------------------------------------------
+/// Returns name of the enumerator SFResultTypeNum as a string.
+/// \param id - enumerator
 TString SFResults::EnumToString(SFResultTypeNum id)
 {
     TString result_name = gEnumNamesNum[id];
     return result_name;
 }
 //------------------------------------------------------------------
+/// Returns name of the enumerator SFResultTypeObj as a string.
+/// \param id - enumerator
 TString SFResults::EnumToString(SFResultTypeObj id)
 {
     TString result_name = gEnumNamesObj[id];
     return result_name;
 }
 //------------------------------------------------------------------
+/// Adds numerical result along with its uncertainty. 
+/// \param id - enumerator
+/// \param value - numerical result
+/// \param error - uncertainty
 void SFResults::AddResult(SFResultTypeNum id, double value, double error)
 {
     if(fValues.count(id) != 0 ||
@@ -84,6 +102,9 @@ void SFResults::AddResult(SFResultTypeNum id, double value, double error)
     return;
 }
 //------------------------------------------------------------------
+/// Adds numerical result only (no uncertainty).
+/// \param id - enumerator
+/// \param value - numerical result
 void SFResults::AddValue(SFResultTypeNum id, double value)
 {
     if(fValues.count(id) != 0)
@@ -98,6 +119,9 @@ void SFResults::AddValue(SFResultTypeNum id, double value)
     return;
 }
 //------------------------------------------------------------------
+/// Adds uncertainty of the numerical result. 
+/// \param id - enumerator 
+/// \param error - uncertainty
 void SFResults::AddUncertainty(SFResultTypeNum id, double error)
 {
     if(fUncert.count(id) != 0)
@@ -112,6 +136,9 @@ void SFResults::AddUncertainty(SFResultTypeNum id, double error)
     return;
 }
 //------------------------------------------------------------------
+/// Adds object-based result.
+/// \param id - enumerator 
+/// \param obj - pointer to the object (any object inheriting from TObject)
 void SFResults::AddObject(SFResultTypeObj id, TObject *obj)
 {
     if(fObjects.count(id) != 0)
@@ -126,6 +153,9 @@ void SFResults::AddObject(SFResultTypeObj id, TObject *obj)
     return;
 }
 //------------------------------------------------------------------
+/// Returns numerical result along with its uncertainty in a std::vector:
+/// [0] - result, [1] - uncertainty.
+/// \param id - enumerator
 std::vector <double> SFResults::GetResult(SFResultTypeNum id)
 {
     std::vector <double> vec(2);
@@ -145,6 +175,8 @@ std::vector <double> SFResults::GetResult(SFResultTypeNum id)
     return vec;
 }
 //------------------------------------------------------------------
+/// Returns numerical result only (no uncertainty).
+/// \param id - enumerator
 double SFResults::GetValue(SFResultTypeNum id)
 {
     if(fValues.count(id) == 0)
@@ -157,6 +189,8 @@ double SFResults::GetValue(SFResultTypeNum id)
     return fValues.find(id)->second;
 }
 //------------------------------------------------------------------
+/// Returns uncertainty of the numerical result.
+/// \param id - enumerator
 double SFResults::GetUncertainty(SFResultTypeNum id)
 {
     if(fUncert.count(id) == 0)
@@ -169,6 +203,8 @@ double SFResults::GetUncertainty(SFResultTypeNum id)
     return fUncert.find(id)->second;
 }
 //------------------------------------------------------------------
+/// Returns object-based result.
+/// \param id - enumerator
 TObject* SFResults::GetObject(SFResultTypeObj id)
 {
     if(fObjects.count(id) == 0)
@@ -181,6 +217,8 @@ TObject* SFResults::GetObject(SFResultTypeObj id)
     return fObjects.find(id)->second;
 }
 //------------------------------------------------------------------
+/// Prints details of the SFresults type object, including stored
+/// results. 
 void SFResults::Print(void)
 {
     

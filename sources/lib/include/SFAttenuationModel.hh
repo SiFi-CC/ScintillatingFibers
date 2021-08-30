@@ -30,13 +30,16 @@
 extern int iparSl[];
 extern int iparSr[];
 
-struct GlobalChi2
+/// Structure for calculation of chi2. 
+struct GlobalChi2Model
 {
-    GlobalChi2(ROOT::Math::IMultiGenFunction& f1, ROOT::Math::IMultiGenFunction& f2)
+    /// Constructor.
+    GlobalChi2Model(ROOT::Math::IMultiGenFunction& f1, ROOT::Math::IMultiGenFunction& f2)
         : fChi2_1(&f1), fChi2_2(&f2)
     {
     }
 
+    /// Chi2 calculation.
     double operator()(const double* par) const
     {
         const int n = 6;
@@ -52,34 +55,44 @@ struct GlobalChi2
         return (*fChi2_1)(p1) + (*fChi2_2)(p2);
     }
 
-    const ROOT::Math::IMultiGenFunction* fChi2_1;
-    const ROOT::Math::IMultiGenFunction* fChi2_2;
+    const ROOT::Math::IMultiGenFunction* fChi2_1; ///< chi2_1
+    const ROOT::Math::IMultiGenFunction* fChi2_2; ///< chi2_2
 };
+
+/// This class fits exponential attenuation model with light reflection
+/// to the experimental data. Based on the fit results and available
+/// data primary light component is reconstructed. As one of the fitted 
+/// parameters attenuation length is determined. Full uncertainties 
+/// calculus is included.
 
 class SFAttenuationModel : public TObject
 {
 
   private:
-    int     fSeriesNo;
-    SFData* fData;
+    int     fSeriesNo; ///< Number of experimental series
+    SFData* fData;     ///< SFData object of the experimental series
 
-    TGraphErrors* fMAttCh0Graph;
-    TGraphErrors* fMAttCh1Graph;
-    TGraphErrors* fMAttCh0CorrGraph;
-    TGraphErrors* fMAttCh1CorrGraph;
+    TGraphErrors* fMAttCh0Graph;     ///< Experimental attenuation curve ch0
+    TGraphErrors* fMAttCh1Graph;     ///< Experimental attenuation curve ch1
+    TGraphErrors* fMAttCh0CorrGraph; ///< Corrected attenuation curve ch0
+    TGraphErrors* fMAttCh1CorrGraph; ///< Corrected attenuation curve ch1
 
-    TF2* fPlRecoFun;
-    TF2* fPrRecoFun;
+    TF2* fPlRecoFun;     ///< Reconstructed primary component (left/ch0)
+    TF2* fPrRecoFun;     ///< Reconstructed primary component (right/ch1)
     
-    SFResults*            fResults;
-    ROOT::Fit::FitResult* fFitterResults;
+    TMatrixD fCovMatrix; ///< Covariation matrix
+    
+    SFResults*            fResults;       ///< Analysis results
+    ROOT::Fit::FitResult* fFitterResults; ///< Fitting results
 
   public:
     SFAttenuationModel(int seriesNo);
     ~SFAttenuationModel();
 
-    bool FitModel(void);
+    double CalculateUncertainty(std::vector<double> params, TString side);
+    bool   FitModel(void);
 
+    /// Returns results of the analysis.
     SFResults* GetResults(void) { return fResults; };
 
     void Print(void);

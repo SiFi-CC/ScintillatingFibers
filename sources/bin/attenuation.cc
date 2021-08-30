@@ -91,6 +91,7 @@ int main(int argc, char** argv)
     att->AttCombinedCh();
     att->AttSeparateCh(0);
     att->AttSeparateCh(1);
+    att->FitSimultaneously();
 
     //----- accessing results
     std::vector<SFResults*> results = att->GetResults();
@@ -98,6 +99,7 @@ int main(int argc, char** argv)
     results[1]->Print(); // channel 1
     results[2]->Print(); // combined channels/pol1
     results[3]->Print(); // combined channels/pol3
+    results[4]->Print(); // simple model sim. fitting
 
     TGraphErrors* attGraphPol1 = (TGraphErrors*)results[2]->GetObject(SFResultTypeObj::kAttGraph);
     TGraphErrors* attGraphPol3 = (TGraphErrors*)attGraphPol1->Clone("attGraphPol3");
@@ -105,6 +107,9 @@ int main(int argc, char** argv)
 
     TGraphErrors* attGraphCh0 = (TGraphErrors*)results[0]->GetObject(SFResultTypeObj::kAttGraph);
     TGraphErrors* attGraphCh1 = (TGraphErrors*)results[1]->GetObject(SFResultTypeObj::kAttGraph);
+    
+    TF1 *funSl = (TF1*)results[4]->GetObject(SFResultTypeObj::kSlFun);
+    TF1 *funSr = (TF1*)results[4]->GetObject(SFResultTypeObj::kSrFun);
 
     std::vector<TH1D*> attRatios  = att->GetRatios();
     std::vector<TH1D*> spectraCh1 = att->GetSpectra(1);
@@ -120,7 +125,7 @@ int main(int argc, char** argv)
 
     can_averaged_ch->cd(1);
     gPad->SetGrid(1, 1);
-    attGraphPol1->SetTitle(Form("Series %i, attenuation curve", seriesNo));
+    attGraphPol1->SetTitle(Form("Attenuation Curve S%i", seriesNo));
     attGraphPol1->GetFunction("fpol3")->Delete();
     attGraphPol1->GetYaxis()->SetTitleOffset(1.4);
     attGraphPol1->GetXaxis()->SetLabelSize(0.035);
@@ -141,7 +146,7 @@ int main(int argc, char** argv)
 
     can_averaged_ch->cd(2);
     gPad->SetGrid(1, 1);
-    attGraphPol3->SetTitle(Form("Series %i, attenuation curve", seriesNo));
+    attGraphPol3->SetTitle(Form("Attenuation Curve S%i", seriesNo));
     attGraphPol3->GetFunction("fpol1")->Delete();
     attGraphPol3->GetYaxis()->SetTitleOffset(1.2);
     attGraphPol3->Draw("AP");
@@ -161,7 +166,7 @@ int main(int argc, char** argv)
 
     TCanvas* can_sigma = new TCanvas("att_sigma", "att_sigma", 700, 500);
     gPad->SetGrid(1, 1);
-    sigGraph->SetTitle(Form("Sigma of M_{LR} distribution S%i", seriesNo));
+    sigGraph->SetTitle(Form("Sigma of M_{LR} Distribution S%i", seriesNo));
     sigGraph->GetYaxis()->SetTitleOffset(1.3);
     sigGraph->Draw("AP");
 
@@ -180,9 +185,9 @@ int main(int argc, char** argv)
     {
         can_ratios->cd(i + 1);
         gPad->SetGrid(1, 1);
-        attRatios[i]->SetTitle(Form("ln(#sqrt{ch1/ch0}), source position %.2f mm", positions[i]));
+        attRatios[i]->SetTitle(Form("M_{LR}, S%i %.2f mm", seriesNo, positions[i]));
         attRatios[i]->GetXaxis()->SetRangeUser(-1.5, 1.5);
-        attRatios[i]->GetXaxis()->SetTitle("ln(#sqrt{ch1/ch0})");
+        attRatios[i]->GetXaxis()->SetTitle("M_{LR}");
         attRatios[i]->Draw();
         if ((collimator == "Lead") || (collimator == "Electronic" && sipm == "SensL"))
         {
@@ -194,9 +199,9 @@ int main(int argc, char** argv)
             fthin->DrawClone("same");
             fthick->DrawClone("same");
             text.DrawLatex(0.2, 0.80,
-                           Form("B/S = %.2f", fun->GetParameter(0) / fun->GetParameter(3)));
-            text.DrawLatex(0.2, 0.75, Form("B = %.4f", fun->GetParameter(1)));
-            text.DrawLatex(0.2, 0.70, Form("S = %.4f", fun->GetParameter(4)));
+                           Form("sig/bg = %.2f", fun->GetParameter(0) / fun->GetParameter(3)));
+            text.DrawLatex(0.2, 0.75, Form("sig = %.4f", fun->GetParameter(1)));
+            text.DrawLatex(0.2, 0.70, Form("bg = %.4f", fun->GetParameter(4)));
         }
         else if (collimator == "Electronic" && sipm == "Hamamatsu")
         {
@@ -210,17 +215,20 @@ int main(int argc, char** argv)
 
     //----- drawing separate channels
     text.SetTextSize(0.035);
-    TCanvas* can_separate_ch = new TCanvas("att_separate_ch", "att_separate_ch", 700, 500);
+    TCanvas* can_separate_ch = new TCanvas("att_separate_ch", "att_separate_ch", 1200, 600);
+    can_separate_ch->Divide(2,1);
+    
+    can_separate_ch->cd(1);
     gPad->SetGrid(1, 1);
 
-    TString hname = Form("Series %i, channels 0 & 1 attenuation curves", seriesNo);
+    TString hname = Form("Channels 0 & 1 Attenuation Curves S%i (Separate Fitting)", seriesNo);
     TH1D *h = new TH1D("h", hname, 100, 0, 100);
     h->GetXaxis()->SetTitle("source position [mm]");
     h->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
     h->SetStats(false);
     h->Draw();
     
-    attGraphCh0->SetTitle(Form("Series %i channel 0, attenuation curve", seriesNo));
+    attGraphCh0->SetTitle(Form("Channel 0 Attenuation Curve S%i", seriesNo));
     attGraphCh0->GetYaxis()->SetTitleSize(0.03);
     attGraphCh0->SetMarkerColor(kPink - 8);
     attGraphCh0->SetLineColor(kPink - 8);
@@ -233,7 +241,7 @@ int main(int argc, char** argv)
     text.DrawLatex(0.3, 0.65, Form("#chi^{2}/NDF_{0} = %.2f", 
                    results[0]->GetValue(SFResultTypeNum::kChi2NDF)));
 
-    attGraphCh1->SetTitle(Form("Series %i channel 1, attenuation curve", seriesNo));
+    attGraphCh1->SetTitle(Form("Channel 1 Attenuation Curve S%i", seriesNo));
     attGraphCh1->GetYaxis()->SetTitleSize(0.03);
     attGraphCh1->SetMarkerColor(kAzure - 6);
     attGraphCh1->SetLineColor(kAzure - 6);
@@ -256,6 +264,37 @@ int main(int argc, char** argv)
     double  ymax    = TMath::Max(ymaxCh0, ymaxCh1);
 
     h->GetYaxis()->SetRangeUser(ymin - 0.2 * ymin, ymax + 0.1 * ymax);
+    
+    can_separate_ch->cd(2);
+    gPad->SetGrid(1, 1);
+
+    hname = Form("Channels 0 & 1 Attenuation Curves S%i (Simultaneous Fitting)", seriesNo);
+    TH1D *hh = new TH1D("hh", hname, 100, 0, 100);
+    hh->GetXaxis()->SetTitle("source position [mm]");
+    hh->GetYaxis()->SetTitle("511 keV peak position [P.E.]");
+    hh->SetStats(false);
+    hh->Draw();
+    
+    TGraphErrors *attGraphCh0Clone = (TGraphErrors*)attGraphCh0->Clone();
+    attGraphCh0Clone->GetFunction("funCh0")->Delete();
+    attGraphCh0Clone->Draw("P");
+    funSl->SetLineColor(kPink - 8);
+    funSl->Draw("same");
+    
+    TGraphErrors *attGraphCh1Clone = (TGraphErrors*)attGraphCh1->Clone();
+    attGraphCh1Clone->GetFunction("funCh1")->Delete();
+    attGraphCh1Clone->Draw("P");
+    funSr->SetLineColor(kAzure - 6);
+    funSr->Draw("same");
+    
+    text.SetTextColor(kBlack);
+    text.DrawLatex(0.3, 0.75, Form("L_{att} = (%.2f +/- %.2f) mm",
+                   results[4]->GetValue(SFResultTypeNum::kLambda),
+                   results[4]->GetUncertainty(SFResultTypeNum::kLambda)));
+    text.DrawLatex(0.3, 0.60, Form("#chi^{2}/NDF_{1} = %.2f", 
+                   results[4]->GetValue(SFResultTypeNum::kChi2NDF)));
+    
+    hh->GetYaxis()->SetRangeUser(ymin - 0.2 * ymin, ymax + 0.1 * ymax);
     
     TCanvas* can_spectra_ch0 = new TCanvas("att_spectra_ch0", "att_spectra_ch0", 2000, 1200);
     can_spectra_ch0->DivideSquare(npoints);
@@ -300,15 +339,11 @@ int main(int argc, char** argv)
         {
             text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
                            fun_tmp_ch0->GetChisquare() / fun_tmp_ch0->GetNDF()));
-            text.DrawLatex(0.65, 0.70, Form("c = %.3f +/- %.3f", 
-                           fun_tmp_ch0->GetParameter(0), fun_tmp_ch0->GetParError(0)));
-            text.DrawLatex(0.65, 0.65, Form("#mu = %.3f +/- %.3f", 
+            text.DrawLatex(0.65, 0.70, Form("#mu = %.3f +/- %.3f", 
                            fun_tmp_ch0->GetParameter(1), fun_tmp_ch0->GetParError(1)));
-            text.DrawLatex(0.65, 0.60, Form("#sigma = %.3f +/- %.3f", 
+            text.DrawLatex(0.65, 0.65, Form("#sigma = %.3f +/- %.3f", 
                            fun_tmp_ch0->GetParameter(2), fun_tmp_ch0->GetParError(2)));
         }
-        else 
-            gPad->SetFillColor(kGray);
 
         can_spectra_ch1->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -326,21 +361,17 @@ int main(int argc, char** argv)
         spectraCh1[i]->Draw();
         
         fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
-        TF1* fun_tmp_ch1 = spectraCh0[i]->GetFunction(fun_name);
+        TF1* fun_tmp_ch1 = spectraCh1[i]->GetFunction(fun_name);
         
         if (fun_tmp_ch1)
         {
             text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
                            fun_tmp_ch1->GetChisquare() / fun_tmp_ch1->GetNDF()));
-            text.DrawLatex(0.65, 0.70, Form("c = %.3f +/- %.3f", 
-                           fun_tmp_ch0->GetParameter(0), fun_tmp_ch0->GetParError(0)));
-            text.DrawLatex(0.65, 0.65, Form("#mu = %.3f +/- %.3f", 
-                           fun_tmp_ch0->GetParameter(1), fun_tmp_ch0->GetParError(1)));
-            text.DrawLatex(0.65, 0.60, Form("#sigma = %.3f +/- %.3f", 
-                           fun_tmp_ch0->GetParameter(2), fun_tmp_ch0->GetParError(2)));
+            text.DrawLatex(0.65, 0.70, Form("#mu = %.3f +/- %.3f", 
+                           fun_tmp_ch1->GetParameter(1), fun_tmp_ch1->GetParError(1)));
+            text.DrawLatex(0.65, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                           fun_tmp_ch1->GetParameter(2), fun_tmp_ch1->GetParError(2)));
         }
-        else 
-            gPad->SetFillColor(kGray);
     }
 
     //----- saving
@@ -368,18 +399,27 @@ int main(int argc, char** argv)
     //----- writing results to the data base
     TString table = "ATTENUATION_LENGTH";
     TString query = Form("INSERT OR REPLACE INTO %s (SERIES_ID, RESULTS_FILE, ATT_CH0, "
-                         "ATT_CH0_ERR, ATT_CH1, ATT_CH1_ERR, ATT_COMB, ATT_COMB_ERR, "
-                         "ATT_COMB_POL3, ATT_COMB_POL3_ERR) VALUES (%i, '%s', %f, %f,"
-                         "%f, %f, %f, %f, %f, %f)",
-                         table.Data(), seriesNo, fname_full.Data(), 
+                         "ATT_CH0_ERR, CHI2NDF_CH0, ATT_CH1, ATT_CH1_ERR, CHI2NDF_CH1, "
+                         "ATT_COMB, ATT_COMB_ERR, CHI2NDF_COMB, ATT_COMB_POL3, ATT_COMB_POL3_ERR, "
+                         "CHI2NDF_POL3, ATT_SIM, ATT_SIM_ERR, CHI2NDF_SIM) VALUES "
+                         "(%i, '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, "
+                         "%f, %f, %f)", table.Data(), seriesNo, fname_full.Data(), 
                          results[0]->GetValue(SFResultTypeNum::kLambda),
                          results[0]->GetUncertainty(SFResultTypeNum::kLambda), 
+                         results[0]->GetValue(SFResultTypeNum::kChi2NDF),
                          results[1]->GetValue(SFResultTypeNum::kLambda),
                          results[1]->GetUncertainty(SFResultTypeNum::kLambda),
+                         results[1]->GetValue(SFResultTypeNum::kChi2NDF),
                          results[2]->GetValue(SFResultTypeNum::kLambda),
                          results[2]->GetUncertainty(SFResultTypeNum::kLambda),
+                         results[2]->GetValue(SFResultTypeNum::kChi2NDF),
                          results[3]->GetValue(SFResultTypeNum::kLambda),
-                         results[3]->GetValue(SFResultTypeNum::kLambda));
+                         results[3]->GetValue(SFResultTypeNum::kLambda),
+                         results[3]->GetValue(SFResultTypeNum::kChi2NDF),
+                         results[4]->GetValue(SFResultTypeNum::kLambda),
+                         results[4]->GetUncertainty(SFResultTypeNum::kLambda),
+                         results[4]->GetValue(SFResultTypeNum::kChi2NDF));
+     
 
     const int max_tries = 20;
     int       i_try     = max_tries;

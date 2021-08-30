@@ -56,4 +56,4 @@ std::vector<double> GetFWHM(TH1D* h);
 
 };
 
-#endif
+#endif /* __SFTools_H_ */

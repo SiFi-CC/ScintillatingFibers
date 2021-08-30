@@ -15,6 +15,7 @@ const double ampMax = 660.;
 //------------------------------------------------------------------
 SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo), 
                                                fData(nullptr),
+                                               fModel(nullptr),
                                                fMAttCh0CorrGraph(nullptr),
                                                fMAttCh1CorrGraph(nullptr),
                                                fMLRGraph(nullptr),
@@ -23,10 +24,13 @@ SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo),
                                                fPosRecoCorrGraph(nullptr),
                                                fPosResiduals(nullptr),
                                                fPosResidualsCorr(nullptr),
+                                               fPosRecoDiff(nullptr),
+                                               fPosRecoDiffCorr(nullptr),
                                                fPosResGraph(nullptr),
                                                fPosResCorrGraph(nullptr),
                                                fPlRecoFun(nullptr),
                                                fPrRecoFun(nullptr),
+                                               fPosRecoAll(nullptr),
                                                fResultsExp(nullptr),
                                                fResultsCorr(nullptr)
 {
@@ -75,14 +79,15 @@ SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo),
     delete att_results[0];
     delete att_results[1];
     delete att_results[3];
+    delete att_results[4];
     //-----
     
     //----- accessing attenuation model results
-    SFAttenuationModel* model;
+    //SFAttenuationModel* fModel;
     
     try
     {
-        model = new SFAttenuationModel(fSeriesNo);
+        fModel = new SFAttenuationModel(fSeriesNo);
     }
     catch (const char* message)
     {
@@ -90,17 +95,16 @@ SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo),
         throw "##### Exception in SFPositionReco constructor!";
     }
     
-    model->FitModel();
+    fModel->FitModel();
     
-    SFResults *model_results = model->GetResults();
+    SFResults *model_results = fModel->GetResults();
     
     fPlRecoFun = (TF2*)model_results->GetObject(SFResultTypeObj::kPlRecoFun);
     fPrRecoFun = (TF2*)model_results->GetObject(SFResultTypeObj::kPrRecoFun);
     fMAttCh0CorrGraph = (TGraphErrors*)model_results->GetObject(SFResultTypeObj::kPlVsPosGraph);
     fMAttCh1CorrGraph = (TGraphErrors*)model_results->GetObject(SFResultTypeObj::kPrVsPosGraph);
     
-    delete model;
-    delete model_results;
+    //delete model_results;
     //-----
     
     //----- accessing position resolution analysis results 
@@ -118,18 +122,21 @@ SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo),
     
     posres->AnalyzePositionRes();
     
-    SFResults* posres_results = posres->GetResults();
+    std::vector<SFResults*> posres_results = posres->GetResults();
     
-    fPosResGraph  = (TGraphErrors*)posres_results->GetObject(SFResultTypeObj::kPosResVsPosGraph);
-    fPosRecoGraph = (TGraphErrors*)posres_results->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
-    fPosResiduals = (TGraphErrors*)posres_results->GetObject(SFResultTypeObj::kResidualGraph);
+    // using pol1 results! change for [1] for pol3
+    fPosResGraph  = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPosResVsPosGraph);
+    fPosRecoGraph = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
+    fPosResiduals = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kResidualGraph);
+//     fPosRecoDiff = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPositionDiff);
+    fPosRecoAll   = (TH1D*)posres_results[0]->GetObject(SFResultTypeObj::kPositionAllHist);
     
-    fRecoPositionsHist = posres->GetPositionRecoDist();
+    fRecoPositionsHist = posres->GetPositionRecoDist("pol3");
     
-    fResultsExp->AddResult(SFResultTypeNum::kPositionRes, posres_results->GetValue(SFResultTypeNum::kPositionRes),
-                           posres_results->GetUncertainty(SFResultTypeNum::kPositionRes));
-    delete posres;
-    delete posres_results;
+    fResultsExp->AddResult(SFResultTypeNum::kPositionRes, posres_results[0]->GetValue(SFResultTypeNum::kPositionRes),
+                           posres_results[0]->GetUncertainty(SFResultTypeNum::kPositionRes));
+    //delete posres;
+    //delete posres_results;
     //-----
 }
 //------------------------------------------------------------------
@@ -148,21 +155,21 @@ bool SFPositionReco::CalculateMLR(void)
     TString             testBench  = fData->GetTestBench();
 
     fMLRGraph->SetName("fMLRGraph");
-    fMLRGraph->SetTitle("M_{LR} vs. position");
+    fMLRGraph->SetTitle("M_{LR} vs. Position");
     fMLRGraph->GetXaxis()->SetTitle("source position [mm]");
     fMLRGraph->GetYaxis()->SetTitle("M_{LR}");
-    fMLRGraph->SetMarkerStyle(4);
+    fMLRGraph->SetMarkerStyle(8);
     
     fMLRCorrGraph = new TGraphErrors(npoints);
     fMLRCorrGraph->SetName("fMAttCorrGraph");
-    fMLRCorrGraph->SetTitle("M_{LR} vs. position (corrected)");
+    fMLRCorrGraph->SetTitle("M_{LR} vs. Position (Corrected)");
     fMLRCorrGraph->GetXaxis()->SetTitle("source position [mm]");
     fMLRCorrGraph->GetYaxis()->SetTitle("M_{LR} corrected");
     fMLRCorrGraph->SetMarkerStyle(8);
 
     TGraphErrors *gRevMLRCorr = new TGraphErrors(npoints);
     gRevMLRCorr->SetName("gRevMLRCorr");
-    gRevMLRCorr->SetTitle("position vs. M_{LR} (corrected)");
+    gRevMLRCorr->SetTitle("Position vs. M_{LR} (Corrected)");
     gRevMLRCorr->GetXaxis()->SetTitle("M_{LR}");
     gRevMLRCorr->GetYaxis()->SetTitle("source position [mm]");
     gRevMLRCorr->SetMarkerStyle(8);
@@ -200,7 +207,7 @@ bool SFPositionReco::CalculateMLR(void)
     fResultsCorr->AddResult(SFResultTypeNum::kMLRSlope, fpol1->GetParameter(1), fpol1->GetParError(1));
     fResultsCorr->AddResult(SFResultTypeNum::kMLROffset, fpol1->GetParameter(0), fpol1->GetParError(0));
     fResultsCorr->AddObject(SFResultTypeObj::kPosVsMLRGraph, gRevMLRCorr);
-    fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(0), fpol1_rev->GetParError(0));
+    //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(0), fpol1_rev->GetParError(0));
     fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(1), fpol1_rev->GetParError(1));
     
     fResultsExp->AddObject(SFResultTypeObj::kAttGraph, fMLRGraph);
@@ -235,7 +242,7 @@ bool SFPositionReco::CalculatePosRecoCoefficients(void)
     
     fAGraph = new TGraphErrors(n);
     fAGraph->SetName("fAGraph");
-    fAGraph->SetTitle("A coefficient vs. position");
+    fAGraph->SetTitle("A Coefficient vs. Position");
     fAGraph->GetXaxis()->SetTitle("source position [mm]");
     fAGraph->GetYaxis()->SetTitle("A [mm]");
     fAGraph->SetMarkerStyle(8);
@@ -267,7 +274,7 @@ bool SFPositionReco::CalculatePosRecoCoefficients(void)
     fAGraph->Fit(fpol0, "SQR+");
     
     fResultsCorr->AddObject(SFResultTypeObj::kAGraph, fAGraph);
-    fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol0->GetParameter(0), fpol0->GetParError(0));
+    //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol0->GetParameter(0), fpol0->GetParError(0));
     fResultsCorr->AddResult(SFResultTypeNum::kBCoeff, B, 0);
     //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fAGraph->GetPointY(0), fAGraph->GetErrorY(0));
     
@@ -292,39 +299,61 @@ bool SFPositionReco::PositionReco(void)
     //----- setting graphs
     fPosRecoCorrGraph = new TGraphErrors(npointsMax);
     fPosRecoCorrGraph->SetName("fPosRecoCorrGraph");
-    fPosRecoCorrGraph->SetTitle(Form("Reconstructed source position (corrected) S%i", fSeriesNo));
+    fPosRecoCorrGraph->SetTitle(Form("Reconstructed Source Position (Corrected) S%i", fSeriesNo));
     fPosRecoCorrGraph->GetXaxis()->SetTitle("source position [mm]");
     fPosRecoCorrGraph->GetYaxis()->SetTitle("reconstructed position [mm]");
     fPosRecoCorrGraph->SetMarkerStyle(8);
     
     fPosResCorrGraph = new TGraphErrors(npointsMax);
     fPosResCorrGraph->SetName("fPosResCorrGraph");
-    fPosResCorrGraph->SetTitle(Form("Position Resolution (corrected) S%i", fSeriesNo));
+    fPosResCorrGraph->SetTitle(Form("Position Resolution (Corrected) S%i", fSeriesNo));
     fPosResCorrGraph->GetXaxis()->SetTitle("source position [mm]");
     fPosResCorrGraph->GetYaxis()->SetTitle("position resolution [mm]");
     fPosResCorrGraph->SetMarkerStyle(8);
     
     fPosResidualsCorr = new TGraphErrors(npointsMax);
     fPosResidualsCorr->SetName("fPosResidualsCorr");
-    fPosResidualsCorr->SetTitle(Form("Reconstructed position (corrected) residuals S%i", fSeriesNo));
+    fPosResidualsCorr->SetTitle(Form("Reconstructed Position (Corrected) Residuals S%i", fSeriesNo));
     fPosResidualsCorr->GetXaxis()->SetTitle("source position [mm]");
     fPosResidualsCorr->GetYaxis()->SetTitle("residual [mm]");
     fPosResidualsCorr->SetMarkerStyle(8);
+    
+    fPosRecoDiffCorr = new TGraphErrors(npointsMax);
+    fPosRecoDiffCorr->SetName("fPosRecoDiffCorr");
+    fPosRecoDiffCorr->SetTitle(Form("Reconstructed Position Difference (Corrected) S%i", fSeriesNo));
+    fPosRecoDiffCorr->GetXaxis()->SetTitle("source position [mm]");
+    fPosRecoDiffCorr->GetYaxis()->SetTitle("P_{reco} - P_{real} [mm]");
+    fPosRecoDiffCorr->SetMarkerStyle(8);
     //-----
     
     //----- position reconstruction event by event start
     double BL_sigma_cut = SFTools::GetSigmaBL(sipm);  
     double s = SFTools::GetSigmaBL(fData->GetSiPM());
     std::vector<double> sigmas = {s, s};
+    std::vector<double> sigma = {s};
     TString cut = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
    
     //-----
     double xmin, xmax;
-    double A = fResultsCorr->GetValue(SFResultTypeNum::kACoeff);
-    double B = fResultsCorr->GetValue(SFResultTypeNum::kBCoeff);
+    double A     = fResultsCorr->GetValue(SFResultTypeNum::kACoeff);
+    double A_err = fResultsCorr->GetUncertainty(SFResultTypeNum::kACoeff);
+    double B     = fResultsCorr->GetValue(SFResultTypeNum::kBCoeff);
+    double B_err = fResultsCorr->GetUncertainty(SFResultTypeNum::kBCoeff);
     
     double posResSum    = 0.;
     double posResSumErr = 0.;
+    
+    TString hname = Form("Reconstructed Position Distribution (Summed) S%i", fSeriesNo);
+    TH1D *hPosRecoAll = new TH1D("hPosRecoAll", hname, 300, -100, 200);
+    hPosRecoAll->GetXaxis()->SetTitle("reconstructed position - source position [mm]");
+    hPosRecoAll->GetYaxis()->SetTitle("counts");
+    
+    std::vector<double> parsForErrors(9);
+    parsForErrors[0] = fModel->GetResults()->GetValue(SFResultTypeNum::kLambda);
+    parsForErrors[1] = fModel->GetResults()->GetValue(SFResultTypeNum::kEtaR);
+    parsForErrors[2] = fModel->GetResults()->GetValue(SFResultTypeNum::kEtaL);
+    parsForErrors[3] = fModel->GetResults()->GetValue(SFResultTypeNum::kKsi);
+    parsForErrors[4] = fModel->GetResults()->GetValue(SFResultTypeNum::kLength);
     
     for (int npoint = 0; npoint < npointsMax; npoint++)
     {
@@ -342,9 +371,29 @@ bool SFPositionReco::PositionReco(void)
         peakFinAv->FindPeakRange(xmin, xmax);
         
         //----- setting histograms
-        TString hname = Form("hRecoPositionsCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
-        fRecoPositionsCorrHist.push_back(new TH1D(hname, hname, 500, -100, 200));
+        hname = Form("hRecoPositionsCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
+        fRecoPositionsCorrHist.push_back(new TH1D(hname, hname, 300, -100, 200));
+        fRecoPositionsCorrHist[npoint]->SetTitle(Form("Reconstructed Position (Corrected) S%i %.1f mm", fSeriesNo, positions[npoint]));
 
+        hname = Form("hRecoPositionsUncertCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
+        fRecoPositionsUncertCorrHist.push_back(new TH1D(hname, hname, 200, 0, 50));
+        fRecoPositionsUncertCorrHist[npoint]->SetTitle(Form("Uncertainties of Reconstructed Position (Corrected) S%i %.1f mm", fSeriesNo, positions[npoint]));
+        
+        TString cutCh0 = SFDrawCommands::GetCut(SFCutType::kSpecCh0, sigma);
+        TString cutCh1 = SFDrawCommands::GetCut(SFCutType::kSpecCh1, sigma);
+        
+        auto specCh0 = std::unique_ptr<TH1D>(fData->GetSpectrum(0, SFSelectionType::kPE, cutCh0, measurementsIDs[npoint]));
+        auto specCh1 = std::unique_ptr<TH1D>(fData->GetSpectrum(1, SFSelectionType::kPE, cutCh1, measurementsIDs[npoint]));
+        
+        auto peakFinCh0 = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(specCh0.get(), false));
+        peakFinCh0->FindPeakFit();
+        
+        auto peakFinCh1 = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(specCh1.get(), false));
+        peakFinCh1->FindPeakFit();
+        
+        parsForErrors[7] = peakFinCh0->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
+        parsForErrors[8] = peakFinCh1->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
+        
         //----- filling histograms
         for (int nloop = 0; nloop < nloopMax; nloop++)
         {
@@ -380,9 +429,27 @@ bool SFPositionReco::PositionReco(void)
                         sqrt(peCh0 * peCh1) < xmax &&
                         vetoCh0 == 0 && vetoCh1 == 0)
                     {
-                        double pos = A * log(sqrt(fPrRecoFun->Eval(peCh1, peCh0) /
-                        fPlRecoFun->Eval(peCh1, peCh0))) + B;
+                        parsForErrors[5] = peCh0;
+                        parsForErrors[6] = peCh1;
+                        
+                        //for (int k=0; k<9; k++)
+                        //{
+                        //    std::cout << parsForErrors[k] << "\t";
+                        //}
+                        //std::cout << std::endl;
+                        
+                        double MLR = log(sqrt(fPrRecoFun->Eval(peCh1, peCh0) /
+                                              fPlRecoFun->Eval(peCh1, peCh0)));
+                        double pos = A * MLR + B;
+                        double Pr_err = fModel->CalculateUncertainty(parsForErrors, "R");
+                        double Pl_err = fModel->CalculateUncertainty(parsForErrors, "L");
+                        double pos_err = sqrt(pow(MLR * A_err, 2) +
+                                              pow(A / (2 * fPrRecoFun->Eval(peCh1, peCh0)) * Pr_err, 2) +
+                                              pow(-A / (2 * fPlRecoFun->Eval(peCh1, peCh0)) * Pl_err, 2) + 
+                                              pow(B_err, 2));
                         fRecoPositionsCorrHist[npoint]->Fill(pos);
+                        fRecoPositionsUncertCorrHist[npoint]->Fill(pos_err);
+                        hPosRecoAll->Fill(pos - positions[npoint]);
                     }
                     
                 }
@@ -406,6 +473,9 @@ bool SFPositionReco::PositionReco(void)
         fPosResCorrGraph->SetPoint(npoint, positions[npoint], fwhm);
         fPosResCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), fwhm_err);
         
+        fPosRecoDiffCorr->SetPoint(npoint, positions[npoint], mean - positions[npoint]);
+        fPosRecoDiffCorr->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), fwhm);
+        
         posResSum    += fwhm * (1. / pow(fwhm_err, 2));
         posResSumErr += 1. / pow(fwhm_err, 2);
     }
@@ -415,6 +485,15 @@ bool SFPositionReco::PositionReco(void)
 
     std::cout << "Average position resolution for this series is: ";
     std::cout << posResAv << " +/- " << posResAvErr << " mm\n\n" << std::endl;
+
+    double gconst  = hPosRecoAll->GetBinContent(hPosRecoAll->GetMaximumBin());
+    double fit_min = hPosRecoAll->GetBinCenter(2);
+    double mean    = hPosRecoAll->GetMean();
+    double rms     = hPosRecoAll->GetRMS();
+    
+    TF1 *fun_gauss = new TF1("fun_gauss", "gaus", fit_min, 200);
+    fun_gauss->SetParameters(gconst, mean, rms);
+    hPosRecoAll->Fit(fun_gauss, "QR");
     
     TF1* funpol1 = new TF1("funpol1", "pol1", 0, 100);
     fPosRecoCorrGraph->Fit(funpol1, "Q");
@@ -435,10 +514,14 @@ bool SFPositionReco::PositionReco(void)
     fResultsCorr->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoCorrGraph);
     fResultsCorr->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResCorrGraph);
     fResultsCorr->AddObject(SFResultTypeObj::kResidualGraph, fPosResidualsCorr);
+    fResultsCorr->AddObject(SFResultTypeObj::kPositionAllHist, hPosRecoAll);
+//     fResultsCorr->AddObject(SFResultTypeObj::kPositionDiff, fPosRecoDiffCorr);
     
     fResultsExp->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoGraph);
     fResultsExp->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResGraph);
     fResultsExp->AddObject(SFResultTypeObj::kResidualGraph, fPosResiduals);
+    fResultsExp->AddObject(SFResultTypeObj::kPositionAllHist, fPosRecoAll);
+//     fResultsExp->AddObject(SFResultTypeObj::kPositionDiff, fPosRecoDiff);
     //-----
     
     return true;

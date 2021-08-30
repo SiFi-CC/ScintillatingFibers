@@ -28,6 +28,7 @@ class SFPositionReco : public TObject
   private:
     int     fSeriesNo;
     SFData* fData;
+    SFAttenuationModel* fModel;
 
     TGraphErrors* fMAttCh0CorrGraph;
     TGraphErrors* fMAttCh1CorrGraph;
@@ -43,14 +44,20 @@ class SFPositionReco : public TObject
     TGraphErrors* fPosResiduals;
     TGraphErrors* fPosResidualsCorr;
     
+    TGraphErrors *fPosRecoDiff;
+    TGraphErrors *fPosRecoDiffCorr;
+    
     TGraphErrors* fPosResGraph;
     TGraphErrors* fPosResCorrGraph;
     
     TF2* fPlRecoFun;
     TF2* fPrRecoFun;
     
+    TH1D* fPosRecoAll;
+    
     std::vector<TH1D*> fRecoPositionsHist;
     std::vector<TH1D*> fRecoPositionsCorrHist;
+    std::vector<TH1D*> fRecoPositionsUncertCorrHist;
 
     SFResults* fResultsExp;
     SFResults* fResultsCorr;
@@ -65,6 +72,7 @@ class SFPositionReco : public TObject
 
     std::vector<SFResults*> GetResults(void);
     std::vector<TH1D*>      GetPositionDistributions(TString type);
+    std::vector<TH1D*>      GetErrorDistributions(void) { return fRecoPositionsUncertCorrHist; };
 
     void Print(void);
 

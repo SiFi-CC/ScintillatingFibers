@@ -26,6 +26,7 @@ class SFEnergyReco : public TObject
   private:
     int     fSeriesNo;
     SFData* fData;
+    SFAttenuationModel* fModel;
 
     TGraphErrors* fMAttCh0Graph;
     TGraphErrors* fMAttCh1Graph;
@@ -37,6 +38,7 @@ class SFEnergyReco : public TObject
     
     std::vector<TH1D*> fEnergySpectra;
     std::vector<TH1D*> fEnergySpectraCorr;
+    std::vector<TH1D*> fEnergyUncertDistCorr;
     
     SFResults* fResultsExp;
     SFResults* fResultsCorr;
@@ -53,6 +55,7 @@ class SFEnergyReco : public TObject
 
     std::vector<SFResults*> GetResults(void);
     std::vector<TH1D*>      GetEnergySpectra(TString type);
+    std::vector<TH1D*>      GetErrorDistributions(void) { return fEnergyUncertDistCorr; };
 
     void Print(void);
 

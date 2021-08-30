@@ -213,6 +213,8 @@ int main(int argc, char** argv)
     double min_xaxis = 10.;
     double max_xaxis = SFTools::FindMaxXaxis(specCh0[0]);
     
+    TString fun_name;
+    
     for (int i = 0; i < npoints; i++)
     {
         can_spec_ch0->cd(i + 1);
@@ -228,12 +230,16 @@ int main(int argc, char** argv)
         specCh0[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
         specCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
         specCh0[i]->Draw();
-        
-        TString fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
-        TF1 *fun_tmp_ch0 = specCh0[i]->GetFunction(fun_name);
-        
-        if (!fun_tmp_ch0)
-            gPad->SetFillColor(kGray);
+        fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
+        text.DrawLatex(0.6, 0.75, Form("#mu = %.2f +/- %.2f", 
+                       specCh0[i]->GetFunction(fun_name)->GetParameter(1),
+                       specCh0[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.6, 0.70, Form("#sigma = %.2f +/- %.2f", 
+                       specCh0[i]->GetFunction(fun_name)->GetParameter(2),
+                       specCh0[i]->GetFunction(fun_name)->GetParError(2)));
+        text.DrawLatex(0.6, 0.60, Form("#chi^{2}/NDF = %.3f",
+                       specCh0[i]->GetFunction(fun_name)->GetChisquare() / 
+                       specCh0[i]->GetFunction(fun_name)->GetNDF()));
 
         can_spec_ch1->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -246,12 +252,16 @@ int main(int argc, char** argv)
         specCh1[i]->GetXaxis()->SetRangeUser(min_xaxis, max_xaxis);
         specCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
         specCh1[i]->Draw();
-        
-        fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]); 
-        TF1 *fun_tmp_ch1 = specCh1[i]->GetFunction(fun_name);
-        
-        if (!fun_tmp_ch1)
-            gPad->SetFillColor(kGray);
+        fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
+        text.DrawLatex(0.6, 0.75, Form("#mu = %.2f +/- %.2f", 
+                       specCh1[i]->GetFunction(fun_name)->GetParameter(1),
+                       specCh1[i]->GetFunction(fun_name)->GetParError(1)));
+        text.DrawLatex(0.6, 0.70, Form("#sigma = %.2f +/- %.2f", 
+                       specCh1[i]->GetFunction(fun_name)->GetParameter(2),
+                       specCh1[i]->GetFunction(fun_name)->GetParError(2)));
+        text.DrawLatex(0.6, 0.60, Form("#chi^{2}/NDF = %.3f",
+                       specCh1[i]->GetFunction(fun_name)->GetChisquare() / 
+                       specCh1[i]->GetFunction(fun_name)->GetNDF()));
     }
 
     //----- saving

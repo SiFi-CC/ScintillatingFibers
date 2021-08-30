@@ -32,7 +32,7 @@ class SFFitResults : public TObject
     double  fSlowDecTime;    ///< Slow decay time [ns] (double decay mode)
     double  fSlowDecTimeErr; ///< Uncertainty of the slow decay time [ns] (double decay mode)
     double  fAmp;            ///< Amplitude (single decay mode)
-    double  fAmpErr;         /// Uncertainty of the amplitude (single decay mode)
+    double  fAmpErr;         ///< Uncertainty of the amplitude (single decay mode)
     double  fAmpFast;        ///< Amplitude of the fast decay component (double decay mode)
     double  fAmpFastErr;     ///< Uncertainty of the fast component amplitude (double decay mode)
     double  fAmpSlow;        ///< Amplitude of the slow decay component (double decay mode)

@@ -38,7 +38,8 @@ SFEnergyRes::SFEnergyRes(int seriesNo) : fSeriesNo(seriesNo),
         throw "##### Exception in SFEnergyRes constructor!";
     }
 
-    TString desc = fData->GetDescription();
+    TString testBench = fData->GetTestBench();
+    TString desc      = fData->GetDescription();
     if (!desc.Contains("Regular series"))
     {
         std::cout << "##### Warning in SFEnergyRes constructor!" << std::endl;
@@ -46,14 +47,30 @@ SFEnergyRes::SFEnergyRes(int seriesNo) : fSeriesNo(seriesNo),
     }
 
     //--- getting necessary PE spectra
-    double              s          = SFTools::GetSigmaBL(fData->GetSiPM());
-    std::vector<double> sigmas     = {s, s};
-    TString             cut_ch0    = SFDrawCommands::GetCut(SFCutType::kSpecCh0, sigmas);
-    TString             cut_ch1    = SFDrawCommands::GetCut(SFCutType::kSpecCh1, sigmas);
-    TString             cut_ch0ch1 = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
-    fSpectraCh0                    = fData->GetSpectra(0, SFSelectionType::kPE, cut_ch0);
-    fSpectraCh1                    = fData->GetSpectra(1, SFSelectionType::kPE, cut_ch1);
-    fSpectraAve = fData->GetCustomHistograms(SFSelectionType::kPEAverage, cut_ch0ch1);
+    TString cut_ch0    = " ";
+    TString cut_ch1    = " ";
+    TString cut_ch0ch1 = " ";
+    
+    if (testBench == "PMI")
+    {
+        cut_ch0    = SFDrawCommands::GetCut(SFCutType::kPMISpecCh0);
+        cut_ch1    = SFDrawCommands::GetCut(SFCutType::kPMISpecCh1);
+        cut_ch0ch1 = SFDrawCommands::GetCut(SFCutType::kPMICombCh0Ch1);
+        fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::kPMICharge, cut_ch0);
+        fSpectraCh0 = fData->GetSpectra(1, SFSelectionType::kPMICharge, cut_ch1);
+        fSpectraAve = fData->GetCustomHistograms(SFSelectionType::kPMIChargeAverage, cut_ch0ch1);
+    }
+    else
+    {
+        double s = SFTools::GetSigmaBL(fData->GetSiPM());
+        std::vector<double> sigmas = {s, s};
+        cut_ch0    = SFDrawCommands::GetCut(SFCutType::kSpecCh0, sigmas);
+        cut_ch1    = SFDrawCommands::GetCut(SFCutType::kSpecCh1, sigmas);
+        cut_ch0ch1 = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
+        fSpectraCh0 = fData->GetSpectra(0, SFSelectionType::kPE, cut_ch0);
+        fSpectraCh1 = fData->GetSpectra(1, SFSelectionType::kPE, cut_ch1);
+        fSpectraAve = fData->GetCustomHistograms(SFSelectionType::kPEAverage, cut_ch0ch1);
+    }
 
     fResultsCh0 = new SFResults(Form("EnergyResResults_S%i_ch0", fSeriesNo));
     fResultsCh1 = new SFResults(Form("EnergyResResults_S%i_ch1", fSeriesNo));
@@ -82,16 +99,8 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     int                        npoints    = fData->GetNpoints();
     TString                    collimator = fData->GetCollimator();
     TString                    testBench  = fData->GetTestBench();
-    TString                    desc       = fData->GetDescription();
     std::vector<double>        positions  = fData->GetPositions();
     std::vector<SFPeakFinder*> peakFin;
-
-    int npoints_graph = 0;
-    
-    if(desc.Contains("BaSO4"))
-        npoints_graph = npoints - 3;
-    else 
-        npoints_graph = npoints;
     
     for (int i = 0; i < npoints; i++)
     {
@@ -109,10 +118,10 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     }
 
     TString       gname = Form("ER_s%i_ch%i", fSeriesNo, ch);
-    TGraphErrors* graph = new TGraphErrors(npoints_graph);
+    TGraphErrors* graph = new TGraphErrors(npoints);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("energy resolution [%]");
-    graph->SetTitle(gname);
+    graph->SetTitle(Form("Energy Resolution S%i ch%i", fSeriesNo, ch));
     graph->SetName(gname);
     graph->SetMarkerStyle(4);
 
@@ -122,16 +131,8 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
     double     enResAve    = 0;
     double     enResAveErr = 0;
 
-    int counter = -1;
-
     for (int i = 0; i < npoints; i++)
-    {
-        if ((desc.Contains("BaSO4") && ch == 0 && positions[i] > 68) ||
-            (desc.Contains("BaSO4") && ch == 1 && positions[i] < 32))
-            continue;
-        
-        counter++; 
-        
+    { 
         peakFin[i]->FindPeakFit();
         parameters = peakFin[i]->GetResults();
         enRes      = parameters->GetValue(SFResultTypeNum::kPeakSigma) /
@@ -142,8 +143,8 @@ bool SFEnergyRes::CalculateEnergyRes(int ch)
                                   pow(parameters->GetValue(SFResultTypeNum::kPeakSigma), 2));
         enRes    = enRes * 100;
         enResErr = enResErr * 100;
-        graph->SetPoint(counter, positions[i], enRes);
-        graph->SetPointError(counter, SFTools::GetPosError(collimator, testBench), enResErr);
+        graph->SetPoint(i, positions[i], enRes);
+        graph->SetPointError(i, SFTools::GetPosError(collimator, testBench), enResErr);
         enResAve += enRes * (1. / pow(enResErr, 2));
         enResAveErr += (1. / pow(enResErr, 2));
     }
@@ -192,7 +193,7 @@ bool SFEnergyRes::CalculateEnergyRes(void)
     TGraphErrors* graph = new TGraphErrors(npoints);
     graph->GetXaxis()->SetTitle("source position [mm]");
     graph->GetYaxis()->SetTitle("energy resolution [%]");
-    graph->SetTitle(gname);
+    graph->SetTitle(Form("Energy Resolution S%i", fSeriesNo));
     graph->SetName(gname);
     graph->SetMarkerStyle(4);
 

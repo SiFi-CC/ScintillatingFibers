@@ -38,24 +38,37 @@
 #include <string>
 #include <vector>
 
+/// \file
+/// Structure representing recorded signal. It allows to convert
+/// DDSignal and SDDSignal type obcjects into universal type for
+/// the purpuse of the analysis. 
+
+/// Structure representing recorded signal. It allows to convert
+/// DDSignal and SDDSignal type obcjects into universal type for
+/// the purpuse of the analysis. 
+
 struct SFSignal
 {
 
-    float fAmp       = -100;
-    float fCharge    = -100;
-    float fPE        = -100;
-    float fT0        = -100;
-    float fTOT       = -100;
-    float fBL        = -100;
-    float fBLsig     = -100;
-    int   fPileUp    = -100;
-    int   fVeto      = -100;
-    bool  fSDDSignal = 0;
+    float fAmp       = -100; ///< Amplitude
+    float fCharge    = -100; ///< Uncalibrated charge (signal integral)
+    float fPE        = -100; ///< Calibrated charge 
+    float fT0        = -100; ///< Time T0
+    float fTOT       = -100; ///< Time over threshold (TOT)
+    float fBL        = -100; ///< Base line 
+    float fBLsig     = -100; ///< Sigma of the base line
+    int   fPileUp    = -100; ///< Pile-up flag
+    int   fVeto      = -100; ///< Veto flag
+    bool  fSDDSignal = 0;    ///< Flag indicatig whether contained information
+                             ///< comes from SDDSignal (true) or DDSignal (false)
 
+    /// Prints details of the SFSignal class object.
     void Print() const
     {
-        printf("Amp=%f  Charge=%f  PE=%f  T0=%f  TOT=%f  BL=%f BLsig=%f FU=%d VETO=%d Sig=%d\n",
-               fAmp, fCharge, fPE, fT0, fTOT, fBL, fBLsig, fPileUp, fVeto, fSDDSignal);
+        printf("Amp=%f  Charge=%f  PE=%f  T0=%f  TOT=%f "
+               " BL=%f BLsig=%f FU=%d VETO=%d SDDSig=%d\n",
+               fAmp, fCharge, fPE, fT0, fTOT, fBL, fBLsig,
+               fPileUp, fVeto, fSDDSignal);
     }
 };
 
@@ -93,10 +106,12 @@ class SFData : public TObject
     std::vector<double>  fPositions; ///< Vector containing positions of radioactive source [mm]
     std::vector<int>     fMeasureID; ///< Vector containing IDs of measurements
     std::vector<int>     fTimes;     ///< Vector containing times of measurements [s]
-    std::vector<int> fStart; ///< Vector containing starting times of measurements (in UNIX time)
-    std::vector<int> fStop;  ///< Vector containing stopping times of measurements (in UNIX time)
+    std::vector<int>     fStart;     ///< Vector containing starting times of measurements
+                                     ///< (in UNIX time)
+    std::vector<int> fStop;          ///< Vector containing stopping times of measurements 
+                                     ///< (in UNIX time)
 
-    int gUnique = 0.; ///< Unique flag to identify temporary histograms
+    int gUnique = 0.;                ///< Unique flag to identify temporary histograms
 
     SFSignal* ConvertSignal(DDSignal* sig);
     SFSignal* ConvertSignal(SDDSignal* sig);
@@ -172,4 +187,4 @@ class SFData : public TObject
     ClassDef(SFData, 1)
 };
 
-#endif
+#endif /* __SFData_H_ */

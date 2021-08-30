@@ -38,22 +38,6 @@
 /// Fitting results are stored in SFFitResults class objects. If function FitAllSignals() is called,
 /// average values of time constants and intensities for the whole series are calculated.
 
-// struct TimeConstResults
-// {
-// 
-//     double fFastDecAv    = -1;
-//     double fFastDecAvErr = -1;
-// 
-//     double fSlowDecAv    = -1;
-//     double fSlowDecAvErr = -1;
-// 
-//     double fIfastAv = -1;
-//     double fIslowAv = -1;
-// 
-//     std::vector<SFFitResults*> fResultsCh0;
-//     std::vector<SFFitResults*> fResultsCh1;
-// };
-
 class SFTimeConst : public TObject
 {
 
@@ -65,10 +49,10 @@ class SFTimeConst : public TObject
 
     std::vector<TProfile*>     fSignalsCh0; ///< Vector containing all signals from channel 0
     std::vector<TProfile*>     fSignalsCh1; ///< Vector containing all signals from channel 1
-    std::vector<SFFitResults*> fFitResultsCh0;
-    std::vector<SFFitResults*> fFitResultsCh1;
+    std::vector<SFFitResults*> fFitResultsCh0; ///< Vector containing fitting results of ch0 signals
+    std::vector<SFFitResults*> fFitResultsCh1; ///< Vector containing fitting results of ch1 signals
     
-    SFResults* fResults;
+    SFResults* fResults; ///< Object containing final results of signals shape analysis
 
   public:
     SFTimeConst();
@@ -83,9 +67,10 @@ class SFTimeConst : public TObject
     void                       Print(void);
     std::vector<TProfile*>     GetSignals(int ch);
     std::vector<SFFitResults*> GetFitResults(int ch);
+    /// Returns results of the analysis.
     SFResults*                 GetResults(void) { return fResults; };
 
     ClassDef(SFTimeConst, 1)
 };
 
-#endif
+#endif /* __SFTimeConst_H_ */

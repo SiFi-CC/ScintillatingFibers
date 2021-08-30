@@ -11,6 +11,12 @@
 #include "SFTools.hh"
 
 //------------------------------------------------------------------
+/// Returns index of given measurement. Index is found based on measurement
+/// ID. The same index applies to vectors containing all series parameters
+/// (source positions, measurement names, times, etc).
+/// \param measurementsIDs - vector containing IDs of all measurements 
+/// in the series
+/// \param id - ID number of given measurement
 int SFTools::GetIndex(std::vector<int> measurementsIDs, int id)
 {
 
@@ -35,6 +41,8 @@ int SFTools::GetIndex(std::vector<int> measurementsIDs, int id)
     return index;
 }
 //------------------------------------------------------------------
+/// Returns series number based on given histogram name. 
+/// \param hname_tstr - name of the histogram
 int SFTools::GetSeriesNo(TString hname_tstr)
 {
 
@@ -67,6 +75,8 @@ int SFTools::GetSeriesNo(TString hname_tstr)
     return seriesNo;
 }
 //------------------------------------------------------------------
+/// Returns channel number based on given histogram name.
+/// \param hname_tstr - name of the histogram
 int SFTools::GetChannel(TString hname_tstr)
 {
 
@@ -98,6 +108,8 @@ int SFTools::GetChannel(TString hname_tstr)
     return channelNo;
 }
 //------------------------------------------------------------------
+/// Returns source position based on histogram name
+/// \param hname_tstr - name of the histogram
 double SFTools::GetPosition(TString hname_tstr)
 {
 
@@ -129,6 +141,8 @@ double SFTools::GetPosition(TString hname_tstr)
     return pos;
 }
 //------------------------------------------------------------------
+/// Returns measurement ID based on given histogram name.
+/// \param hname_tstr - name of the histogram
 int SFTools::GetMeasurementID(TString hname_tstr)
 {
 
@@ -170,6 +184,9 @@ int SFTools::GetMeasurementID(TString hname_tstr)
     return id;
 }
 //------------------------------------------------------------------
+/// Returns Measurement ID based on series number and suource position.
+/// \param seriesNo - series number
+/// \param position - source position
 int SFTools::GetMeasurementID(int seriesNo, double position)
 {
 
@@ -229,15 +246,18 @@ int SFTools::GetMeasurementID(int seriesNo, double position)
     return id;
 }
 //------------------------------------------------------------------
+/// Returns uncertainty of source position for given collimator and test bench.
+/// \param collimator - collimator type
+/// \param testBench - test bench type
 double SFTools::GetPosError(TString collimator, TString testBench)
 {
 
-    double err = -1; //TODO check values
+    double err = -1;
 
     if (collimator.Contains("Lead"))
-        err = 2.0; // mm
+        err = 2.0; // mm //TODO check
     else if (collimator.Contains("Electronic") && testBench.Contains("DE"))
-        err = 1.5; // mm
+        err = 1.5; // mm //TODO check
     else if (collimator.Contains("Electronic") && testBench.Contains("PL"))
         err = 0.5; // mm
 
@@ -251,6 +271,8 @@ double SFTools::GetPosError(TString collimator, TString testBench)
     return err;
 }
 //------------------------------------------------------------------
+/// Returns value for cut on base line sigma based on the SiPM
+/// \param SiPM - SiPM type
 double SFTools::GetSigmaBL(TString SiPM)
 {
 
@@ -262,7 +284,7 @@ double SFTools::GetSigmaBL(TString SiPM)
     }
     else if (SiPM == "SensL")
     {
-        sigBL = 12; // for LYSO:Ce
+        sigBL = 10.; // for all materials
     }
     else
     {
@@ -274,6 +296,9 @@ double SFTools::GetSigmaBL(TString SiPM)
     return sigBL;
 }
 //------------------------------------------------------------------
+/// Checks status of given data base.
+/// \param status - status code returned by sqlite3 method
+/// \param database - currently opened data base
 bool SFTools::CheckDBStatus(int status, sqlite3* database)
 {
 
@@ -290,6 +315,13 @@ bool SFTools::CheckDBStatus(int status, sqlite3* database)
     return stat;
 }
 //------------------------------------------------------------------
+/// Adds an entry to the results data base.
+/// \param database - results data base
+/// \param table - name of the table in the data base where the entry
+/// will be written; if table doesn't exist in the given data base
+/// it will be created
+/// \param query - sqlite3 query 
+/// \param seriesNo - number of the experimental series of the entry
 bool SFTools::SaveResultsDB(TString database, TString table, TString query, int seriesNo)
 {
 
@@ -384,6 +416,9 @@ bool SFTools::SaveResultsDB(TString database, TString table, TString query, int 
     return true;
 }
 //------------------------------------------------------------------
+/// Adds a table in the given results data base.
+/// \param database - results data base
+/// \param table - name of the table
 bool SFTools::CreateTable(TString database, TString table)
 {
 
@@ -404,9 +439,11 @@ bool SFTools::CreateTable(TString database, TString table)
     {
         query =
             "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
-            "TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'ATT_CH1' NUMERIC, 'ATT_CH1_ERR' "
-            "NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, 'ATT_COMB_POL3' NUMERIC, "
-            "'ATT_COMB_POL3_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+            "TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'CHI2NDF_CH0' NUMERIC, 'ATT_CH1' NUMERIC, "
+            "'ATT_CH1_ERR' NUMERIC, 'CHI2NDF_CH1' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, "
+            "'CHI2NDF_COMB' NUMERIC, 'ATT_COMB_POL3' NUMERIC, 'ATT_COMB_POL3_ERR' NUMERIC, "
+            "'CHI2NDF_POL3' NUMERIC, 'ATT_SIM' NUMERIC , 'ATT_SIM_ERR' NUMERIC, 'CHI2NDF_SIM' "
+            "NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "ENERGY_RESOLUTION")
     {
@@ -447,8 +484,10 @@ bool SFTools::CreateTable(TString database, TString table)
     else if (table == "POSITION_RESOLUTION")
     {
         query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, "
-                "'RESULTS_FILE' TEXT, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' "
-                "INTIGER, PRIMARY KEY ('SERIES_ID'))";
+                "'RESULTS_FILE' TEXT, 'POSITION_RES_POL3' NUMERIC, 'POSITION_RES_POL3_ERR' NUMERIC, "
+                "'POSITION_RES_POL3_ALL' NUMERIC, 'POSITION_RES_POL3_ALL_ERR' NUMERIC, "
+                "'POSITION_RES_POL1' NUMERIC, 'POSITION_RES_POL1_ERR' NUMERIC, 'POSITION_RES_POL1_ALL' "
+                "NUMERIC, 'POSITION_RES_POL1_ALL_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "PEAK_FINDER")
     {
@@ -466,13 +505,14 @@ bool SFTools::CreateTable(TString database, TString table)
         query = "CREATE TABLE 'ATTENUATION_MODEL' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'S0' NUMERIC, 'S0_ERR' NUMERIC, 'LAMBDA' NUMERIC, 'LAMBDA_ERR' NUMERIC, "
                 "'ETAR' NUMERIC, 'ETAR_ERR' NUMERIC, 'ETAL' NUMERIC, 'ETAL_ERR' NUMERIC, 'KSI' "
-                "NUMERIC, 'KSI_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
+                "NUMERIC, 'KSI_ERR' NUMERIC, 'CHI2NDF' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "ENERGY_RECONSTRUCTION")
     {
         query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
                 "NUMERIC, 'ERES_EXP' NUMERIC, 'ERES_EXP_ERR' NUMERIC, 'ERES_CORR' NUMERIC, 'ERES_CORR_ERR' " 
+                "NUMERIC, 'ERES_ALL' NUMERIC, 'ERES_ALL_ERR' NUMERIC, 'ERES_CORR_ALL' NUMERIC, 'ERES_CORR_ALL_ERR' "
                 "NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "POSITION_RECONSTRUCTION")
@@ -481,8 +521,15 @@ bool SFTools::CreateTable(TString database, TString table)
                 "TEXT, 'A_COEFF' NUMERIC, 'A_COEFF_ERR' NUMERIC, 'B_COEFF' NUMERIC, 'MLR_SLOPE' NUMERIC, "
                 "'MLR_SLOPE_ERR' NUMERIC, 'MLR_OFFSET' NUMERIC, 'MLR_OFFSET_ERR' NUMERIC, 'MLR_SLOPE_EXP' "
                 "NUMERIC, 'MLR_SLOPE_EXP_ERR' NUMERIC, 'MLR_OFFSET_EXP' NUMERIC, 'MLR_OFFSET_EXP_ERR' "
-                "NUMERIC, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'DATE' INTEGER, "
-                "PRIMARY KEY ('SERIES_ID'))";
+                "NUMERIC, 'POSITION_RES' NUMERIC, 'POSITION_RES_ERR' NUMERIC, 'POSITION_RES_ALL' NUMERIC, "
+                "'POSITION_RES_ALL_ERR' NUMERIC, 'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
+    }
+    else if (table == "COUNTS")
+    {
+        query = "CREATE TABLE 'COUNTS' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+                "'COUNTS_CH0' NUMERIC, 'COUNTS_ERR_CH0' NUMERIC, 'COUNTS_STDDEV_CH0' NUMERIC, "
+                "'COUNTS_CH1' NUMERIC, 'COUNTS_ERR_CH1' NUMERIC, 'COUNTS_STDDEV_CH1' NUMERIC, "
+                "'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else
     {
@@ -517,6 +564,8 @@ bool SFTools::CreateTable(TString database, TString table)
     return true;
 }
 //------------------------------------------------------------------
+/// Calculates mean value of numbers stored in a given vector.
+/// \param vec - vector containing numbers
 double SFTools::GetMean(std::vector<double> vec)
 {
 
@@ -533,6 +582,8 @@ double SFTools::GetMean(std::vector<double> vec)
     return mean;
 }
 //------------------------------------------------------------------
+/// Calculates standard deviation of numbers stored in a given vector.
+/// \param vec - vector containing numbers
 double SFTools::GetStandardDev(std::vector<double> vec)
 {
 
@@ -551,6 +602,8 @@ double SFTools::GetStandardDev(std::vector<double> vec)
     return stdDev;
 }
 //------------------------------------------------------------------
+/// Calculates standard error of numbers stored in a given vector.
+/// \param vec - vector containing numbers
 double SFTools::GetStandardErr(std::vector<double> vec)
 {
 
@@ -561,6 +614,8 @@ double SFTools::GetStandardErr(std::vector<double> vec)
     return stdErr;
 }
 //------------------------------------------------------------------
+/// Finds maximum of the X axis for a given histogram.
+/// \param h - histogram
 double SFTools::FindMaxXaxis(TH1D *h)
 {
     int nbins = h->GetNbinsX();
@@ -581,6 +636,8 @@ double SFTools::FindMaxXaxis(TH1D *h)
     return max_xaxis;
 }
 //------------------------------------------------------------------
+/// Finds maximum of the Y axis for a given histogram.
+/// \param h - histogram
 double SFTools::FindMaxYaxis(TH1D *h)
 {
     int nbinsx = h->GetNbinsX();
@@ -606,6 +663,9 @@ double SFTools::FindMaxYaxis(TH1D *h)
     return max_yaxis;
 }
 //------------------------------------------------------------------
+/// Determines FWHM of a non-gaussian distribution. Returns value of 
+/// FWHM and its uncertainty.
+/// \param h - histogram containing analyzed distribution
 std::vector<double> SFTools::GetFWHM(TH1D* h)
 {
 
@@ -682,17 +742,20 @@ std::vector<double> SFTools::GetFWHM(TH1D* h)
     return FWHM;
 }
 //------------------------------------------------------------------
+/// Checks whether experimental data exists and returns full path to 
+/// the ROOT files.
+/// \param directory - name of the measurement/containing directory 
 TString SFTools::FindData(TString directory)
 {
 
-    TString       path_1 = std::string(getenv("SFDATA")) + directory;
-    std::ifstream input_1(path_1 + "/wave_0.dat", std::ios::binary);
+    TString path_1 = std::string(getenv("SFDATA")) + directory;
+    //std::ifstream input_1(path_1 + "/wave_0.dat", std::ios::binary);
 
-    if (input_1.good())
-    {
-        input_1.close();
-        return path_1;
-    }
+    //if (input_1.good())
+    //{
+    //    input_1.close();
+    //    return path_1;
+    //}
 
     if(! gSystem->AccessPathName(path_1 + "/sifi_results.root"))
     {
@@ -720,6 +783,10 @@ TString SFTools::FindData(TString directory)
     std::abort();
 }
 //------------------------------------------------------------------
+/// Fits single gaussian function to the given histogram.
+/// \param h - histogram
+/// \param range_in_RMS - fitting range given in number of RMS i.e.
+/// 1 gives fitting range from (mean-1*RMS) to (mean+1*RMS) etc. 
 bool SFTools::FitGaussSingle(TH1D* h, float range_in_RMS)
 {
 
@@ -742,6 +809,10 @@ bool SFTools::FitGaussSingle(TH1D* h, float range_in_RMS)
     return true;
 }
 //------------------------------------------------------------------
+/// Fits charge ratio histograms with single gaussian function. 
+/// \param vec - vector containing charge ratio histograms
+/// \param range_in_RMS - fitting range expressed in RMS i.e. value 1
+/// gives fitting range from (mean-1*RMS) to (mean+1*RMS)
 bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 {
 
@@ -777,6 +848,10 @@ bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)
     return true;
 }
 //------------------------------------------------------------------
+/// Fits charge ratio histograms with a sum of two gaussian functions. 
+/// \param vec - vector containing charge ratio histograms
+/// \param range_in_RMS - fitting range expressed in RMS i.e. value 1
+/// gives fitting range from (mean-1*RMS) to (mean+1*RMS)
 bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 {
 

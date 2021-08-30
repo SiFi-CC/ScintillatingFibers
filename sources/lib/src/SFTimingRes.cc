@@ -50,15 +50,25 @@ SFTimingRes::~SFTimingRes()
 /// is fitted to the histograms.
 bool SFTimingRes::LoadRatios(void)
 {
-
     int     npoints    = fData->GetNpoints();
     TString collimator = fData->GetCollimator();
     TString sipm       = fData->GetSiPM();
+    TString testBench  = fData->GetTestBench();
 
-    double              s      = SFTools::GetSigmaBL(sipm);
-    std::vector<double> sigmas = {s, s};
-    TString             cut    = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
-    fRatios                    = fData->GetCustomHistograms(SFSelectionType::kLogSqrtPERatio, cut);
+    TString cut = " ";
+    
+    if (testBench == "PMI")
+    {
+        cut = SFDrawCommands::GetCut(SFCutType::kPMICombCh0Ch1);
+        fRatios = fData->GetCustomHistograms(SFSelectionType::kPMILogSqrtChargeRatio, cut);
+    }
+    else
+    {
+        double s = SFTools::GetSigmaBL(sipm);
+        std::vector<double> sigmas = {s, s};
+        cut = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
+        fRatios = fData->GetCustomHistograms(SFSelectionType::kLogSqrtPERatio, cut);
+    }
 
     std::vector<TF1*> fun;
 
@@ -118,7 +128,7 @@ bool SFTimingRes::AnalyzeNoECut(void)
     fTResGraph    = new TGraphErrors(npoints);
     fTResGraph->GetXaxis()->SetTitle("source position [mm]");
     fTResGraph->GetYaxis()->SetTitle("#mu_{T_{D}} [ns]");
-    fTResGraph->SetTitle(gname);
+    fTResGraph->SetTitle(Form("#mu of T_{D} Distribution S%i", fSeriesNo));
     fTResGraph->SetName(gname);
     fTResGraph->SetMarkerStyle(4);
     
@@ -127,7 +137,7 @@ bool SFTimingRes::AnalyzeNoECut(void)
     fTSigmaGraph->GetYaxis()->SetTitle("#sigma_{T_D} [ns]");
     fTSigmaGraph->GetXaxis()->SetTitle("source position [mm]");
     fTSigmaGraph->SetName(gname);
-    fTSigmaGraph->SetTitle(gname);
+    fTSigmaGraph->SetTitle(Form("#sigma of T_{D} Distribution S%i", fSeriesNo));
     fTSigmaGraph->SetMarkerStyle(4);
 
     double s = SFTools::GetSigmaBL(sipm);
@@ -274,6 +284,23 @@ bool SFTimingRes::AnalyzeNoECut(void)
             }
             fT0Diff[i]->Fit(fun[i], "QR");
         }
+        else if (testBench == "PMI")
+        {
+            mean = fRatios[i]->GetFunction("fGauss")->GetParameter(1);
+            sigma = fRatios[i]->GetFunction("fGauss")->GetParameter(2);
+            
+            std::vector<double> customNum = {mean - 2 * sigma,  //TODO optimize
+                                             mean + 2 * sigma};
+            cut = SFDrawCommands::GetCut(SFCutType::kPMIT0Diff, customNum);
+            fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::kPMIT0Difference,
+                                                        cut, measIDs[i]));
+            
+            fun.push_back(new TF1("fun", "gaus", -50, 50)); //TODO optimize function
+            fun[i]->SetParameter(0, fT0Diff[i]->GetBinContent(fT0Diff[i]->GetMaximumBin()));
+            fun[i]->SetParameter(1, fT0Diff[i]->GetMean());
+            fun[i]->SetParameter(2, fT0Diff[i]->GetRMS());
+            fT0Diff[i]->Fit(fun[i], "QR");
+        }
 
         parNum = 0;
 
@@ -329,13 +356,25 @@ bool SFTimingRes::AnalyzeWithECut(void)
     TString             sipm       = fData->GetSiPM();
 
     if (fRatios.empty()) LoadRatios();
-
-    double              s         = SFTools::GetSigmaBL(sipm);
+    
+    double s = SFTools::GetSigmaBL(sipm);
     std::vector<double> cut_sigma = {s};
-    TString             cutCh0    = SFDrawCommands::GetCut(SFCutType::kSpecCh0, cut_sigma);
-    TString             cutCh1    = SFDrawCommands::GetCut(SFCutType::kSpecCh1, cut_sigma);
-    fSpecCh0                      = fData->GetSpectra(0, SFSelectionType::kPE, cutCh0);
-    fSpecCh1                      = fData->GetSpectra(1, SFSelectionType::kPE, cutCh1);
+     
+    if (testBench == "PMI")
+    {
+        TString cutCh0    = SFDrawCommands::GetCut(SFCutType::kPMISpecCh0, cut_sigma);
+        TString cutCh1    = SFDrawCommands::GetCut(SFCutType::kPMISpecCh1, cut_sigma);
+        fSpecCh0  = fData->GetSpectra(0, SFSelectionType::kPMICharge, cutCh0);
+        fSpecCh1  = fData->GetSpectra(1, SFSelectionType::kPMICharge, cutCh1);
+    }
+    else
+    {
+        TString cutCh0    = SFDrawCommands::GetCut(SFCutType::kSpecCh0, cut_sigma);
+        TString cutCh1    = SFDrawCommands::GetCut(SFCutType::kSpecCh1, cut_sigma);
+        fSpecCh0  = fData->GetSpectra(0, SFSelectionType::kPE, cutCh0);
+        fSpecCh1  = fData->GetSpectra(1, SFSelectionType::kPE, cutCh1);
+    }
+    
     std::vector<SFPeakFinder*> peakFin_ch0;
     std::vector<SFPeakFinder*> peakFin_ch1;
     TF1*                       fun = new TF1("fun", "gaus", -200, 200);
@@ -362,7 +401,7 @@ bool SFTimingRes::AnalyzeWithECut(void)
     fTResECutGraph = new TGraphErrors(npoints);
     fTResECutGraph->GetXaxis()->SetTitle("source position [mm]");
     fTResECutGraph->GetYaxis()->SetTitle("#mu_{T_{D}} [ns]");
-    fTResECutGraph->SetTitle(gname);
+    fTResECutGraph->SetTitle(Form("#mu of T_{D} Distribution (with Energy Cut) S%i", fSeriesNo));
     fTResECutGraph->SetName(gname);
     fTResECutGraph->SetMarkerStyle(4);
 
@@ -370,7 +409,7 @@ bool SFTimingRes::AnalyzeWithECut(void)
     fTSigmaECutGraph = new TGraphErrors(npoints);
     fTSigmaECutGraph->GetXaxis()->SetTitle("source position [mm]");
     fTSigmaECutGraph->GetYaxis()->SetTitle("#sigma_{T_{D}} [ns]");
-    fTSigmaECutGraph->SetTitle(gname);
+    fTSigmaECutGraph->SetTitle(Form("#sigma of T_{D} Distribution (with Energy Cut) S%i", fSeriesNo));
     fTSigmaECutGraph->SetName(gname);
     fTSigmaECutGraph->SetMarkerStyle(4);
     
@@ -461,6 +500,32 @@ bool SFTimingRes::AnalyzeWithECut(void)
                                              mean_ratio - 2 * sigma_ratio,
                                              mean_ratio + 2 * sigma_ratio};
             cut = SFDrawCommands::GetCut(SFCutType::kT0DiffECut, customNum);
+        }
+        else if (testBench == "PMI")
+        {
+            const_1 = fRatios[i]->GetFunction("fDGauss")->GetParameter(0);
+            const_2 = fRatios[i]->GetFunction("fDGauss")->GetParameter(3);
+            if (const_1 > const_2)
+                parNo = 1;
+            else
+                parNo = 4;
+            mean_ratio  = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo);
+            sigma_ratio = fRatios[i]->GetFunction("fDGauss")->GetParameter(parNo + 1);
+            
+            // cut = Form("ch_0.fT0>0 && ch_1.fT0>0 && ch_0.fT0<590 && ch_1.fT0<590 && ch_0.fPE>%f
+            // && ch_0.fPE<%f && ch_1.fPE>%f && ch_1.fPE<%f && log(sqrt(ch_1.fPE/ch_0.fPE))>%f &&
+            // log(sqrt(ch_1.fPE/ch_0.fPE))<%f",  center_ch0-3*delta_ch0, center_ch0+3*delta_ch0,
+            // center_ch1-3*delta_ch1, center_ch1+3*delta_ch1, mean_ratio-2*sigma_ratio,
+            // mean_ratio+2*sigma_ratio);
+            
+            std::vector<double> customNum = {center_ch0 - 3 * delta_ch0,
+                                             center_ch0 + 3 * delta_ch0,
+                                             center_ch1 - 3 * delta_ch1,
+                                             center_ch1 + 3 * delta_ch1,
+                                             mean_ratio - 2 * sigma_ratio,
+                                             mean_ratio + 2 * sigma_ratio};
+            cut = SFDrawCommands::GetCut(SFCutType::kPMIT0DiffECut, customNum);
+            
         }
 
         fT0DiffECut.push_back(fData->GetCustomHistogram(SFSelectionType::kT0Difference,

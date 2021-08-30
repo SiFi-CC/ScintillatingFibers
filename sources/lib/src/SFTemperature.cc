@@ -13,6 +13,8 @@
 ClassImp(SFTemperature);
 
 //------------------------------------------------------------------
+/// Standard constructor.
+/// \param seriesNo - number of the experimental series
 SFTemperature::SFTemperature(int seriesNo) : fSeriesNo(seriesNo),
                                              fData(nullptr)
 {
@@ -38,6 +40,7 @@ SFTemperature::SFTemperature(int seriesNo) : fSeriesNo(seriesNo),
     OpenDataBase();
 }
 //------------------------------------------------------------------
+/// Standard destructor.
 SFTemperature::~SFTemperature()
 {
 
@@ -45,6 +48,7 @@ SFTemperature::~SFTemperature()
     if (status != 0) std::cerr << "In SFData destructor. Data base corrupted!" << std::endl;
 }
 //------------------------------------------------------------------
+/// Opens data base containing temperature readings.
 bool SFTemperature::OpenDataBase(void)
 {
 
@@ -62,7 +66,13 @@ bool SFTemperature::OpenDataBase(void)
     return true;
 }
 //------------------------------------------------------------------
-bool SFTemperature::LoadFromDB(TString sensorID, TString name)
+/// Loads temperature readings saved in the data base for requested
+/// sensor and measurement. Loaded values are saved in fTime and 
+/// fTemperature vectors.
+/// \param sensor - sensor ID
+/// \param name - name of the measurement; if value "all" is given
+/// all temperature values for this series will be loaded
+bool SFTemperature::LoadFromDB(TString sensor, TString name)
 {
 
     int           status = 0;
@@ -73,13 +83,13 @@ bool SFTemperature::LoadFromDB(TString sensorID, TString name)
 
     TString query;
 
-    if (name == "none")
+    if (name == "all")
         query = Form("SELECT TIME, TEMPERATURE FROM TEMPERATURES WHERE SERIES_ID "
-                     "= %i AND SENSOR_ID = '%s'", fSeriesNo, sensorID.Data());
+                     "= %i AND SENSOR_ID = '%s'", fSeriesNo, sensor.Data());
     else
         query = Form("SELECT TIME, TEMPERATURE FROM TEMPERATURES WHERE SERIES_ID = %i AND "
                      "SENSOR_ID = '%s' AND MEASUREMENT_NAME = '%s'",
-                     fSeriesNo, sensorID.Data(), name.Data());
+                     fSeriesNo, sensor.Data(), name.Data());
 
     status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
     SFTools::CheckDBStatus(status, fDB);
@@ -96,6 +106,10 @@ bool SFTemperature::LoadFromDB(TString sensorID, TString name)
     return true;
 }
 //------------------------------------------------------------------
+/// Calculates average temperature during chosen measurement for chosen
+/// temperature sensor. 
+/// \param sensor - sensorID
+/// \param name - measurement name
 SFResults* SFTemperature::CalcAverageTempMeasure(TString sensor, TString name)
 {
 
@@ -112,6 +126,9 @@ SFResults* SFTemperature::CalcAverageTempMeasure(TString sensor, TString name)
     return result;
 }
 //------------------------------------------------------------------
+/// Calculates average temperature during entire measurement series for 
+/// chosen temperature sensor.
+/// \param sensor - sensor ID
 bool SFTemperature::CalcAverageTempSeries(TString sensor)
 {
 
@@ -129,6 +146,11 @@ bool SFTemperature::CalcAverageTempSeries(TString sensor)
     return true;
 }
 //------------------------------------------------------------------
+/// Prepares plot of average temperatures during measurements for a 
+/// requested sensor as a function of source position. If monitoring 
+/// series is analyzed instead of source position number of measurement 
+/// is used.  
+/// \param sensor - sensorID
 bool SFTemperature::BuildTempPlotAverage(TString sensor)
 {
 
@@ -172,6 +194,9 @@ bool SFTemperature::BuildTempPlotAverage(TString sensor)
     return true;
 }
 //------------------------------------------------------------------
+/// Builds plot of temperature for a requested sensor. Temperature is 
+/// plotted as a function of time since measurement started.
+/// \param sensor - sensor ID
 bool SFTemperature::BuildTempPlot(TString sensor)
 {
 
@@ -197,6 +222,9 @@ bool SFTemperature::BuildTempPlot(TString sensor)
     return true;
 }
 //------------------------------------------------------------------
+/// Returns average temperature during the measurement series for 
+/// requested sensor.
+/// \param sensor - sensor ID
 SFResults* SFTemperature::GetAverageTempSeries(TString sensor)
 {
 
@@ -222,6 +250,8 @@ SFResults* SFTemperature::GetAverageTempSeries(TString sensor)
     return temp;
 }
 //------------------------------------------------------------------
+/// Returns temperature plot for requested sensor.
+/// \param sensor - sensor ID
 TGraphErrors* SFTemperature::GetTempPlot(TString sensor)
 {
 
@@ -247,6 +277,8 @@ TGraphErrors* SFTemperature::GetTempPlot(TString sensor)
     return temp;
 }
 //------------------------------------------------------------------
+/// Returns average temperature plot for requested sensor.
+/// \param sensor - sensor ID
 TGraphErrors* SFTemperature::GetTempPlotAverage(TString sensor)
 {
 
@@ -272,6 +304,7 @@ TGraphErrors* SFTemperature::GetTempPlotAverage(TString sensor)
     return temp;
 }
 //------------------------------------------------------------------
+/// Prints details of the SFTemperature class object.
 void SFTemperature::Print(void)
 {
     std::cout << "\n-------------------------------------------" << std::endl;

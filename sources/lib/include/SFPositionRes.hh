@@ -34,16 +34,15 @@ class SFPositionRes : public TObject
     SFData*        fData;
     SFAttenuation* fAtt;
 
-    TGraphErrors* fPosRecoVsPosGraph;
-    TGraphErrors* fPosResVsPosGraph;
     TGraphErrors* fPosVsMLRGraph;
-    TGraphErrors* fResidualGraph;
 
     std::vector<TH1D*> fQRatios;
-    std::vector<TH1D*> fPosRecoDist;
+    std::vector<TH1D*> fPosRecoPol3Dist;
+    std::vector<TH1D*> fPosRecoPol1Dist;
     std::vector<TH1D*> fSpecAv;
 
-    SFResults* fResults;
+    SFResults* fResultsPol3;
+    SFResults* fResultsPol1;
 
     bool LoadRatios(void);
 
@@ -54,10 +53,10 @@ class SFPositionRes : public TObject
     bool AnalyzePositionRes(void);
 
     std::vector<TH1D*> GetRatios(void);
-    std::vector<TH1D*> GetPositionRecoDist(void);
+    std::vector<TH1D*> GetPositionRecoDist(TString type);
     std::vector<TH1D*> GetSpectra(void);
 
-    SFResults* GetResults(void) { return fResults; };
+    std::vector<SFResults*> GetResults(void);
 
     void Print();
 

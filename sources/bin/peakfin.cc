@@ -87,33 +87,19 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < npoints; i++)
     {
-        pfAve.push_back(new SFPeakFinder(hSpecAv[i], 0, 1));
+        pfAve.push_back(new SFPeakFinder(hSpecAv[i], 0, 1)); // verbose = 0, tests = 1
         pfAve[i]->FindPeakFit();
         pfAve[i]->SubtractBackground();
         pfAve[i]->GetResults()->Print();
         hPeakAv[i] = (TH1D*)pfAve[i]->GetResults()->GetObject(SFResultTypeObj::kPeak);
-    }
-
-    for (int i = 0; i < npoints; i++)
-    {
-        pfCh0.push_back(new SFPeakFinder(hSpecCh0[i], 0, 1)); // verbose = 0, tests = 1
         
-        //if (positions[i] > 68)
-         //   continue;
-        
+        pfCh0.push_back(new SFPeakFinder(hSpecCh0[i], 0, 1));
         pfCh0[i]->FindPeakFit();
         pfCh0[i]->SubtractBackground();
         pfCh0[i]->GetResults()->Print();
         hPeakCh0[i] = (TH1D*)pfCh0[i]->GetResults()->GetObject(SFResultTypeObj::kPeak);
-    }
-
-    for (int i = 0; i < npoints; i++)
-    {        
+        
         pfCh1.push_back(new SFPeakFinder(hSpecCh1[i], 0, 1));
-        
-        //if (positions[i] < 32)
-        //    continue;
-        
         pfCh1[i]->FindPeakFit();
         pfCh1[i]->SubtractBackground();
         pfCh1[i]->GetResults()->Print();
@@ -175,42 +161,41 @@ int main(int argc, char** argv)
         hSpecCh0[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_0);
         hSpecCh0[i]->DrawClone();
         
-        //fun_name = Form("f_S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
-        //fun = hSpecCh0[i]->GetFunction(fun_name);
-        
         SFResults* resultCh0 = pfCh0[i]->GetResults();
-        
-        //if(fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultCh0->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-        //    gPad->SetFillColor(kGray);
+
+        text.DrawLatex(0.60, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.60, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.60, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.60, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kChi2NDF)));
 
         canCh0_bgs->cd(i + 1);
         gPad->SetGrid(1, 1);
         hSpecCh0[i]->Draw();
-        
-        //if (fun)
-       // {
-            hSpecCh0[i]->GetFunction("fun_bg_clone")->Delete();
-            hSpecCh0[i]->GetFunction("fun_gaus_clone")->Delete();
-        //}
-        
-        //if (hPeakCh0[i])
-        //{
-            hPeakCh0[i]->SetLineColor(kMagenta);
-            hPeakCh0[i]->Draw("same");
-        //}
-        
-        //if(fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultCh0->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-       //     gPad->SetFillColor(kGray);
+
+        hSpecCh0[i]->GetFunction("fun_bg_clone")->Delete();
+        hSpecCh0[i]->GetFunction("fun_gaus_clone")->Delete();
+        hPeakCh0[i]->SetLineColor(kMagenta);
+        hPeakCh0[i]->Draw("same");
+
+
+        text.DrawLatex(0.65, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.65, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.65, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultCh0->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.65, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultCh0->GetValue(SFResultTypeNum::kChi2NDF)));
 
         canCh1->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -226,42 +211,40 @@ int main(int argc, char** argv)
         hSpecCh1[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_1);
         hSpecCh1[i]->DrawClone();
         
-       // fun_name = Form("f_S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[i], ID[i]);
-        //fun = hSpecCh1[i]->GetFunction(fun_name);
-        
         SFResults* resultCh1 = pfCh1[i]->GetResults();
-        
-       // if (fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultCh1->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-         //   gPad->SetFillColor(kGray);
-            
+
+        text.DrawLatex(0.60, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.60, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.60, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.60, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kChi2NDF)));
+
         canCh1_bgs->cd(i + 1);
         gPad->SetGrid(1, 1);
         hSpecCh1[i]->Draw();
+
+        hSpecCh1[i]->GetFunction("fun_bg_clone")->Delete();
+        hSpecCh1[i]->GetFunction("fun_gaus_clone")->Delete();
+        hPeakCh1[i]->SetLineColor(kMagenta);
+        hPeakCh1[i]->Draw("same");
         
-        //if (fun)
-        //{
-            hSpecCh1[i]->GetFunction("fun_bg_clone")->Delete();
-            hSpecCh1[i]->GetFunction("fun_gaus_clone")->Delete();
-        //}
-        
-        //if (hPeakCh1[i])
-        //{
-            hPeakCh1[i]->SetLineColor(kMagenta);
-            hPeakCh1[i]->Draw("same");
-       // }
-        
-        //if (fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultCh1->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-        //    gPad->SetFillColor(kGray);
+        text.DrawLatex(0.60, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.60, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.60, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultCh1->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.60, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultCh1->GetValue(SFResultTypeNum::kChi2NDF)));
 
         canAve->cd(i + 1);
         gPad->SetGrid(1, 1);
@@ -279,42 +262,40 @@ int main(int argc, char** argv)
         hSpecAv[i]->GetYaxis()->SetRangeUser(min_yaxis, max_yaxis_av);
         hSpecAv[i]->DrawClone();
         
-        //fun_name = Form("f_S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[i], ID[i]);
-        //fun = hSpecAv[i]->GetFunction(fun_name);
-        
         SFResults* resultAv = pfAve[i]->GetResults();
-        
-        //if (fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultAv->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-        //    gPad->SetFillColor(kGray);
+
+        text.DrawLatex(0.60, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.60, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.60, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.60, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kChi2NDF)));
 
         canAve_bgs->cd(i + 1);
         gPad->SetGrid(1, 1);
         hSpecAv[i]->Draw();
+
+        hSpecAv[i]->GetFunction("fun_bg_clone")->Delete();
+        hSpecAv[i]->GetFunction("fun_gaus_clone")->Delete();
+        hPeakAv[i]->SetLineColor(kMagenta);
+        hPeakAv[i]->Draw("same");
         
-        //if (fun)
-        //{
-            hSpecAv[i]->GetFunction("fun_bg_clone")->Delete();
-            hSpecAv[i]->GetFunction("fun_gaus_clone")->Delete();
-        //}
-        
-        //if (hPeakAv[i])
-        //{
-            hPeakAv[i]->SetLineColor(kMagenta);
-            hPeakAv[i]->Draw("same");
-        //}
-        
-        //if (fun)
-        //{
-            text.DrawLatex(0.65, 0.75, Form("#chi^{2}/NDF = %.3f", 
-                           resultAv->GetValue(SFResultTypeNum::kChi2NDF)));
-        //}
-        //else
-          //  gPad->SetFillColor(kGray);
+        text.DrawLatex(0.60, 0.75, Form("c = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakConst), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakConst)));
+        text.DrawLatex(0.60, 0.70, Form("#mu = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakPosition), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakPosition)));
+        text.DrawLatex(0.60, 0.65, Form("#sigma = %.3f +/- %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kPeakSigma), 
+                       resultAv->GetUncertainty(SFResultTypeNum::kPeakSigma)));
+        text.DrawLatex(0.60, 0.60, Form("#chi^{2}/NDF = %.3f", 
+                       resultAv->GetValue(SFResultTypeNum::kChi2NDF)));
     }
 
     //----- saving

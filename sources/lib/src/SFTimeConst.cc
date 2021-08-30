@@ -46,7 +46,7 @@ SFTimeConst::~SFTimeConst()
     if (fData != nullptr) delete fData;
 }
 //------------------------------------------------------------------
-/// Sets values to private members of the calss. Loads TProfile histograms
+/// Sets values to private members of the class. Loads TProfile histograms
 /// of average signals for requested PE vlaue. Creates vectors of SFFitResults
 /// objects.
 /// \param seriesNo - number of the series
@@ -120,6 +120,7 @@ double funDecayDouble(double* x, double* par)
     return fast_dec + slow_dec + constant;
 }
 //------------------------------------------------------------------
+/// Single decay function describing falling slope of the signal.
 double funDecaySingle(double* x, double* par)
 {
     double dec      = par[0] * TMath::Exp(-(x[0] - par[1]) / par[2]);
@@ -127,6 +128,13 @@ double funDecaySingle(double* x, double* par)
     return dec + constant;
 }
 //------------------------------------------------------------------
+/// This function performs fitting to the given TProfile signal.
+/// Single decay function if fitted to the falling slope of the signal.
+/// Results of the fit are subsequently written in the SFFitResults
+/// class object. Function returns true if fitting was successful and
+/// fit results are valid.
+/// \param signal - averaged signal (TProfile)
+/// \param ID - measurement ID
 bool SFTimeConst::FitDecayTimeSingle(TProfile* signal, int ID)
 {
 
@@ -150,9 +158,9 @@ bool SFTimeConst::FitDecayTimeSingle(TProfile* signal, int ID)
     }
 
     std::vector<int> measurementsIDs = fData->GetMeasurementsIDs();
-    int              index           = SFTools::GetIndex(measurementsIDs, ID);
-    double           xmin            = signal->GetBinCenter(signal->GetMaximumBin()) + 20.;
-    double           xmax            = signal->GetBinCenter(signal->GetNbinsX());
+    int    index = SFTools::GetIndex(measurementsIDs, ID);
+    double xmin  = signal->GetBinCenter(signal->GetMaximumBin()) + 20.;
+    double xmax  = signal->GetBinCenter(signal->GetNbinsX());
 
     TF1* fun_BL = new TF1("fun_BL", "pol0", 0, 50);
     signal->Fit(fun_BL, opt);
@@ -198,6 +206,8 @@ bool SFTimeConst::FitDecayTimeSingle(TProfile* signal, int ID)
 /// Results of the fit are subsequently written in the SFFitResults
 /// class object. Function returns true if fitting was successful and
 /// fit results are valid.
+/// \param signal - averaged signal (TProfile)
+/// \param ID - measurement ID
 bool SFTimeConst::FitDecayTimeDouble(TProfile* signal, int ID)
 {
 
@@ -532,6 +542,8 @@ std::vector<TProfile*> SFTimeConst::GetSignals(int ch)
     return signals;
 }
 //------------------------------------------------------------------
+/// Returns fitting results for a requested channel.
+/// \param ch - channel number
 std::vector <SFFitResults*> SFTimeConst::GetFitResults(int ch)
 {
     if ((ch == 0 && fFitResultsCh0.empty()) ||
@@ -558,7 +570,7 @@ std::vector <SFFitResults*> SFTimeConst::GetFitResults(int ch)
     return results;
 }
 //------------------------------------------------------------------
-/// Prints details of the SFTimeConst class ojbect.
+/// Prints details of the SFTimeConst class object.
 void SFTimeConst::Print(void)
 {
     std::cout << "\n-------------------------------------------" << std::endl;

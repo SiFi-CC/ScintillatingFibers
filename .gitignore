@@ -1,4 +1,5 @@
 html/
 results/
 install/
+build_local/
 *.kdev4
