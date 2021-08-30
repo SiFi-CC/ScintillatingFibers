@@ -36,3 +36,10 @@ target_link_libraries(posreco ${FITTERFACTORY_LIBRARIES} ScintillatingFibers Mul
 
 add_executable(stability stability.cc)
 target_link_libraries(stability ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi Fibers)
+
+add_executable(data_mod data_mod.cc)
+target_link_libraries(data_mod ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi Fibers)
+
+add_executable(counts_mod counts_mod.cc)
+target_link_libraries(counts_mod ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi Fibers)
+

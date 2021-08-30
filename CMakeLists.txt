@@ -46,7 +46,7 @@ add_subdirectory(sources)
 #	DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #)
 	
-install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres model energyreco posreco  
+install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres model energyreco posreco data_mod counts_mod 
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
@@ -78,7 +78,7 @@ install(FILES
 	DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
 )
 
-#find_package(Doxygen)
+find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/sources/Doxyfile.in)

@@ -20,5 +20,6 @@
 #pragma link C++ class SFEnergyReco+;
 #pragma link C++ class SFPositionReco+;
 #pragma link C++ class SFResults+;
+#pragma link C++ class SFCountMap+;
 
 #endif
