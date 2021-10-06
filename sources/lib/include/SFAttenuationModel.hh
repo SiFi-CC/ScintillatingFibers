@@ -27,6 +27,8 @@
 #include <TMatrixT.h>
 #include <TMatrixDfwd.h>
 
+#include <cassert>
+
 extern int iparSl[];
 extern int iparSr[];
 
@@ -59,45 +61,15 @@ struct GlobalChi2Model
     const ROOT::Math::IMultiGenFunction* fChi2_2; ///< chi2_2
 };
 
-/// This class fits exponential attenuation model with light reflection
+/// This namespace fits exponential attenuation model with light reflection
 /// to the experimental data. Based on the fit results and available
 /// data primary light component is reconstructed. As one of the fitted 
 /// parameters attenuation length is determined. Full uncertainties 
 /// calculus is included.
 
-class SFAttenuationModel : public TObject
+namespace SFAttenuationModel
 {
-
-  private:
-    int     fSeriesNo; ///< Number of experimental series
-    SFData* fData;     ///< SFData object of the experimental series
-
-    TGraphErrors* fMAttCh0Graph;     ///< Experimental attenuation curve ch0
-    TGraphErrors* fMAttCh1Graph;     ///< Experimental attenuation curve ch1
-    TGraphErrors* fMAttCh0CorrGraph; ///< Corrected attenuation curve ch0
-    TGraphErrors* fMAttCh1CorrGraph; ///< Corrected attenuation curve ch1
-
-    TF2* fPlRecoFun;     ///< Reconstructed primary component (left/ch0)
-    TF2* fPrRecoFun;     ///< Reconstructed primary component (right/ch1)
-    
-    TMatrixD fCovMatrix; ///< Covariation matrix
-    
-    SFResults*            fResults;       ///< Analysis results
-    ROOT::Fit::FitResult* fFitterResults; ///< Fitting results
-
-  public:
-    SFAttenuationModel(int seriesNo);
-    ~SFAttenuationModel();
-
-    double CalculateUncertainty(std::vector<double> params, TString side);
-    bool   FitModel(void);
-
-    /// Returns results of the analysis.
-    SFResults* GetResults(void) { return fResults; };
-
-    void Print(void);
-
-    ClassDef(SFAttenuationModel, 1)
+    SFResults* FitModel(TGraphErrors* left, TGraphErrors *right, double pos_uncert, double fiberLen);
 };
 
 #endif

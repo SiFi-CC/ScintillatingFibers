@@ -106,10 +106,10 @@ TString SFPeakFinder::InitSpectrumPerPosition(int seriesNo)
     if (fID == -1)
         fID = SFTools::GetMeasurementID(fSpectrum->GetName());
     
-    SFData* data;
+    SFInfo* info;
     try
     {
-        data = new SFData(seriesNo);
+        info = new SFInfo(seriesNo);
     }
     catch (const char* message)
     {
@@ -117,9 +117,9 @@ TString SFPeakFinder::InitSpectrumPerPosition(int seriesNo)
         std::cerr << "##### Error in SFPeakFinder::Init()!" << std::endl;
     }
     
-    std::vector<TString> names     = data->GetNames();
-    std::vector<int>     measureID = data->GetMeasurementsIDs();
-    std::vector<double>  positions = data->GetPositions();
+    std::vector<TString> names     = info->GetNames();
+    std::vector<int>     measureID = info->GetMeasurementsIDs();
+    std::vector<double>  positions = info->GetPositions();
     int                  index     = SFTools::GetIndex(measureID, fID);
     TString              dir_name  = names[index];
     TString              full_path = SFTools::FindData(dir_name);
@@ -150,7 +150,30 @@ TString SFPeakFinder::InitSpectrumPerPosition(int seriesNo)
             opt = "0R";
         else
             opt = "Q0R";
+/*        
+        Int_t    rebin = 0;
+        Double_t xmin = peak - 200;
+        Double_t xmax = peak + 300;
+        Double_t p_const = fSpectrum->GetBinContent(fSpectrum->FindBin(peak));
+        Double_t mean = peak;
+        Double_t sigma = 30;
+        Double_t exp_fit_min = xmin;
+        Double_t exp_fit_max = xmin + 100;
+        
+        TF1 *fun_exp_tmp = new TF1("fun_exp_tmp", "[0]*TMath::Exp((x-[1])*[2])");
+        fSpectrum->Fit("fun_exp_tmp", "", "", exp_fit_min, exp_fit_max);
 
+        Double_t par3 = 20;
+        Double_t par4 = fun_exp_tmp->GetParameter(0);
+        Double_t par5 = fun_exp_tmp->GetParameter(1);   
+        Double_t par6 = fun_exp_tmp->GetParameter(2);
+    
+    config << " " << hL->GetName() << " " << functions << " " << rebin << " " 
+           << xmin << " " << xmax <<  " " << p_const << " " << mean << " " << sigma 
+           << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";*/
+        
+        //-----
+        
         TF1* fun_gaus = new TF1("fun_gaus", "gaus", peak - 100, peak + 100);
         fSpectrum->Fit("fun_gaus", opt);
 

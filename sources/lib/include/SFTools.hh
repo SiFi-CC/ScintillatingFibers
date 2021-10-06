@@ -51,7 +51,6 @@ double              FindMaxYaxis(TH1D* h);
 bool                RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
 bool                RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
 bool                FitGaussSingle(TH1D* h, float range_in_RMS);
-TString             FindData(TString directory);
 std::vector<double> GetFWHM(TH1D* h);
 
 };

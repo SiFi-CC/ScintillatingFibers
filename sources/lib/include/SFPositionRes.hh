@@ -25,15 +25,25 @@
 #include <TTree.h>
 
 #include <iostream>
+#include <tuple>
+#include <optional>
 
-class SFPositionRes : public TObject
+class TH1;
+class TF1;
+
+namespace SFTools {
+
+auto calculatePosition(SDDSamples * samples, TF1* mlr, float BL_sigma_cut, float qmin, float qmax) -> std::optional<float>;
+    
+auto calculatePositionResolutions(TH1* spectrum) -> std::tuple<float,std::vector<float>>;
+
+auto calculateAveragePositionResolutions(std::vector<TH1*>) -> void;
+
+};
+
+namespace SFPositionRes
 {
-
-  private:
-    int            fSeriesNo;
-    SFData*        fData;
-    SFAttenuation* fAtt;
-
+/*
     TGraphErrors* fPosVsMLRGraph;
 
     std::vector<TH1D*> fQRatios;
@@ -41,26 +51,25 @@ class SFPositionRes : public TObject
     std::vector<TH1D*> fPosRecoPol1Dist;
     std::vector<TH1D*> fSpecAv;
 
-    SFResults* fResultsPol3;
-    SFResults* fResultsPol1;
-
     bool LoadRatios(void);
 
-  public:
-    SFPositionRes(int seriesNo);
-    ~SFPositionRes();
 
     bool AnalyzePositionRes(void);
 
-    std::vector<TH1D*> GetRatios(void);
     std::vector<TH1D*> GetPositionRecoDist(TString type);
-    std::vector<TH1D*> GetSpectra(void);
+    std::vector<TH1D*> GetSpectra(void);*/
+    
+    double ReconstructPosition(SDDSamples * samples, TF1* fun_mlr,
+                             float BL_sigma_cut, float qmin, float qmax);
+    
+    SFResults* ReconstructPositionDist(SFChAddr addr, SLoop *loop, TH1D* spectrum_av,
+                                       TF1* fun_mlr, double BL_sigma_cut);
+    
+    auto ReconstructPositionDistAll(SFChAddr addr, SLoop* loop, TH1D* spectrum_av, 
+                                    TF1* fun_mlr, std::vector<double> positions,
+                                    double BL_sigma_cut, double pos_uncert, TString suffix)
+                                    -> std::tuple<SFResults*,std::vector<TH1D*>>;
 
-    std::vector<SFResults*> GetResults(void);
-
-    void Print();
-
-    ClassDef(SFPositionRes, 1)
 };
 
 #endif

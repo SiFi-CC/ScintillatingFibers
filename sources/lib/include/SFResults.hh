@@ -53,6 +53,7 @@ enum SFResultTypeNum
 
     //----- SFPositionRes
     kPositionRes,    ///< Position resolution
+    kPositionReco,   ///< Reconstructed position
     
     //----- SFTimeConst
     kFastDecay,      ///< Fast decay constant
@@ -118,7 +119,7 @@ enum SFResultTypeObj
     kPosResVsPosGraph,  ///< Position resolution vs. source position
     kPosVsMLRGraph,     ///< Reversed MLR curve
     kResidualGraph,     ///< Reconstructed position residuals graph
-    kPositionAllHist,   ///< Summed reconstructed position distribution
+    kPositionDist,      ///< Summed reconstructed position distribution
 
     //----- SFAttenuationModel
     kPlFun,             ///< Function representing primary light emission (left/ch0)
@@ -158,7 +159,7 @@ enum SFResultTypeObj
 /// (e.g. vectors or tables) is not supported. In order to save results use
 /// keys predefined as enumerators SFResultsTypeNum and SFResultsTypeObj.
 
-class SFResults : public TObject
+class SFResults
 {
 
   private:
@@ -192,8 +193,6 @@ class SFResults : public TObject
     TString GetName(void)         { return fName; };
 
     void Print(void);
-
-    ClassDef(SFResults, 1)
 };
 
 #endif /* __SFResults_H_ */

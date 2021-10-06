@@ -10,8 +10,6 @@
 
 #include "SFData.hh"
 
-#include <memory>
-
 ClassImp(SFData);
 
 //------------------------------------------------------------------
@@ -22,206 +20,20 @@ static const double gmV    = 4.096;            // coefficient to calibrate ADC c
 const double        ampMax = 660;              // maximal valid amplitude in the measurements 
                                                // with the Desktop Digitizer
 //------------------------------------------------------------------
-/// Default constructor. If this constructor is used the series
-/// number should be set via SetDetails(int seriesNo) function.
-SFData::SFData() : fSeriesNo(-1),
-                   fNpoints(-1),
-                   fAnalysisGroup(-1),
-                   fFiber("dummy"),
-                   fFiberLength(-1),
-                   fSource("dummy"),
-                   fCollimator("dummy"),
-                   fDesc("dummy"),
-                   fTestBench("dummy"),
-                   fSiPM("dummy"),
-                   fOvervoltage(-1),
-                   fCoupling("dummy"),
-                   fTempFile("dummy")
-{
-
-    std::cout << "##### Warning in SFData constructor!" << std::endl;
-    std::cout << "You are using the default constructor. Set the series number & open data base!"
-              << std::endl;
-}
-//------------------------------------------------------------------
 /// Standard constructor (recommended).
 /// \param seriesNo is number of experimental series to analyze.
 SFData::SFData(int seriesNo) : fSeriesNo(seriesNo),
-                               fNpoints(-1),
-                               fAnalysisGroup(-1),
-                               fFiber("dummy"),
-                               fFiberLength(-1),
-                               fSource("dummy"),
-                               fCollimator("dummy"),
-                               fDesc("dummy"),
-                               fTestBench("dummy"),
-                               fSiPM("dummy"),
-                               fOvervoltage(-1),
-                               fCoupling("dummy"),
-                               fTempFile("dummy")
+                               fInfo(nullptr)
 {
-
-    bool db_stat  = OpenDataBase("ScintFib_2.db");
-    bool set_stat = SetDetails(seriesNo);
     OpenFiles();
-    if (!db_stat || !set_stat) { throw "##### Exception in SFData constructor!"; }
+    fInfo = new SFInfo(fSeriesNo);
 }
 //------------------------------------------------------------------
 /// Default destructor.
 SFData::~SFData()
 {
-
-    int status = sqlite3_close(fDB);
-    if (status != 0) std::cerr << "In SFData destructor. Data base corrupted!" << std::endl;
-
     for (auto h : fFiles)
         delete h;
-}
-//------------------------------------------------------------------
-/// Opens SQLite3 data base containing details of experimental series
-/// and measurements.
-/// \param name - name of the data base file.
-bool SFData::OpenDataBase(TString name)
-{
-
-    TString db_name = std::string(gPath) + "/DB/" + name;
-    int     status  = sqlite3_open(db_name, &fDB);
-
-    std::cout << db_name << std::endl;
-    
-    if (status != 0)
-    {
-        std::cerr << "##### Error in SFData::OpenDataBase()!" << std::endl;
-        std::cerr << "Could not access data base!" << std::endl;
-        return false;
-    }
-
-    return true;
-}
-//------------------------------------------------------------------
-/// Sets all details of selected experimental series. If default constructor
-/// was used, this function needs to be called explicitly with the number of
-/// of requested series as an argument.
-/// \param seriesNo - number of experimental series to analyze.
-///
-/// The following attributes of the experimental series are set within this
-/// function:
-bool SFData::SetDetails(int seriesNo)
-{
-
-    TString       query;
-    sqlite3_stmt* statement;
-    int           status;
-
-    if (fSeriesNo == -1) fSeriesNo = seriesNo;
-
-    //-----Checking if series number is valid
-    int maxSeries;
-    query  = "SELECT COUNT(*) FROM SERIES";
-    status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    while ((status = sqlite3_step(statement)) == SQLITE_ROW)
-    {
-        maxSeries = sqlite3_column_int(statement, 0);
-    }
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    sqlite3_finalize(statement);
-
-    if (fSeriesNo < 1 || fSeriesNo > maxSeries)
-    {
-        std::cerr << "##### Error in SFData::SetDetails()! Series number out of range!"
-                  << std::endl;
-        return false;
-    }
-    //-----
-
-    //----- Setting series attributes
-    ///- fiber type
-    ///- liber length [mm]
-    ///- radioactive source type
-    ///- test bench type
-    ///- collimator type
-    ///- SiPM type
-    ///- overvoltage [V]
-    ///- coupling type
-    ///- number of measurements in the series
-    ///- name of the measurement log file
-    ///- name of the temperature log file
-    ///- description of the series
-    ///- analysis group number
-    query  = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, "
-                 "COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION, ANALYSIS_GROUP FROM "
-                 "SERIES WHERE SERIES_ID = %i",
-                 fSeriesNo);
-    status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    while ((status = sqlite3_step(statement)) == SQLITE_ROW)
-    {
-        const unsigned char* fiber       = sqlite3_column_text(statement, 0);
-        const unsigned char* source      = sqlite3_column_text(statement, 2);
-        const unsigned char* test_bench  = sqlite3_column_text(statement, 3);
-        const unsigned char* collimator  = sqlite3_column_text(statement, 4);
-        const unsigned char* sipm        = sqlite3_column_text(statement, 5);
-        const unsigned char* coupling    = sqlite3_column_text(statement, 7);
-        const unsigned char* logfile     = sqlite3_column_text(statement, 9);
-        const unsigned char* tempfile    = sqlite3_column_text(statement, 10);
-        const unsigned char* description = sqlite3_column_text(statement, 11);
-        fNpoints                         = sqlite3_column_int(statement, 8);
-        fFiberLength                     = sqlite3_column_double(statement, 1);
-        fOvervoltage                     = sqlite3_column_double(statement, 6);
-        fFiber                           = std::string(reinterpret_cast<const char*>(fiber));
-        fSource                          = std::string(reinterpret_cast<const char*>(source));
-        fDesc                            = std::string(reinterpret_cast<const char*>(description));
-        fCollimator                      = std::string(reinterpret_cast<const char*>(collimator));
-        fTestBench                       = std::string(reinterpret_cast<const char*>(test_bench));
-        fSiPM                            = std::string(reinterpret_cast<const char*>(sipm));
-        fCoupling                        = std::string(reinterpret_cast<const char*>(coupling));
-        fLogFile                         = std::string(reinterpret_cast<const char*>(logfile));
-        fTempFile                        = std::string(reinterpret_cast<const char*>(tempfile));
-        fAnalysisGroup                   = sqlite3_column_int(statement, 12);
-    }
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    sqlite3_finalize(statement);
-    //-----
-
-    //----- Setting measurements attributes
-    ///- list of measurements names
-    ///- list of measurements duration times
-    ///- list of source positions
-    ///- list of measurements starting times
-    ///- list of measurements stopping times
-    ///- list of measurements IDs
-    query  = Form("SELECT MEASUREMENT_NAME, DURATION_TIME, SOURCE_POSITION, START_TIME, STOP_TIME, "
-                 "MEASUREMENT_ID FROM MEASUREMENT WHERE SERIES_ID = %i",
-                 fSeriesNo);
-    status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    while ((status = sqlite3_step(statement)) == SQLITE_ROW)
-    {
-        const unsigned char* name = sqlite3_column_text(statement, 0);
-        fNames.push_back(std::string(reinterpret_cast<const char*>(name)));
-        fTimes.push_back(sqlite3_column_int(statement, 1));
-        fPositions.push_back(sqlite3_column_double(statement, 2));
-        fStart.push_back(sqlite3_column_int(statement, 3));
-        fStop.push_back(sqlite3_column_int(statement, 4));
-        fMeasureID.push_back(sqlite3_column_int(statement, 5));
-    }
-
-    SFTools::CheckDBStatus(status, fDB);
-
-    sqlite3_finalize(statement);
-
-    return true;
 }
 //------------------------------------------------------------------
 /// Converts DDSignal object (DesktopDigitizer6-based signal) into 
@@ -267,12 +79,14 @@ SFSignal* SFData::ConvertSignal(SDDSignal* sig)
 bool SFData::OpenFiles(void)
 {
 
+    std::vector<TString> names = fInfo->GetNames();
+    int npoints = fInfo->GetNpoints();
     TString fname = "";
 
-    for (int i = 0; i < fNpoints; i++)
+    for (int i = 0; i < npoints; i++)
     {
-        fname = SFTools::FindData(fNames[i]);
-        fFiles.push_back(new TFile(fname + "/sifi_results.root", "READ"));
+        fname = std::string(gPath) + names[i] + "sifi_results.root";
+        fFiles.push_back(new TFile(fname, "READ"));
         if (!fFiles[i]->IsOpen())
         {
             std::cerr << "##### Error in SFData::OpenFiles()" << std::endl;
@@ -477,29 +291,7 @@ bool SFData::InterpretCut(SFSignal* sig, TString cut)
 
     return result;
 }
-//------------------------------------------------------------------
-/// Accesses ROOT file and returns tree containing registered data for
-/// the requested measurement.
-/// \param ID - measurement ID
-SLoop* SFData::GetTree(int ID)
-{
-
-    int         index = SFTools::GetIndex(fMeasureID, ID);
-    std::string fname = std::string(SFTools::FindData(fNames[index])) + "/sifi_results.root";
-
-    SLoop* loop = new SLoop();
-    loop->addFile(fname);
-    loop->setInput({});
-
-    if (loop == nullptr)
-    {
-        std::cerr << "#### Error in SFData::GetTree!" << std::endl;
-        std::cerr << "Requested tree doesn't exist!" << std::endl;
-        std::abort();
-    }
-
-    return loop;
-}
+/*
 //------------------------------------------------------------------
 /// Returns single spectrum of requested type.
 /// \param ch - chennel number
@@ -593,6 +385,7 @@ std::vector<TH1D*> SFData::GetCustomHistograms(SFSelectionType sel_type, TString
 
     std::vector<TH1D*> hists;
     for (int i = 0; i < fNpoints; i++)
+#pragma link C++ class SFData+;
     {
         hists.push_back(GetCustomHistogram(sel_type, cut, fMeasureID[i]));
     }
@@ -865,7 +658,8 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
 
     std::string fname = std::string(SFTools::FindData(fNames[index]));
     SLoop*      loop  = new SLoop();
-    loop->addFile(fname + "/sifi_results.root");
+    loop->addFile(fname + "/sifi_results.root"
+#pragma link C++ class SFData+;);
     loop->setInput({});
     SCategory* tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
 
@@ -912,9 +706,9 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
             SDDSignal*  sigR    = (SDDSignal*)samples->getSignalR();
             samples->getAddress(m, l, f);
 
-            /*TProfile**/  hptr = psig;
-            /*SDDSignal**/ sptr = nullptr;
-
+            /*TProfile**/ // hptr = psig;
+            /*SDDSignal**/ //sptr = nullptr;
+/*
             if (ch == 0 && m == 0)
             {
                 sptr = sigL;
@@ -949,7 +743,8 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
                     input.seekg(infile);
                     for (int ii = 1; ii < ipoints + 1; ii++)
                     {
-                        input.read(reinterpret_cast<char*>(&x), sizeof(float));
+                        input.read(reinterpret
+#pragma link C++ class SFData+;_cast<char*>(&x), sizeof(float));
                         if (bl)
                             hptr->Fill(ii, (x - baseline) / gmV);
                         else
@@ -981,7 +776,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
     input.close();
 
     return psig;
-}
+}*/
 //------------------------------------------------------------------
 /// This private function allows to access averaged signals recorded
 /// with the Aachen test bench. It opens ROOT file and TTree corresponding
@@ -992,6 +787,7 @@ TProfile* SFData::GetSignalAverageKrakow(int ch, int ID, TString cut, int number
 /// \param ID - measuement ID
 /// \param cut - logic cut to choose signals (syntax explained in InterpretCutt()
 /// \param number - number of signals to be averaged.
+/*
 TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number)
 {
 
@@ -1054,7 +850,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
     }
 
     return psig;
-}
+}*/
 //------------------------------------------------------------------
 /// Returns single raw signal.
 /// \param ch - channel number
@@ -1067,6 +863,7 @@ TProfile* SFData::GetSignalAverageAachen(int ch, int ID, TString cut, int number
 ///
 /// If no cut is required pass an empty string.
 /// This function calls separate methods to access binary files depending on the test bench type.
+/*
 TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl)
 {
 
@@ -1085,7 +882,7 @@ TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl)
     }
 
     return sig;
-}
+}*/
 //------------------------------------------------------------------
 /// This private function allows to access single raw signals recorded
 /// with the Krakow test bench. It opens binary file corresponding
@@ -1098,6 +895,7 @@ TH1D* SFData::GetSignal(int ch, int ID, TString cut, int number, bool bl)
 /// \param number - number of signals to be averaged
 /// \param bl - flag for base line subtraction - if true baseline will be
 /// subtracted, if false - it will not.
+/*
 TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
 {
 
@@ -1158,9 +956,9 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
             SDDSignal*  sigR    = (SDDSignal*)samples->getSignalR();
             samples->getAddress(m, l, f);
 
-            /*TH1**/       hptr = hsig;
-            /*SDDSignal**/ sptr = nullptr;
-
+            /*TH1**/       //hptr = hsig;
+            /*SDDSignal**/ //sptr = nullptr;
+/*
             if (ch == 0 && m == 0)
             {
                 sptr = sigL;
@@ -1208,7 +1006,7 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
     input.close();
 
     return hsig;
-}
+}*/
 //------------------------------------------------------------------
 /// This private function allows to access raw signals recorded
 /// with the Aachen test bench. It opens ROOT file and TTree corresponding
@@ -1220,6 +1018,7 @@ TH1D* SFData::GetSignalKrakow(int ch, int ID, TString cut, int number, bool bl)
 /// \param ID - measurement ID
 /// \param cut - logic cut to choose signals. Syntax of this cut is explained in InterpretCut()
 /// function \param number - requested number of the signal to be drawn.
+/*
 TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number)
 {
 
@@ -1267,33 +1066,5 @@ TH1D* SFData::GetSignalAachen(int ch, int ID, TString cut, int number)
     }
 
     return hsig;
-}
-//------------------------------------------------------------------
-/// Prints details of currently analyzed experimental series.
-void SFData::Print(void)
-{
-    std::cout << "\n\n------------------------------------------------" << std::endl;
-    std::cout << "This is Print() for SFData class object" << std::endl;
-    std::cout << "Number of the experimental series: " << fSeriesNo << std::endl;
-    std::cout << fDesc << std::endl;
-    std::cout << "Collimator: " << fCollimator << std::endl;
-    std::cout << "Test bench: " << fTestBench << std::endl;
-    std::cout << "Number of measurements in this series: " << fNpoints << std::endl;
-    std::cout << "Fiber: " << fFiber << std::endl;
-    std::cout << "Fiber length: " << fFiberLength << " mm" << std::endl;
-    std::cout << "Coupling: " << fCoupling << std::endl;
-    std::cout << "Radioactive source: " << fSource << std::endl;
-    std::cout << "SiPM: " << fSiPM << std::endl;
-    std::cout << "Overvoltage: " << fOvervoltage << " V" << std::endl;
-    std::cout << "Temperature logfile: " << fTempFile << std::endl;
-    std::cout << "List of measurements in this series:" << std::endl;
-    for (int i = 0; i < fNpoints; i++)
-    {
-        std::cout << std::setw(30);
-        std::cout << fNames[i] << "\t\t" << Form("%.1f mm", fPositions[i]) << "\t\t"
-                  << Form("%i s", fTimes[i]) << "\t\t" << fStart[i] << "\t\t" << fStop[i] << "\t\t"
-                  << fMeasureID[i] << std::endl;
-    }
-    std::cout << "\n" << std::endl;
-}
+}*/
 //------------------------------------------------------------------

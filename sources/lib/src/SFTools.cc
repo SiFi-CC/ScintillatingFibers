@@ -742,47 +742,6 @@ std::vector<double> SFTools::GetFWHM(TH1D* h)
     return FWHM;
 }
 //------------------------------------------------------------------
-/// Checks whether experimental data exists and returns full path to 
-/// the ROOT files.
-/// \param directory - name of the measurement/containing directory 
-TString SFTools::FindData(TString directory)
-{
-
-    TString path_1 = std::string(getenv("SFDATA")) + directory;
-    //std::ifstream input_1(path_1 + "/wave_0.dat", std::ios::binary);
-
-    //if (input_1.good())
-    //{
-    //    input_1.close();
-    //    return path_1;
-    //}
-
-    if(! gSystem->AccessPathName(path_1 + "/sifi_results.root"))
-    {
-        return path_1;
-    }
-
-    /* use this path if needed for tests
-    TString path_2 = "/home/kasia/data/" + directory;
-    std::ifstream input_2(path_2 + "wave_0.dat", std::ios::binary);
-
-    if(input_2.good())
-    {
-        input_2.close();
-        return path_2;
-    }
-
-    if(! gSystem->AccessPathName(path_2 + "/sifi_results.root"))
-    {
-        return path_2;
-    }
-    */
-
-    std::cerr << "##### Error in SFTools::FindData()! Requested file doesn't exist!" << std::endl;
-    std::cerr << "##### File path: " << path_1 << std::endl;
-    std::abort();
-}
-//------------------------------------------------------------------
 /// Fits single gaussian function to the given histogram.
 /// \param h - histogram
 /// \param range_in_RMS - fitting range given in number of RMS i.e.

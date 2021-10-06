@@ -10,8 +10,6 @@
 
 #include "SFResults.hh"
 
-ClassImp(SFResults);
-
 //------------------------------------------------------------------
 /// Table storing names of SFResultTypeNum enumerators.
 TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeakFinder
@@ -21,7 +19,7 @@ TString gEnumNamesNum[] = {"kPeakConst", "kPeakPosition", "kPeakSigma", //SFPeak
                            "kEnergyRes", //SFEnergyRes
                            "kLight", //SFLightOutput
                            "kTimeRes", //SFTimingRes
-                           "kPositionRes", //SFPositionRes
+                           "kPositionRes", "kPositionReco", //SFPositionRes
                            "kFastDecay", "kSlowDecay", "kIFast", "kISlow", //SFTimeConst
                            "kS0", "kEtaR", "kEtaL", "kKsi", "kLength", //SFAttenuationModel
                            "kAlpha", //SFEnergyreco
@@ -37,7 +35,7 @@ TString gEnumNamesObj[] = {"kSpectrum", "kPeak", //SFPeakFinder
                            "kLightGraph", //SFLightOutput
                            "kTimeResGraph", "kTimeSigGraph", //SFTimingRes
                            "kPosRecoVsPosGraph", "kPosResVsPosGraph", "kPosVsMLRGraph", //SFPositionRes
-                           "kResidualGraph", "kPositionAllHist",
+                           "kResidualGraph", "kPositionDist",
                            "kPlFun", "kPrFun", "kRlFun", "kRrFun", "kSlFun", "kSrFun", //SFAttenuationModel
                            "kPlRecoFun", "kPrRecoFun", "kSlVsPosGraph", "kSrVsPosGraph",
                            "kPlVsPosGraph", "kPrVsPosGraph", 
@@ -242,10 +240,10 @@ void SFResults::Print(void)
     
     std::cout << "\nObjects: " << std::endl;
     
-    for(std::map <SFResultTypeObj, TObject*>::iterator i = fObjects.begin(); i != fObjects.end() ; ++i)
+    for (const auto& [key, value] : fObjects)
     {
-        std::cout << EnumToString(i->first) << ": ";
-        i->second->Print();
+        std::cout << EnumToString(key) << ": ";
+        value->Print();
         std::cout << std::endl;
     }
     
