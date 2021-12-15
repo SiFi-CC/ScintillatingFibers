@@ -26,7 +26,6 @@ const double        ampMax = 660;              // maximal valid amplitude in the
 /// number should be set via SetDetails(int seriesNo) function.
 SFData::SFData() : fSeriesNo(-1),
                    fNpoints(-1),
-                   fAnalysisGroup(-1),
                    fFiber("dummy"),
                    fFiberLength(-1),
                    fSource("dummy"),
@@ -36,7 +35,8 @@ SFData::SFData() : fSeriesNo(-1),
                    fSiPM("dummy"),
                    fOvervoltage(-1),
                    fCoupling("dummy"),
-                   fTempFile("dummy")
+                   fTempFile("dummy"),
+                   fDAQ("dummy")
 {
 
     std::cout << "##### Warning in SFData constructor!" << std::endl;
@@ -48,7 +48,6 @@ SFData::SFData() : fSeriesNo(-1),
 /// \param seriesNo is number of experimental series to analyze.
 SFData::SFData(int seriesNo) : fSeriesNo(seriesNo),
                                fNpoints(-1),
-                               fAnalysisGroup(-1),
                                fFiber("dummy"),
                                fFiberLength(-1),
                                fSource("dummy"),
@@ -58,7 +57,8 @@ SFData::SFData(int seriesNo) : fSeriesNo(seriesNo),
                                fSiPM("dummy"),
                                fOvervoltage(-1),
                                fCoupling("dummy"),
-                               fTempFile("dummy")
+                               fTempFile("dummy"),
+                               fDAQ("dummy")
 {
 
     bool db_stat  = OpenDataBase("ScintFib_2.db");
@@ -152,9 +152,9 @@ bool SFData::SetDetails(int seriesNo)
     ///- name of the measurement log file
     ///- name of the temperature log file
     ///- description of the series
-    ///- analysis group number
+    ///- daq
     query  = Form("SELECT FIBER, FIBER_LENGTH, SOURCE, TEST_BENCH, COLLIMATOR, SIPM, OVERVOLTAGE, "
-                 "COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION, ANALYSIS_GROUP FROM "
+                 "COUPLING, NO_MEASUREMENTS, LOG_FILE, TEMP_FILE, DESCRIPTION, DAQ FROM "
                  "SERIES WHERE SERIES_ID = %i",
                  fSeriesNo);
     status = sqlite3_prepare_v2(fDB, query, -1, &statement, nullptr);
@@ -172,6 +172,7 @@ bool SFData::SetDetails(int seriesNo)
         const unsigned char* logfile     = sqlite3_column_text(statement, 9);
         const unsigned char* tempfile    = sqlite3_column_text(statement, 10);
         const unsigned char* description = sqlite3_column_text(statement, 11);
+        const unsigned char* daq         = sqlite3_column_text(statement, 12);
         fNpoints                         = sqlite3_column_int(statement, 8);
         fFiberLength                     = sqlite3_column_double(statement, 1);
         fOvervoltage                     = sqlite3_column_double(statement, 6);
@@ -184,7 +185,7 @@ bool SFData::SetDetails(int seriesNo)
         fCoupling                        = std::string(reinterpret_cast<const char*>(coupling));
         fLogFile                         = std::string(reinterpret_cast<const char*>(logfile));
         fTempFile                        = std::string(reinterpret_cast<const char*>(tempfile));
-        fAnalysisGroup                   = sqlite3_column_int(statement, 12);
+        fDAQ                             = std::string(reinterpret_cast<const char*>(daq));
     }
 
     SFTools::CheckDBStatus(status, fDB);
@@ -706,17 +707,17 @@ TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
     TString hname = Form("S%i_pos%.1f_ID%i_PE%ivsPE2Correlation", fSeriesNo, position, ID, ch);
     TH2D*   htemp = new TH2D(hname, hname, 1000, -100, 15E4, 2200, -150, 1500);
 
-    SLoop* loop = new SLoop();
-    loop->addFile(fname);
-    loop->setInput({});
+    SLoop loop;
+    loop.addFile(fname);
+    loop.setInput({});
     SCategory* tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
 
-    int n = loop->getEntries();
+    int n = loop.getEntries();
 
     for (int i = 0; i < n; ++i)
     {
 
-        loop->nextEvent();
+        loop.nextEvent();
         size_t tentries = tSig->getEntries();
 
         uint coinc = 0;
@@ -790,7 +791,6 @@ TH2D* SFData::GetRefCorrHistogram(int ID, int ch)
         }
     }
 
-    delete loop;
     return htemp;
 }
 //------------------------------------------------------------------
@@ -1286,6 +1286,7 @@ void SFData::Print(void)
     std::cout << "SiPM: " << fSiPM << std::endl;
     std::cout << "Overvoltage: " << fOvervoltage << " V" << std::endl;
     std::cout << "Temperature logfile: " << fTempFile << std::endl;
+    std::cout << "DAQ: " << fDAQ << std::endl;
     std::cout << "List of measurements in this series:" << std::endl;
     for (int i = 0; i < fNpoints; i++)
     {

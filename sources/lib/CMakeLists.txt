@@ -2,7 +2,9 @@ file(GLOB sources src/*.cc)
 file(GLOB headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/include include/*.hh)
 file(GLOB _headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} include/*.hh)
 
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include ${DESKTOPDIGITIZER6_INCLUDE_DIR})
+
+link_directories(${CMDLINEARGS_LIBRARY_DIR})
 
 ROOT_GENERATE_DICTIONARY(G__ScintillatingFibers ${headers} LINKDEF LinkDef.h)
 

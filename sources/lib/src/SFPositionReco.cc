@@ -412,22 +412,22 @@ bool SFPositionReco::PositionReco(void)
                     double t0Ch1 = samples->getSignalR()->GetT0();
                     double peCh0  = samples->getSignalL()->GetPE();
                     double peCh1  = samples->getSignalR()->GetPE();
-                    double blCh0  = samples->getSignalL()->GetBLSigma();
-                    double blCh1  = samples->getSignalR()->GetBLSigma();
+                    //double blCh0  = samples->getSignalL()->GetBLSigma();
+                    //double blCh1  = samples->getSignalR()->GetBLSigma();
                     double totCh0 = samples->getSignalL()->GetTOT();
                     double totCh1 = samples->getSignalR()->GetTOT();
                     double ampCh0 = samples->getSignalL()->GetAmplitude();
                     double ampCh1 = samples->getSignalR()->GetAmplitude();
-                    bool   vetoCh0 = samples->getSignalL()->GetVeto();
-                    bool   vetoCh1 = samples->getSignalR()->GetVeto();
+                    //bool   vetoCh0 = samples->getSignalL()->GetVeto();
+                    //bool   vetoCh1 = samples->getSignalR()->GetVeto();
                     
                     if (t0Ch0 > 0 && t0Ch1 > 0 &&
                         totCh0 > 0 && totCh1 > 0 &&
-                        blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
+                        //blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
                         ampCh0 < ampMax && ampCh1 < ampMax &&
                         sqrt(peCh0 * peCh1) > xmin &&
-                        sqrt(peCh0 * peCh1) < xmax &&
-                        vetoCh0 == 0 && vetoCh1 == 0)
+                        sqrt(peCh0 * peCh1) < xmax)// &&
+                        //vetoCh0 == 0 && vetoCh1 == 0)
                     {
                         parsForErrors[5] = peCh0;
                         parsForErrors[6] = peCh1;

@@ -87,7 +87,6 @@ class SFData : public TObject
   private:
     int      fSeriesNo;      ///< Experimental series number
     int      fNpoints;       ///< Number of measurements in the series
-    int      fAnalysisGroup; ///< Analysis group
     TString  fFiber;         ///< Scintillating fiber type e.g. LuAG:Ce Crytur (1)
     double   fFiberLength;   ///< Length of the scintillating fiber [mm]
     TString  fSource;        ///< Type of the radioactive source
@@ -99,6 +98,7 @@ class SFData : public TObject
     TString  fCoupling;      ///< Coupling type: silicone gel/silicone pads
     TString  fLogFile;       ///< Name of measurment log file
     TString  fTempFile;      ///< Name of temperature log file
+    TString  fDAQ;           ///< DAQ
     sqlite3* fDB;            ///< SQLite3 data base
 
     std::vector<TFile*>  fFiles;     ///< Vector containing ROOT files with experimental data
@@ -147,8 +147,6 @@ class SFData : public TObject
 
     /// Returns number of measurements in the series.
     int GetNpoints(void) { return fNpoints; };
-    /// Returns analysis group number.
-    int GetAnalysisGroup(void) { return fAnalysisGroup; };
     /// Returns fiber type.
     TString GetFiber(void) { return fFiber; };
     /// Returns length of the fiber [mm]
@@ -171,6 +169,8 @@ class SFData : public TObject
     TString GetLogFile(void) { return fLogFile; };
     /// Returns name of the temperature log file.
     TString GetTempFile(void) { return fTempFile; };
+    /// Returns analysis group number.
+    TString GetDAQ(void) { return fDAQ; };
     /// Returns a vector containing names of all measurements in the series.
     std::vector<TString> GetNames(void) { return fNames; };
     /// Returns a vector containing source positions for all measurements in the series.

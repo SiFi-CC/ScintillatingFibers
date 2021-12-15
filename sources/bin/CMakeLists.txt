@@ -1,3 +1,6 @@
+include_directories(${DESKTOPDIGITIZER6_INCLUDE_DIR} ${CMDLINEARGS_INCLUDE_DIR})
+link_directories(${CMDLINEARGS_LIBRARY_DIR})
+
 add_executable(data data.cc)
 target_link_libraries(data ${FITTERFACTORY_LIBRARIES} ScintillatingFibers MultiDimensionalFactory SmartFactory jsoncpp RootTools SiFi Fibers)
 

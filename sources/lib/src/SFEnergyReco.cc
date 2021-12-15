@@ -373,10 +373,10 @@ bool SFEnergyReco::EnergyRecoByEvent(void)
                     
                     if (t0Ch0 > 0 && t0Ch1 > 0 &&
                         totCh0 > 0 && totCh1 > 0 &&
-                        blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
+                        //blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
                         ampCh0 < ampMax && ampCh1 < ampMax &&
-                        peCh0 > 0 && peCh1 > 0 &&
-                        vetoCh0 == 0 && vetoCh1 == 0)
+                        peCh0 > 0 && peCh1 > 0)// &&
+                        //vetoCh0 == 0 && vetoCh1 == 0)
                     {
                         double e_reco = alpha * sqrt(peCh0 * peCh1);
                         

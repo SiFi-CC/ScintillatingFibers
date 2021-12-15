@@ -385,11 +385,11 @@ bool SFPeakFinder::FindPeakFit(void)
     HistFitParams histFP;
     FitterFactory::FIND_FLAGS fl = fitter.findParams(fSpectrum->GetName(), histFP);
     printf("fl = %d for %s\n", fl, fSpectrum->GetName());
-    fitter.fit(histFP, fSpectrum);
+    auto res = fitter.fit(histFP, fSpectrum);
+    printf("fit result res = %d\n", res);
     fitter.updateParams(fSpectrum, histFP);
     fitter.exportFactoryToFile();
     fFittedFun = (TF1*)histFP.funSum->Clone();
-    //fFittedFun->Print();
 
     if (fFittedFun == nullptr)
     {
@@ -399,6 +399,13 @@ bool SFPeakFinder::FindPeakFit(void)
     }
 
     TF1 *tmpfun = fSpectrum->GetFunction(fFittedFun->GetName());
+
+    if (!tmpfun) {
+        std::cerr << "##### Error in SFPeakFinder::FindPeak()! tmpfun is null pointer"
+                  << std::endl;
+        std::abort();
+    }
+
     double chi2NDF = tmpfun->GetChisquare() / tmpfun->GetNDF();
     
     fResults->AddResult(SFResultTypeNum::kPeakConst, fFittedFun->GetParameter(0),

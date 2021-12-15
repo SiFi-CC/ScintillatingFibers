@@ -546,7 +546,7 @@ int main(int argc, char** argv)
         file->cd(dirName);
         
         for (auto h : hBLCh0)
-            delete h;
+            h->Write();
         
         for (auto h : hBLCh1)
             h->Write();
@@ -815,7 +815,7 @@ int main(int argc, char** argv)
     }
 
     /*********/ //----- Reference channel spectra -----//
-    
+  
     if (collimator.Contains("Electronic"))
     {
         /*********/
@@ -1033,9 +1033,9 @@ int main(int argc, char** argv)
             delete h;
         
         delete can_sig;
-        
+       
         /*********/
-        
+    
         const int              nsigav = 3;
         std::vector<TProfile*> hSigAvCh0(nsigav);
         std::vector<TProfile*> hSigAvCh1(nsigav);
