@@ -200,7 +200,7 @@ double SFAttenuationModel::CalculateUncertainty(std::vector<double> params, TStr
         double sigma_fSL = Multiply(derivativesL, fCovMatrix);
 
         double dPLdSL = (exp(2 * params[4] / params[0])) /
-                        (exp(2 * params[5] / params[0]) -
+                        (exp(2 * params[4] / params[0]) -
                         params[1] * params[2]);
         double dPLdSR = (exp(params[4] / params[0]) *
                         params[1]) / (params[3] *
@@ -306,15 +306,22 @@ bool SFAttenuationModel::FitModel(void)
     ROOT::Fit::Fitter fitter;
 
     const int npar       = 6;
-    double    par0[npar] = {500, 150, 0.5, 0.5, 1, fiberLen};
+//     double    par0[npar] = {500, 150, 0.5, 0.5, 1, fiberLen};
+    double    par0[npar] = {100, 350, 0.5, 0.5, 0.5, fiberLen};
 
     fitter.Config().SetParamsSettings(npar, par0);
 
-    fitter.Config().ParSettings(0).SetLimits(0, 1E6);
+    fitter.Config().ParSettings(0).SetLimits(0, 1E6); //par limits for series 1-262
     fitter.Config().ParSettings(1).SetLimits(0, 1E4);
     fitter.Config().ParSettings(2).SetLimits(-1, 3);
     fitter.Config().ParSettings(3).SetLimits(-1, 3);
     fitter.Config().ParSettings(4).SetLimits(0, 5);
+    
+//     fitter.Config().ParSettings(0).SetLimits(0, 1E10); //par limits for series 263
+//     fitter.Config().ParSettings(1).SetLimits(0, 1E4);
+//     fitter.Config().ParSettings(2).SetLimits(-1, 10);
+//     fitter.Config().ParSettings(3).SetLimits(-1, 10);
+//     fitter.Config().ParSettings(4).SetLimits(0, 5);
     fitter.Config().ParSettings(5).Fix();
 
     fitter.Config().ParSettings(0).SetName("S0");

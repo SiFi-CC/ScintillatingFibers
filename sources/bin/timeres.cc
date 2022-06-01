@@ -230,8 +230,10 @@ int main(int argc, char** argv)
                 parNo = 4;
             mean  = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo);
             sigma = ratio[i]->GetFunction("fDGauss")->GetParameter(parNo + 1);
-            line.DrawLine(mean - 0.5 * sigma, 0, mean - 0.5 * sigma, max);
-            line.DrawLine(mean + 0.5 * sigma, 0, mean + 0.5 * sigma, max);
+//             line.DrawLine(mean - 0.5 * sigma, 0, mean - 0.5 * sigma, max); // lead collimator + Hamamatsu SiPMs, 1x1 mm fibers (Jan 2018)
+//             line.DrawLine(mean + 0.5 * sigma, 0, mean + 0.5 * sigma, max);
+            line.DrawLine(mean - 2 * sigma, 0, mean - 2 * sigma, max); // lead collimator + Hamamatsu SiPMs, 2x3 mm fibers (March 2018)
+            line.DrawLine(mean + 2 * sigma, 0, mean + 2 * sigma, max);
             fRthin->FixParameter(0, ratio[i]->GetFunction("fDGauss")->GetParameter(0));
             fRthin->FixParameter(1, ratio[i]->GetFunction("fDGauss")->GetParameter(1));
             fRthin->FixParameter(2, ratio[i]->GetFunction("fDGauss")->GetParameter(2));

@@ -349,8 +349,10 @@ bool SFPeakFinder::FindPeakRange(double& min, double& max)
 
     if (type == "Lead")
     {
-        min = pos - sig;
-        max = pos + 1.5 * sig;
+//         min = pos - sig; // lead colimator + Hamamatsu SiPMs, 1x1 fibers (Jan 2018) 
+//         max = pos + 1.5 * sig;
+        min = pos - 2*sig; // lead colimator + Hamamatsu SiPMs, 2x3 fiber (March 2022)
+        max = pos + 2*sig; 
     }
     else if (type == "Electronic")
     {

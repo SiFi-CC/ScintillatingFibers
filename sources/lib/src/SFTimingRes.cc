@@ -169,8 +169,10 @@ bool SFTimingRes::AnalyzeNoECut(void)
             // log(sqrt(ch_1.fPE/ch_0.fPE))<%f", mean-0.5*sigma, mean+0.5*sigma);
             
             std::vector<double> customNum = {s, s, 15, 15, 
-                                             mean - 0.5 * sigma, 
-                                             mean + 0.5 * sigma};
+                                             /*mean - 0.5 * sigma, // lead collimator + Hamamatsu SiPMs, 1x1 mm fibers (Jan 2018)
+                                             mean + 0.5 * sigma*/
+                                             mean - 2*sigma, // lead collimator + Hamamatsu SiPMs, 2x3 mm fiber (March 2022)
+                                             mean + 2*sigma};
             cut = SFDrawCommands::GetCut(SFCutType::kT0Diff, customNum);
             fT0Diff.push_back(fData->GetCustomHistogram(SFSelectionType::kT0Difference,
                                                         cut, measIDs[i]));
@@ -448,8 +450,11 @@ bool SFTimingRes::AnalyzeWithECut(void)
                                              center_ch0 + delta_ch0,
                                              center_ch1 - delta_ch1,
                                              center_ch1 + delta_ch1,
-                                             mean_ratio - 0.5 * sigma_ratio,
-                                             mean_ratio + 0.5 * sigma_ratio};
+                                             /*mean_ratio - 0.5 * sigma_ratio, // lead collimator + Hamamatsu SiPMs, 1x1 mm fibers (Jan 2018)
+                                             mean_ratio + 0.5 * sigma_ratio*/
+                                             mean_ratio - 2 * sigma_ratio, // lead collimator + Hamamatsu SiPMs, 2x3 mm fibers (March 2018)
+                                             mean_ratio + 2 * sigma_ratio}; 
+     
             cut = SFDrawCommands::GetCut(SFCutType::kT0DiffECut, customNum);
         }
         else if (collimator.Contains("Electronic") && sipm.Contains("Hamamatsu"))

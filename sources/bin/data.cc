@@ -508,13 +508,13 @@ int main(int argc, char** argv)
         std::vector<TH1D*> hBLCh2 = data->GetSpectra(2, SFSelectionType::kBL, cutBLCh2);
 
         TCanvas* can_bl_ch0 = new TCanvas("data_bl_ch0", "can_bl_ch0", 2000, 1200);
-        can_bl_ch0->Divide(npoints);
+        can_bl_ch0->DivideSquare(npoints);
         
         TCanvas* can_bl_ch1 = new TCanvas("data_bl_ch1", "can_bl_ch1", 2000, 1200);
-        can_bl_ch1->Divide(npoints);
+        can_bl_ch1->DivideSquare(npoints);
         
         TCanvas* can_bl_ch2 = new TCanvas("data_bl_ch2", "can_bl_ch2", 2000, 1200);
-        can_bl_ch2->Divide(npoints);
+        can_bl_ch2->DivideSquare(npoints);
 
         for (int i = 0; i < npoints; i++)
         {
@@ -577,13 +577,13 @@ int main(int argc, char** argv)
         std::vector<TH1D*> hBLSigmaCh2 = data->GetSpectra(2, SFSelectionType::kBLSigma, cutBLCh2);
 
         TCanvas* can_bls_ch0 = new TCanvas("data_bls_ch0", "data_bls_ch0", 2000, 1200);
-        can_bls_ch0->Divide(npoints);
+        can_bls_ch0->DivideSquare(npoints);
 
         TCanvas* can_bls_ch1 = new TCanvas("data_bls_ch1", "data_bls_ch1", 2000, 1200);
-        can_bls_ch1->Divide(npoints);
+        can_bls_ch1->DivideSquare(npoints);
 
         TCanvas* can_bls_ch2 = new TCanvas("data_bls_ch2", "data_bls_ch2", 2000, 1200);
-        can_bls_ch2->Divide(npoints);
+        can_bls_ch2->DivideSquare(npoints);
 
         for (int i = 0; i < npoints; i++)
         {

@@ -191,6 +191,7 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique, int 
     {
         case SFSelectionType::kPE:
             selectionString = Form("SDDSamples.data.signal_%c.fPE>>htemp%i(2200, -150, 1500)", side, unique);
+//             selectionString = Form("SDDSamples.data.signal_%c.fPE>>htemp%i(2500, -150, 6E4)", side, unique);
             break;
         case SFSelectionType::kCharge:
             selectionString = Form("SDDSamples.data.signal_%c.fCharge>>htemp%i(1000, -1E4, 2.5E5)", side, unique);
@@ -261,7 +262,9 @@ TString SFDrawCommands::GetSelection(SFSelectionType selection, int unique,
             break;
         case SFSelectionType::kPEAverage:
             selectionString = Form("sqrt(SDDSamples.data.signal_l.fPE*SDDSamples.data.signal_r.fPE)>>"
-                                   "htemp%i(1350, -150, 1200)", unique);
+                                   "htemp%i(1350, -150, 1200)", unique); 
+//             selectionString = Form("sqrt(SDDSamples.data.signal_l.fPE*SDDSamples.data.signal_r.fPE)>>"
+//                                    "htemp%i(2500, -150, 6E4)", unique);
             break;
         case SFSelectionType::kAmplitudeAverage:
             selectionString = Form("sqrt(SDDSamples.data.signal_l.fAmp*SDDSamples.data.signal_r.fAmp)>>"
