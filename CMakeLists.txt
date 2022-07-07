@@ -17,7 +17,7 @@ find_package(ROOT REQUIRED COMPONENTS Core Spectrum)
 find_package(CmdLineArgs 2.0.0 REQUIRED)
 find_package(FitterFactory)
 find_package(SiFi)
-find_package(DesktopDigitizer6)
+find_package(DesktopDigitizer6 REQUIRED)
 
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
@@ -26,6 +26,7 @@ include_directories(BEFORE sources/lib/include)
 
 link_directories(${SIFI_LIBRARY_DIR})
 link_directories(${FITTERFACTORY_LIBRARY_DIR})
+link_directories(${DESKTOPDIGITIZER6_LIBRARY_DIR})
 
 set(DEF_CMAKE_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR})

@@ -9,7 +9,7 @@ link_directories(${CMDLINEARGS_LIBRARY_DIR})
 ROOT_GENERATE_DICTIONARY(G__ScintillatingFibers ${headers} LINKDEF LinkDef.h)
 
 add_library(ScintillatingFibers SHARED ${sources} G__ScintillatingFibers.cxx)
-target_link_libraries(ScintillatingFibers DesktopDigitizer6 SiFi Fibers sqlite3 ${ROOT_LIBRARIES} CmdLineArgs ${FITTERFACTORY_LIBRARIES})
+target_link_libraries(ScintillatingFibers DesktopDigitizer6 SiFi Fibers sqlite3 ROOT::Core ROOT::Gpad SiFi::CmdLineArgs RT::FitterFactory)
 
 set_target_properties(ScintillatingFibers PROPERTIES
 	VERSION ${PROJECT_VERSION}

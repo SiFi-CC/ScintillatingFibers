@@ -384,14 +384,13 @@ bool SFPeakFinder::FindPeakFit(void)
     FitterFactory fitter;
     fitter.initFactoryFromFile((data_path + "/fitconfig.txt").Data(),
                                (data_path + "/fitparams.out").Data());
-    HistFitParams histFP;
-    FitterFactory::FIND_FLAGS fl = fitter.findParams(fSpectrum->GetName(), histFP);
-    printf("fl = %d for %s\n", fl, fSpectrum->GetName());
+    HistogramFitParams *histFP = fitter.findParams(fSpectrum->GetName());
+//     printf("fl = %d for %s\n", fl, fSpectrum->GetName());
     auto res = fitter.fit(histFP, fSpectrum);
     printf("fit result res = %d\n", res);
-    fitter.updateParams(fSpectrum, histFP);
+//     fitter.updateParams(fSpectrum, histFP);
     fitter.exportFactoryToFile();
-    fFittedFun = (TF1*)histFP.funSum->Clone();
+    fFittedFun = (TF1*)histFP->function_sum.Clone();
 
     if (fFittedFun == nullptr)
     {

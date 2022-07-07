@@ -12,6 +12,7 @@
 #include "SFEnergyReco.hh"
 #include "common_options.h"
 
+#include <TPave.h>
 #include <TCanvas.h>
 #include <TLatex.h>
 #include <TLegend.h>
