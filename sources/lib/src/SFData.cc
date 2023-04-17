@@ -86,6 +86,7 @@ bool SFData::OpenFiles(void)
     for (int i = 0; i < npoints; i++)
     {
         fname = std::string(gPath) + names[i] + "sifi_results.root";
+        std::cout << fname << std::endl;
         fFiles.push_back(new TFile(fname, "READ"));
         if (!fFiles[i]->IsOpen())
         {

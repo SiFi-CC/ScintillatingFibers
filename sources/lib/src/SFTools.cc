@@ -9,7 +9,7 @@
 // *****************************************
 
 #include "SFTools.hh"
-
+/*
 //------------------------------------------------------------------
 /// Returns index of given measurement. Index is found based on measurement
 /// ID. The same index applies to vectors containing all series parameters
@@ -295,6 +295,7 @@ double SFTools::GetSigmaBL(TString SiPM)
 
     return sigBL;
 }
+*/
 //------------------------------------------------------------------
 /// Checks status of given data base.
 /// \param status - status code returned by sqlite3 method
@@ -308,7 +309,6 @@ bool SFTools::CheckDBStatus(int status, sqlite3* database)
     {
         std::cerr << "##### SQL Error in SFTools::CheckDBStatus: " << sqlite3_errmsg(database)
                   << std::endl;
-        // std::abort();
         stat = false;
     }
 
@@ -432,13 +432,13 @@ bool SFTools::CreateTable(TString database, TString table)
 
     if (table == "DATA")
     {
-        query = "CREATE TABLE 'DATA' ('SERIES_ID' INTEGER PLRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+        query = "CREATE TABLE 'DATA' ('SERIES_ID' TEXT PLRIMARY_KEY, 'RESULTS_FILE' TEXT, "
                 "'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "ATTENUATION_LENGTH")
     {
         query =
-            "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+            "CREATE TABLE 'ATTENUATION_LENGTH' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
             "TEXT, 'ATT_CH0' NUMERIC, 'ATT_CH0_ERR' NUMERIC, 'CHI2NDF_CH0' NUMERIC, 'ATT_CH1' NUMERIC, "
             "'ATT_CH1_ERR' NUMERIC, 'CHI2NDF_CH1' NUMERIC, 'ATT_COMB' NUMERIC, 'ATT_COMB_ERR' NUMERIC, "
             "'CHI2NDF_COMB' NUMERIC, 'ATT_COMB_POL3' NUMERIC, 'ATT_COMB_POL3_ERR' NUMERIC, "
@@ -447,14 +447,14 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "ENERGY_RESOLUTION")
     {
-        query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' INTIGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'ENERGY_RESOLUTION' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'ENRES_AV' NUMERIC, 'ENRES_AV_ERR' NUMERIC, 'ENRES_CH0' NUMERIC, "
                 "'ENRES_CH0_ERR' NUMERIC, 'ENRES_CH1' NUMERIC, 'ENRES_CH1_ERR' NUMERIC, 'DATE' "
                 "INTEGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "LIGHT_OUTPUT")
     {
-        query = "CREATE TABLE 'LIGHT_OUTPUT' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'LIGHT_OUTPUT' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'LOUT' NUMERIC, 'LOUT_ERR' NUMERIC, 'LOUT_CH0' NUMERIC, 'LOUT_CH0_ERR' "
                 "NUMERIC, 'LOUT_CH1' NUMERIC, 'LOUT_CH1_ERR' NUMERIC, 'LCOL' NUMERIC, 'LCOL_ERR' "
                 "NUMERIC, 'LCOL_CH0' NUMERIC, 'LCOL_CH0_ERR' NUMERIC, 'LCOL_CH1' NUMERIC, "
@@ -462,20 +462,20 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "TIMING_RESOLUTION")
     {
-        query = "CREATE TABLE 'TIMING_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'TIMING_RESOLUTION' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'TIMERES' NUMERIC, 'TIMERES_ERR' NUMERIC, 'TIMERES_ECUT' NUMERIC, "
                 "'TIMERES_ECUT_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "TIME_CONSTANTS")
     {
         query =
-            "CREATE TABLE 'TIME_CONSTANTS' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+            "CREATE TABLE 'TIME_CONSTANTS' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
             "'FAST_DEC' NUMERIC, 'FAST_DEC_ERR' NUMERIC, 'SLOW_DEC' NUMERIC, 'SLOW_DEC_ERR' "
             "NUMERIC, 'IFAST' NUMERIC, 'ISLOW' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "TEMPERATURE")
     {
-        query = "CREATE TABLE 'TEMPERATURE' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+        query = "CREATE TABLE 'TEMPERATURE' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
                 "'OUT_ID' TEXT, 'OUT_TEMP' NUMERIC, 'OUT_ERR' NUMERIC, 'REF_ID' TEXT, 'REF_TEMP' "
                 "NUMERIC, 'REF_ERR' NUMERIC, 'CH0_ID' TEXT, 'CH0_TEMP' NUMERIC, 'CH0_ERR' NUMERIC, "
                 "'CH1_ID' TEXT, 'CH1_TEMP' NUMERIC, 'CH1_ERR' NUMERIC, 'DATE' INTIGER, PRIMARY KEY "
@@ -483,7 +483,7 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "POSITION_RESOLUTION")
     {
-        query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' INTEGER PRIMARY_KEY, "
+        query = "CREATE TABLE 'POSITION_RESOLUTION' ('SERIES_ID' TEXT PRIMARY_KEY, "
                 "'RESULTS_FILE' TEXT, 'POSITION_RES_POL3' NUMERIC, 'POSITION_RES_POL3_ERR' NUMERIC, "
                 "'POSITION_RES_POL3_ALL' NUMERIC, 'POSITION_RES_POL3_ALL_ERR' NUMERIC, "
                 "'POSITION_RES_POL1' NUMERIC, 'POSITION_RES_POL1_ERR' NUMERIC, 'POSITION_RES_POL1_ALL' "
@@ -491,25 +491,25 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "PEAK_FINDER")
     {
-        query = "CREATE TABLE 'PEAK_FINDER' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+        query = "CREATE TABLE 'PEAK_FINDER' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
                 "'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "STABILITY_MON")
     {
-        query = "CREATE TABLE 'STABILITY_MON' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'STABILITY_MON' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'CH0_MEAN' NUMERIC, 'CH0_STDDEV' NUMERIC, 'CH1_MEAN' NUMERIC, 'CH1_STDDEV' "
                 "NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "ATTENUATION_MODEL")
     {
-        query = "CREATE TABLE 'ATTENUATION_MODEL' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'ATTENUATION_MODEL' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'S0' NUMERIC, 'S0_ERR' NUMERIC, 'LAMBDA' NUMERIC, 'LAMBDA_ERR' NUMERIC, "
                 "'ETAR' NUMERIC, 'ETAR_ERR' NUMERIC, 'ETAL' NUMERIC, 'ETAL_ERR' NUMERIC, 'KSI' "
                 "NUMERIC, 'KSI_ERR' NUMERIC, 'CHI2NDF' NUMERIC, 'DATE' INTIGER, PRIMARY KEY ('SERIES_ID'))";
     }
     else if (table == "ENERGY_RECONSTRUCTION")
     {
-        query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'ENERGY_RECONSTRUCTION' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'ALPHA_EXP' NUMERIC, 'ALPHA_EXP_ERR' NUMERIC, 'ALPHA_CORR' NUMERIC, 'ALPHA_CORR_ERR' "
                 "NUMERIC, 'ERES_EXP' NUMERIC, 'ERES_EXP_ERR' NUMERIC, 'ERES_CORR' NUMERIC, 'ERES_CORR_ERR' " 
                 "NUMERIC, 'ERES_ALL' NUMERIC, 'ERES_ALL_ERR' NUMERIC, 'ERES_CORR_ALL' NUMERIC, 'ERES_CORR_ALL_ERR' "
@@ -517,7 +517,7 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "POSITION_RECONSTRUCTION")
     {
-        query = "CREATE TABLE 'POSITION_RECONSTRUCTION' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' "
+        query = "CREATE TABLE 'POSITION_RECONSTRUCTION' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' "
                 "TEXT, 'A_COEFF' NUMERIC, 'A_COEFF_ERR' NUMERIC, 'B_COEFF' NUMERIC, 'MLR_SLOPE' NUMERIC, "
                 "'MLR_SLOPE_ERR' NUMERIC, 'MLR_OFFSET' NUMERIC, 'MLR_OFFSET_ERR' NUMERIC, 'MLR_SLOPE_EXP' "
                 "NUMERIC, 'MLR_SLOPE_EXP_ERR' NUMERIC, 'MLR_OFFSET_EXP' NUMERIC, 'MLR_OFFSET_EXP_ERR' "
@@ -526,7 +526,7 @@ bool SFTools::CreateTable(TString database, TString table)
     }
     else if (table == "COUNTS")
     {
-        query = "CREATE TABLE 'COUNTS' ('SERIES_ID' INTEGER PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
+        query = "CREATE TABLE 'COUNTS' ('SERIES_ID' TEXT PRIMARY_KEY, 'RESULTS_FILE' TEXT, "
                 "'COUNTS_CH0' NUMERIC, 'COUNTS_ERR_CH0' NUMERIC, 'COUNTS_STDDEV_CH0' NUMERIC, "
                 "'COUNTS_CH1' NUMERIC, 'COUNTS_ERR_CH1' NUMERIC, 'COUNTS_STDDEV_CH1' NUMERIC, "
                 "'DATE' INTEGER, PRIMARY KEY ('SERIES_ID'))";
@@ -563,56 +563,7 @@ bool SFTools::CreateTable(TString database, TString table)
 
     return true;
 }
-//------------------------------------------------------------------
-/// Calculates mean value of numbers stored in a given vector.
-/// \param vec - vector containing numbers
-double SFTools::GetMean(std::vector<double> vec)
-{
-
-    int    size = vec.size();
-    double sum  = 0;
-
-    for (int i = 0; i < size; i++)
-    {
-        sum += vec[i];
-    }
-
-    double mean = sum / size;
-
-    return mean;
-}
-//------------------------------------------------------------------
-/// Calculates standard deviation of numbers stored in a given vector.
-/// \param vec - vector containing numbers
-double SFTools::GetStandardDev(std::vector<double> vec)
-{
-
-    int    size = vec.size();
-    double mean = GetMean(vec);
-
-    double sumSquares = 0;
-
-    for (int i = 0; i < size; i++)
-    {
-        sumSquares += pow((vec[i] - mean), 2);
-    }
-
-    double stdDev = sqrt(sumSquares / size);
-
-    return stdDev;
-}
-//------------------------------------------------------------------
-/// Calculates standard error of numbers stored in a given vector.
-/// \param vec - vector containing numbers
-double SFTools::GetStandardErr(std::vector<double> vec)
-{
-
-    int    size   = vec.size();
-    double stdDev = GetStandardDev(vec);
-    double stdErr = stdDev / sqrt(size);
-
-    return stdErr;
-}
+/*
 //------------------------------------------------------------------
 /// Finds maximum of the X axis for a given histogram.
 /// \param h - histogram
@@ -767,6 +718,57 @@ bool SFTools::FitGaussSingle(TH1D* h, float range_in_RMS)
     
     return true;
 }
+*/
+//------------------------------------------------------------------
+/// Calculates mean value of numbers stored in a given vector.
+/// \param vec - vector containing numbers
+double SFTools::GetMean(std::vector<double> vec)
+{
+
+    int    size = vec.size();
+    double sum  = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        sum += vec[i];
+    }
+
+    double mean = sum / size;
+
+    return mean;
+}
+//------------------------------------------------------------------
+/// Calculates standard deviation of numbers stored in a given vector.
+/// \param vec - vector containing numbers
+double SFTools::GetStandardDev(std::vector<double> vec)
+{
+
+    int    size = vec.size();
+    double mean = GetMean(vec);
+
+    double sumSquares = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        sumSquares += pow((vec[i] - mean), 2);
+    }
+
+    double stdDev = sqrt(sumSquares / size);
+
+    return stdDev;
+}
+//------------------------------------------------------------------
+/// Calculates standard error of numbers stored in a given vector.
+/// \param vec - vector containing numbers
+double SFTools::GetStandardErr(std::vector<double> vec)
+{
+
+    int    size   = vec.size();
+    double stdDev = GetStandardDev(vec);
+    double stdErr = stdDev / sqrt(size);
+
+    return stdErr;
+}
 //------------------------------------------------------------------
 /// Fits charge ratio histograms with single gaussian function. 
 /// \param vec - vector containing charge ratio histograms
@@ -775,7 +777,7 @@ bool SFTools::FitGaussSingle(TH1D* h, float range_in_RMS)
 bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 {
 
-    std::cout << "\n\n----- SFTools::RatiosFitGauss() fitting...\n" << std::endl;
+    std::cout << "\n\n----- SFTools::" << __func__ << " fitting...\n" << std::endl;
 
     std::vector<TF1*> fGauss;
 
@@ -784,15 +786,17 @@ bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)
     double fit_max = 0;
     double mean    = 0;
     double rms     = 0;
+    double max     = 0;
 
     for (int i = 0; i < nsize; i++)
     {
         mean    = vec[i]->GetMean();
         rms     = vec[i]->GetRMS();
+        max     = vec[i]->GetBinContent(vec[i]->GetMaximumBin());
         fit_min = mean - (range_in_RMS * rms);
         fit_max = mean + (range_in_RMS * rms);
         fGauss.push_back(new TF1("fGauss", "gaus", fit_min, fit_max));
-        fGauss[i]->SetParameters(vec[i]->GetBinContent(vec[i]->GetMaximumBin()), mean, rms);
+        fGauss[i]->SetParameters(max, mean, rms);
         vec[i]->Fit(fGauss[i], "RQ+");
 
         std::cout << "\tFitting histogram " << vec[i]->GetName() << " ..." << std::endl;
@@ -814,7 +818,7 @@ bool SFTools::RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 {
 
-    std::cout << "\n\n----- SFTools::RatiosFitDoubleGauss() fitting...\n" << std::endl;
+    std::cout << "\n\n----- SFTools::" << __func__ << " fitting...\n" << std::endl;
 
     std::vector<TF1*> fDGauss;
 
@@ -823,18 +827,20 @@ bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
     double fit_max = 0;
     double mean    = 0;
     double rms     = 0;
+    double max     = 0;
 
     for (int i = 0; i < nsize; i++)
     {
         mean    = vec[i]->GetMean();
         rms     = vec[i]->GetRMS();
+        max     = vec[i]->GetBinContent(vec[i]->GetMaximumBin());
         fit_min = mean - (range_in_RMS * rms);
         fit_max = mean + (range_in_RMS * rms);
         fDGauss.push_back(new TF1("fDGauss", "gaus(0)+gaus(3)", fit_min, fit_max));
-        fDGauss[i]->SetParameter(0, vec[i]->GetBinContent(vec[i]->GetMaximumBin()));
+        fDGauss[i]->SetParameter(0, max);
         fDGauss[i]->SetParameter(1, mean);
         fDGauss[i]->SetParameter(2, 6E-2);
-        fDGauss[i]->SetParameter(3, vec[i]->GetBinContent(vec[i]->GetMaximumBin()) / 10.);
+        fDGauss[i]->SetParameter(3, max / 10.);
         if (i < nsize / 2)
             fDGauss[i]->SetParameter(4, mean - rms);
         else
@@ -861,3 +867,4 @@ bool SFTools::RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS)
 
     return true;
 }
+//------------------------------------------------------------------

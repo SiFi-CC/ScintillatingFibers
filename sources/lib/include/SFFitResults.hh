@@ -123,7 +123,7 @@ class SFFitResults : public TObject
     /// Returns pointer to the fitted function.
     TF1* GetFunction(void) { return fFunction; };
 
-    ClassDef(SFFitResults, 1)
+//     ClassDef(SFFitResults, 1)
 };
 
 #endif

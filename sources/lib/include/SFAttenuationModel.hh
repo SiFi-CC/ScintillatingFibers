@@ -69,6 +69,8 @@ struct GlobalChi2Model
 
 namespace SFAttenuationModel
 {
+    double CalculateUncertainty(std::vector<double> params, 
+                                TMatrixD covMatrix, TString side);
     SFResults* FitModel(TGraphErrors* left, TGraphErrors *right, double pos_uncert, double fiberLen);
 };
 

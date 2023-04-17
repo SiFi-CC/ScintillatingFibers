@@ -10,558 +10,262 @@
 
 #include "SFPeakFinder.hh"
 
-ClassImp(SFPeakFinder);
-
 //------------------------------------------------------------------
-/// Default constructor.
-SFPeakFinder::SFPeakFinder() : fSpectrum(nullptr),
-                               fPeak(nullptr),
-                               fFittedFun(nullptr),
-                               fID(-1),
-                               fVerbose(false),
-                               fTests(false),
-                               fResults(new SFResults("PeakFinderResults_tmp"))
+/// Fits function describing spectrum in the area where 511 keV peak
+/// is visible. Fitted function: expo + pol0 + gaus. Results can be
+/// accessed via SFPeakFinder::GetParameters() function and other
+/// defined getters. fPeak histogram is not filled.
+SFResults* SFPeakFinder::FindPeakFit(TH1D* spectrum, TString path, bool verbose, bool tests)
 {
-    std::cout << "#### Warning in SFPeakFinder constructor!" << std::endl;
-    std::cout << "You are using default constructor!" << std::endl;
-    fVerbose = false;
-}
-//------------------------------------------------------------------
-/// Standard constructor.
-/// \param spectrum - analyzed spectrum
-/// \param verbose - print-outs level. Set to true for verbose and false for quiet mode
-/// \param tests - flag for testing mode. Set true for tests and false for runtime.
-SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose, bool tests) : fSpectrum(spectrum),
-                                                                       fPeak(nullptr),
-                                                                       fFittedFun(nullptr),
-                                                                       fID(-1),
-                                                                       fVerbose(verbose),
-                                                                       fTests(tests),
-                                                                       fResults(new SFResults("PeakFinderResults_tmp"))
-{
-}
-//------------------------------------------------------------------
-/// Standard constructor.
-SFPeakFinder::SFPeakFinder(TH1D* spectrum, int ID, bool verbose, bool tests) : fSpectrum(spectrum),
-                                                                               fPeak(nullptr),
-                                                                               fFittedFun(nullptr),
-                                                                               fID(ID),
-                                                                               fVerbose(verbose),
-                                                                               fTests(tests),
-                                                                               fResults(new SFResults("PeakFinderResults_tmp"))
-{
-}
-//------------------------------------------------------------------
-/// Standard constructor.
-/// \param spectrum - analyzed spectrum
-/// \param verbose - print-outs level. Set true for verbose and false for quiet mode.
-SFPeakFinder::SFPeakFinder(TH1D* spectrum, bool verbose) : fSpectrum(spectrum),
-                                                           fPeak(nullptr),
-                                                           fFittedFun(nullptr),
-                                                           fID(-1),
-                                                           fVerbose(verbose),
-                                                           fTests(false),
-                                                           fResults(new SFResults("PeakFinderResults_tmp"))
-{
-}
-//------------------------------------------------------------------
-/// Standard constructor. Vebose level set by default to quiet. In order to change verbose
-/// level use SetVerbLevel().
-/// \param spectrum - analyzed spectrum
-SFPeakFinder::SFPeakFinder(TH1D* spectrum) : fSpectrum(spectrum),
-                                             fPeak(nullptr),
-                                             fFittedFun(nullptr),
-                                             fID(-1),
-                                             fVerbose(false),
-                                             fTests(false),
-                                             fResults(new SFResults("PeakFinderResults_tmp"))
-{
-    std::cout << "##### Warning in SFPeakFinder constructor. Quiet mode on, no print outs."
-              << std::endl;
-    std::cout << "##### To set verbose level use SetVerbLevel(bool)" << std::endl;
-}
-//------------------------------------------------------------------
-/// Default destructor.
-SFPeakFinder::~SFPeakFinder()
-{
-}
-//------------------------------------------------------------------
-/// If default constructor was used, sets analyzed spectrum histogram.
-/// \param spectrum - histogram containing analyzed spectrum.
-void SFPeakFinder::SetSpectrum(TH1D* spectrum)
-{
-
-    if (spectrum == nullptr)
+    
+    FitterFactory fitter;
+    fitter.initFactoryFromFile((path + "/fitconfig.txt").Data(),
+                               (path + "/fitparams.out").Data());
+    
+    auto name = spectrum->GetName();
+    auto* hfp = fitter.findParams(name);
+    
+    if(!hfp)
     {
-        std::cerr << "##### Error in SFPeakFinder::SetSpectrum()! " << std::endl;
-        std::cerr << "Spectrum cannot be a null pointer!" << std::endl;
+        std::cerr << "No fit parameters for this histogram in fitparams.out!" << std::endl;
+        std::cerr << "Please do initial fitting first!" << std::endl;
         std::abort();
     }
-    fSpectrum = spectrum;
-    return;
-}
-//------------------------------------------------------------------
-TString SFPeakFinder::InitSpectrumPerPosition(int seriesNo)
-{
-    if (fID == -1)
-        fID = SFTools::GetMeasurementID(fSpectrum->GetName());
+
+    auto histFP = fitter.findParams(name);
+    histFP->print();
+    fitter.fit(histFP, spectrum);
+    fitter.exportFactoryToFile();
     
-    SFInfo* info;
-    try
+    TF1* fitted = (TF1*)histFP->function_sum.Clone();
+    
+    if (fitted == nullptr)
     {
-        info = new SFInfo(seriesNo);
+        std::cerr << "##### Error in SFPeakFinder::" << __func__ 
+                  << " Function is null pointer" << std::endl;
+        std::abort();
     }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        std::cerr << "##### Error in SFPeakFinder::Init()!" << std::endl;
-    }
+
+    TF1 *tmpfun = spectrum->GetFunction(fitted->GetName());
+    double chi2NDF = tmpfun->GetChisquare() / tmpfun->GetNDF();
     
-    std::vector<TString> names     = info->GetNames();
-    std::vector<int>     measureID = info->GetMeasurementsIDs();
-    std::vector<double>  positions = info->GetPositions();
-    int                  index     = SFTools::GetIndex(measureID, fID);
-    TString              dir_name  = names[index];
-    TString              full_path = SFTools::FindData(dir_name);
-
-    TString conf_name = "/fitconfig.txt";
+    SFResults* results = new SFResults(Form("PeakFinder_%s", TString(spectrum->GetName()).Data()));
     
-    TString functions = "gaus(0) pol0(3)+[4]*TMath::Exp((x-[5])*[6])";
-    TString hnames[5] = {Form("S%i_ch0_pos%.1f_ID%i_PE", seriesNo, positions[index], fID),
-                         Form("S%i_ch1_pos%.1f_ID%i_PE", seriesNo, positions[index], fID),
-                         Form("S%i_pos%.1f_ID%i_PEAverage", seriesNo, positions[index], fID),
-                         Form("S%i_hEnergyRecoExp_pos%.1f", seriesNo, positions[index]),
-                         Form("S%i_hEnergyRecoCorr_pos%.1f", seriesNo, positions[index])};
+    results->AddResult(SFResultTypeNum::kPeakConst, 
+                        fitted->GetParameter(0),
+                        fitted->GetParError(0));
+    results->AddResult(SFResultTypeNum::kPeakPosition, 
+                        fitted->GetParameter(1),
+                        fitted->GetParError(1));
+    results->AddResult(SFResultTypeNum::kPeakSigma, 
+                        fitted->GetParameter(2),
+                        fitted->GetParError(2));
+    results->AddResult(SFResultTypeNum::kChi2NDF, chi2NDF, -1);
 
-    std::fstream test(full_path + conf_name, std::ios::in);
-
-    if (test.fail())
+    // for tests
+    if (tests)
     {
-        std::cout << "Fitting config for " << full_path << " doesn't exist..." << std::endl;
-        std::cout << "Creating new config file..." << std::endl;
-
-        TSpectrum* spec   = new TSpectrum(10);
-        int        npeaks = spec->Search(fSpectrum, 10, "goff", 0.5);
-        double*    peaksX = spec->GetPositionX();
-        double     peak   = TMath::MaxElement(npeaks, peaksX);
+        double fit_min = 0;
+        double fit_max = 0;
+        fitted->GetRange(fit_min, fit_max);
 
         TString opt;
-        if (fVerbose)
-            opt = "0R";
+        if (verbose)
+            opt = "BS+";
         else
-            opt = "Q0R";
-/*        
-        Int_t    rebin = 0;
-        Double_t xmin = peak - 200;
-        Double_t xmax = peak + 300;
-        Double_t p_const = fSpectrum->GetBinContent(fSpectrum->FindBin(peak));
-        Double_t mean = peak;
-        Double_t sigma = 30;
-        Double_t exp_fit_min = xmin;
-        Double_t exp_fit_max = xmin + 100;
-        
-        TF1 *fun_exp_tmp = new TF1("fun_exp_tmp", "[0]*TMath::Exp((x-[1])*[2])");
-        fSpectrum->Fit("fun_exp_tmp", "", "", exp_fit_min, exp_fit_max);
+            opt = "BSQ+";
 
-        Double_t par3 = 20;
-        Double_t par4 = fun_exp_tmp->GetParameter(0);
-        Double_t par5 = fun_exp_tmp->GetParameter(1);   
-        Double_t par6 = fun_exp_tmp->GetParameter(2);
-    
-    config << " " << hL->GetName() << " " << functions << " " << rebin << " " 
-           << xmin << " " << xmax <<  " " << p_const << " " << mean << " " << sigma 
-           << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";*/
-        
-        //-----
-        
-        TF1* fun_gaus = new TF1("fun_gaus", "gaus", peak - 100, peak + 100);
-        fSpectrum->Fit("fun_gaus", opt);
+        TF1* fun_bg_clone = new TF1("fun_bg_clone", "pol0(0)+[1]*TMath::Exp((x-[2])*[3])", fit_min, fit_max);
+        fun_bg_clone->SetLineColor(kGreen + 3);
+        fun_bg_clone->FixParameter(0, fitted->GetParameter(3));
+        fun_bg_clone->FixParameter(1, fitted->GetParameter(4));
+        fun_bg_clone->FixParameter(2, fitted->GetParameter(5));
+        fun_bg_clone->FixParameter(3, fitted->GetParameter(6));
+        spectrum->Fit("fun_bg_clone", opt);
 
-        double par0     = fun_gaus->GetParameter(0);
-        double par1     = fun_gaus->GetParameter(1);
-        double par2     = fun_gaus->GetParameter(2);
-        double par2_min = 0;
-        double par2_max = 300;
-        double par3     = 30.;
-
-        TF1* fun_expo =
-            new TF1("fun_expo", "[0]*TMath::Exp((x-[1])*[2])", par1 - 5 * par2, par1 - 4 * par2);
-        fSpectrum->Fit("fun_expo", opt);
-
-        double par4 = fun_expo->GetParameter(0);
-        double par5 = fun_expo->GetParameter(1);
-        double par6 = fun_expo->GetParameter(2);
-
-        double xmin = par1 - par2 * 2;
-        double xmax = par1 + par2 * 3;
-
-        std::fstream config(full_path + conf_name, std::ios::out);
-        for (int i = 0; i < 3; i++)
+        if (verbose)
         {
-            config << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
-                   << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
-                   << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
+            std::cout << "Fitted functions parameters: \n"
+                      << fitted->GetParameter(3) << "\t" 
+                      << fitted->GetParameter(4) << "\t"
+                      << fitted->GetParameter(5) << "\t" 
+                      << fitted->GetParameter(6)
+                      << std::endl;
+
+            std::cout << "Expo clone parameters: \n"
+                      << fun_bg_clone->GetParameter(0) << "\t" 
+                      << fun_bg_clone->GetParameter(1) << "\t" 
+                      << fun_bg_clone->GetParameter(2) << "\t"
+                      << fun_bg_clone->GetParameter(3) << std::endl;
         }
-        
-        TString desc = data->GetDescription();
-        
-        if(desc.Contains("Regular series"))
+
+        TF1* fun_gaus_clone = new TF1("fun_gaus_clone", "gaus", fit_min, fit_max);
+        fun_gaus_clone->SetLineColor(kMagenta);
+        fun_gaus_clone->FixParameter(0, fitted->GetParameter(0));
+        fun_gaus_clone->FixParameter(1, fitted->GetParameter(1));
+        fun_gaus_clone->FixParameter(2, fitted->GetParameter(2));
+        spectrum->Fit("fun_gaus_clone", opt);
+
+        if (verbose)
         {
-            par0 = 200;
-            par1 = 511;
-            par2 = 30;
-            par3 = 10;
-            par4 = 500;
-            par5 = 100;
-            par6 = -0.02;
-            xmin = 340;
-            xmax = 750;
-        
-            for (int i = 3; i < 5; i++)
-            {
-                config << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
-                << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
-                << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
-            }
-        }
-        
-        config.close();
-    }
-    else
-    {
-        std::cout << "Fitting config for " << full_path << " exists!" << std::endl;
-        test.close();
-    }
-    
-    return full_path;
-}
-//------------------------------------------------------------------
-TString SFPeakFinder::InitSpectrumPerSeries(int seriesNo)
-{
-    TString data_path = std::getenv("SFDATA"); 
-    TString full_path = std::string(data_path) + "DB/"; 
-    
-    std::fstream params(full_path + "fitparams.out", std::ios::in);
-    
-    std::string line;
-    bool flag = false;
-    
-    while (params.good())
-    {
-        getline(params, line);
-        TString tstr = line;
-        
-        if (tstr.Contains(Form("S%i_hEnergyRecoAll", seriesNo)))
-        {
-            flag = true;
-            params.close();
-            break;
-        }
-        else
-        {
-            flag = false;
+            std::cout << "Fitted function parameters: \n"
+                      << fitted->GetParameter(0) << "\t" 
+                      << fitted->GetParameter(1) << "\t"
+                      << fitted->GetParameter(2) << std::endl;
+
+            std::cout << "Gaus clone parameters: \n"
+                      << fun_gaus_clone->GetParameter(0) << "\t" 
+                      << fun_gaus_clone->GetParameter(1) << "\t" 
+                      << fun_gaus_clone->GetParameter(2) << std::endl;
         }
     }
-    
-    params.close();
-    
-    if (!flag)
+
+    if (results->GetValue(SFResultTypeNum::kPeakPosition) < 0)
     {
-        std::fstream params(full_path + "fitparams.out", std::ios::app);
-        
-        TString functions = "gaus(0) pol0(3)+[4]*TMath::Exp((x-[5])*[6])";
-        TString hnames[2] = {Form("S%i_hEnergyRecoAllExp", seriesNo),
-                            Form("S%i_hEnergyRecoAllCorr", seriesNo)};
-        float par0 = 1800;
-        float par1 = 511;
-        float par2 = 30;
-        float par3 = 10;
-        float par4 = 500;
-        float par5 = 100;
-        float par6 = -0.02;
-        float par2_min = 0;
-        float par2_max = 300;
-        float xmin = 370;//par1 - (par2 * 4.5);
-        float xmax = 800;//par1 + (par2 * 5.5);
-        
-        for (int i = 0; i < 2; i++)
-        {
-            params << " " << hnames[i] << " " << functions << " " << 0 << " " << xmin << " " << xmax
-            << " " << par0 << " " << par1 << " " << par2 << " : " << par2_min << " "
-            << par2_max << " " << par3 << " " << par4 << " " << par5 << " " << par6 << "\n";
-        }
-        params.close();
-    }
-    
-    return full_path;
-}
-//------------------------------------------------------------------
-TString SFPeakFinder::Init(void)
-{
-    
-    TString full_path; 
-    TString hname    = fSpectrum->GetName();
-    int     seriesNo = SFTools::GetSeriesNo(hname);
-    
-    if (hname.Contains("EnergyRecoAll"))
-    {
-        std::cout << "Spectrum per series: " << hname << std::endl;
-        full_path = InitSpectrumPerSeries(seriesNo);
-    }
-    else if (hname.Contains("PE") || hname.Contains("pos"))
-    {
-        std::cout << "Spectrum per position: " << hname << std::endl;
-        full_path = InitSpectrumPerPosition(seriesNo);
-    }
-    else
-    {
-        std::cerr << "##### Error in SFPeakFinder::Init()" << std::endl;
-        std::cerr << "Unknown histogram name: " << hname << std::endl;
+        std::cerr << "##### Error in SFPeakFinder::" << __func__ << 
+                     " Position cannot be negative!" << std::endl;
+        std::cerr << "fPosition = " << results->GetValue(SFResultTypeNum::kPeakPosition) << std::endl;
         std::abort();
     }
-    
-    fResults->SetName(Form("PeakFinderResults_%i", fID));
 
-    return full_path;
+    results->AddObject(SFResultTypeObj::kSpectrum, spectrum);
+
+    return results;
 }
 //------------------------------------------------------------------
 /// Finds range of the 511 keV peak. Range is returned as references.
 /// For measurements with lead collimator range is defined as position
 /// +/- 1.5 sigma and for measurements with electronic collimator range 
 /// is defined as position +/- 2 sigma.
-bool SFPeakFinder::FindPeakRange(double& min, double& max)
+auto SFPeakFinder::FindPeakRange(TH1D* spectrum, TString path, TString colimator, 
+                                 bool verbose, bool tests)
+                                 -> std::tuple<double, double>
 {
 
-    // Getting series attributes
-    int     seriesNo = SFTools::GetSeriesNo(fSpectrum->GetName());
-    SFData* data;
-
-    try
+    TF1* fitted = spectrum->GetFunction(Form("f_%s" ,TString(spectrum->GetName()).Data()));
+    
+    double pos = -1;
+    double sig = -1;
+    
+    if (fitted == nullptr)
     {
-        data = new SFData(seriesNo);
-    }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        std::cerr << "##### Exception in SFPeakFinder::FindPeakRange()!" << std::endl;
-        std::abort();
-    }
-
-    TString type = data->GetCollimator();
-    delete data;
-
-    // Calculating peak range
-    const double delta = 1E-8;
-
-    double pos = fResults->GetValue(SFResultTypeNum::kPeakPosition);
-    double sig = fResults->GetValue(SFResultTypeNum::kPeakSigma);
-
-    if (fabs(sig + 1) < delta || fabs(pos + 1) < delta) 
-    {
-        std::cout << "##### Warning in SFPeakFinder::FindPeakRange(): peak_pos = "
+        std::cout << "##### Warning in SFPeakFinder::" << __func__ << ": peak_pos = "
                   << pos << "\t peak_sigma = " << sig << std::endl; 
         std::cout << "Fitting peak... " << std::endl;
         
-        FindPeakFit();
-        pos = fResults->GetValue(SFResultTypeNum::kPeakPosition);
-        sig = fResults->GetValue(SFResultTypeNum::kPeakSigma);
+        SFResults *fitting_results = FindPeakFit(spectrum, path, verbose, tests);
+        fitted = spectrum->GetFunction(Form("f_%s" ,TString(spectrum->GetName()).Data()));
+        pos = fitting_results->GetValue(SFResultTypeNum::kPeakPosition);
+        sig = fabs(fitting_results->GetValue(SFResultTypeNum::kPeakSigma));
         
         std::cout << "After fitting: peak_pos = " << pos 
                   << "\t peak_sig = " << sig << std::endl;
     }
-
-    if (type == "Lead")
+    else
+    {
+        pos = fitted->GetParameter(1);
+        sig = fabs(fitted->GetParameter(2));
+        std::cout << "In SFPeakFinder::" << __func__ << ": spectrum already fitted." << std::endl;
+        std::cout << "peak_pos = " << pos << "\t peak_sigma = " << sig << std::endl;
+    }
+    
+    // Calculating peak range
+    double min = -1;
+    double max = -1;
+    
+    if (colimator == "Lead")
     {
         min = pos - sig;
         max = pos + 1.5 * sig;
     }
-    else if (type == "Electronic")
+    else if (colimator == "Electronic" )
     {
         min = pos - 2 * sig;
         max = pos + 2 * sig;
     }
-
+    else if (colimator == "Electronic long")
+    {
+        min = pos - 2 * sig;
+        max = pos + 2 * sig;
+    }
+    else
+    {
+        std::cerr << "##### Error in SFPeakFinder::" << __func__ << ". Unknown colimator type" << std::endl;
+        std::cerr << "Colimator: " << colimator << ". Posiible options are: Lead, Electronic" << std::endl;
+        std::abort();
+    }
+    
+    const double delta = 1E-8;
+    
     if (max < min || fabs(min + 1) < delta || fabs(max + 1) < delta)
     {
-        std::cerr << "##### Error in SFPeakFinder::FindPeakRange(). Incorrect range." << std::endl;
+        std::cerr << "##### Error in SFPeakFinder::" << __func__ << ". Incorrect range." << std::endl;
         std::cerr << "min = " << min << "\t max = " << max << std::endl;
-        return false;
-    }
-
-    return true;
-}
-//------------------------------------------------------------------
-/// Fits function describing spectrum in the area where 511 keV peak
-/// is visible. Fitted function: expo + pol0 + gaus. Results can be
-/// accessed via SFPeakFinder::GetParameters() function and other
-/// defined getters. fPeak histogram is not filled.
-bool SFPeakFinder::FindPeakFit(void)
-{
-
-    TString data_path = Init();
-    
-    fSpectrum->Print();
-    
-    FitterFactory fitter;
-    fitter.initFactoryFromFile((data_path + "/fitconfig.txt").Data(),
-                               (data_path + "/fitparams.out").Data());
-    HistFitParams histFP;
-    FitterFactory::FIND_FLAGS fl = fitter.findParams(fSpectrum->GetName(), histFP);
-    printf("fl = %d for %s\n", fl, fSpectrum->GetName());
-    fitter.fit(histFP, fSpectrum);
-    fitter.updateParams(fSpectrum, histFP);
-    fitter.exportFactoryToFile();
-    fFittedFun = (TF1*)histFP.funSum->Clone();
-    //fFittedFun->Print();
-
-    if (fFittedFun == nullptr)
-    {
-        std::cerr << "##### Error in SFPeakFinder::FindPeak()! Function is null pointer"
-                  << std::endl;
         std::abort();
     }
 
-    TF1 *tmpfun = fSpectrum->GetFunction(fFittedFun->GetName());
-    double chi2NDF = tmpfun->GetChisquare() / tmpfun->GetNDF();
-    
-    fResults->AddResult(SFResultTypeNum::kPeakConst, fFittedFun->GetParameter(0),
-                        fFittedFun->GetParError(0));
-    fResults->AddResult(SFResultTypeNum::kPeakPosition, fFittedFun->GetParameter(1),
-                        fFittedFun->GetParError(1));
-    fResults->AddResult(SFResultTypeNum::kPeakSigma, fFittedFun->GetParameter(2),
-                        fFittedFun->GetParError(2));
-    fResults->AddResult(SFResultTypeNum::kChi2NDF, chi2NDF, -1);
-
-    // for tests
-    if (fTests)
-    {
-        double fit_min = 0;
-        double fit_max = 0;
-        fFittedFun->GetRange(fit_min, fit_max);
-
-        TString opt;
-        if (fVerbose)
-            opt = "BS+";
-        else
-            opt = "BSQ+";
-
-        TF1* fun_bg_clone =
-            new TF1("fun_bg_clone", "pol0(0)+[1]*TMath::Exp((x-[2])*[3])", fit_min, fit_max);
-        fun_bg_clone->SetLineColor(kGreen + 3);
-        fun_bg_clone->FixParameter(0, fFittedFun->GetParameter(3));
-        fun_bg_clone->FixParameter(1, fFittedFun->GetParameter(4));
-        fun_bg_clone->FixParameter(2, fFittedFun->GetParameter(5));
-        fun_bg_clone->FixParameter(3, fFittedFun->GetParameter(6));
-        fSpectrum->Fit("fun_bg_clone", opt);
-
-        if (fVerbose)
-        {
-            std::cout << "Fitted functions parameters: \n"
-                      << fFittedFun->GetParameter(3) << "\t" << fFittedFun->GetParameter(4) << "\t"
-                      << fFittedFun->GetParameter(5) << "\t" << fFittedFun->GetParameter(6)
-                      << std::endl;
-
-            std::cout << "Expo clone parameters: \n"
-                      << fun_bg_clone->GetParameter(0) << "\t" << fun_bg_clone->GetParameter(1)
-                      << "\t" << fun_bg_clone->GetParameter(2) << "\t"
-                      << fun_bg_clone->GetParameter(3) << std::endl;
-        }
-
-        TF1* fun_gaus_clone = new TF1("fun_gaus_clone", "gaus", fit_min, fit_max);
-        fun_gaus_clone->SetLineColor(kMagenta);
-        fun_gaus_clone->FixParameter(0, fFittedFun->GetParameter(0));
-        fun_gaus_clone->FixParameter(1, fFittedFun->GetParameter(1));
-        fun_gaus_clone->FixParameter(2, fFittedFun->GetParameter(2));
-        fSpectrum->Fit("fun_gaus_clone", opt);
-
-        if (fVerbose)
-        {
-            std::cout << "Fitted function parameters: \n"
-                      << fFittedFun->GetParameter(0) << "\t" << fFittedFun->GetParameter(1) << "\t"
-                      << fFittedFun->GetParameter(2) << std::endl;
-
-            std::cout << "Gaus clone parameters: \n"
-                      << fun_gaus_clone->GetParameter(0) << "\t" << fun_gaus_clone->GetParameter(1)
-                      << "\t" << fun_gaus_clone->GetParameter(2) << std::endl;
-        }
-    }
-
-    if (fResults->GetValue(SFResultTypeNum::kPeakPosition) < 0 ||
-        fResults->GetValue(SFResultTypeNum::kPeakSigma) < 0)
-    {
-        std::cerr << "##### Error in SFPeakFinder::FitPeak(). Position and Sigma cannot be negative!" << std::endl;
-        std::cerr << "fPosition = " << fResults->GetValue(SFResultTypeNum::kPeakPosition)
-                  << "\t fSigma = " << fResults->GetValue(SFResultTypeNum::kPeakSigma) << std::endl;
-        return false;
-    }
-
-    fResults->AddObject(SFResultTypeObj::kSpectrum, fSpectrum);
-
-    return true;
+    return {min, max};
 }
 //------------------------------------------------------------------
-/// Finds 511 keV peak via SFPeakFinder::FindPeakFit() method and
-/// performs background subtraction. Exponential function is fitted on
-/// the left sige of the peak and pol0 function - on the right side. For
-/// the background subtraction functions are sewed together in the peak
-/// region. fPeak histogram is filled with the background-subtracted peak.
-/// Subsequently Gaussian function is fitted in order to describe peak shape.
-/// Results are accessible via SFPeakFinder::GetParameters() and other
-/// definded getter functions.
-/// IMPORTANT - if you want to use this function, all the parameters of
-/// the fits need to be adjusted!
-
-bool SFPeakFinder::SubtractBackground(void)
+SFResults* SFPeakFinder::SubtractBackground(TH1D* spectrum, TString path, TString colimator, 
+                                            bool verbose, bool tests)
 {
 
     // setting background-subtracted histogram
-    TString tmp   = fSpectrum->GetName();
+    TString tmp   = spectrum->GetName();
     TString pname = tmp.Append("_peak");
-    fPeak         = (TH1D*)fSpectrum->Clone(pname);
-    fPeak->Reset();
+    TH1D* peak         = (TH1D*)spectrum->Clone(pname);
+    peak->Reset();
 
+    SFResults* results = new SFResults(Form("PeakFinderBGS_%s", TString(spectrum->GetName()).Data()));
+    
     // getting background + signal function
-    if (fFittedFun == nullptr) FindPeakFit();
+    TF1* fitted = spectrum->GetFunction(Form("f_%s" ,TString(spectrum->GetName()).Data()));
+    
+    if (fitted == nullptr)
+    {
+        SFResults *fitting_results = FindPeakFit(spectrum, path, verbose, tests);
+        fitted = spectrum->GetFunction(Form("f_%s" ,TString(spectrum->GetName()).Data()));
+        results->AddResult(SFResultTypeNum::kPeakConst, 
+                           fitting_results->GetValue(SFResultTypeNum::kPeakConst),
+                           fitting_results->GetUncertainty(SFResultTypeNum::kPeakConst));
+        results->AddResult(SFResultTypeNum::kPeakPosition, 
+                           fitting_results->GetValue(SFResultTypeNum::kPeakPosition),
+                           fitting_results->GetUncertainty(SFResultTypeNum::kPeakPosition));
+        results->AddResult(SFResultTypeNum::kPeakSigma, 
+                           fitting_results->GetValue(SFResultTypeNum::kPeakSigma),
+                           fitting_results->GetUncertainty(SFResultTypeNum::kPeakSigma));
+        results->AddObject(SFResultTypeObj::kSpectrum, spectrum);
+    }
+    
+    auto tuple = FindPeakRange(spectrum, path, colimator, verbose, tests);
+    double peak_min = std::get<0>(tuple);
+    double peak_max = std::get<1>(tuple);
 
-    double peak_min, peak_max;
-    FindPeakRange(peak_min, peak_max);
+    peak_min = peak_min - results->GetValue(SFResultTypeNum::kPeakSigma);
+    peak_max = peak_max + results->GetValue(SFResultTypeNum::kPeakSigma);
 
-    peak_min = peak_min - fResults->GetValue(SFResultTypeNum::kPeakSigma);
-    peak_max = peak_max + fResults->GetValue(SFResultTypeNum::kPeakSigma);
-
-    TF1* fun_bg = new TF1("fun_bg", "pol0(0)+[1]*TMath::Exp((x-[2])*[3])", 0, 1000);
-    fun_bg->SetParameters(fFittedFun->GetParameter(3), fFittedFun->GetParameter(4),
-                          fFittedFun->GetParameter(5), fFittedFun->GetParameter(6));
+    TF1* fun_bg = new TF1("fun_bg", "pol0(0)+[1]*TMath::Exp((x-[2])*[3])", 0, 5000);
+    fun_bg->SetParameters(fitted->GetParameter(3), fitted->GetParameter(4),
+                          fitted->GetParameter(5), fitted->GetParameter(6));
 
     // background subtraction
     double x, y;
 
-    for (int i = 1; i < fSpectrum->GetNbinsX() + 1; i++)
+    for (int i = 1; i < spectrum->GetNbinsX() + 1; i++)
     {
-        x = fSpectrum->GetBinCenter(i);
+        x = spectrum->GetBinCenter(i);
         if (x > peak_min && x < peak_max)
         { 
-            y = fSpectrum->GetBinContent(i) - fun_bg->Eval(x);
+            y = spectrum->GetBinContent(i) - fun_bg->Eval(x);
         }
         else
             y = 0;
-        fPeak->SetBinContent(i, y);
+        peak->SetBinContent(i, y);
     }
 
-    fResults->AddObject(SFResultTypeObj::kPeak, fPeak);
+    results->AddObject(SFResultTypeObj::kPeak, peak);
 
-    return true;
-}
-//------------------------------------------------------------------
-/// Prints details of SFPeakFinder class object.
-void SFPeakFinder::Print(void)
-{
-    std::cout << "\n------------------------------------------------" << std::endl;
-    std::cout << "This is print out of SFPeakFinder class object" << std::endl;
-    std::cout << "Analyzed spectrum: " << std::endl;
-    if (fSpectrum != nullptr)
-        fSpectrum->Print();
-    else
-        std::cout << "NULL" << std::endl;
+    return results;
 }
 //------------------------------------------------------------------

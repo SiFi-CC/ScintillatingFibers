@@ -12,15 +12,12 @@
 #define __SFPeakFinder_H_ 1
 
 #include "FitterFactory.h"
-#include "SFData.hh"
 #include "SFResults.hh"
-#include "SFTools.hh"
 
 #include <TF1.h>
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TH1D.h>
-#include <TObject.h>
 #include <TSpectrum.h>
 
 #include <fstream>
@@ -43,43 +40,17 @@
 /// f_{bg}(Q) = p_0 + p_1 \cdot e^{(Q-p_2) \cdot p_3}
 /// \f]
 
-class SFPeakFinder : public TObject
+namespace SFPeakFinder
 {
 
-  private:
-    TH1D*      fSpectrum;  ///< Analyzed experimental spectrum
-    TH1D*      fPeak;      ///< Histogram with the chosen peak after background subtraction
-    TF1*       fFittedFun; ///< Function fitted to the analyzed spectrum: Gauss+background
-    int        fID;
-    bool       fVerbose;   ///< Print-outs level
-    bool       fTests;     ///< Flag for testing mode
-    SFResults* fResults; ///< Object containing parameters of 511 keV peak as determined by the fit
+    SFResults* FindPeakFit(TH1D* spectrum, TString path,
+                           bool verbose = 0, bool tests = 0);
+    auto       FindPeakRange(TH1D* spectrum, TString path, TString colimator,
+                             bool verbose = 0, bool tests = 0)
+                             -> std::tuple<double, double>;
+    SFResults* SubtractBackground(TH1D* spectrum, TString path, TString colimator, 
+                                  bool verbose = 0, bool tests = 0);
 
-  public:
-    SFPeakFinder();
-    SFPeakFinder(TH1D* spectrum, int ID, bool verbose, bool tests);
-    SFPeakFinder(TH1D* spectrum, bool verbose, bool tests);
-    SFPeakFinder(TH1D* spectrum, bool verbose);
-    SFPeakFinder(TH1D* spectrum);
-    ~SFPeakFinder();
-    
-    TString InitSpectrumPerPosition(int seriesNo);
-    TString InitSpectrumPerSeries(int seriesNo);
-    TString Init(void);
-    bool    FindPeakRange(double& min, double& max);
-    bool    FindPeakFit(void);
-    bool    SubtractBackground(void);
-    void    SetSpectrum(TH1D* spectrum);
-    void    Print(void);
-
-    /// Returns structure containing parameters of the 511 keV peak.
-    SFResults* GetResults(void) { return fResults; };
-    /// Sets print-outs level.
-    void SetVerbLevel(bool verbose) { fVerbose = verbose; };
-    /// Sets testing mode.
-    void SetTests(bool tests) { fTests = tests; };
-
-    ClassDef(SFPeakFinder, 1)
 };
 
 #endif

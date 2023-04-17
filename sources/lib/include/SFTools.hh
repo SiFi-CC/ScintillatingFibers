@@ -31,7 +31,8 @@
 
 namespace SFTools
 {
-    
+
+/*    
 int                 GetIndex(std::vector<int> measurementsIDs, int id);
 int                 GetSeriesNo(TString hname_tstr);
 int                 GetChannel(TString hname_tstr);
@@ -40,18 +41,22 @@ int                 GetMeasurementID(TString hname_tstr);
 int                 GetMeasurementID(int seriesNo, double position);
 double              GetPosError(TString collimator, TString testBench);
 double              GetSigmaBL(TString SiPM);
+double              FindMaxXaxis(TH1D* h);
+double              FindMaxYaxis(TH1D* h);
+bool                FitGaussSingle(TH1D* h, float range_in_RMS);
+std::vector<double> GetFWHM(TH1D* h);
+*/
+
 bool                CheckDBStatus(int status, sqlite3* database);
 bool                SaveResultsDB(TString database, TString table, TString query, int seriesNo);
 bool                CreateTable(TString database, TString table);
+
+bool                RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
+bool                RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
+
 double              GetMean(std::vector<double> vec);
 double              GetStandardDev(std::vector<double> vec);
 double              GetStandardErr(std::vector<double> vec);
-double              FindMaxXaxis(TH1D* h);
-double              FindMaxYaxis(TH1D* h);
-bool                RatiosFitGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
-bool                RatiosFitDoubleGauss(std::vector<TH1D*>& vec, float range_in_RMS = 1);
-bool                FitGaussSingle(TH1D* h, float range_in_RMS);
-std::vector<double> GetFWHM(TH1D* h);
 
 };
 

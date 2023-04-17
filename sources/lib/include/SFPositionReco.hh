@@ -1,82 +1,62 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *           SFPositionReco.hh           *
+// *            SFPositionReco.hh           *
 // *          Katarzyna Rusiecka           *
 // * katarzyna.rusiecka@doctoral.uj.edu.pl *
-// *          Created in 2020              *
+// *          Created in 2019              *
 // *                                       *
 // *****************************************
 
 #ifndef __SFPositionReco_H_
 #define __SFPositionReco_H_ 1
 
-#include "SFAttenuationModel.hh"
-#include "SFAttenuation.hh"
-#include "SFPositionRes.hh"
-#include "SFData.hh"
+#include "SDDSamples.h"
+#include "SLoop.h"
+#include "SCategoryManager.h"
+
+#include "SFPeakFinder.hh"
 #include "SFResults.hh"
+#include "SFDrawCommands.hh"
 
-#include <TF1.h>
-#include <TF2.h>
+#include <TCanvas.h>
 #include <TGraphErrors.h>
-#include <TObject.h>
+#include <TH1D.h>
+#include <TTree.h>
+#include <TF1.h>
+#include <TFile.h>
 
-class SFPositionReco : public TObject
+#include <iostream>
+#include <tuple>
+#include <optional>
+
+namespace SFPositionReco
 {
-
-  private:
-    int     fSeriesNo;
-    SFData* fData;
-    SFAttenuationModel* fModel;
-
-    TGraphErrors* fMAttCh0CorrGraph;
-    TGraphErrors* fMAttCh1CorrGraph;
-
-    TGraphErrors* fMLRGraph;
-    TGraphErrors* fMLRCorrGraph;
-
-    TGraphErrors* fAGraph;
+    auto ReconstructPosition(SDDSamples * samples, TF1* fun_mlr,
+                             float BL_sigma_cut, float qmin, float qmax) 
+                             -> std::optional<double>;
     
-    TGraphErrors* fPosRecoGraph;
-    TGraphErrors* fPosRecoCorrGraph;
+    SFResults* ReconstructPositionDist(SFChAddr addr, TH1D* spectrum_av,
+                                       TF1* fun_mlr, TString path, 
+                                       double BL_sigma_cut,
+                                       TString collimator);
     
-    TGraphErrors* fPosResiduals;
-    TGraphErrors* fPosResidualsCorr;
-    
-    TGraphErrors *fPosRecoDiff;
-    TGraphErrors *fPosRecoDiffCorr;
-    
-    TGraphErrors* fPosResGraph;
-    TGraphErrors* fPosResCorrGraph;
-    
-    TF2* fPlRecoFun;
-    TF2* fPrRecoFun;
-    
-    TH1D* fPosRecoAll;
-    
-    std::vector<TH1D*> fRecoPositionsHist;
-    std::vector<TH1D*> fRecoPositionsCorrHist;
-    std::vector<TH1D*> fRecoPositionsUncertCorrHist;
-
-    SFResults* fResultsExp;
-    SFResults* fResultsCorr;
-
-  public:
-    SFPositionReco(int seriesNo);
-    ~SFPositionReco();
-
-    bool CalculateMLR(void);
-    bool CalculatePosRecoCoefficients(void);
-    bool PositionReco(void);
-
-    std::vector<SFResults*> GetResults(void);
-    std::vector<TH1D*>      GetPositionDistributions(TString type);
-    std::vector<TH1D*>      GetErrorDistributions(void) { return fRecoPositionsUncertCorrHist; };
-
-    void Print(void);
-
-    ClassDef(SFPositionReco, 1)
+    auto ReconstructPositionDistAll(SFChAddr addr, 
+                                    std::vector<TH1D*> spectrum_av, 
+                                    std::vector<double> positions,
+                                    std::vector<TString> path,
+                                    TF1* fun_mlr, 
+                                    double BL_sigma_cut,
+                                    double pos_uncert, 
+                                    TString collimator)
+                                    -> std::tuple<SFResults*,std::vector<TH1D*>>;
+                                    
+    SFResults* ReconstructPositionDistSum(SFChAddr addr, 
+                                          std::vector<TH1D*> spectrum_av,
+                                          std::vector<double> positions,
+                                          std::vector<TString> path,
+                                          TF1* fun_mlr, double BL_sigma_cut, 
+                                          TString collimator);
 };
 
 #endif

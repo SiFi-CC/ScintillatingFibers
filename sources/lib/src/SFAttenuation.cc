@@ -29,14 +29,16 @@ double myPol3(double* x, double* par)
 /// For both ends of the fiber one MLR value is calculated, since combined signal from both 
 /// channels is taken into account. Obtained MLR dependence is fitted with pol1 or pol3 
 /// function.
-SFResults* SFAttenuation::AttCombinedCh(TString fun, TString collimator, 
-                                        TString testBench, TString sipm,
+SFResults* SFAttenuation::AttCombinedCh(TString fun, SFInfo* info,
                                         double pos_uncert,
                                         std::vector<double> positions,
                                         std::vector<TH1D*> spectra)
 {
     int npoints = spectra.size();
-
+    TString collimator = info->GetCollimator();
+    TString sipm = info->GetSiPM();
+    TString testBench = info->GetTestBench();
+    
     TString gname = "attenuation_mlr";
     auto mlr = new TGraphErrors(npoints);
     mlr->GetXaxis()->SetTitle("source position [mm]");
@@ -91,9 +93,20 @@ SFResults* SFAttenuation::AttCombinedCh(TString fun, TString collimator,
                 parNo    = 1;
             }
         }
+        else if (testBench == "PRO KRK")
+        {
+                SFTools::RatiosFitDoubleGauss(spectra, 5);
+                fun_name = "fDGauss";
+                const_1  = spectra[i]->GetFunction(fun_name)->GetParameter(0);
+                const_2  = spectra[i]->GetFunction(fun_name)->GetParameter(3);
+                if (const_1 > const_2)
+                    parNo = 1;
+                else
+                    parNo = 4;
+        }
         else if (testBench == "PMI")
         {
-            SFTools::RatiosFitDoubleGauss(spectra, 2);   /// TODO tune!
+            SFTools::RatiosFitDoubleGauss(spectra, 5);   /// TODO tune!
             fun_name = "fDGauss";
             const_1  = spectra[i]->GetFunction(fun_name)->GetParameter(0);
             const_2  = spectra[i]->GetFunction(fun_name)->GetParameter(3);
@@ -116,7 +129,7 @@ SFResults* SFAttenuation::AttCombinedCh(TString fun, TString collimator,
     if(fun.Contains("pol1"))
     {
         TF1* fpol1 = new TF1("fpol1", "pol1", -50, 150);
-        fpol1->SetParameters(-0.15, 0.005);
+        fpol1->SetParameters(-1E-3, -9E-3);
         TFitResultPtr ptr = mlr->Fit(fpol1, "SQR+");
 
         att = fabs(1. / fpol1->GetParameter(1));
@@ -130,7 +143,7 @@ SFResults* SFAttenuation::AttCombinedCh(TString fun, TString collimator,
     else if(fun.Contains("pol3"))
     {
         TF1* fpol3 = new TF1("fpol3", myPol3, -50, 150, 3);
-        fpol3->SetParameters(-0.15, 0.005, 50);
+        fpol3->SetParameters(-1E-3, -9E-3, 50);
         TFitResultPtr ptr = mlr->Fit(fpol3, "SQR+");
         
         att     = fabs(1. / fpol3->GetParameter(1));
@@ -164,11 +177,13 @@ SFResults* SFAttenuation::AttCombinedCh(TString fun, TString collimator,
 /// series was measured with electronic collimator - FindPeakFit() method
 /// of the SFPeakFinder class is used.
 /// \param ch - channel number
-SFResults* SFAttenuation::AttSeparateCh(char side, double pos_uncert, double fiberLen,
+SFResults* SFAttenuation::AttSeparateCh(char side, double pos_uncert, SFInfo *info,
                                         std::vector<double> positions,
-                                        std::vector<TH1D*> spectra)
+                                        std::vector<TH1D*> spectra, 
+                                        std::vector<TString> path)
 {
     int npoints = spectra.size();
+    double fiberLen = info->GetFiberLength();
     
     TString gname = Form("attenuation_separate_%c", side);
     TGraphErrors* graph = new TGraphErrors(npoints);
@@ -180,9 +195,7 @@ SFResults* SFAttenuation::AttSeparateCh(char side, double pos_uncert, double fib
 
     for (int i = 0; i < npoints; i++)
     {
-        auto pf = std::make_unique<SFPeakFinder>(spectra[i], false);
-        pf->FindPeakFit();
-        auto peakParams = std::unique_ptr<SFResults>(pf->GetResults());
+        auto peakParams = std::unique_ptr<SFResults>(SFPeakFinder::FindPeakFit(spectra[i], path[i], 0, 0));
         graph->SetPoint(i, positions[i], peakParams->GetValue(SFResultTypeNum::kPeakPosition));
         graph->SetPointError(i, pos_uncert, peakParams->GetUncertainty(SFResultTypeNum::kPeakPosition));
     }
@@ -192,13 +205,13 @@ SFResults* SFAttenuation::AttSeparateCh(char side, double pos_uncert, double fib
 
     if (side == 'L' || side == 'l')
     {
-        fexp = new TF1("funCh0", "[0]*exp(-x/[1])", positions[0], positions[npoints - 1]);
-        fexp->SetParameters(1000, 100);
+        fexp = new TF1("fun_l", "[0]*exp(-x/[1])", positions[0], positions[npoints - 1]);
+        fexp->SetParameters(10, 100);
     }
     else if (side == 'R' || side == 'r')
     {
-        fexp = new TF1("funCh1", "[0]*exp(-([2]-x)/[1])", positions[0], positions[npoints - 1]);
-        fexp->SetParameter(0, 1000);
+        fexp = new TF1("fun_r", "[0]*exp(-([2]-x)/[1])", positions[0], positions[npoints - 1]);
+        fexp->SetParameter(0, 10);
         fexp->SetParameter(1, 100);
         fexp->FixParameter(2, fiberLen);
     }
@@ -262,7 +275,7 @@ SFResults* SFAttenuation::AttSimultaneousFit(TGraphErrors *attL, TGraphErrors *a
     ROOT::Fit::Fitter fitter;
 
     const int npar       = 4;
-    double    par0[npar] = {500, 500, 150, fiberLen};
+    double    par0[npar] = {1000, 1000, 500, fiberLen};
 
     fitter.Config().SetParamsSettings(npar, par0);
 

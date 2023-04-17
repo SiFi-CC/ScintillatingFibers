@@ -13,14 +13,12 @@
 #include "SFEnergyRes.hh"
     
 //------------------------------------------------------------------    
-SFResults* SFEnergyRes::CalculateEnergyResSingle(TH1D* h)
+SFResults* SFEnergyRes::CalculateEnergyResSingle(TH1D* h, TString path)
 {
  
-    auto peakFin = std::make_unique<SFPeakFinder>(h, false);
-    peakFin->FindPeakFit();
-    auto fitResults = std::unique_ptr<SFResults>(peakFin->GetResults());
+    auto fitResults = std::unique_ptr<SFResults>(SFPeakFinder::FindPeakFit(h, path, 0, 0));
     
-    double enRes = fitResults->GetValue(SFResultTypeNum::kPeakSigma) /
+    double enRes = fabs(fitResults->GetValue(SFResultTypeNum::kPeakSigma)) /
                    fitResults->GetValue(SFResultTypeNum::kPeakPosition);
     double enResErr = enRes *
                       sqrt(pow(fitResults->GetUncertainty(SFResultTypeNum::kPeakPosition), 2) /
@@ -40,7 +38,8 @@ SFResults* SFEnergyRes::CalculateEnergyResSingle(TH1D* h)
 //------------------------------------------------------------------
 SFResults* SFEnergyRes::CalculateEnergyResSeries(TString suffix, double pos_uncert,
                                                  std::vector<double> positions,
-                                                 std::vector<TH1D*> spectra)
+                                                 std::vector<TH1D*> spectra,
+                                                 std::vector<TString> path)
 {
 
     int npoints = spectra.size();
@@ -60,7 +59,7 @@ SFResults* SFEnergyRes::CalculateEnergyResSeries(TString suffix, double pos_unce
 
     for (int i = 0; i < npoints; i++)
     { 
-        auto singleER = std::unique_ptr<SFResults>(CalculateEnergyResSingle(spectra[i]));
+        auto singleER = std::unique_ptr<SFResults>(CalculateEnergyResSingle(spectra[i], path[i]));
         enRes = singleER->GetValue(kEnergyRes);
         enResErr = singleER->GetUncertainty(kEnergyRes);
         graph->SetPoint(i, positions[i], enRes);

@@ -126,8 +126,8 @@ double Multiply(double* deriv, TMatrixD cov)
 }
 //------------------------------------------------------------------
 /// Calculates uncertainty of the reconstructed primary component.
-double CalculateUncertainty(std::vector<double> params, 
-                            TMatrixD covMatrix, TString side)
+double SFAttenuationModel::CalculateUncertainty(std::vector<double> params, 
+                                                TMatrixD covMatrix, TString side)
 {
     double uncert = 0;
     
@@ -255,14 +255,15 @@ SFResults* SFAttenuationModel::FitModel(TGraphErrors *left, TGraphErrors *right,
     ROOT::Fit::Fitter fitter;
 
     const int npar       = 6;
-    double    par0[npar] = {500, 150, 0.5, 0.5, 1, fiberLen};
+//     double    par0[npar] = {500, 150, 0.5, 0.5, 1, fiberLen};
+    double    par0[npar] = {500, 150, 1, 1, 1, fiberLen};
 
     fitter.Config().SetParamsSettings(npar, par0);
 
     fitter.Config().ParSettings(0).SetLimits(0, 1E6);
     fitter.Config().ParSettings(1).SetLimits(0, 1E4);
-    fitter.Config().ParSettings(2).SetLimits(-1, 3);
-    fitter.Config().ParSettings(3).SetLimits(-1, 3);
+    fitter.Config().ParSettings(2).SetLimits(-1, 50);
+    fitter.Config().ParSettings(3).SetLimits(-1, 50);
     fitter.Config().ParSettings(4).SetLimits(0, 5);
     fitter.Config().ParSettings(5).Fix();
 
@@ -364,7 +365,7 @@ SFResults* SFAttenuationModel::FitModel(TGraphErrors *left, TGraphErrors *right,
     TMatrixD covMatrix;
     covMatrix.ResizeTo(6, 6);
     fFitterResults->GetCovarianceMatrix(covMatrix);
-
+    
 //     double* derivativesL;
 //     double* derivativesR;
 

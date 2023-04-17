@@ -12,43 +12,37 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOTSYS})
 
 find_package(ROOT REQUIRED COMPONENTS Core Spectrum)
-#set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs 2.0.0 REQUIRED)
 find_package(FitterFactory)
 find_package(SiFi)
-find_package(DesktopDigitizer6)
+find_package(DesktopDigitizer6 REQUIRED)
 
-include(${ROOT_USE_FILE})
-include_directories(${ROOT_INCLUDE_DIRS})
-include_directories(${SIFI_INCLUDE_DIR})
+#include_directories(${SIFI_INCLUDE_DIR})
 include_directories(BEFORE sources/lib/include)
 
 link_directories(${SIFI_LIBRARY_DIR})
-link_directories(${FITTERFACTORY_LIBRARY_DIR})
+link_directories(${DESKTOPDIGITIZER6_LIBRARY_DIR})
 
 set(DEF_CMAKE_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME})
 set(CMAKE_INSTALL_CMAKEDIR ${DEF_CMAKE_INSTALL_CMAKEDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-find_package(MultiDimensionalFactory REQUIRED)
+#find_package(MultiDimensionalFactory REQUIRED)
 
 add_subdirectory(sources)
-	
-#install(TARGETS ScintillatingFibers
-#	EXPORT ${CMAKE_PROJECT_NAME}Targets
-#	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#)
 
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libScintillatingFibers_rdict.pcm
-#	DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libScintillatingFibers_rdict.pcm
+	DESTINATION ${CMAKE_INSTALL_LIBDIR})
 	
 #install(TARGETS data attenuation energyres lightout peakfin posres stability tconst temp timeres model energyreco posreco  
 #	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 #)
+
+install(TARGETS peakfin_pmi attenuation_pmi attenuation_krk energyres_krk posres_krk
+RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 export(PACKAGE ${CMAKE_PROJECT_NAME})
 

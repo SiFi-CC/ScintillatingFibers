@@ -10,8 +10,6 @@
 
 #include "SFFitResults.hh"
 
-ClassImp(SFFitResults);
-
 //------------------------------------------------------------------
 /// Default constructor.
 SFFitResults::SFFitResults() : fComponents(-1),

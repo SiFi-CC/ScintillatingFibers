@@ -108,7 +108,8 @@ enum SFResultTypeObj
     kEnergyResGraph,    ///< Energy resolution graph
 
     //----- SFLightOutput
-    kLightGraph,        ///< Light collection/light output graph 
+    kLightGraph,        ///< Light collection/light output graph
+    kPDECan,            ///< Canvas containing steps to calculate effective PDE
 
     //----- SFTimingRes
     kTimeResGraph,      ///< Mean of the TD distribution vs. source position 
@@ -118,8 +119,9 @@ enum SFResultTypeObj
     kPosRecoVsPosGraph, ///< Reconstructed position vs. true source position
     kPosResVsPosGraph,  ///< Position resolution vs. source position
     kPosVsMLRGraph,     ///< Reversed MLR curve
+    kPosDiffVsPosGraph, ///< Differential position graph
     kResidualGraph,     ///< Reconstructed position residuals graph
-    kPositionDist,      ///< Summed reconstructed position distribution
+    kPositionDist,      ///< Reconstructed position distribution
 
     //----- SFAttenuationModel
     kPlFun,             ///< Function representing primary light emission (left/ch0)
@@ -146,6 +148,7 @@ enum SFResultTypeObj
 
     //----- SFPositionReco
     kAGraph,              ///< A coeffcient (for position reconstruction) vs. source position
+    kPositionDistUncert,
     
     //----- SFCountMap
     kCountsGraph          ///< Counts vs. fiber number

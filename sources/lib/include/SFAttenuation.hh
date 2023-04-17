@@ -11,13 +11,12 @@
 #ifndef __SFAttenuation_H_
 #define __SFAttenuation_H_ 1
 
-#include "SFData.hh"
 #include "SFPeakFinder.hh"
 #include "SFResults.hh"
+#include "SFTools.hh"
+#include "SFInfo.hh"
 
 #include <TF1.h>
-
-#include <TObject.h>
 #include <Fit/BinData.h>
 #include <Fit/Chi2FCN.h>
 #include <Fit/Fitter.h>
@@ -63,15 +62,15 @@ struct GlobalChi2Att
 
 namespace SFAttenuation
 {
-    SFResults* AttCombinedCh(TString fun, TString collimator,
-                             TString testBench, TString sipm, 
+    SFResults* AttCombinedCh(TString fun, SFInfo* info, 
                              double pos_uncert,
                              std::vector<double> positions,
                              std::vector<TH1D*> spectra);
     
-    SFResults* AttSeparateCh(char side, double pos_uncert, double fiberLen,
+    SFResults* AttSeparateCh(char side, double pos_uncert, SFInfo *info,
                              std::vector<double> positions,
-                             std::vector<TH1D*> spectra);
+                             std::vector<TH1D*> spectra,
+                             std::vector<TString> path);
     
     SFResults* AttSimultaneousFit(TGraphErrors *attL, TGraphErrors *attR);
 };

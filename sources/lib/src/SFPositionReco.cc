@@ -1,576 +1,368 @@
 // *****************************************
 // *                                       *
 // *          ScintillatingFibers          *
-// *           SFPositionReco.cc           *
+// *            SFPositionReco.cc           *
 // *          Katarzyna Rusiecka           *
 // * katarzyna.rusiecka@doctoral.uj.edu.pl *
-// *          Created in 2020              *
+// *          Created in 2019              *
 // *                                       *
 // *****************************************
 
 #include "SFPositionReco.hh"
 
-const double ampMax = 660.;
+const double ampMax = 660;
 
 //------------------------------------------------------------------
-SFPositionReco::SFPositionReco(int seriesNo) : fSeriesNo(seriesNo), 
-                                               fData(nullptr),
-                                               fModel(nullptr),
-                                               fMAttCh0CorrGraph(nullptr),
-                                               fMAttCh1CorrGraph(nullptr),
-                                               fMLRGraph(nullptr),
-                                               fMLRCorrGraph(nullptr),
-                                               fPosRecoGraph(nullptr),
-                                               fPosRecoCorrGraph(nullptr),
-                                               fPosResiduals(nullptr),
-                                               fPosResidualsCorr(nullptr),
-                                               fPosRecoDiff(nullptr),
-                                               fPosRecoDiffCorr(nullptr),
-                                               fPosResGraph(nullptr),
-                                               fPosResCorrGraph(nullptr),
-                                               fPlRecoFun(nullptr),
-                                               fPrRecoFun(nullptr),
-                                               fPosRecoAll(nullptr),
-                                               fResultsExp(nullptr),
-                                               fResultsCorr(nullptr)
+auto SFPositionReco::ReconstructPosition(SDDSamples* samples, TF1* fun_mlr, 
+                                        float BL_sigma_cut, float qmin, float qmax)
+                                        -> std::optional<double>
 {
-    try
+    double T0_l   = samples->getSignalL()->GetT0();
+    double T0_r   = samples->getSignalR()->GetT0();
+    double PE_l   = samples->getSignalL()->GetPE();
+    double PE_r   = samples->getSignalR()->GetPE();
+//     double BL_l   = samples->getSignalL()->GetBLSigma();
+//     double BL_r   = samples->getSignalR()->GetBLSigma();
+    double TOT_l  = samples->getSignalL()->GetTOT();
+    double TOT_r  = samples->getSignalR()->GetTOT();
+    double amp_l  = samples->getSignalL()->GetAmplitude();
+    double amp_r  = samples->getSignalR()->GetAmplitude();
+//     bool   veto_l = samples->getSignalL()->GetVeto();
+//     bool   veto_r = samples->getSignalR()->GetVeto();
+
+    if (T0_l > 0 && T0_r > 0 &&
+        TOT_l > 0 && TOT_r > 0 &&
+        /*BL_l < BL_sigma_cut && BL_r < BL_sigma_cut &&*/
+        amp_l < ampMax && amp_r < ampMax && 
+        sqrt(PE_l * PE_r) > qmin && sqrt(PE_l * PE_r) < qmax /*&&
+        veto_l == 0 && veto_r == 0*/)
     {
-       fData = new SFData(fSeriesNo);
-    }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        throw "##### Exception in SFPositionReco constructor!";
+        double MLR = log(sqrt(PE_r / PE_l));
+        return fun_mlr->Eval(MLR);
     }
 
-    TString desc = fData->GetDescription();
-
-    if (!desc.Contains("Regular series"))
-    {
-        std::cout << "##### Error in SFPositionReco constructor! Non-regular series!"
-                  << std::endl;
-        throw "##### Exception in SFPositionReco constructor!";
-    }
-
-    fResultsExp  = new SFResults(Form("PositionRecoResults_S%i_Exp", fSeriesNo));
-    fResultsCorr = new SFResults(Form("PositionRecoResults_S%i_Corr", fSeriesNo));
-    
-    //----- accessing attenuation analysis results
-    SFAttenuation* att;
-     
-    try
-    {
-        att = new SFAttenuation(fSeriesNo);
-    }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        throw "##### Exception in SFPositionReco constructor!";
-    }
-
-    att->AttCombinedCh();
-
-    std::vector<SFResults*> att_results = att->GetResults();
-    
-    fMLRGraph = (TGraphErrors*)att_results[2]->GetObject(SFResultTypeObj::kAttGraph);
-    
-    delete att;
-    delete att_results[0];
-    delete att_results[1];
-    delete att_results[3];
-    delete att_results[4];
-    //-----
-    
-    //----- accessing attenuation model results
-    //SFAttenuationModel* fModel;
-    
-    try
-    {
-        fModel = new SFAttenuationModel(fSeriesNo);
-    }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        throw "##### Exception in SFPositionReco constructor!";
-    }
-    
-    fModel->FitModel();
-    
-    SFResults *model_results = fModel->GetResults();
-    
-    fPlRecoFun = (TF2*)model_results->GetObject(SFResultTypeObj::kPlRecoFun);
-    fPrRecoFun = (TF2*)model_results->GetObject(SFResultTypeObj::kPrRecoFun);
-    fMAttCh0CorrGraph = (TGraphErrors*)model_results->GetObject(SFResultTypeObj::kPlVsPosGraph);
-    fMAttCh1CorrGraph = (TGraphErrors*)model_results->GetObject(SFResultTypeObj::kPrVsPosGraph);
-    
-    //delete model_results;
-    //-----
-    
-    //----- accessing position resolution analysis results 
-    SFPositionRes *posres;
-    
-    try
-    {
-        posres = new SFPositionRes(fSeriesNo);
-    }
-    catch (const char* message)
-    {
-        std::cerr << message << std::endl;
-        throw "##### Exception in SFPositionReco constructor!";
-    }
-    
-    posres->AnalyzePositionRes();
-    
-    std::vector<SFResults*> posres_results = posres->GetResults();
-    
-    // using pol1 results! change for [1] for pol3
-    fPosResGraph  = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPosResVsPosGraph);
-    fPosRecoGraph = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPosRecoVsPosGraph);
-    fPosResiduals = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kResidualGraph);
-//     fPosRecoDiff = (TGraphErrors*)posres_results[0]->GetObject(SFResultTypeObj::kPositionDiff);
-    fPosRecoAll   = (TH1D*)posres_results[0]->GetObject(SFResultTypeObj::kPositionAllHist);
-    
-    fRecoPositionsHist = posres->GetPositionRecoDist("pol3");
-    
-    fResultsExp->AddResult(SFResultTypeNum::kPositionRes, posres_results[0]->GetValue(SFResultTypeNum::kPositionRes),
-                           posres_results[0]->GetUncertainty(SFResultTypeNum::kPositionRes));
-    //delete posres;
-    //delete posres_results;
-    //-----
+    return std::nullopt;
 }
+
 //------------------------------------------------------------------
-SFPositionReco::~SFPositionReco()
+SFResults* SFPositionReco::ReconstructPositionDist(SFChAddr addr,
+                                                   TH1D* spectrum_av,
+                                                   TF1* fun_mlr,
+                                                   TString path,
+                                                   double BL_sigma_cut,
+                                                   TString collimator)
 {
-    if (fData != nullptr) delete fData;
-};
-//------------------------------------------------------------------
-bool SFPositionReco::CalculateMLR(void)
-{    
-    std::cout << "\n----- Calculating Corrected MLR curve for series " << fSeriesNo << std::endl;
+ 
+    std::cout << "Reconstructing: " << path << std::endl;
     
-    int                 npoints    = fData->GetNpoints();
-    std::vector<double> positions  = fData->GetPositions();
-    TString             collimator = fData->GetCollimator();
-    TString             testBench  = fData->GetTestBench();
-
-    fMLRGraph->SetName("fMLRGraph");
-    fMLRGraph->SetTitle("M_{LR} vs. Position");
-    fMLRGraph->GetXaxis()->SetTitle("source position [mm]");
-    fMLRGraph->GetYaxis()->SetTitle("M_{LR}");
-    fMLRGraph->SetMarkerStyle(8);
+    TString full_tree_path = path + "/sifi_results.root";
+    std::string full_tree_path_str = std::string(full_tree_path);
+    std::cout << "\nOpening file: " << full_tree_path << std::endl;
     
-    fMLRCorrGraph = new TGraphErrors(npoints);
-    fMLRCorrGraph->SetName("fMAttCorrGraph");
-    fMLRCorrGraph->SetTitle("M_{LR} vs. Position (Corrected)");
-    fMLRCorrGraph->GetXaxis()->SetTitle("source position [mm]");
-    fMLRCorrGraph->GetYaxis()->SetTitle("M_{LR} corrected");
-    fMLRCorrGraph->SetMarkerStyle(8);
-
-    TGraphErrors *gRevMLRCorr = new TGraphErrors(npoints);
-    gRevMLRCorr->SetName("gRevMLRCorr");
-    gRevMLRCorr->SetTitle("Position vs. M_{LR} (Corrected)");
-    gRevMLRCorr->GetXaxis()->SetTitle("M_{LR}");
-    gRevMLRCorr->GetYaxis()->SetTitle("source position [mm]");
-    gRevMLRCorr->SetMarkerStyle(8);
-    
-    if (fMAttCh0CorrGraph == nullptr || fMAttCh1CorrGraph == nullptr)
+    auto tfile = std::make_unique<TFile>(full_tree_path, "READ");
+        
+    if (!tfile.get()->IsOpen())
     {
-        std::cerr << "##### Error in SFPositionReco::CalculateMLR()" << std::endl;
-        std::cerr << "Corrected attenuation graphs not existing!" << std::endl;
+        std::cerr << "##### Error in SFPositionReco:: " << __func__ << std::endl;
+        std::cerr << "Could not open file: " << std::endl;
+        std::cerr << full_tree_path << std::endl;
         std::abort();
     }
-    
-    for (int i = 0; i < npoints; i++)
-    {
-        double vCh0    = fMAttCh0CorrGraph->GetPointY(i);
-        double vCh0err = fMAttCh0CorrGraph->GetErrorY(i);
-        double vCh1    = fMAttCh1CorrGraph->GetPointY(i);
-        double vCh1err = fMAttCh1CorrGraph->GetErrorY(i);
-        double MLR     = log(sqrt(vCh1 / vCh0));
-        double MLRerr  = sqrt(pow(vCh1err / (2 * vCh1), 2) +
-                              pow(- vCh0err / (2 * vCh0), 2));
-        fMLRCorrGraph->SetPoint(i, positions[i], MLR);
-        fMLRCorrGraph->SetPointError(i, SFTools::GetPosError(collimator, testBench), MLRerr);
+    tfile->Close();
         
-        gRevMLRCorr->SetPoint(i, MLR, positions[i]);
-        gRevMLRCorr->SetPointError(i, MLRerr, SFTools::GetPosError(collimator, testBench));
-    }
+    SLoop *loop = new SLoop();
+    loop->addFile(full_tree_path_str);
+    loop->setInput({});
     
-    TF1 *fpol1 = new TF1("fpol1", "pol1", positions[0], positions[npoints-1]); 
-    TFitResultPtr ptr = fMLRCorrGraph->Fit(fpol1, "SQR+");
+    int nloopMax = loop->getEntries();
+    auto tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
     
-    TF1 *fpol1_rev = new TF1("fpol1", "pol1", -1, 1);
-    TFitResultPtr ptr_rev = gRevMLRCorr->Fit(fpol1_rev, "SQR+");
+    //----- setting energy cut
+    auto peak_range = SFPeakFinder::FindPeakRange(spectrum_av, path, collimator, 0, 0);
+    double xmin = std::get<0>(peak_range);
+    double xmax = std::get<1>(peak_range);
     
-    fResultsCorr->AddObject(SFResultTypeObj::kAttGraph, fMLRCorrGraph);
-    fResultsCorr->AddResult(SFResultTypeNum::kMLRSlope, fpol1->GetParameter(1), fpol1->GetParError(1));
-    fResultsCorr->AddResult(SFResultTypeNum::kMLROffset, fpol1->GetParameter(0), fpol1->GetParError(0));
-    fResultsCorr->AddObject(SFResultTypeObj::kPosVsMLRGraph, gRevMLRCorr);
-    //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(0), fpol1_rev->GetParError(0));
-    fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol1_rev->GetParameter(1), fpol1_rev->GetParError(1));
-    
-    fResultsExp->AddObject(SFResultTypeObj::kAttGraph, fMLRGraph);
-    fResultsExp->AddResult(SFResultTypeNum::kMLRSlope, fMLRGraph->GetFunction("fpol1")->GetParameter(1),
-                           fMLRGraph->GetFunction("fpol1")->GetParError(1));
-    fResultsExp->AddResult(SFResultTypeNum::kMLROffset, fMLRGraph->GetFunction("fpol1")->GetParameter(0),
-                           fMLRGraph->GetFunction("fpol1")->GetParError(0));
+    TH1D* hist = new TH1D("htemp", "htemp", 200, -200, 200);
+    hist->GetXaxis()->SetTitle("reconstructed position [mm]");
+    hist->GetYaxis()->SetTitle("counts");
 
-    return true;
-}
-//------------------------------------------------------------------
-bool SFPositionReco::CalculatePosRecoCoefficients(void)
-{
-    int                 npoints    = fData->GetNpoints();
-    std::vector<double> positions  = fData->GetPositions();
-    TString             collimator = fData->GetCollimator();
-    TString             testBench  = fData->GetTestBench();
-    
-    double B = fData->GetFiberLength() / 2.;
-    
-    int n = 0;
-    
-    for (int i = 0; i < npoints; i++)
+    for (int nloop = 0; nloop < nloopMax; ++nloop)
     {
-        if (fabs(B - positions[i]) < 1E-2)
-            continue;
-        n++;
-    }
-    
-    std::cout << "\n----- Calculating Position Reconstruction Coefficients for series " << fSeriesNo << std::endl;
-    std::cout << "Graph has " << n << " points" << std::endl; 
-    
-    fAGraph = new TGraphErrors(n);
-    fAGraph->SetName("fAGraph");
-    fAGraph->SetTitle("A Coefficient vs. Position");
-    fAGraph->GetXaxis()->SetTitle("source position [mm]");
-    fAGraph->GetYaxis()->SetTitle("A [mm]");
-    fAGraph->SetMarkerStyle(8);
-    
-    if (fMLRCorrGraph == nullptr)
-    {
-        std::cerr << "##### Error in SFPositionReco::CalculatePosRecoCoefficients()" << std::endl;
-        std::cerr << "MLR graph does not exist!" << std::endl;
-        std::abort();
-    }
-    
-    int j = -1;
-    
-    for (int i = 0; i < npoints; i++)
-    {
-        double val   = fMLRCorrGraph->GetPointY(i);
-        double val_e = fMLRCorrGraph->GetErrorY(i);
-        if (fabs(B - positions[i]) < 1E-2)
-            continue;
-        j++;
-        double A    = (positions[i] - B) / (val);
-        double Aerr = sqrt(pow((SFTools::GetPosError(collimator, testBench) / val), 2) +
-                           pow((B - positions[i]) * val_e / (pow(val, 2)), 2));
-        fAGraph->SetPoint(j, positions[i], A);
-        fAGraph->SetPointError(j, SFTools::GetPosError(collimator, testBench), Aerr);
-    }
-    
-    TF1* fpol0 = new TF1("fpol0", "pol0", positions[0], positions[npoints-1]);
-    fAGraph->Fit(fpol0, "SQR+");
-    
-    fResultsCorr->AddObject(SFResultTypeObj::kAGraph, fAGraph);
-    //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fpol0->GetParameter(0), fpol0->GetParError(0));
-    fResultsCorr->AddResult(SFResultTypeNum::kBCoeff, B, 0);
-    //fResultsCorr->AddResult(SFResultTypeNum::kACoeff, fAGraph->GetPointY(0), fAGraph->GetErrorY(0));
-    
-    std::cout << "A = " << fpol0->GetParameter(0) << " +/- " << fpol0->GetParError(0) << std::endl;
-    std::cout << "B = " << B << std::endl;
-    
-    return true;
-}
-//------------------------------------------------------------------
-bool SFPositionReco::PositionReco(void)
-{
-    std::cout << "\n\n----- Position Resolution (Corrected) Analysis" << std::endl;
-    std::cout << "----- Series: " << fSeriesNo << std::endl;
-    
-    int                 npointsMax = fData->GetNpoints();
-    TString             collimator = fData->GetCollimator();
-    TString             testBench  = fData->GetTestBench();
-    TString             sipm       = fData->GetSiPM();
-    std::vector<double> positions  = fData->GetPositions();
-    std::vector<int>    measurementsIDs = fData->GetMeasurementsIDs();
-    
-    //----- setting graphs
-    fPosRecoCorrGraph = new TGraphErrors(npointsMax);
-    fPosRecoCorrGraph->SetName("fPosRecoCorrGraph");
-    fPosRecoCorrGraph->SetTitle(Form("Reconstructed Source Position (Corrected) S%i", fSeriesNo));
-    fPosRecoCorrGraph->GetXaxis()->SetTitle("source position [mm]");
-    fPosRecoCorrGraph->GetYaxis()->SetTitle("reconstructed position [mm]");
-    fPosRecoCorrGraph->SetMarkerStyle(8);
-    
-    fPosResCorrGraph = new TGraphErrors(npointsMax);
-    fPosResCorrGraph->SetName("fPosResCorrGraph");
-    fPosResCorrGraph->SetTitle(Form("Position Resolution (Corrected) S%i", fSeriesNo));
-    fPosResCorrGraph->GetXaxis()->SetTitle("source position [mm]");
-    fPosResCorrGraph->GetYaxis()->SetTitle("position resolution [mm]");
-    fPosResCorrGraph->SetMarkerStyle(8);
-    
-    fPosResidualsCorr = new TGraphErrors(npointsMax);
-    fPosResidualsCorr->SetName("fPosResidualsCorr");
-    fPosResidualsCorr->SetTitle(Form("Reconstructed Position (Corrected) Residuals S%i", fSeriesNo));
-    fPosResidualsCorr->GetXaxis()->SetTitle("source position [mm]");
-    fPosResidualsCorr->GetYaxis()->SetTitle("residual [mm]");
-    fPosResidualsCorr->SetMarkerStyle(8);
-    
-    fPosRecoDiffCorr = new TGraphErrors(npointsMax);
-    fPosRecoDiffCorr->SetName("fPosRecoDiffCorr");
-    fPosRecoDiffCorr->SetTitle(Form("Reconstructed Position Difference (Corrected) S%i", fSeriesNo));
-    fPosRecoDiffCorr->GetXaxis()->SetTitle("source position [mm]");
-    fPosRecoDiffCorr->GetYaxis()->SetTitle("P_{reco} - P_{real} [mm]");
-    fPosRecoDiffCorr->SetMarkerStyle(8);
-    //-----
-    
-    //----- position reconstruction event by event start
-    double BL_sigma_cut = SFTools::GetSigmaBL(sipm);  
-    double s = SFTools::GetSigmaBL(fData->GetSiPM());
-    std::vector<double> sigmas = {s, s};
-    std::vector<double> sigma = {s};
-    TString cut = SFDrawCommands::GetCut(SFCutType::kCombCh0Ch1, sigmas);
-   
-    //-----
-    double xmin, xmax;
-    double A     = fResultsCorr->GetValue(SFResultTypeNum::kACoeff);
-    double A_err = fResultsCorr->GetUncertainty(SFResultTypeNum::kACoeff);
-    double B     = fResultsCorr->GetValue(SFResultTypeNum::kBCoeff);
-    double B_err = fResultsCorr->GetUncertainty(SFResultTypeNum::kBCoeff);
-    
-    double posResSum    = 0.;
-    double posResSumErr = 0.;
-    
-    TString hname = Form("Reconstructed Position Distribution (Summed) S%i", fSeriesNo);
-    TH1D *hPosRecoAll = new TH1D("hPosRecoAll", hname, 300, -100, 200);
-    hPosRecoAll->GetXaxis()->SetTitle("reconstructed position - source position [mm]");
-    hPosRecoAll->GetYaxis()->SetTitle("counts");
-    
-    std::vector<double> parsForErrors(9);
-    parsForErrors[0] = fModel->GetResults()->GetValue(SFResultTypeNum::kLambda);
-    parsForErrors[1] = fModel->GetResults()->GetValue(SFResultTypeNum::kEtaR);
-    parsForErrors[2] = fModel->GetResults()->GetValue(SFResultTypeNum::kEtaL);
-    parsForErrors[3] = fModel->GetResults()->GetValue(SFResultTypeNum::kKsi);
-    parsForErrors[4] = fModel->GetResults()->GetValue(SFResultTypeNum::kLength);
-    
-    for (int npoint = 0; npoint < npointsMax; npoint++)
-    {
-        std::cout << "\t Analyzing position " << positions[npoint] << " mm..." << std::endl;
+        loop->getEvent(nloop);
+        size_t tentriesMax = tSig->getEntries();
 
-        SLoop* loop = fData->GetTree(measurementsIDs[npoint]);
-
-        int        nloopMax = loop->getEntries();
-        SCategory* tSig     = SCategoryManager::getCategory(SCategory::CatDDSamples);
-
-        //----- setting energy cut
-        auto specAv = std::unique_ptr<TH1D>(fData->GetCustomHistogram(SFSelectionType::kPEAverage, cut, measurementsIDs[npoint]));
-        
-        auto peakFinAv = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(specAv.get(), false));
-        peakFinAv->FindPeakRange(xmin, xmax);
-        
-        //----- setting histograms
-        hname = Form("hRecoPositionsCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
-        fRecoPositionsCorrHist.push_back(new TH1D(hname, hname, 300, -100, 200));
-        fRecoPositionsCorrHist[npoint]->SetTitle(Form("Reconstructed Position (Corrected) S%i %.1f mm", fSeriesNo, positions[npoint]));
-
-        hname = Form("hRecoPositionsUncertCorr_S%i_pos%.1f", fSeriesNo, positions[npoint]);
-        fRecoPositionsUncertCorrHist.push_back(new TH1D(hname, hname, 200, 0, 50));
-        fRecoPositionsUncertCorrHist[npoint]->SetTitle(Form("Uncertainties of Reconstructed Position (Corrected) S%i %.1f mm", fSeriesNo, positions[npoint]));
-        
-        TString cutCh0 = SFDrawCommands::GetCut(SFCutType::kSpecCh0, sigma);
-        TString cutCh1 = SFDrawCommands::GetCut(SFCutType::kSpecCh1, sigma);
-        
-        auto specCh0 = std::unique_ptr<TH1D>(fData->GetSpectrum(0, SFSelectionType::kPE, cutCh0, measurementsIDs[npoint]));
-        auto specCh1 = std::unique_ptr<TH1D>(fData->GetSpectrum(1, SFSelectionType::kPE, cutCh1, measurementsIDs[npoint]));
-        
-        auto peakFinCh0 = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(specCh0.get(), false));
-        peakFinCh0->FindPeakFit();
-        
-        auto peakFinCh1 = std::unique_ptr<SFPeakFinder>(new SFPeakFinder(specCh1.get(), false));
-        peakFinCh1->FindPeakFit();
-        
-        parsForErrors[7] = peakFinCh0->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
-        parsForErrors[8] = peakFinCh1->GetResults()->GetValue(SFResultTypeNum::kPeakSigma);
-        
-        //----- filling histograms
-        for (int nloop = 0; nloop < nloopMax; nloop++)
+        for (int tentries = 0; tentries < tentriesMax; ++tentries)
         {
-            loop->getEvent(nloop);
-            size_t tentriesMax = tSig->getEntries();
+            int m, l, f;
+            auto samples = (SDDSamples*)tSig->getObject(tentries);
+            samples->getAddress(m, l, f);
             
-            for (int tentries = 0; tentries < tentriesMax; tentries++)
+            if (addr.fModule == m &&
+                addr.fLayer == l &&
+                addr.fFiber == f)
             {
-                int m, l, f;
-                SDDSamples* samples = (SDDSamples*)tSig->getObject(tentries);
-                samples->getAddress(m, l, f);
-                
-                if (m == 0)
+                if (auto val = ReconstructPosition(samples, fun_mlr, BL_sigma_cut, xmin, xmax); val)
                 {
-                    double t0Ch0 = samples->getSignalL()->GetT0();
-                    double t0Ch1 = samples->getSignalR()->GetT0();
-                    double peCh0  = samples->getSignalL()->GetPE();
-                    double peCh1  = samples->getSignalR()->GetPE();
-                    double blCh0  = samples->getSignalL()->GetBLSigma();
-                    double blCh1  = samples->getSignalR()->GetBLSigma();
-                    double totCh0 = samples->getSignalL()->GetTOT();
-                    double totCh1 = samples->getSignalR()->GetTOT();
-                    double ampCh0 = samples->getSignalL()->GetAmplitude();
-                    double ampCh1 = samples->getSignalR()->GetAmplitude();
-                    bool   vetoCh0 = samples->getSignalL()->GetVeto();
-                    bool   vetoCh1 = samples->getSignalR()->GetVeto();
-                    
-                    if (t0Ch0 > 0 && t0Ch1 > 0 &&
-                        totCh0 > 0 && totCh1 > 0 &&
-                        blCh0 < BL_sigma_cut && blCh1 < BL_sigma_cut &&
-                        ampCh0 < ampMax && ampCh1 < ampMax &&
-                        sqrt(peCh0 * peCh1) > xmin &&
-                        sqrt(peCh0 * peCh1) < xmax &&
-                        vetoCh0 == 0 && vetoCh1 == 0)
-                    {
-                        parsForErrors[5] = peCh0;
-                        parsForErrors[6] = peCh1;
-                        
-                        //for (int k=0; k<9; k++)
-                        //{
-                        //    std::cout << parsForErrors[k] << "\t";
-                        //}
-                        //std::cout << std::endl;
-                        
-                        double MLR = log(sqrt(fPrRecoFun->Eval(peCh1, peCh0) /
-                                              fPlRecoFun->Eval(peCh1, peCh0)));
-                        double pos = A * MLR + B;
-                        double Pr_err = fModel->CalculateUncertainty(parsForErrors, "R");
-                        double Pl_err = fModel->CalculateUncertainty(parsForErrors, "L");
-                        double pos_err = sqrt(pow(MLR * A_err, 2) +
-                                              pow(A / (2 * fPrRecoFun->Eval(peCh1, peCh0)) * Pr_err, 2) +
-                                              pow(-A / (2 * fPlRecoFun->Eval(peCh1, peCh0)) * Pl_err, 2) + 
-                                              pow(B_err, 2));
-                        fRecoPositionsCorrHist[npoint]->Fill(pos);
-                        fRecoPositionsUncertCorrHist[npoint]->Fill(pos_err);
-                        hPosRecoAll->Fill(pos - positions[npoint]);
-                    }
-                    
+                    hist->Fill(*val);
                 }
-            }
-
+                else
+                    continue;
+             }
         }
-
-        delete loop;
-
-        double mean, mean_err, fwhm, fwhm_err;
-        
-        SFTools::FitGaussSingle(fRecoPositionsCorrHist[npoint], 5);
-        mean     = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(1);
-        mean_err = fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(1);
-        fwhm     = 2 * sqrt(2 * log(2)) *fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParameter(2);
-        fwhm_err = 2 * sqrt(2 * log(2)) * fRecoPositionsCorrHist[npoint]->GetFunction("fGauss")->GetParError(2);
-
-        fPosRecoCorrGraph->SetPoint(npoint, positions[npoint], mean);
-        fPosRecoCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), mean_err);
-        
-        fPosResCorrGraph->SetPoint(npoint, positions[npoint], fwhm);
-        fPosResCorrGraph->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), fwhm_err);
-        
-        fPosRecoDiffCorr->SetPoint(npoint, positions[npoint], mean - positions[npoint]);
-        fPosRecoDiffCorr->SetPointError(npoint, SFTools::GetPosError(collimator, testBench), fwhm);
-        
-        posResSum    += fwhm * (1. / pow(fwhm_err, 2));
-        posResSumErr += 1. / pow(fwhm_err, 2);
     }
-
-    double posResAv    = posResSum / posResSumErr;
-    double posResAvErr = sqrt(1. / posResSumErr);
-
-    std::cout << "Average position resolution for this series is: ";
-    std::cout << posResAv << " +/- " << posResAvErr << " mm\n\n" << std::endl;
-
-    double gconst  = hPosRecoAll->GetBinContent(hPosRecoAll->GetMaximumBin());
-    double fit_min = hPosRecoAll->GetBinCenter(2);
-    double mean    = hPosRecoAll->GetMean();
-    double rms     = hPosRecoAll->GetRMS();
     
-    TF1 *fun_gauss = new TF1("fun_gauss", "gaus", fit_min, 200);
-    fun_gauss->SetParameters(gconst, mean, rms);
-    hPosRecoAll->Fit(fun_gauss, "QR");
+    double fit_min = hist->GetBinCenter(2);
+    TF1* fun_gauss = new TF1("fun_gaus", "gaus", fit_min, 200);
+    fun_gauss->SetParameters(hist->GetBinContent(hist->GetMaximumBin()),
+                             hist->GetMean(), hist->GetRMS());
     
-    TF1* funpol1 = new TF1("funpol1", "pol1", 0, 100);
-    fPosRecoCorrGraph->Fit(funpol1, "Q");
+    std::cout << "Fit starting parameters: " << hist->GetBinContent(hist->GetMaximumBin()) 
+              << "\t" << hist->GetMean() << "\t" << hist->GetRMS() << std::endl;
     
-    //----- position reconstruction end
-    double res;
+    hist->Fit(fun_gauss, "R");
+    
+    double sigma_to_fwhm = 2 * sqrt(2 * log(2));
+    double pos_res = sigma_to_fwhm * fun_gauss->GetParameter(2);
+    double pos_res_err = sigma_to_fwhm * fun_gauss->GetParError(2);
+    double pos_reco = fun_gauss->GetParameter(1);
+    double pos_reco_err = fun_gauss->GetParError(1);
+    
+    std::cout << "Position resolution: " << pos_res << " +/- " << pos_res_err  << std::endl;
+    std::cout << "Reconstructed position: " << pos_reco << " +/- " << pos_reco_err << std::endl; 
+    
+    SFResults* results = new SFResults("PositionReconstructionDistSinglePos");
+    results->AddObject(SFResultTypeObj::kPositionDist, hist);
+    results->AddResult(SFResultTypeNum::kPositionRes, pos_res, pos_res_err);
+    results->AddResult(SFResultTypeNum::kPositionReco, pos_reco, pos_reco_err);
+    
+    return results;
+}
+//------------------------------------------------------------------
+auto SFPositionReco::ReconstructPositionDistAll(SFChAddr addr, 
+                                                std::vector<TH1D*> spectrum_av, 
+                                                std::vector<double> positions,
+                                                std::vector<TString> path,
+                                                TF1* fun_mlr, 
+                                                double BL_sigma_cut, double pos_uncert, 
+                                                TString collimator) 
+                                                -> std::tuple<SFResults*,std::vector<TH1D*>>
+{
+    
+    if (fun_mlr == nullptr)
+    {
+        std::cerr << "##### Error in SFPositionReco:: " << __func__ << std::endl;
+        std::cerr << "One of the required pointers is invalid! Please check!" << std::endl;
+        std::abort();
+    }
+    
+    std::cout << std::endl;
+    fun_mlr->Print();
+    std::cout << "fMLR params: " << fun_mlr->GetParameter(0) << " +/- " << fun_mlr->GetParError(0) << "\n" << fun_mlr->GetParameter(1) << " +/- " << fun_mlr->GetParError(1) << std::endl;
+    
+    if (spectrum_av.empty() || spectrum_av[0] == nullptr)
+    {
+        std::cerr << "##### Error in SFPositionReco:: " << __func__ << std::endl;
+        std::cerr << "Something wrong with std::vector<TH1D*> spectrum_av! Please check!"<< std::endl;
+        std::abort();
+    }
+    
+    TString suffix = Form("M%iL%iF%i", addr.fModule, addr.fLayer, addr.fFiber);
+    
+    int npointsMax = positions.size();
+    
+    TGraphErrors *gPosRecoVsPos = new TGraphErrors(npointsMax);
+    gPosRecoVsPos->SetMarkerStyle(4);
+    gPosRecoVsPos->GetXaxis()->SetTitle("source position [mm]");
+    gPosRecoVsPos->GetYaxis()->SetTitle("reconstructed source position [mm]");
+    gPosRecoVsPos->SetName(Form("PosRecoVsPos_%s", suffix.Data()));
+    gPosRecoVsPos->SetTitle(Form("Reconstructed Source Position (%s)", suffix.Data()));
+    
+    TGraphErrors *gPosResVsPos = new TGraphErrors(npointsMax);
+    gPosResVsPos->SetMarkerStyle(4);
+    gPosResVsPos->GetXaxis()->SetTitle("source position [mm]");
+    gPosResVsPos->GetYaxis()->SetTitle("position resolution [mm]");
+    gPosResVsPos->SetName(Form("PosResVsPos_%s", suffix.Data()));
+    gPosResVsPos->SetTitle(Form("Position Resolution (%s)", suffix.Data()));
+    
+    TGraphErrors *gPosRecoDiff = new TGraphErrors(npointsMax);
+    gPosRecoDiff->SetMarkerStyle(4);
+    gPosRecoDiff->SetTitle(Form("Reconstructed Position Difference (%s)", suffix.Data()));
+    gPosRecoDiff->GetXaxis()->SetTitle("source position [mm]");
+    gPosRecoDiff->GetYaxis()->SetTitle("P_{reco} - P_{real} [mm]");
+    gPosRecoDiff->SetName("gPosRecoDiff");
+    
+    TGraphErrors *gResiduals = new TGraphErrors(npointsMax);
+    gResiduals->SetName(Form("PosRecoResiduals_%s", suffix.Data()));
+    gResiduals->SetTitle(Form("Reconstructed Position Residuals (%s)", suffix.Data()));
+    gResiduals->GetXaxis()->SetTitle("source position [mm]");
+    gResiduals->GetYaxis()->SetTitle("residual [mm]");
+    gResiduals->SetMarkerStyle(4);
+    
+    std::vector<TH1D*> pos_distributions;
+    
+    double posResAv = 0;
+    double posResAvErr = 0;
+    
+    for (int i = 0; i < npointsMax; i++)
+    {
+        std::cout << "\n\nMeasurement: " << i << std::endl;
+        auto results_single_pos = std::unique_ptr<SFResults>(ReconstructPositionDist(addr, 
+                                                             spectrum_av[i], fun_mlr, path[i],
+                                                             BL_sigma_cut, collimator));
+        pos_distributions.push_back((TH1D*)results_single_pos->GetObject(SFResultTypeObj::kPositionDist));
+        
+        pos_distributions[i]->SetName(Form("hPosReco_%i", i));
+        pos_distributions[i]->SetTitle(Form("Reconstructed Position Distribution (M%iL%iF%i) position %.1f mm", addr.fModule, addr.fLayer, addr.fFiber, positions[i]));
+        
+        double pos_res = results_single_pos->GetValue(SFResultTypeNum::kPositionRes);
+        double pos_res_err = results_single_pos->GetUncertainty(SFResultTypeNum::kPositionRes);
+        
+        double pos_reco = results_single_pos->GetValue(SFResultTypeNum::kPositionReco);
+        double pos_reco_err = results_single_pos->GetUncertainty(SFResultTypeNum::kPositionReco);
+        
+        gPosRecoVsPos->SetPoint(i, positions[i], pos_reco);
+        gPosRecoVsPos->SetPointError(i, pos_uncert, pos_reco_err);
+        
+        gPosResVsPos->SetPoint(i, positions[i], pos_res);
+        gPosResVsPos->SetPointError(i, pos_uncert, pos_res_err);
+        
+        gPosRecoDiff->SetPoint(i, positions[i], (pos_reco - positions[i]));
+        gPosRecoDiff->SetPointError(i, pos_uncert, pos_res_err);
+        
+        posResAv += pos_res * (1. / pow(pos_res_err, 2));
+        posResAvErr += (1. / pow(pos_res_err, 2));
+    }
+    
+    posResAv    = posResAv / posResAvErr;
+    posResAvErr = sqrt(1. / posResAvErr);
+    
+    TF1* fun_pol1 = new TF1("fun_pol1", "pol1", 0, 100);
+    gPosRecoVsPos->Fit(fun_pol1, "Q");
+    
+    double residual;
     double point_x, point_y;
 
     for (int npoint = 0; npoint < npointsMax; npoint++)
     {
-        fPosRecoCorrGraph->GetPoint(npoint, point_x, point_y);
-        res = point_y - positions[npoint];
-        fPosResidualsCorr->SetPoint(npoint, positions[npoint], res);
+        gPosRecoVsPos->GetPoint(npoint, point_x, point_y);
+        residual = point_y - positions[npoint];
+        gResiduals->SetPoint(npoint, positions[npoint], residual);
     }
     
-    //----- setting results
-    fResultsCorr->AddResult(SFResultTypeNum::kPositionRes, posResAv, posResAvErr);
-    fResultsCorr->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoCorrGraph);
-    fResultsCorr->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResCorrGraph);
-    fResultsCorr->AddObject(SFResultTypeObj::kResidualGraph, fPosResidualsCorr);
-    fResultsCorr->AddObject(SFResultTypeObj::kPositionAllHist, hPosRecoAll);
-//     fResultsCorr->AddObject(SFResultTypeObj::kPositionDiff, fPosRecoDiffCorr);
+    std::cout << "\nAverage position resolution for this series is (" << suffix << ") : ";
+    std::cout << posResAv << " +/- " << posResAvErr << " mm\n\n" << std::endl;
     
-    fResultsExp->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, fPosRecoGraph);
-    fResultsExp->AddObject(SFResultTypeObj::kPosResVsPosGraph, fPosResGraph);
-    fResultsExp->AddObject(SFResultTypeObj::kResidualGraph, fPosResiduals);
-    fResultsExp->AddObject(SFResultTypeObj::kPositionAllHist, fPosRecoAll);
-//     fResultsExp->AddObject(SFResultTypeObj::kPositionDiff, fPosRecoDiff);
-    //-----
+    SFResults* results = new SFResults(Form("PositionResolution_%s", suffix.Data()));
+    results->AddResult(SFResultTypeNum::kPositionRes, posResAv, posResAvErr);
+    results->AddObject(SFResultTypeObj::kPosRecoVsPosGraph, gPosRecoVsPos);
+    results->AddObject(SFResultTypeObj::kPosResVsPosGraph, gPosResVsPos);
+    results->AddObject(SFResultTypeObj::kPosDiffVsPosGraph, gPosRecoDiff);
+    results->AddObject(SFResultTypeObj::kResidualGraph, gResiduals);
     
-    return true;
+    return {results, pos_distributions};
 }
+
 //------------------------------------------------------------------
-std::vector<SFResults*> SFPositionReco::GetResults(void)
+SFResults* SFPositionReco::ReconstructPositionDistSum(SFChAddr addr, 
+                                                      std::vector<TH1D*> spectrum_av,
+                                                      std::vector<double> positions,
+                                                      std::vector<TString> path,
+                                                      TF1* fun_mlr,
+                                                      double BL_sigma_cut, 
+                                                      TString collimator)
 {
-    if (fResultsExp == nullptr ||
-        fResultsCorr == nullptr)
+    
+    if (fun_mlr == nullptr)
     {
-        std::cerr << "##### Error in SFPositionReco::GetResults()!" << std::endl;
-        std::cerr << "Empty SFResults object pointer!" << std::endl;
+        std::cerr << "##### Error in SFPositionReco:: " << __func__ << std::endl;
+        std::cerr << "One of the required pointers is invalid! Please check!" << std::endl;
         std::abort();
     }
+    
+    if (spectrum_av.empty() || spectrum_av[0] == nullptr)
+    {
+        std::cerr << "##### Error in SFPositionReco:: " << __func__ << std::endl;
+        std::cerr << "Something wrong with std::vector<TH1D*> spectrum_av! Please check!"<< std::endl;
+        std::abort();
+    }
+    
+    int npointsMax = positions.size();
+    
+    TString suffix = Form("M%iL%iF%i", addr.fModule, addr.fLayer, addr.fFiber);
+    
+    TString hname = Form("Summed Reconstructed Position Distribution (%s)", suffix.Data());
+    TH1D *hPosRecoSum = new TH1D("hPosRecoSum", hname, 300, -300, 300);
+    hPosRecoSum->GetXaxis()->SetTitle("reconstructed position - source position [mm]");
+    hPosRecoSum->GetYaxis()->SetTitle("counts");
+    
+    for (int i = 0; i < npointsMax; i++)
+    {
+        TString full_tree_path = path[i] + "/sifi_results.root";
+        std::string full_tree_path_str = std::string(full_tree_path);
+        std::cout << "\nOpening file: " << full_tree_path << std::endl;
+    
+        auto tfile = std::make_unique<TFile>(full_tree_path, "READ");
+        
+        if (!tfile.get()->IsOpen())
+        {
+            std::cerr << "##### Error in SFPositionReco::" << __func__ << std::endl;
+            std::cerr << "Could not open file:" << std::endl;
+            std::cerr << full_tree_path << std::endl;
+            std::abort();
+        }
+        
+        tfile->Close();
+        
+        SLoop *loop = new SLoop();
+        loop->addFile(full_tree_path_str);
+        loop->setInput({});
+        
+        int nloopMax = loop->getEntries();
+        auto tSig = SCategoryManager::getCategory(SCategory::CatDDSamples);
+    
+        auto peak_range = SFPeakFinder::FindPeakRange(spectrum_av[i], path[i], collimator, 0, 0);
+        double xmin = std::get<0>(peak_range);
+        double xmax = std::get<1>(peak_range);
+        
+        for (int nloop = 0; nloop < nloopMax; ++nloop)
+        {
+            loop->getEvent(nloop);
+            size_t tentriesMax = tSig->getEntries();
 
-    std::vector<SFResults*> results(2);
-    results[0] = fResultsExp;
-    results[1] = fResultsCorr;
+            for (int tentries = 0; tentries < tentriesMax; ++tentries)
+            {
+                int m, l, f;
+                auto samples = (SDDSamples*)tSig->getObject(tentries);
+                samples->getAddress(m, l, f);
 
+                if (addr.fModule == m &&
+                    addr.fLayer == l &&
+                    addr.fFiber == f)
+                {
+                    if (auto val = ReconstructPosition(samples, fun_mlr, BL_sigma_cut, xmin, xmax); val)
+                        hPosRecoSum->Fill(*val-positions[i]);
+                    else
+                        continue;
+                }
+            }
+        }
+    }
+    
+    double fit_min = hPosRecoSum->GetBinCenter(2);
+    TF1* fun_gauss = new TF1("fun_gaus", "gaus", fit_min, 200);
+    fun_gauss->SetParameters(hPosRecoSum->GetBinContent(hPosRecoSum->GetMaximumBin()),
+                             hPosRecoSum->GetMean(), hPosRecoSum->GetRMS());
+    
+    hPosRecoSum->Fit(fun_gauss, "QR");
+
+    double sigma_to_fwhm = 2 * sqrt(2 * log(2));
+    double pos_res = sigma_to_fwhm * fun_gauss->GetParameter(2);
+    double pos_res_err = sigma_to_fwhm * fun_gauss->GetParError(2);
+    
+    SFResults* results = new SFResults(Form("PositionResolutionSum_%s", suffix.Data()));
+    results->AddObject(SFResultTypeObj::kPositionDist, hPosRecoSum);
+    results->AddResult(SFResultTypeNum::kPositionRes, pos_res, pos_res_err);
+    
     return results;
-}
-//------------------------------------------------------------------
-std::vector<TH1D*> SFPositionReco::GetPositionDistributions(TString type)
-{
-    std::vector<TH1D*> histograms;
-    
-    if (type == "experimental" && !fRecoPositionsHist.empty())
-    {
-        histograms = fRecoPositionsHist;
-    }
-    else if (type == "corrected" && !fRecoPositionsCorrHist.empty())
-    {
-        histograms = fRecoPositionsCorrHist;
-    }
-    else
-    {
-        std::cerr << "##### Error in SFPositionReco::GetPositionDistributions()!" << std::endl;
-        std::cerr << "Incorrect type. Possible options are: experimental and corrected." << std::endl;
-        std::abort();
-    }
-    
-    return histograms;
-}
-//------------------------------------------------------------------
-void SFPositionReco::Print(void)
-{
-    std::cout << "\n-------------------------------------------" << std::endl;
-    std::cout << "This is print out of SFPositionReco class object" << std::endl;
-    std::cout << "Experimental series number " << fSeriesNo << std::endl;
-    std::cout << "-------------------------------------------\n" << std::endl;
 }
 //------------------------------------------------------------------
